@@ -10,6 +10,15 @@ const games = JSON.parse(readFileSync(resolve(root, "games.json"), "utf8")).game
 const npmCli = resolve(dirname(process.execPath), "node_modules", "npm", "bin", "npm-cli.js");
 let spaFallback;
 
+function runNpm(args, cwd) {
+  const options = { cwd, stdio: "inherit" };
+  if (process.platform === "win32") {
+    execFileSync(process.execPath, [npmCli, ...args], options);
+  } else {
+    execFileSync("npm", args, options);
+  }
+}
+
 rmSync(output, { recursive: true, force: true });
 mkdirSync(output, { recursive: true });
 
@@ -32,9 +41,9 @@ for (const game of games) {
     const packageJson = JSON.parse(readFileSync(packageFile, "utf8"));
     if (!packageJson.scripts || !packageJson.scripts.build) throw new Error("No build script for game: " + game.slug);
     if (process.env.CI || !existsSync(resolve(source, "node_modules"))) {
-      execFileSync(process.execPath, [npmCli, "ci"], { cwd: source, stdio: "inherit" });
+      runNpm(["ci"], source);
     }
-    execFileSync(process.execPath, [npmCli, "run", "build"], { cwd: source, stdio: "inherit" });
+    runNpm(["run", "build"], source);
     const built = resolve(source, "dist");
     if (!existsSync(resolve(built, "index.html"))) throw new Error("Build produced no index.html for game: " + game.slug);
     cpSync(built, destination, { recursive: true });
