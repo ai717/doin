@@ -1,0 +1,14 @@
+{
+  "games": [
+    {
+      "title": "数独",
+      "slug": "sudoku",
+      "desc": "经典 9x9 逻辑填数，从入门到骨灰级的烧脑修行。",
+      "icon": "🔢",
+      "cover": "",
+      "tags": ["益智", "经典"],
+      "url": "/sudoku/",
+      "spa": true
+    }
+  ]
+}

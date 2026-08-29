@@ -1,0 +1,13 @@
+# Generated deployment output
+dist/
+
+# Per-game dependencies and build outputs
+games/*/node_modules/
+games/*/dist/
+
+# Local and editor files
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.log
