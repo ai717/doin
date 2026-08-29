@@ -91,3 +91,16 @@
 - After approval, remove doin.win from the old repository, set PAGES_CNAME on
   ai717/doin, bind the domain in the new repository Pages settings, and verify
   the switch.
+
+## 2026-08-29 · Step 5: custom-domain switch complete
+
+### Completed
+
+- Set PAGES_CNAME to doin.win and ran the Publish static site workflow.
+- Confirmed gh-pages now contains CNAME with doin.win.
+- Confirmed ai717/doin Pages is bound to doin.win with HTTPS enabled.
+
+### Verification
+
+- https://doin.win/ returned HTTP 200 with the portal title.
+- https://doin.win/sudoku/ returned HTTP 200 with the Sudoku title.
