@@ -42,3 +42,7 @@ sitemap.
 The deploy workflow runs when main changes. Configure GitHub Pages once in the
 repository settings to publish the gh-pages branch from / (root). The workflow
 then replaces that branch with the generated dist/ content.
+
+For a custom domain, set the PAGES_CNAME repository variable before the first
+domain deployment. The workflow writes it to gh-pages on every publish, so the
+CNAME marker cannot be lost on the next deployment.

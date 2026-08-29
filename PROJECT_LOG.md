@@ -75,3 +75,19 @@
 
 - Review the GitHub Pages preview, then decide whether to move doin.win from
   the old repository to this repository and resolve its Cloudflare 526 issue.
+
+## 2026-08-29 · Step 4: custom-domain deployment readiness
+
+### Completed
+
+- Added the optional PAGES_CNAME GitHub repository variable to the deployment
+  workflow. When populated, every gh-pages publish writes the matching CNAME
+  marker into the deployment branch.
+- Left PAGES_CNAME unset while doin.win remains bound to ai717/doin.win, so this
+  preparatory deployment cannot claim or disrupt the existing domain.
+
+### Next
+
+- After approval, remove doin.win from the old repository, set PAGES_CNAME on
+  ai717/doin, bind the domain in the new repository Pages settings, and verify
+  the switch.
