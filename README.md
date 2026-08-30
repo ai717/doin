@@ -37,6 +37,11 @@ The site build copies each published game to dist/<slug>/. Games marked
 comingSoon: true do not need source files yet and are excluded from the
 sitemap.
 
+Folders named node_modules, dist, or tests and anything starting with a dot are
+never copied, so a game can keep its tests next to its source. Add an exclude
+array to a games.json entry to keep further folders out of dist/, for example
+reference material that lives beside the game source.
+
 ## GitHub Pages
 
 The deploy workflow runs when main changes. Configure GitHub Pages once in the

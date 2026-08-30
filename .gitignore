@@ -11,3 +11,6 @@ Thumbs.db
 .vscode/
 .idea/
 *.log
+
+# Local agent memory
+.workbuddy-ai/

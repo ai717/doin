@@ -23,7 +23,12 @@ published under /<slug>/; it never contains game implementation code.
     games.json                     Only game-list data source
     games/<slug>/                  Independent game source
     scripts/build-site.mjs         Site-level build entry point
+    start.bat                      One-click local launcher (auto-selects a free
+                                   port near 46810)
     dist/                          Generated deployment output, ignored
+
+Locally the portal serves the repo root so games live at `/games/<slug>/`;
+the production URL on GitHub Pages is `/<slug>/` (the build flattens paths).
 
 ## Games
 
@@ -36,8 +41,13 @@ published under /<slug>/; it never contains game implementation code.
   one generated root fallback; direct SPA deep links render but retain HTTP 404
   and must not be placed in the sitemap.
 - games.json fields: title, slug, desc, icon, cover, tags, url, comingSoon;
-  spa is optional for SPA fallback generation. comingSoon games are not built or
-  included in the sitemap.
+  spa is optional for SPA fallback generation, exclude is an optional list of
+  extra source folders to keep out of the build, and comingSoon games are not
+  built or included in the sitemap. The build always skips node_modules, dist,
+  tests, and dot-folders, so games may keep tests/ next to their source.
+- The pixel theme below is NOT mandatory for games. Each game under
+  games/<slug>/ may define its own visual style that fits its gameplay; do not
+  force new games into the portal's pixel look.
 
 ## Homepage, SEO, and style
 
@@ -45,8 +55,9 @@ published under /<slug>/; it never contains game implementation code.
   a portal build dependency.
 - games.json drives cards, JSON-LD, and scripts/gen-sitemap.mjs. Keep sitemap
   entries limited to the homepage and non-comingSoon same-domain game roots.
-- Keep the established pixel theme: #0b0b1a base, existing neon CSS variables,
-  Press Start 2P only for display accents, and hard-edge shadows.
+- Keep the homepage pixel theme: #0b0b1a base, existing neon CSS variables,
+  Press Start 2P only for display accents, and hard-edge shadows. This rule
+  applies to the portal homepage only; subgames are free to use other styles.
 
 ## Working rules
 
@@ -55,3 +66,9 @@ published under /<slug>/; it never contains game implementation code.
 - Run npm run build from the repository root after changes affecting the portal,
   games.json, build scripts, or deployment.
 - For Sudoku changes, also run npm run typecheck and npm test in games/sudoku.
+- For 2048 changes, run node --test tests/engine.test.mjs tests/storage.test.mjs
+  tests/i18n.test.mjs tests/markup.test.mjs in games/2048. Node 22 needs file
+  names or a glob; passing only the tests directory fails.
+- The deploy workflow uses actions/checkout@v4 and actions/setup-node@v4;
+  upgrade both to their current Node 24-compatible major versions when a
+  convenient window opens.

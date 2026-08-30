@@ -1,6 +1,6 @@
-import { cpSync, existsSync, mkdirSync, readFileSync, rmSync } from "node:fs";
+import { cpSync, existsSync, mkdirSync, readFileSync } from "node:fs";
 import { execFileSync } from "node:child_process";
-import { dirname, resolve } from "node:path";
+import { dirname, relative, resolve, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
@@ -9,6 +9,30 @@ const gamesRoot = resolve(root, "games");
 const games = JSON.parse(readFileSync(resolve(root, "games.json"), "utf8")).games;
 const npmCli = resolve(dirname(process.execPath), "node_modules", "npm", "bin", "npm-cli.js");
 let spaFallback;
+
+function removeOutput(path) {
+  if (!existsSync(path)) return;
+  if (process.platform === "win32") {
+    execFileSync("cmd", ["/c", "if", "exist", path, "rd", "/s", "/q", path], { stdio: "ignore" });
+  } else {
+    execFileSync("rm", ["-rf", path], { stdio: "ignore" });
+  }
+}
+
+const SKIPPED = new Set(["node_modules", "dist", "tests", "test", "__tests__"]);
+
+function copyGame(source, destination, exclude = []) {
+  const skipped = new Set([...SKIPPED, ...exclude]);
+  cpSync(source, destination, {
+    recursive: true,
+    filter: (src) => {
+      if (src === source) return true;
+      const top = relative(source, src).split(sep)[0];
+      if (!top || top === "..") return true;
+      return !skipped.has(top) && !top.startsWith(".");
+    },
+  });
+}
 
 function runNpm(args, cwd) {
   const options = { cwd, stdio: "inherit" };
@@ -19,7 +43,7 @@ function runNpm(args, cwd) {
   }
 }
 
-rmSync(output, { recursive: true, force: true });
+removeOutput(output);
 mkdirSync(output, { recursive: true });
 
 for (const entry of ["assets", "css", "js"]) {
@@ -43,12 +67,13 @@ for (const game of games) {
     if (process.env.CI || !existsSync(resolve(source, "node_modules"))) {
       runNpm(["ci"], source);
     }
-    runNpm(["run", "build"], source);
     const built = resolve(source, "dist");
+    removeOutput(built);
+    runNpm(["run", "build"], source);
     if (!existsSync(resolve(built, "index.html"))) throw new Error("Build produced no index.html for game: " + game.slug);
     cpSync(built, destination, { recursive: true });
   } else if (existsSync(staticIndex)) {
-    cpSync(source, destination, { recursive: true });
+    copyGame(source, destination, game.exclude);
   } else {
     throw new Error("Game needs index.html or package.json: " + game.slug);
   }
