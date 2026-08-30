@@ -12,6 +12,9 @@ export default defineConfig({
     host: "0.0.0.0",
     port: 8080,
   },
+  build: {
+    emptyOutDir: false,
+  },
   plugins: [
     tanstackRouter({ target: "react", autoCodeSplitting: true }),
     tailwindcss(),
