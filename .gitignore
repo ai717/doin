@@ -1,6 +1,9 @@
 # Generated deployment output
 dist/
 
+# Image-generation scratch (raw art masters)
+vibe_images/
+
 # Per-game dependencies and build outputs
 games/*/node_modules/
 games/*/dist/
