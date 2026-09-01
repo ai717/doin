@@ -24,6 +24,9 @@ jobs:
         with:
           node-version: 22
 
+      - name: Test orbit-sort
+        run: npm run test:orbit-sort
+
       - name: Build static site
         run: npm run build
 

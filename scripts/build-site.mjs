@@ -1,4 +1,4 @@
-import { cpSync, existsSync, mkdirSync, readFileSync } from "node:fs";
+import { cpSync, existsSync, mkdirSync, readFileSync, readdirSync, statSync, writeFileSync } from "node:fs";
 import { execFileSync } from "node:child_process";
 import { dirname, relative, resolve, sep } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -8,6 +8,7 @@ const output = resolve(root, "dist");
 const gamesRoot = resolve(root, "games");
 const games = JSON.parse(readFileSync(resolve(root, "games.json"), "utf8")).games;
 const npmCli = resolve(dirname(process.execPath), "node_modules", "npm", "bin", "npm-cli.js");
+const buildId = process.env.BUILD_ID || process.env.GITHUB_SHA?.slice(0, 12) || (process.env.CI ? `build-${Date.now()}` : "dev");
 let spaFallback;
 
 function removeOutput(path) {
@@ -40,6 +41,21 @@ function runNpm(args, cwd) {
     execFileSync(process.execPath, [npmCli, ...args], options);
   } else {
     execFileSync("npm", args, options);
+  }
+}
+
+function rewriteBuildVersion(directory) {
+  const extensions = new Set([".css", ".html", ".js", ".mjs"]);
+  for (const entry of readdirSync(directory)) {
+    const path = resolve(directory, entry);
+    if (statSync(path).isDirectory()) {
+      rewriteBuildVersion(path);
+      continue;
+    }
+    if (!extensions.has(path.slice(path.lastIndexOf(".")))) continue;
+    const source = readFileSync(path, "utf8");
+    const rewritten = source.replaceAll("?v=dev", `?v=${buildId}`);
+    if (rewritten !== source) writeFileSync(path, rewritten);
   }
 }
 
@@ -88,5 +104,7 @@ for (const game of games) {
 
 if (spaFallback) cpSync(spaFallback, resolve(output, "404.html"));
 
+rewriteBuildVersion(output);
+
 execFileSync("node", [resolve(root, "scripts/gen-sitemap.mjs"), resolve(output, "sitemap.xml")], { stdio: "inherit" });
-console.log("Built static site: " + output);
+console.log(`Built static site: ${output} (build ${buildId})`);
