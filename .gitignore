@@ -17,3 +17,7 @@ Thumbs.db
 
 # Local agent memory
 .workbuddy-ai/
+.workbuddy/
+
+# Local scratch and draft experiments
+x/
