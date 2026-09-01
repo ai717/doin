@@ -47,6 +47,27 @@ path. Do not mix the two.
 - Games define their own visual style. The portal pixel theme below constrains
   the homepage only.
 
+### orbit-sort stabilization baseline
+
+- Current release exposes exactly six newly generated mainline levels from
+  `games/orbit-sort/levels.mjs`; the older verified catalog after level 6 is
+  retained as source material only and must not be re-exposed accidentally.
+- `engine.mjs` is the sole authority for legality. A legal action must execute;
+  a deadlock is a post-move state, not a violation or a reason to block the
+  action. Only `won` is terminal. `game.mjs` accepts UI intents and delegates
+  them to the engine; page code must not construct rule actions or mutate game
+  state directly.
+- `generator.mjs` validates balance, structure, solvability and every legal
+  first move. `deadEndFirstMoves` is an audit metric; use
+  `maxDeadEndFirstMoves` only when a release explicitly requires a stricter
+  level-quality threshold. Solver timeouts are unknown, not unsolvable.
+- After touching orbit-sort, run `npm run test:orbit-sort` from the repository
+  root. It is also a required pre-build CI gate. Run `npm run build` when the
+  portal, build scripts, games.json, or deployment workflow changes.
+- Local game URL is `/games/orbit-sort/`; production URL is `/orbit-sort/`.
+  Source modules use `?v=dev`; production build rewrites those references to
+  one build id, including Worker URLs and Worker imports.
+
 ## Homepage, SEO, and style
 
 - Homepage code is native HTML, CSS and ES modules. No framework, no build
