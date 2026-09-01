@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="630" height="500" viewBox="0 0 630 500" role="img" aria-labelledby="title desc">
+  <title id="title">星轨调度大师棋盘</title>
+  <desc id="desc">彩色星体围绕中央双中转槽排列在放射轨道上</desc>
+  <rect width="630" height="500" fill="#050817"/>
+  <ellipse cx="315" cy="250" rx="276" ry="214" fill="#081131" stroke="#23386f" stroke-width="5"/>
+  <g fill="none" stroke-linecap="round">
+    <path d="M315 174V62M381 190l78-78M391 250h112M381 310l78 78M315 326v112M249 310l-78 78M239 250H127M249 190l-78-78" stroke="#5265a5" stroke-width="34"/>
+    <path d="M315 174V62M381 190l78-78M391 250h112M381 310l78 78M315 326v112M249 310l-78 78M239 250H127M249 190l-78-78" stroke="#07112d" stroke-width="22"/>
+  </g>
+  <g stroke="#f6f8ff" stroke-width="4">
+    <circle cx="315" cy="96" r="22" fill="#ff6e78"/><circle cx="315" cy="134" r="22" fill="#6b9cff"/>
+    <circle cx="432" cy="139" r="22" fill="#68d69b"/><circle cx="405" cy="166" r="22" fill="#c18bff"/>
+    <circle cx="486" cy="250" r="22" fill="#ffad62"/><circle cx="448" cy="250" r="22" fill="#e6d36f"/>
+    <circle cx="198" cy="361" r="22" fill="#ff6e78"/><circle cx="225" cy="334" r="22" fill="#68d69b"/>
+  </g>
+  <g fill="#071027" font-family="Arial, sans-serif" font-size="21" font-weight="700" text-anchor="middle" dominant-baseline="central"><text x="315" y="96">+</text><text x="315" y="134">−</text><text x="432" y="139">=</text><text x="405" y="166">×</text><text x="486" y="250">*</text><text x="448" y="250">#</text><text x="198" y="361">+</text><text x="225" y="334">=</text></g>
+  <circle cx="315" cy="250" r="86" fill="#111f4a" stroke="#7f91d6" stroke-width="6"/>
+  <circle cx="315" cy="250" r="50" fill="#07102a" stroke="#354b91" stroke-width="7"/>
+  <g stroke="#5367ad" stroke-width="5"><circle cx="286" cy="250" r="25" fill="#08112b"/><circle cx="344" cy="250" r="25" fill="#08112b"/></g>
+  <circle cx="286" cy="250" r="20" fill="#c18bff" stroke="#f6f8ff" stroke-width="3"/><text x="286" y="250" fill="#071027" font-family="Arial, sans-serif" font-size="19" font-weight="700" text-anchor="middle" dominant-baseline="central">×</text>
+  <text x="315" y="472" fill="#f4f6ff" font-family="Arial, sans-serif" font-size="24" font-weight="700" text-anchor="middle">星轨调度大师</text>
+</svg>

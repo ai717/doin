@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#050817">
+    <title>星轨调度大师</title>
+    <link rel="icon" href="./favicon.svg" type="image/svg+xml">
+    <link rel="stylesheet" href="./css/style.css?v=dev">
+  </head>
+  <body>
+    <main id="select-screen" class="select-screen">
+      <header class="select-header"><a class="back-link" href="/" aria-label="返回 DOIN">&#8249;</a><div><h1>星轨调度大师</h1><p>选择一条星轨继续调度</p></div></header>
+      <section><button id="daily-button" class="daily-button" type="button">今日星轨</button><button id="continue-daily-button" class="continue-button" type="button" hidden>继续今日星轨</button><button id="continue-button" class="continue-button" type="button" hidden>继续上次对局</button><div id="level-grid" class="level-grid" aria-label="主线关卡"></div></section>
+    </main>
+    <main class="game-shell">
+      <header class="game-header">
+        <a id="play-back-button" class="back-link" href="/" aria-label="返回选关" title="返回选关">&#8249;</a>
+        <div class="title-block">
+          <p class="game-title">星轨调度大师</p>
+          <p id="level-label">第 1 关</p>
+        </div>
+        <button id="sound-button" class="sound-button" type="button" aria-label="关闭声音" aria-pressed="true" title="关闭声音">&#9835;</button>
+        <div class="score-readout" aria-label="调度和目标">
+          <span id="move-label">调度 0</span>
+          <span id="par-label">目标 9</span>
+          <span id="constellation-label">已充能 0</span>
+        </div>
+      </header>
+
+      <section class="board-stage" aria-label="星轨棋盘">
+        <svg id="game-board" width="1000" height="1000" viewBox="0 0 1000 1000" role="group" aria-label="星轨调度棋盘">
+          <g data-layer="background"></g>
+          <g data-layer="tracks"></g>
+          <g data-layer="track-effects"></g>
+          <g data-layer="core"></g>
+          <g data-layer="orbs"></g>
+          <g data-layer="overlay-effects"></g>
+        </svg>
+        <p id="status-message" class="status-bar" aria-live="polite"></p>
+      </section>
+
+      <footer class="game-tools" aria-label="对局工具">
+        <button id="undo-button" class="tool-button" type="button" aria-label="撤销" title="撤销 (Z)">&#8617;</button>
+        <button id="hint-button" class="tool-button" type="button" aria-label="提示" title="提示 (H)">?</button>
+        <button id="reset-button" class="tool-button" type="button" aria-label="重置" title="重置 (R)">&#8635;</button>
+      </footer>
+      <section id="result-layer" class="result-layer" role="dialog" aria-modal="true" aria-labelledby="result-title" hidden>
+        <div class="result-panel"><h2 id="result-title">星轨已稳定</h2><p id="result-score"></p><button id="next-button" type="button">下一关</button><button id="again-button" type="button">重玩</button></div>
+      </section>
+      <section id="reset-layer" class="result-layer" role="dialog" aria-modal="true" aria-labelledby="reset-title" hidden>
+        <div class="result-panel"><h2 id="reset-title">重新开始本关？</h2><p>当前调度将被清除。</p><button id="reset-confirm-button" type="button">重新开始</button><button id="reset-cancel-button" type="button">继续当前</button></div>
+      </section>
+    </main>
+    <script type="module" src="./js/bootstrap.mjs?v=dev"></script>
+  </body>
+</html>

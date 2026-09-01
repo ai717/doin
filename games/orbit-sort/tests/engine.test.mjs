@@ -5,8 +5,12 @@ import {
   canExtract,
   canInsert,
   canSelectDock,
+  clearDockSelection,
   createState,
   extractOrb,
+  applyAction,
+  applyIntent,
+  evaluateState,
   insertOrb,
   isSolved,
   isStuck,
@@ -32,6 +36,99 @@ test("only an unlocked track mouth can be extracted", () => {
   assert.equal(canExtract(game, 0), true);
   assert.equal(canExtract(game, 1), false);
   assert.equal(extractOrb(game, 0).tracks[0].orbs.at(-1).color, 0);
+});
+
+test("the level-two sequence rejects an off-color landing", () => {
+  let game = createState({
+    levelId: 2,
+    capacity: 3,
+    dockCount: 1,
+    tracks: [[1, 1, 0], [0, 2, 2], [0, 2, 1], []],
+  });
+  game = insertOrb(extractOrb(game, 0), 0, 3);
+  game = insertOrb(extractOrb(game, 2), 0, 0);
+  game = extractOrb(game, 2);
+  const before = game;
+  const after = insertOrb(game, game.selectedDockId, 3);
+  assert.equal(after, before);
+  assert.deepEqual(after.tracks[3].orbs.map((orb) => orb.color), [0]);
+  assert.equal(after.docks[0].orb.color, 2);
+});
+
+test("a same-color transfer into the left track is not reported as stuck", () => {
+  let game = createState({
+    levelId: "screenshot-state",
+    capacity: 3,
+    dockCount: 1,
+    tracks: [[1, 1, 0], [0, 2], [0, 2, 1], [2]],
+  });
+  game = extractOrb(game, 1);
+  assert.equal(game.status, "playing");
+  assert.equal(canInsert(game, game.selectedDockId, 3), true);
+  game = insertOrb(game, game.selectedDockId, 3);
+  assert.equal(game.status, "playing");
+  assert.deepEqual(game.tracks[3].orbs.map((orb) => orb.color), [2, 2]);
+});
+
+test("stuck status cannot hide a legal extraction or same-color landing", () => {
+  const game = createState({
+    levelId: "stale-status-state",
+    capacity: 3,
+    dockCount: 1,
+    tracks: [[1, 1, 0], [0, 2], [0, 2, 1], [2]],
+  });
+  assert.equal(isStuck({ ...game, status: "stuck" }), false);
+});
+
+test("a stale stuck status still permits a legal landing", () => {
+  const initial = createState({
+    levelId: "stale-landing-state",
+    capacity: 3,
+    dockCount: 1,
+    tracks: [[1, 1, 0], [0, 2], [0, 2, 1], [2]],
+  });
+  const extracted = extractOrb(initial, 1);
+  const stale = { ...extracted, status: "stuck" };
+  assert.equal(canSelectDock(stale, stale.selectedDockId), true);
+  assert.equal(canInsert(stale, stale.selectedDockId, 3), true);
+  const inserted = insertOrb(stale, stale.selectedDockId, 3);
+  assert.deepEqual(inserted.tracks[3].orbs.map((orb) => orb.color), [2, 2]);
+});
+
+test("the unified rule authority returns reasons and executes every legal action", () => {
+  const initial = state({ tracks: [[0], [1], []] });
+  const extracted = applyAction(initial, { type: "extract", trackId: 0 });
+  assert.equal(extracted.valid, true);
+  const inserted = applyAction(extracted.state, { type: "insert", dockId: 0, trackId: 2 });
+  assert.equal(inserted.valid, true);
+  const rejected = applyAction(initial, { type: "insert", dockId: 0, trackId: 1 });
+  assert.equal(rejected.valid, false);
+  assert.equal(rejected.reason, "empty-dock");
+  assert.equal(evaluateState(inserted.state).status, "playing");
+});
+
+test("intents resolve track and dock clicks through the engine", () => {
+  const initial = createState({ capacity: 2, dockCount: 2, tracks: [[0], [1], []] });
+  const first = applyIntent(initial, { target: "track", id: 0 });
+  assert.equal(first.action.type, "extract");
+  const second = applyIntent(first.state, { target: "dock", id: 1 });
+  assert.equal(second.action.type, "clear-selection");
+  const third = applyIntent(second.state, { target: "track", id: 1 });
+  assert.equal(third.action.type, "extract");
+  assert.equal(third.valid, true);
+});
+
+test("a red entrance cannot land on a green entrance", () => {
+  const game = createState({
+    levelId: "off-color-state",
+    capacity: 3,
+    dockCount: 1,
+    tracks: [[1, 1, 0], [0, 2, 0], [0, 2, 1], [2]],
+  });
+  const withRed = extractOrb(game, 1);
+  assert.equal(withRed.docks[0].orb.color, 0);
+  assert.equal(canInsert(withRed, 0, 3), false);
+  assert.equal(insertOrb(withRed, 0, 3), withRed);
 });
 
 test("a full core cannot accept another extraction", () => {
@@ -128,6 +225,16 @@ test("selecting a dock is free and insert selects the remaining orb", () => {
   const afterInsert = insertOrb(second, 1, 2);
   assert.equal(afterInsert.selectedDockId, 0);
   assert.equal(afterInsert.moves, 2);
+});
+
+test("empty dock can clear placement selection before filling another dock", () => {
+  const game = createState({ capacity: 2, dockCount: 2, tracks: [[0, 1], [1, 0], []] });
+  const extracted = extractOrb(game, 0);
+  assert.equal(extracted.selectedDockId, 0);
+  const readyToExtract = clearDockSelection(extracted);
+  assert.equal(readyToExtract.selectedDockId, null);
+  assert.equal(canExtract(readyToExtract, 1), true);
+  assert.equal(clearDockSelection(game), game);
 });
 
 test("undo restores the complete state before the last extraction", () => {

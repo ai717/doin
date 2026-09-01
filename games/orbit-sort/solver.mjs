@@ -7,7 +7,7 @@ import {
   extractOrb,
   insertOrb,
   isSolved,
-} from "./engine.mjs";
+} from "./engine.mjs?v=dev";
 
 class Deque {
   constructor() {
@@ -153,6 +153,22 @@ export function solve(initialState, { nodeLimit = 2_000_000, timeLimitMs = 5_000
   }
 
   return { status: "exhausted", actions: null, par: null, nodes, elapsedMs: performance.now() - startedAt };
+}
+
+export function analyzeOptimalFirstActions(initialState, options = {}) {
+  const baseline = solve(initialState, options);
+  if (baseline.status !== "solved") {
+    return { status: baseline.status, par: baseline.par ?? null, actions: [] };
+  }
+  const firstActions = [];
+  for (const action of solverActions(cleanSearchState(initialState))) {
+    const next = applyAction(initialState, action);
+    if (next === initialState) continue;
+    const result = solve(next, options);
+    const cost = action.type === "extract" ? 1 : 0;
+    if (result.status === "solved" && result.par + cost === baseline.par) firstActions.push(action);
+  }
+  return { status: "solved", par: baseline.par, actions: firstActions };
 }
 
 export function replayActions(initialState, actions) {

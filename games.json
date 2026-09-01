@@ -18,6 +18,16 @@
       "cover": "/assets/covers/2048.png",
       "tags": ["益智", "经典", "数字"],
       "url": "/2048/"
+    },
+    {
+      "title": "星轨调度大师",
+      "slug": "orbit-sort",
+      "desc": "调度彩色星体穿过中央星核，在有限中转空间中恢复每一条纯色星轨。",
+      "icon": "🪐",
+      "cover": "/assets/covers/orbit-sort.svg",
+      "tags": ["益智", "排序", "每日挑战"],
+      "url": "/orbit-sort/",
+      "exclude": ["generator.mjs"]
     }
   ]
 }
