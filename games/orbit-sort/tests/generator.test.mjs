@@ -7,24 +7,28 @@ import { isSolved } from "../engine.mjs";
 import { replayActions, solve } from "../solver.mjs";
 
 test("published levels pass the same validator used for generated levels", () => {
-  const expectedDeadEnds = new Map([[2, 2], [4, 1]]);
   for (const level of LEVELS) {
     const result = validateLevel(level, { nodeLimit: 2_000_000, timeLimitMs: 5_000 });
     assert.equal(result.valid, true, `level ${level.id} rejected: ${result.reason}`);
     assert.equal(result.par, level.par, `level ${level.id} par drifted`);
     assert.ok(Number.isInteger(result.deadEndFirstMoves));
-    if (expectedDeadEnds.has(level.id)) {
-      assert.equal(result.deadEndFirstMoves, expectedDeadEnds.get(level.id), `level ${level.id} dead-end opening drifted`);
-    }
+    assert.equal(result.deadEndFirstMoves, 0, `level ${level.id} has dead-end openings (generator guarantees 0)`);
   }
 });
 
 test("dead-end legal openings are reported without being rejected", () => {
-  const result = validateLevel(LEVELS.find((level) => level.id === 2), { nodeLimit: 500_000, timeLimitMs: 1_000 });
+  // Build a level that is known to have a dead-end first move and verify
+  // validator reports it without rejecting the whole level.
+  const deadEndLevel = {
+    id: "audit-de", chapter: 1, capacity: 3, dockCount: 1,
+    tracks: [[0, 2, 1], [1, 2, 0], [2, 1, 0], []],
+    modifiers: [], seed: "audit-dead-end", par: 6,
+  };
+  const result = validateLevel(deadEndLevel, { nodeLimit: 500_000, timeLimitMs: 1_000 });
   assert.equal(result.valid, true);
-  assert.equal(result.deadEndFirstMoves, 2);
+  assert.ok(result.deadEndFirstMoves >= 1);
   assert.ok(result.firstMoveChecks.some((check) => check.status === "dead-end"));
-  assert.equal(validateLevel(LEVELS.find((level) => level.id === 2), {
+  assert.equal(validateLevel(deadEndLevel, {
     nodeLimit: 500_000,
     timeLimitMs: 1_000,
     maxDeadEndFirstMoves: 0,

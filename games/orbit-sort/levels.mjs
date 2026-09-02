@@ -6,78 +6,78 @@ const ALL_LEVELS = [
   {
     id: 1,
     chapter: 1,
-    capacity: 2,
-    dockCount: 1,
-    tracks: [[0, 1], [0, 1], []],
+    capacity: 3,
+    dockCount: 2,
+    tracks: [[2, 0, 1], [0, 1, 0], [1, 2, 2], []],
     modifiers: [],
-    par: 3,
-    seed: "stabilize-alpha",
+    par: 7,
+    seed: "1788344956434-L1-1",
   },
   {
     id: 2,
     chapter: 1,
     capacity: 3,
     dockCount: 1,
-    tracks: [[0, 1, 1], [2, 2, 0], [0, 1, 2], []],
+    tracks: [[2, 2, 0], [2, 1, 0], [1, 0, 1], []],
     modifiers: [],
-    par: 6,
-    seed: "stabilize-beta",
+    par: 7,
+    seed: "1788344956434-L2-1",
   },
   {
     id: 3,
     chapter: 1,
-    capacity: 3,
-    dockCount: 1,
-    tracks: [[0, 2, 1], [0, 1, 2], [1, 0, 2], []],
+    capacity: 4,
+    dockCount: 2,
+    tracks: [[0, 2, 0, 0], [2, 1, 0, 2], [2, 1, 1, 1], []],
     modifiers: [],
-    par: 8,
-    seed: "stabilize-gamma",
+    par: 11,
+    seed: "1788344956434-L3-1",
   },
   {
     id: 4,
     chapter: 1,
-    capacity: 3,
+    capacity: 4,
     dockCount: 1,
-    tracks: [[1, 1, 3], [2, 0, 3], [0, 0, 3], [2, 1, 2], []],
+    tracks: [[1, 0, 2, 2], [0, 1, 0, 0], [2, 1, 1, 2], []],
     modifiers: [],
-    par: 7,
-    seed: "stabilize-delta",
+    par: 13,
+    seed: "1788344956434-L4-1",
   },
   {
     id: 5,
     chapter: 1,
-    capacity: 3,
+    capacity: 4,
     dockCount: 2,
-    tracks: [[3, 3, 1], [2, 0, 0], [2, 2, 3], [0, 1, 1], [], []],
+    tracks: [[0, 1, 0, 0], [1, 3, 2, 3], [0, 2, 1, 2], [3, 2, 3, 1], []],
     modifiers: [],
-    par: 7,
-    seed: "stabilize-epsilon",
+    par: 14,
+    seed: "1788344956434-L5-1",
   },
   {
     id: 6,
     chapter: 1,
-    capacity: 3,
-    dockCount: 2,
-    tracks: [[2, 1, 3], [3, 3, 0], [1, 2, 0], [0, 2, 1], [], []],
+    capacity: 5,
+    dockCount: 1,
+    tracks: [[3, 0, 2, 1, 2], [1, 3, 1, 0, 3], [0, 1, 2, 0, 3], [1, 0, 3, 2, 2], []],
     modifiers: [],
-    par: 8,
-    seed: "stabilize-zeta",
+    par: 23,
+    seed: "1788344956434-L6-1",
   },
   {
     id: 7,
     chapter: 1,
-    capacity: 3,
+    capacity: 5,
     dockCount: 2,
-    tracks: [[0, 3, 2], [3, 1, 2], [2, 1, 0], [3, 1, 0], []],
+    tracks: [[1, 3, 3, 3, 1], [1, 2, 0, 4, 3], [4, 0, 2, 2, 1], [4, 0, 4, 3, 2], [2, 4, 1, 0, 0], []],
     modifiers: [],
-    par: 9,
-    seed: "chapter-1-level-7",
+    par: 26,
+    seed: "1788344956434-L7-1",
   },
   {
     id: 8,
     chapter: 1,
     capacity: 3,
-    dockCount: 2,
+    dockCount: 1,
     tracks: [[1, 2, 2], [3, 0, 3], [1, 0, 0], [2, 1, 3], []],
     modifiers: [],
     par: 9,
@@ -305,9 +305,9 @@ const ALL_LEVELS = [
   },
 ];
 
-// Keep the larger verified catalog available for later releases, but publish only
-// the six-level stabilization set until the unified rules have had more runtime coverage.
-export const LEVELS = ALL_LEVELS.slice(0, 6);
+// Publish the 7 freshly generated mainline levels (user-requested randomized set).
+// The rest of ALL_LEVELS remains a retained source catalog for later releases.
+export const LEVELS = ALL_LEVELS.slice(0, 7);
 
 export function levelById(levelId) {
   return LEVELS.find((level) => level.id === levelId) ?? null;
@@ -326,5 +326,5 @@ export function createLevelState(level) {
         : { frozenUntilColor: modifier.frozenUntilColor }),
     };
   });
-  return createState({ ...level, tracks });
+  return createState({ ...level, tracks, levelSeed: level.seed ?? null });
 }

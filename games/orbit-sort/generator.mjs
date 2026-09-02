@@ -1,6 +1,6 @@
 // Deterministic level validation and generation for Orbit Dispatch Master.
 
-import { applyAction, createState, isSolved, isTrackComplete, legalActions } from "./engine.mjs";
+import { applyAction, createState, isSolved, isTrackComplete, legalActions, applyIntent, canExtract, canInsert, isStuck, extractOrb, insertOrb, clearDockSelection, selectDock } from "./engine.mjs";
 import { solve } from "./solver.mjs?v=dev";
 
 function hash(value) {
@@ -35,7 +35,7 @@ function stateForLevel(level) {
     const modifier = modifiers.get(trackId);
     return modifier ? { orbs, ...modifier } : orbs;
   });
-  return createState({ ...level, tracks });
+  return createState({ ...level, tracks, levelSeed: level.seed ?? null });
 }
 
 function fail(reason, message) {
@@ -112,6 +112,73 @@ export function validateLevel(level, options = {}) {
   if (Number.isInteger(options.maxDeadEndFirstMoves) && deadEndFirstMoves > options.maxDeadEndFirstMoves) {
     return fail("too-many-dead-end-first-moves", "关卡合法首步中存在过多无法通关的分支");
   }
+
+  // --- Intent-route non-regression (用户指令：批量生产新关卡时必须保证 合法不报错) ---
+  // 规则不变量：对任意可达 state，只要玩家能从该 state 合理合法地对某条轨道做动作
+  // （canExtract 或任一 dock 可 canInsert），applyIntent({target:"track", id}) 就必须
+  // 返回 valid=true；否则就是 engine 把合法动作拒之门外的 UX 漏洞。
+  // 验证方法：做 options.intentRollouts 轮随机游走（默认 8 轮，每轮最多 intentRolloutSteps 步），
+  // 中途每一步每一条 track + 每一个 occupied dock（click dock）校验。
+  {
+    const rollouts = Number.isInteger(options.intentRollouts) ? options.intentRollouts : 10;
+    const maxSteps = Number.isInteger(options.intentRolloutSteps) ? options.intentRolloutSteps : 40;
+    let seed = 0xC0FFEE ^ (result.par | 0) ^ level.tracks.length ^ level.capacity;
+    for (let r = 0; r < rollouts; r += 1) {
+      seed = (Math.imul(seed, 1664525) + 1013904223) >>> 0;
+      let s = stateForLevel(level);
+      for (let step = 0; step < maxSteps; step += 1) {
+        // 审计当前 state 的所有 track 点击
+        if (!isSolved(s)) {
+          for (let tid = 0; tid < s.tracks.length; tid += 1) {
+            const hasExtract = canExtract(s, tid);
+            const hasInsertAnyDock = s.docks.some(d => d.unlocked && d.orb && canInsert(s, d.id, tid));
+            if (hasExtract || hasInsertAnyDock) {
+              const r1 = applyIntent(s, { target: "track", id: tid });
+              if (!r1.valid) {
+                return fail(
+                  "intent-false-negative",
+                  `意图路由误报：state step=${step} 点击T${tid}应当合法(extract=${hasExtract},可insert dock=${hasInsertAnyDock})，但因[${r1.reason}] ${r1.message ?? ""} 被拒`,
+                );
+              }
+            }
+          }
+          // 审计每一个 click dock（如果 select 合理）
+          for (const d of s.docks) {
+            // 合理可点击：(a) 有orb 可被 select 选中作为放入源 (选中它) 或 (b) 当前选中它 可再次点被 clear
+            if (d.orb) {
+              const same = s.selectedDockId !== null && Number(s.selectedDockId) === Number(d.id);
+              // 无论是 select 还是 clear 都应当 valid
+              const intent = applyIntent(s, { target: "dock", id: d.id });
+              if (!intent.valid) {
+                return fail(
+                  "intent-dock-false-negative",
+                  `意图路由误报：step=${step} 点D${d.id}(有orb${same?"(same->clear)":"(select)"}) 应当合法，但被拒[${intent.reason}] ${intent.message ?? ""}`,
+                );
+              }
+            }
+          }
+        }
+        // 推进：随机从 legalActions 取一个 extract/insert 改变局面
+        if (isSolved(s) || isStuck(s)) break;
+        const moves = legalActions(s).filter(a => a.type === "extract" || a.type === "insert");
+        if (moves.length === 0) break;
+        seed = (Math.imul(seed, 1664525) + 1013904223) >>> 0;
+        const a = moves[seed % moves.length];
+        s = a.type === "extract" ? extractOrb(s, a.trackId) : insertOrb(s, a.dockId, a.trackId);
+        // 偶尔插入 select/clear 切换选择态（覆盖 placing/extraction 两模式）
+        seed = (Math.imul(seed, 1664525) + 1013904223) >>> 0;
+        if ((seed & 3) === 0) {
+          const occupied = s.docks.filter(d => d.unlocked && d.orb);
+          if (occupied.length > 0 && s.selectedDockId === null) {
+            s = selectDock(s, occupied[seed % occupied.length].id);
+          } else if (s.selectedDockId !== null && (seed & 5) === 0) {
+            s = clearDockSelection(s);
+          }
+        }
+      }
+    }
+  }
+
   return {
     valid: true,
     solvable: true,
@@ -130,15 +197,17 @@ export function generateLevel({
   capacity = 3,
   colorCount = 3,
   dockCount = 1,
+  emptyCount,
   attempts = 200,
   solverOptions = { nodeLimit: 250_000, timeLimitMs: 500 },
 } = {}) {
   if (seed === undefined) throw new TypeError("generateLevel requires a seed");
+  const bufferTracks = emptyCount !== undefined ? emptyCount : Math.max(1, dockCount);
   let random = hash(seed);
   for (let attempt = 0; attempt < attempts; attempt += 1) {
     const shuffled = shuffledColors(colorCount, capacity, random);
     random = shuffled.seed;
-    const tracks = Array.from({ length: colorCount + dockCount }, () => []);
+    const tracks = Array.from({ length: colorCount + bufferTracks }, () => []);
     for (const color of shuffled.colors) {
       let target = random % colorCount;
       random = nextRandom(random);

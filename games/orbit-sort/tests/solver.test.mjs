@@ -59,12 +59,12 @@ test("optimal-first audit exposes branching instead of pretending the answer is 
 test("level 2 has at least one optimal strategic first move", () => {
   const audit = analyzeOptimalFirstActions(createLevelState(levelById(2)), { nodeLimit: 200_000, timeLimitMs: 1_000 });
   assert.equal(audit.status, "solved");
-  assert.equal(audit.par, 6);
+  assert.equal(audit.par, 7);
   assert.ok(audit.actions.length >= 1);
 });
 
-test("levels 3 to 6 each expose a verified optimal opening", () => {
-  for (const levelId of [3, 4, 5, 6]) {
+test("levels 3 to 7 each expose a verified optimal opening", () => {
+  for (const levelId of [3, 4, 5, 6, 7]) {
     const audit = analyzeOptimalFirstActions(createLevelState(levelById(levelId)), { nodeLimit: 2_000_000, timeLimitMs: 5_000 });
     assert.equal(audit.status, "solved");
     assert.ok(audit.actions.length >= 1);

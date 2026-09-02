@@ -4,6 +4,6 @@
   "type": "module",
   "scripts": {
     "build": "node scripts/build-site.mjs",
-    "test:orbit-sort": "node --test games/orbit-sort/tests/engine.test.mjs games/orbit-sort/tests/solver.test.mjs games/orbit-sort/tests/levels.test.mjs games/orbit-sort/tests/daily.test.mjs games/orbit-sort/tests/storage.test.mjs games/orbit-sort/tests/markup.test.mjs games/orbit-sort/tests/generator.test.mjs games/orbit-sort/tests/rules-property.test.mjs games/orbit-sort/tests/game.test.mjs"
+    "test:orbit-sort": "node --test games/orbit-sort/tests/engine.test.mjs games/orbit-sort/tests/solver.test.mjs games/orbit-sort/tests/levels.test.mjs games/orbit-sort/tests/daily.test.mjs games/orbit-sort/tests/storage.test.mjs games/orbit-sort/tests/markup.test.mjs games/orbit-sort/tests/generator.test.mjs games/orbit-sort/tests/rules-property.test.mjs games/orbit-sort/tests/game.test.mjs games/orbit-sort/tests/score.test.mjs"
   }
 }
