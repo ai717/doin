@@ -5,7 +5,7 @@
       "slug": "sudoku",
       "desc": "经典 9x9 逻辑填数，从入门到骨灰级的烧脑修行。",
       "icon": "🔢",
-      "cover": "/assets/covers/sudoku.png",
+      "cover": "/assets/covers/sudoku.webp",
       "tags": ["益智", "经典"],
       "url": "/sudoku/",
       "spa": true
@@ -15,7 +15,7 @@
       "slug": "2048",
       "desc": "数字合并益智：滑动方块，相同数字合二为一，目标是合出 2048。键盘、触屏滑动与方向键都能玩，进度本机保存，可离线运行。",
       "icon": "🧮",
-      "cover": "/assets/covers/2048.png",
+      "cover": "/assets/covers/2048.webp",
       "tags": ["益智", "经典", "数字"],
       "url": "/2048/"
     },
@@ -24,7 +24,7 @@
       "slug": "orbit-sort",
       "desc": "调度彩色星体穿过中央星核，在有限中转空间中恢复每一条纯色星轨。",
       "icon": "🪐",
-      "cover": "/assets/covers/orbit-sort.svg",
+      "cover": "/assets/covers/orbit-sort.webp",
       "tags": ["益智", "排序", "每日挑战"],
       "url": "/orbit-sort/",
       "exclude": ["generator.mjs"]

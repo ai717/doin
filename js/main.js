@@ -1,54 +1,34 @@
-const ACCENTS = ["#4de8e0", "#ff5db1", "#ffc94d", "#9d7bff"];
 const grid = document.querySelector("#game-grid");
 
 document.querySelector("#year").textContent = String(new Date().getFullYear());
 
-function cardFor(game, index) {
+function cardFor(game) {
   const card = document.createElement(game.comingSoon ? "article" : "a");
   card.className = "game-card" + (game.comingSoon ? " is-soon" : "");
-  card.style.setProperty("--card-accent", ACCENTS[index % ACCENTS.length]);
   if (!game.comingSoon) card.href = game.url;
 
-  const cover = document.createElement("div");
-  cover.className = "card-cover";
-  if (game.cover) {
-    const image = document.createElement("img");
-    image.src = game.cover;
-    image.alt = game.title + " 封面";
-    image.loading = "lazy";
-    cover.append(image);
-  } else {
-    const icon = document.createElement("span");
-    icon.className = "card-icon";
-    icon.textContent = game.icon || "🎮";
-    icon.setAttribute("aria-hidden", "true");
-    cover.append(icon);
-  }
+  const cover = document.createElement("img");
+  cover.className = "game-card__cover";
+  cover.src = game.cover;
+  cover.alt = game.title + " 封面";
+  cover.loading = "lazy";
+  cover.decoding = "async";
+  cover.width = 640;
+  cover.height = 640;
+
+  const title = document.createElement("span");
+  title.className = "game-card__title";
+  title.textContent = game.title;
+
+  card.append(cover, title);
+
   if (game.comingSoon) {
     const badge = document.createElement("span");
     badge.className = "badge-soon";
-    badge.textContent = "COMING SOON";
-    cover.append(badge);
+    badge.textContent = "敬请期待";
+    card.append(badge);
   }
 
-  const body = document.createElement("div");
-  body.className = "card-body";
-  const title = document.createElement("h2");
-  title.className = "card-title";
-  title.textContent = game.title;
-  const description = document.createElement("p");
-  description.className = "card-desc";
-  description.textContent = game.desc;
-  const tags = document.createElement("div");
-  tags.className = "card-tags";
-  for (const value of game.tags || []) {
-    const tag = document.createElement("span");
-    tag.className = "tag";
-    tag.textContent = value;
-    tags.append(tag);
-  }
-  body.append(title, description, tags);
-  card.append(cover, body);
   return card;
 }
 
@@ -70,6 +50,7 @@ function addStructuredData(games) {
           "@type": "VideoGame",
           name: game.title,
           description: game.desc,
+          image: new URL(game.cover, window.location.href).href,
           url: new URL(game.url, window.location.href).href,
           gamePlatform: "Web Browser"
         }
