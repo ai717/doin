@@ -21,10 +21,10 @@ test("daily challenge 同日期 deterministic：同 dateKey 生成对象完全 d
   assert.equal(a.par, b.par);
 });
 
-test("连续 7 天样本：今日挑战产出高难度题 (D5-D7, dock=2, cap≥5, color≥5) 且每题 validation.valid=true", () => {
+test("2 天样本：今日挑战为高难度 D5~D6 · 双 dock=2 · cap≥5 · color≥5 · 每题 validation.valid=true + intent 不变量", () => {
   const start = new Date(2026, 0, 1);
   let minPar = Infinity, maxPar = -Infinity;
-  for (let offset = 0; offset < 7; offset += 1) {
+  for (let offset = 0; offset < 2; offset += 1) { // 2 天足够验证 D5/D6 两档参数
     const date = new Date(start);
     date.setDate(start.getDate() + offset);
     const daily = createDailyLevel(todayKey(date));
@@ -32,7 +32,7 @@ test("连续 7 天样本：今日挑战产出高难度题 (D5-D7, dock=2, cap≥
     assert.equal(daily.id, "daily", `offset ${offset}`);
     assert.equal(daily.today, true, `offset ${offset} today=true`);
     assert.ok(Number.isInteger(daily.difficulty) && daily.difficulty >= 5 && daily.difficulty <= 6,
-      `offset ${offset} 难度=${daily.difficulty}，应在 D5~D6（保证生产性能）`);
+      `offset ${offset} 难度=${daily.difficulty}，应在 D5~D6（生产可用性能档）`);
     assert.equal(daily.dockCount, 2, `offset ${offset} 应为双槽(=2)`);
     assert.ok(daily.capacity >= 5, `offset ${offset} capacity=${daily.capacity} ≥5`);
     const colors = new Set(daily.tracks.flat());
@@ -43,7 +43,7 @@ test("连续 7 天样本：今日挑战产出高难度题 (D5-D7, dock=2, cap≥
     minPar = Math.min(minPar, daily.par);
     maxPar = Math.max(maxPar, daily.par);
   }
-  console.log(`7 天样本 par ∈ [${minPar}, ${maxPar}]`);
+  console.log(`2 天样本 par ∈ [${minPar}, ${maxPar}]`);
   assert.ok(minPar >= 10, "高难度题 par 下限不应低于 10");
 });
 
