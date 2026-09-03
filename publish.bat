@@ -22,10 +22,11 @@ echo [2/3] Pushing main to GitHub...
 git push origin main
 if errorlevel 1 (
   echo.
-  echo [ERROR] Push failed. If GitHub reports a missing workflow scope, run:
-  echo   gh auth refresh -h github.com -s workflow
-  echo Then double-click publish.bat again.
-  goto :failed
+  echo [INFO] Push failed. Refreshing ai717 workflow permission, then retrying once...
+  gh auth refresh -h github.com -s workflow
+  if errorlevel 1 goto :failed
+  git push origin main
+  if errorlevel 1 goto :failed
 )
 
 echo.
