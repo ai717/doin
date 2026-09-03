@@ -35,8 +35,7 @@
       "icon": "🪐",
       "cover": "/assets/covers/orbit-sort.webp",
       "tags": ["益智", "排序", "每日挑战"],
-      "url": "/orbit-sort/",
-      "exclude": ["generator.mjs"]
+      "url": "/orbit-sort/"
     }
   ]
 }
