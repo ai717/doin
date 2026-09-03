@@ -48,6 +48,9 @@ test("renderer keeps the required keyed SVG layers and focusable controls", asyn
   assert.match(renderer, /clearHint/);
   assert.match(renderer, /dataset\.selected/);
   assert.match(renderer, /board\.dataset\.phase/);
+  assert.match(renderer, /let dockCount = 0/);
+  assert.match(renderer, /dockCount = state\.docks\.length/);
+  assert.match(renderer, /state\.docks\.length !== dockCount/);
   assert.match(renderer, /showTransfer/);
   assert.match(renderer, /star-dust/);
   assert.match(renderer, /orb-aura/);

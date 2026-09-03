@@ -51,6 +51,7 @@ export function createBoardRenderer(board, { onTrack, onDock }) {
   const dockNodes = new Map();
   let trackCount = 0;
   let capacity = 0;
+  let dockCount = 0;
   let currentTheme = "aurora";
 
   function buildStructure(state) {
@@ -60,6 +61,7 @@ export function createBoardRenderer(board, { onTrack, onDock }) {
     dockNodes.clear();
     trackCount = state.tracks.length;
     capacity = state.capacity;
+    dockCount = state.docks.length;
 
     const defs = svg("defs");
     const palette = ORB_THEMES[currentTheme] ?? ORB_THEMES.aurora;
@@ -282,7 +284,11 @@ export function createBoardRenderer(board, { onTrack, onDock }) {
   }
 
   function render(state) {
-    if (state.tracks.length !== trackCount || state.capacity !== capacity) buildStructure(state);
+    // A chapter can switch from a two-dock puzzle to a one-dock puzzle while
+    // keeping its track count and capacity. Rebuild in that case too: stale
+    // dock nodes would otherwise render a non-existent empty slot and make a
+    // valid engine rejection look like a rule failure.
+    if (state.tracks.length !== trackCount || state.capacity !== capacity || state.docks.length !== dockCount) buildStructure(state);
     board.dataset.phase = state.selectedDockId === null ? "picking" : "placing";
     const visibleOrbIds = new Set();
 

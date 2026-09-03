@@ -832,8 +832,10 @@ function chooseTrack(trackId) {
     return;
   }
   const next = result.state;
-  const wasExtracting = game.state.selectedDockId === null;
-  const dockId = wasExtracting ? next.selectedDockId : game.state.selectedDockId;
+  // applyIntent may fall back between extract and insert. Its resolved action,
+  // not the state after dispatch, is the only reliable source for animation.
+  const wasExtracting = result.action?.type === "extract";
+  const dockId = wasExtracting ? next.selectedDockId : result.action?.dockId;
   transition(
     next,
     wasExtracting ? "extract" : "insert",
