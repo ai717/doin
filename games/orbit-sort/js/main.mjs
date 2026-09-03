@@ -311,6 +311,8 @@ let resultShown = false;
 let hint = null;
 let hintRequestId = 0;
 let advisoryRequestId = 0;
+let advisoryTimer = null;
+const ADVISORY_DEBOUNCE_MS = 120;
 let latestCompletedLevel = null;
 let lastDialogTrigger = null;
 let lastRenderedMoves = 0;
@@ -427,6 +429,10 @@ function clearHint() {
   hint = null;
   hintRequestId += 1;
   advisoryRequestId += 1;
+  if (advisoryTimer !== null) {
+    clearTimeout(advisoryTimer);
+    advisoryTimer = null;
+  }
   hintButton.disabled = false;
   renderer.clearHint();
 }
@@ -434,7 +440,12 @@ function clearHint() {
 function requestSolvabilityCheck(nextState) {
   if (!nextState || nextState.status !== "playing") return;
   const requestId = ++advisoryRequestId;
-  hintWorker.postMessage({ kind: "solvability", requestId, state: nextState });
+  if (advisoryTimer !== null) clearTimeout(advisoryTimer);
+  advisoryTimer = setTimeout(() => {
+    advisoryTimer = null;
+    if (requestId !== advisoryRequestId) return;
+    hintWorker.postMessage({ kind: "solvability", requestId, state: nextState });
+  }, ADVISORY_DEBOUNCE_MS);
 }
 
 function renderSelect() {
