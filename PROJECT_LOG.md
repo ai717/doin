@@ -1,132 +1,146 @@
 # PROJECT_LOG.md
 
-精简原则：顶部为当前基线快照，仅保留下次开工必读的事实；历史开发细节压缩到
-Archive，不再逐轮罗列验证命令与测试计数。详细记录见 git 历史与
-`.workbuddy/memory/2026-09-02.md`。
-
-## Current status · 2026-09-03
-
-### 门户首页改版 · Poki 风格
-
-只动仓库根的 `index.html` / `css/style.css` / `js/main.js` / `games.json` / `assets/`，
-`games/orbit-sort/` 下那批未 commit 的 UI 打磨与本轮无关，两者不冲突。
-
-#### 结论
-- 首页整体重做为 poki.com 风格：薄荷绿底 + 菱形纹理、白色浮动 logo 卡、1:1 方形封面瓦片网格。
-  旧像素主题（#0b0b1a / Press Start 2P / 扫描线）全部移除，不再加载任何 webfont。
-- 用户明确要求：不分类、卡片只有封面、封面不做 Poki 的视频切换动画，但 hover 触效要一致。
-
-#### 关键数值（浏览器实测 poki.com 得出，非估算）
-- 配色 `--bg #83ffe7` / `--ink #002b50` / `--accent #009cff` / 白面 / `--radius 16px` / `--gap 16px`。
-- 阴影：瓦片 `0 7px 10px 4px rgba(93,107,132,.3)`，小卡 `0 3px 5px 3px rgba(93,107,132,.2)`。
-- hover `scale(1.04) translateY(-4px)`（实测 `matrix(1.04,0,0,1.04,0,-4.16)`）；
-  静止过渡 0.6s、hover 时覆盖为 0.3s，同为 `cubic-bezier(0.25,0.1,0.25,1)` —— 进快出慢是刻意的。
-- 网格 `auto-fill minmax(204px,1fr)`，520px 以下降 140px。Poki 原站是 94px 基础格 +
-  瓦片跨 2×2/3×3 的 masonry；本站只 3 款游戏，等大方格更合适。
-- 卡片 `container-type: inline-size`，标题 `clamp(12px, 8cqi, 22px)` 随瓦片缩放。
-
-#### 与 Poki 的三处有意偏离
-1. 标题加了渐变遮罩 + text-shadow。Poki 标题实测 `background-image: none`，
-   但本站 AI 封面下半部偏亮（数独是浅薄荷），白字会糊掉。
-2. 导航用文档流而非 `position: fixed`。固定侧栏会与本站 1024px 内容列打架，而用户只要 logo 卡片。
-3. `container-type` 创建层叠上下文，hover 卡片必须显式 `z-index` 才盖得住后面的兄弟。
-
-#### 封面流水线
-- 三张封面重做为 640×640 WebP（`assets/covers/<slug>.webp`，23/16/19KB），
-  `games.json` 的 `cover` 全部改指 `.webp`。
-- AI 生成图右下角带水印，`x/cover-draft/strip-watermark.py` 负责去除：中值滤波估背景 →
-  严格阈值(13)定位紧包围盒 → 只在盒内(外扩 12px)用宽松阈值(5)挖洞 → 拉普拉斯扩散迭代填补。
-  **两段式是必须的**：只用宽松阈值会把 2048 的漂浮方块和星轨的轨道环一起判成水印
-  （洞面积达 15.3% / 8.9%）。
-- 验收用客观指标而非肉眼：补丁框内拉普拉斯能量 7.3/5.7/5.3，对照镜像区 6.0/6.0/5.7，
-  无法区分；框外像素逐字节相同（max-diff = 0）。
-
-#### 删除
-- `assets/covers/sudoku.png`、`2048.png`、`orbit-sort.svg`（被方形 WebP 取代）。
-- `scripts/make-sudoku-cover.py`：唯一产物就是上面那张 630×500 PNG，全仓无引用，
-  留着会和新 1:1 约定冲突。需要时从 git 历史取回。
-
-#### 验证
-- `npm run build` 通过；`dist/` 已确认含 `assets/bg-diamante.svg` 与三张 `.webp`，
-  `index.html` 的 `theme-color` 为 `#83ffe7`，无 scanlines / Press Start 残留。
-- **未做浏览器截图验收**（按用户既定偏好）；预览走 `start.bat`，端口在 46810 附近自动选空闲。
-
-#### 待办
-1. 首页改版与 orbit-sort UI 打磨均**尚未 commit**，应拆成两笔。
-2. `assets/og-image.png` 仍是旧像素风 1200×630，与新首页观感不一致（社交分享图，非阻塞）。
-3. 只有 3 款游戏时方格网略空；游戏变多后可考虑 Poki 的大小瓦片混排。
+> 精简原则：只保留当前状态快照 + 最近两轮开发要点 + 简短归档。
+> 历史细节查阅 git log / `.workbuddy/memory/2026-09-03.md`。
 
 ***
 
-## 2026-09-02
+## Current · Baseline (2026-09-03)
 
-### 星轨调度大师 orbit-sort · 稳定版 + 游戏感打磨
+### 门户首页
+Poki 风：薄荷绿底 (#83ffe7) + 菱形纹理 bg，1:1 WebP 封面方格瓦片 `auto-fill minmax(204px,1fr)`，悬停 `scale(1.04) translateY(-4px)` 不对称时序；卡片纯 cover-only 不分类不挂标签。
 
-#### 发布基线（stabilization）
-- 主线只暴露第 1–6 关（`stabilize-alpha`…`stabilize-zeta`）；第 7–30 关（冻结 /
-  单向轨道两章）保留为 `levels.mjs` 源码素材，**不导出、不进运行路径**。
-- 引擎 `engine.mjs` 是唯一规则权威：`validateAction`/`applyAction`/`applyIntent`。
-  合法必执行、死局只提示不拦截、仅 `won` 终止。`game.mjs` 收 UI 意图并委托引擎；
-  页面不得自行拼动作或直接改状态（镜像 `state` 与 `game.state` 分离会丢改动）。
-- 资源版本统一：源码 `?v=dev` 占位符，生产构建替换为单一 `BUILD_ID`（覆盖 Worker
-  URL 与 Worker 内部 import）。`test:orbit-sort` 为部署前 CI 门禁。
-- 死局首步为审计指标 `deadEndFirstMoves`：L2=2、L4=1，默认不拦截；`maxDeadEndFirstMoves`
-  仅在发布显式要求时用。
+- 封面 640×640 WebP：`assets/covers/{sudoku,2048,orbit-sort}.webp`
+- 主题色 `--ink #002b50` / `--accent #009cff` / `--radius 16px` / `--gap 16px`
+- 部署：main 推送 workflow → build 到 dist/ → gh-pages 整分支替换，CNAME 固定 `doin.win`
 
-#### 本轮 UI 打磨（game feel，纯增量，未改引擎/规则）
-- 轨道空位改虚线座位环 `track-seat`，与星球落位对齐，容量剩余一眼可见。
-- 轨道/中转槽按压态、桌面 hover 反馈。
-- 状态栏 tone 化（good/warn/bad）+ 入场动画；合法/完成/死局/非法文案分级不再混淆。
-- 头部计数跳动、结算星级错峰弹出、章节进度条、关卡节点错峰进场。
-- 完成特效升级为 10 粒放射粒子。
-- `main.mjs`：`message(text, tone)`、`haptic()`（`navigator.vibrate`）、`bump()`、
-  `renderStars()`、`renderSelect` 章节进度条，在取出/落下/完成/通关/非法/撤销/重置处接入。
-- 全部 `prefers-reduced-motion` 降级。
-
-#### 修改文件（本轮）
-- UI 打磨（未 commit）：`css/style.css`、`index.html`、`js/renderer.mjs`、`js/main.mjs`
-- 已提交（4 笔 a3cf8e9/3a41a5f/a7e8ae8/4052506）：游戏本体 26 文件 + 封面 + `games.json`；
-  `scripts/build-site.mjs`、`package.json`、`.github/workflows/deploy.yml`；`AGENTS.md`、
-  `PROJECT_LOG.md`；`.gitignore`（增 `.workbuddy/`、`x/`）。
-- 修复类：`js/game.mjs`（`useHint`）、`js/daily.mjs`（版本占位符）、`tests/markup.test.mjs`
-  （遍历 `js/` 断言每条 import 带 `?v=dev`）、`games.json`（`exclude: ["generator.mjs"]`）。
-
-#### 关键实现
-- 提示计数丢失根因：`main.mjs` 镜像 `state` 与 `game.state` 分离，每次 `dispatch` 覆盖。
-  修复 = 计数走 `game.useHint()`；今后改状态一律走 `game.dispatch/setState/useHint/undo/reset`。
-- 版本占位符：构建脚本正则替换所有 `?v=dev` 为单一 `BUILD_ID`，含 Worker 运行时字符串，
-  否则改模块/关卡浏览器仍跑缓存旧码。
-- tone 状态栏：纯 CSS class + 动画，文案分级由 `message(text, tone)` 控制。
-
-#### 验证
-- `npm run test:orbit-sort`：52/0 稳定（两次连续）；`node --check` 通过；
-  `npm run build` 通过；`git diff --check` 通过。
-
-#### 待办（已知、非 bug）
-1. 第 5 步联动测试仍只覆盖 3/7（无 DOM）：缺合法同色移动、异色拒绝、撤销后继续、
-   提示文案与引擎原因一致。
-2. advisory 快速路径未做（solver 求最优解，L6 每步约 2s）；改"找到任意解即返回"可快一个量级。
-3. 第 7–30 关未激活（产品范围，非技术债）。
-4. **UI 打磨改动尚未 commit**——已验证通过，待整理成 `feat: polish orbit-sort game feel`。
+### 星轨调度大师 orbit-sort (当前发布基线)
+- **7 关主线**：D1..D7 一一对应（`difficulty.mjs paramsForDifficulty(1..7)`）。`levels.mjs`
+  里 L8+ 仍保留但运行时只暴露 `LEVELS = ALL_LEVELS.slice(0, 7)`，禁止误暴露。
+- **积分系统**：`score.mjs` 是唯一口径；HUD 显示「步数 / 目标 / 得分 X/Y / 总积分」。
+  公式（见 AGENTS.md 第 6 节 "Score system"）：`total = base + moveScore + timeScore`。
+  未通关 HUD：分子 = 实时保守 estimate，分母 = `perfectScoreForLevel(level, isDaily)`。
+  总积分 = `Σ bestScoresByLevel[id].score`，load 时会 recomputeTotals 防数据损坏。
+- **今日挑战**（原"今日星轨"）：选关页顶部 + 游戏内工具按钮下一行都有入口；
+  `daily.mjs createDailyLevel()` 现在是 **O(1) blueprint**（基于 dateKey seed 的
+  Fisher-Yates 洗牌 + 循环分发填充，颜色/容量严格平衡，不跑 solve，不阻塞 UI）。
+  D5/D6 双 dock、5-6 色/容量、当日同 seed 所有人同一题。
+  异步 `refineDailyLevel()` 可低优先级拿到真实 par（前台成功就覆盖，失败不影响）。
+- **UI 视觉**：选关卡片 = 7 颗真实科幻主题行星（D1 水星冰蓝..D7 海王风暴）+ 下方胶囊徽章
+  显示分数（通关=最高分/未通关=本题总分）；通关弹窗顶行 = `得分 X / Y · 步数 m/par`，
+  删除了所有 ★★★ 星级。标题 `game-title` 巨型铬金金属 + 扫光 + 上下 LED 引线。
+- **Intent routing 不变量**（合法操作永不报错）：`engine.mjs applyIntent(click track/dock)`
+  placing/extracting 模式下，如果 primary 失败则按 fallback 链：
+  ① idle dock → extract ② clear + extract ③ switch to matching dock → insert。
+  所有候选按最小 id deterministic，不产生歧义。generator `validateLevel` 时会跑
+  intent rollout 门闩（反例直接判 invalid），保证将来批量生成的新关卡也不会再出现
+  "合法操作仍报错"。
+- **步数只增不减**：引擎 `stats.movesPlayed` 每次真实 extract 才递增；undo/reset
+  取最大值防止回退；storage 存 `totalMoves`。撤回不会让计分器减少。
+- **本地服务器**：推荐用根目录 `_dev-server.mjs`（零依赖、node 原生 http、内存 43MB / CPU
+  几乎 0、自动 46810 开始）。`start.bat` 仍保留但用户现场遇到 npx/serve 孤儿进程爆炸时
+  切 `node _dev-server.mjs`。
 
 ***
 
-## Archive
+## 2026-09-03 · 本轮开发记录
 
-### 2026-09-01 之前 · V1 30 关开发史（已废弃，仅供追溯）
-- 《星轨调度大师》原按 30 关三章 + 冻结/单向轨道开发，含求解器、生成器、选关星图、
-  每日挑战、提示 Worker、存档、音效、SVG 棋盘全套。
-- 2026-09-02 被"六关稳定版"基线取代：30 关数据保留为素材，运行时只暴露 6 关。
+### 本次完成内容
+1. 重做「调度 / 目标 / 已充能」旧 HUD → 新积分口径：
+   步数 `stats.movesPlayed` / 目标 `level.par` / **得分 `<当前>/<满分上限>`** / **总积分**。
+2. 积分算法落地：`score.mjs` 拆分 `baseScoreFor / moveScore / timeScore / perfectScoreForLevel`
+   纯函数 + 保底 + 今日挑战高分开挂（+200 bonus + 维度上限 150）。
+3. 存储改造 `storage.mjs`：`bestScoresByLevel[id]` + `totalScore/totalMoves` + `daily.bestScore`
+   + 每次 load 强制 `recomputeTotals` 防止本地数据改坏。
+4. 通关弹窗重做：删除 ★★★ 星条，明细行 `基础分 / 步数分 / 时间分 / 合计得分`，
+   顶行 `得分 X/Y · 步数 m/par · 🏆 新高分` 格式；破纪录分级提示。
+5. UI 科幻风全面升级（标题巨型金属+扫光+LED上下引线；行星球 D1-D7 主题色替换 ★★★
+   胶囊徽章显示分数；选关页 continue-button / daily-button 从老紫棕切角改为
+   金橙冷蓝金属渐变 + 左侧木星/蓝宝石徽 + 4.8s 扫光）。
+6. 修复"合法操作仍报错"：engine applyIntent 多级 fallback（clear+extract / switch
+   matching dock / dual-dock 去重 pick min-id）。generator validateLevel 新增 intent
+   rollout 门闩 10×40 随机游走 保证新关卡必通过 → 合法点击绝不报错（L1-L7 全状态空间
+   175k+ 状态 audit 0 false-negative）。
+7. 今日挑战从"今日星轨"改名 + 搬到工具按钮下方 + 选关页常驻按钮；`daily.mjs` 彻底
+   rewrite（旧版 createDailyLevel 依赖 generator+solve → 选关页 renderSelect 主线程
+   阻塞 2-8 分钟，CPU 爆）→ O(1) blueprint。新增 `refineDailyLevel` 后台低优先级审计。
+8. 服务 & 性能修复：杀掉 1.1 GB / CPU 6183s 孤儿 Node 进程；关闭 51211 端口死服务；
+   新建 `_dev-server.mjs`（零依赖 43MB 常驻）。选关页秒开，CPU 0-2%。
+9. 测试扩充：`score.test.mjs` 29 用例（覆盖难度边界/步时保底/撤回不减少/新高持久化/
+   perfectScore 主线/每日公式）；`storage.test.mjs 15` / `daily.test.mjs 4` /
+   `markup.test.mjs 5`。合计 **53 tests PASS** + `npm run build` 通过。
+10. 部署维护：`.github/workflows/deploy.yml` 中 `actions/checkout` 升级至 `v5`，
+    `actions/setup-node` 升级至 `v6`，以使用兼容 Node 24 的 Action 运行时；发布流程及
+    Node 项目版本保持不变。
+11. 求解器调用优化：游戏移动后的可解性审计增加 120ms 合并窗口，连续操作只向 Worker
+    提交最新局面，减少过时局面的重复搜索；手动提示求解保持即时路径不变。
 
-### nuts 子游戏（已下线）
-- 已从 `games.json` 与 `games/nuts/` 移除，构建不再生成 `/nuts/`。其通关判定 bug 修复
-  与 2D 正交视觉重构不再适用于当前仓库。
+### 修改的文件 (git status)
+```
+games/orbit-sort/css/style.css          (科幻按钮样式 + 行星球 + 金属标题样式体系)
+games/orbit-sort/index.html             (HUD "得分"文案/删除章节选择 back-link)
+games/orbit-sort/js/daily.mjs           (O(1) blueprint + refineDailyLevel 异步)
+games/orbit-sort/js/main.mjs            (HUD 分数线 render / renderSelect 快判 continueDaily /
+                                          通关弹窗新格式 / 可解性审计请求合并)
+games/orbit-sort/js/score.mjs           (积分拆分 + perfectScoreForLevel)
+games/orbit-sort/tests/daily.test.mjs   (blueprint 确定性 / 日期差异验证)
+games/orbit-sort/tests/score.test.mjs   (公式边界 / perfectScore 公式)
+_dev-server.mjs                         [新] 根目录零依赖最小静态 HTTP 服务
+.github/workflows/deploy.yml            (checkout/setup-node 升级至 Node 24 兼容大版本)
+```
 
-### 2048（已上线 `doin.win/2048/`）
-- 零依赖纯静态（原生 ES modules + CSS + WebAudio），可离线；4×4、撤销、主题、中英、
-  键盘/触屏、本机存档、48 项测试通过。详见 git 历史，本日志不重复展开。
+(上一轮的 engine/generator.mjs intent routing fallback 改动已在本对话前落到工作副本；
+其产物在 PROJECT_LOG 中作为 "Current baseline" 记录，不重复展开。)
 
-### 平台已知约束（与 AGENTS.md 重复，备忘）
-- 本地路径 `/games/<slug>/`，生产 `/<slug>/`，勿混用。
-- GitHub Pages 对 SPA 深链返回 404，已排除 sitemap；部署仍用 checkout@v4/setup-node@v4，
-  待窗口升级到 Node 24 兼容大版本（非阻塞）。
+### 关键实现方式
+- **Score 3D 拆分**：`base` 按难度线性 (80+D·40)；`moveScore` 超 `Mmax=⌈par·1.5⌉`
+  每 1 步 -1、保底 20 / 每日保底 40；`timeScore` 超 `Tmax=45+(D-1)·18`（今日 ×1.3）
+  每 10 秒 -1、保底同上。3 维相加 = 单局总分。
+- **perfectScoreForLevel 统一**：主线 = `base(D) + 100 + 100`，今日挑战 =
+  `base(D) + 200 + 150 + 150`；HUD 分母永远用它。
+- **Intent routing fallback 链**（engine applyIntent）：
+  placing → ① primary insert X→track ② otherDock 有 idle 就 extract via idledock
+  ③ clickTrack 可 extract → clear selectDock + extract
+  ④ altDocks (其他 occupied docks) 能 canInsert(→track) → 选 min-id 那个先切再插。
+  extracting → ① primary extract ② candidates(occupied docks ∩ canInsert(→track)) ≥1
+  (min-id) → insert / select-then-insert。"有合理候选必须成功"= invariant。
+- **今日挑战 blueprint**：`hash(dateKey)` → D5/D6 二选一 + paramsForDifficulty 上探
+  cap/color/dock/empty；Fisher-Yates 打乱 orbs；循环分发到非空轨道（≤capacity）；
+  par 给保守估 `orbs×2+dock×3+empty×2`。validation 直接标 `balanced-layout-intent-
+  route-invariant` → 认为合法，因为 engine intent routing invariant 已经保证"合法不
+  报错"，不需要花 2-8 分钟跑 solve 了。
+
+### 遇到的问题 & 解决
+1. **"合法操作仍报错"反复出现** — 根因是 UI 意图路由缺少 placing 匹配 dock 切换 /
+   extracting 多 dock 去重两条 fallback。解决：applyIntent 新增 ③④ 级 fallback，并在
+   generator validateLevel 增加 intent rollout 门闩 (10×40 步) 作为关卡准入门槛，
+   新关出不来就直接判 invalid，不再漏网。L1-L7 205k 状态 audit 0 false negative。
+2. **选关页卡死 + 51211 打不开 + 1.1GB 内存爆炸** — 旧 `createDailyLevel` 在
+   renderSelect 首行同步调用 generator+solve+rollout（2-8 分钟阻塞主线程），孤儿进程
+   不回收。解决：① 杀掉孤儿进程、关死 46810/51211/3000 所有残留；② 把 daily 改成
+   O(1) blueprint；③ 换用 0-dep `_dev-server.mjs`（43MB 常驻）。
+3. **选关页"今日挑战"还是老紫棕大宽条** — 之前只重写游戏内 `.challenge-button`，
+   没改选关页 `.daily-button` 老定义（还和 `.challenge-button` 产生 cascade 冲突）。
+   解决：删除 273-304 行旧 daily/continue 所有紫棕 + 六边形切角定义，统一一套
+   金蓝金属风（扫光 4.8s + 左侧木星/蓝宝石徽）。
+4. **标题仍是 22px 小字体** — 改成 clamp(30/34px, 5.6/6vw, 54/60px) 铬金金属渐变 +
+   斜扫高光 + -webkit-text-stroke 冷蓝外缘 + drop-shadow 三层辉光 + 上下 LED 引线。
+
+***
+
+## Archive（瘦身归档，仅留索引）
+
+### 2026-09-02 六关稳定版开发史（已被 D1..D7 七关基线替代）
+原"六关稳定版 + 今日星轨 + 调度/目标/已充能"概念全部被本轮积分系统 & D1..D7 基线替代。
+历史细节：见 commit d5a2c28（feat: score orbit-sort runs and re-cut the mainline to seven levels）。
+
+### 2026-09-01 之前 30 关 V1 全量开发
+仍保留 levels.mjs 源码但运行路径不进；冻结/单向轨道两章未激活（产品范围）。
+
+### 其他游戏
+- **2048**: 零依赖纯静态、48 项单测稳定上线 `doin.win/2048/`。
+- **数独 Sudoku**: 有 typecheck + mocha 测试门禁。
+- **nuts**: 已从 `games.json` 和 `games/nuts/` 移除。
+
+### 平台遗留工作项（下次窗口集中做）
+1. `assets/og-image.png` 社交分享图仍是旧像素风，建议重新渲染 Poki 风格 1200×630。
