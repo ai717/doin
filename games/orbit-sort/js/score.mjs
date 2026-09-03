@@ -119,6 +119,20 @@ export function starsFor(par, moves) {
   return 1;
 }
 
+/**
+ * 本题满分上限 (perfect total ceiling, base + move满分 + time满分, 无日常首通奖励)
+ * 主线关:   base(D) + 100 + 100 = 80 + D*40 + 200
+ * 今日挑战: base(D, dailyBonus=+200) + 150 + 150 = 80 + D*40 + 200 + 300 = 580 + D*40
+ */
+export function perfectScoreForLevel(level, isDailyOverride) {
+  const daily = Boolean(isDailyOverride ?? isDailyLevel(level));
+  const D = difficultyForLevel(level);
+  const baseMax = baseScoreFor(D, daily);
+  const moveMax = daily ? DAILY_SCORE_MAX_PER_DIM : SCORE_MAX_PER_DIM;
+  const timeMax = daily ? DAILY_SCORE_MAX_PER_DIM : SCORE_MAX_PER_DIM;
+  return baseMax + moveMax + timeMax;
+}
+
 export function computeScore({ level, isDaily: isDailyOverride, movesPlayed, elapsedMs }) {
   const daily = Boolean(isDailyOverride ?? isDailyLevel(level));
   const D = difficultyForLevel(level);

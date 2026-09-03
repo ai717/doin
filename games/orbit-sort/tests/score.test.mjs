@@ -25,7 +25,7 @@ function freshStorage() { return installStorage(JSON.stringify({ version: 1, unl
 // 被测试对象：
 import {
   baseScoreFor, moveMax, moveScore, timeMax, timeScore,
-  difficultyForLevel, starsFor, computeScore, dailyBonusScore,
+  difficultyForLevel, starsFor, computeScore, dailyBonusScore, perfectScoreForLevel,
   MOVE_SCORE_MIN, TIME_SCORE_MIN, SCORE_MAX_PER_DIM,
 } from "../js/score.mjs?v=dev";
 import { createState, extractOrb, canExtract, insertOrb, canInsert, undo, reset } from "../engine.mjs?v=dev";
@@ -57,6 +57,57 @@ test("baseScore D1=120 D2=160 D3=200 D7=360 线性递增", () => {
 test("baseScore 今日挑战 +200 基础分奖励（高分翻倍爽感）", () => {
   assert.equal(baseScoreFor(1, true), 120 + 200);
   assert.equal(baseScoreFor(7, true), 360 + 200);
+});
+
+// —— 满分上限 perfectScoreForLevel (base + move满分 + time满分) ——
+test("perfectScore 主线关：D1=320 (120+100+100), D3/D7 按公式 80+D*40+200", async () => {
+  const { LEVELS } = await import("../levels.mjs?v=dev");
+  const L1 = LEVELS[0], L3 = LEVELS[2], L7 = LEVELS[6];
+  const D1 = difficultyForLevel(L1);
+  const D3 = difficultyForLevel(L3);
+  const D7 = difficultyForLevel(L7);
+  assert.equal(D1, 1, "L1 确为 D1");
+  assert.equal(D3, 3, "L3 确为 D3");
+  assert.equal(D7, 7, "L7 确为 D7");
+  assert.equal(perfectScoreForLevel(L1), 80 + D1*40 + 200, "L1 perfect = 80 + D×40 + 200 线");
+  assert.equal(perfectScoreForLevel(L3), 80 + D3*40 + 200, "L3 perfect");
+  assert.equal(perfectScoreForLevel(L7), 80 + D7*40 + 200, "L7 perfect");
+  assert.equal(perfectScoreForLevel(L1), 320, "L1 perfect = 320 (120+100+100)");
+});
+test("perfectScore 今日挑战：加 +200 bonus 且维满分=150/150 → total = base + 150 + 150", async () => {
+  const { LEVELS } = await import("../levels.mjs?v=dev");
+  const { paramsForDifficulty } = await import("../difficulty.mjs?v=dev");
+  const mkPure = (D) => {
+    const p = paramsForDifficulty(D);
+    const tracks = Array.from({ length: p.colorCount + p.dockCount }, () => []);
+    const level = {
+      capacity: p.capacity,
+      colorCount: p.colorCount,
+      dockCount: p.dockCount,
+      emptyCount: 1,
+      id: "daily",
+      today: true,
+      tracks,
+    };
+    const detectedD = difficultyForLevel(level);
+    assert.equal(detectedD, D, `mkPure D=${D} 被识别为 D=${detectedD} — 参数必须匹配 difficulty.mjs`);
+    return level;
+  };
+  const d5 = perfectScoreForLevel(mkPure(5));
+  const d6 = perfectScoreForLevel(mkPure(6));
+  assert.equal(d5, 780, `D5 daily perfect = 780, actual ${d5}`);
+  assert.equal(d6, 820, `D6 daily perfect = 820, actual ${d6}`);
+
+  // 强制主线 L1 关使用每日满分公式：L1 D=1 → base=120+200=320, move=150, time=150 → total 620
+  const L1 = LEVELS[0];
+  const L1daily = perfectScoreForLevel(L1, true);
+  const L1regular = perfectScoreForLevel(L1);
+  assert.equal(L1regular, 320, `主线 L1 正常满分应 = 320`);
+  assert.equal(L1daily, 620, `主线 L1 强制按每日满分 620, actual=${L1daily}`);
+
+  // 另：isDailyLevel({id:'daily'}) / {today:true} 要正确识别，不需要传 override
+  const L1ButDaily = { ...L1, id: "daily", today: true };
+  assert.equal(perfectScoreForLevel(L1ButDaily), perfectScoreForLevel(L1, true), "level.today=true 无需 override 即可走 daily 公式");
 });
 
 // —— 步数分 moveScore ——

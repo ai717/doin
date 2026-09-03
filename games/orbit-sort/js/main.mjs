@@ -5,7 +5,7 @@ import { LEVELS, levelById } from "../levels.mjs?v=dev";
 import { createGame } from "./game.mjs?v=dev";
 import { createBoardRenderer } from "./renderer.mjs?v=dev";
 import { isValidStoredState, loadProgress, recordCompletion, recordDailyCompletion, saveCurrentGame, saveSoundPreference } from "./storage.mjs?v=dev";
-import { computeScore, difficultyForLevel, baseScoreFor, moveScore, timeScore, moveMax, timeMax } from "./score.mjs?v=dev";
+import { computeScore, difficultyForLevel, baseScoreFor, moveScore, timeScore, moveMax, timeMax, perfectScoreForLevel } from "./score.mjs?v=dev";
 
 // 计算通关/预估得分的辅助：
 //   - 计算本局"当前可保证的最低积分"（还没通关就显示这个当预览）
@@ -403,14 +403,15 @@ function render() {
     lastRenderedMoves = movesPlayed;
     bump(moveLabel);
   }
-  // —— HUD：步数 / 目标步数 / 本局得分（未通关显示预览最小值，通关显示最终分数）
+  // —— HUD：步数 / 目标步数 / 得分（格式: 当前得分 / 本题满分）
   moveLabel.querySelector(".hud-value").textContent = String(movesPlayed);
   const parNode = parLabel.querySelector(".hud-par-val");
   if (parNode) parNode.textContent = String(level.par);
   const scoreNum = constellationLabel.querySelector(".hud-score-num");
-  const scoreHint = constellationLabel.querySelector(".hud-score-hint");
+  const scorePerfect = constellationLabel.querySelector(".hud-score-perfect");
+  const perfect = perfectScoreForLevel(level, level.id === "daily");
   if (scoreNum) scoreNum.textContent = String(live.total);
-  if (scoreHint) scoreHint.textContent = game.state.status === "won" ? "最终" : "预览";
+  if (scorePerfect) scorePerfect.textContent = String(perfect);
   if (game.state.status !== "won") bump(constellationLabel); // live score 每次刷新跳一下
   // —— HUD：总积分（从 progress.totalScore 取）
   const totalNum = totalScoreLabel?.querySelector(".hud-total-num");
@@ -439,7 +440,19 @@ function requestSolvabilityCheck(nextState) {
 function renderSelect() {
   if (!levelGrid) return;
   continueButton.hidden = !isValidSavedGame(progress.currentGame);
-  continueDailyButton.hidden = !isValidDailyGame(progress.daily, createDailyLevel(todayKey()));
+  // 快速判定（避免每次 renderSelect 都跑 generator+solver 阻塞主线）：
+  //   只有 saved.dateKey == todayKey 且 game.levelId=="daily" 才认为是继续今日挑战
+  //   game.state 具体合法性在点击 "继续今日挑战" 时 startDaily(restore) 再校验，不阻塞选关渲染
+  const tKey = todayKey();
+  const dailySaved = progress?.daily;
+  const likelyValidDaily = Boolean(
+    dailySaved &&
+    dailySaved.dateKey === tKey &&
+    dailySaved.currentGame?.dateKey === tKey &&
+    dailySaved.currentGame?.levelId === "daily" &&
+    isValidStoredState(dailySaved.currentGame)
+  );
+  continueDailyButton.hidden = !likelyValidDaily;
   try {
   levelGrid.replaceChildren(...(CHAPTERS || []).map((chapter) => {
     const levels = (LEVELS || []).filter((item) => item && item.chapter === chapter.id);
@@ -464,25 +477,43 @@ function renderSelect() {
     levels.forEach((item, index) => {
       const isUnlocked = (item.id ?? 0) <= (progress?.unlockedLevel ?? Infinity);
       const best = progress?.bestByLevel?.[item.id] || null;
+      const bestScoreRecord = progress?.bestScoresByLevel?.[item.id] || null;
       const button = document.createElement("button");
       button.className = "level-node";
       button.type = "button";
       button.disabled = !isUnlocked;
       button.dataset.rowStart = String(index % 5 === 0);
-      button.dataset.completed = String(Boolean(best));
-      button.dataset.current = String(isUnlocked && item.id === progress?.unlockedLevel && !best);
+      button.dataset.completed = String(Boolean(bestScoreRecord || best));
+      button.dataset.current = String(isUnlocked && item.id === progress?.unlockedLevel && !best && !bestScoreRecord);
       button.style.animationDelay = `${index * 45}ms`;
       if (item.id === latestCompletedLevel) button.classList.add("is-new");
-      button.setAttribute("aria-label", `第 ${item.id} 关，${best ? `${best.stars} 星` : isUnlocked ? "可开始" : "未解锁"}`);
+      // 分数文案：已通关 → 历史最高 bestScoreRecord.score (兼容旧 best 没有分数时 fallback 到总分)
+      //         未通关 → 本关满分上限（perfect: base + move满分100 + time满分100 = 80+D*40+200）
+      const D = difficultyForLevel(item);
+      const perfect = (80 + D * 40) + 200;
+      const displayedScore = bestScoreRecord?.score ?? perfect;
+      const scoreLabel = bestScoreRecord ? "最高分" : "总分";
+      button.setAttribute(
+        "aria-label",
+        bestScoreRecord
+          ? `第 ${item.id} 关，已通关，${scoreLabel} ${displayedScore}`
+          : isUnlocked ? `第 ${item.id} 关，${scoreLabel} ${displayedScore}，可开始` : `第 ${item.id} 关，未解锁，总分 ${displayedScore}`
+      );
+      // 行星层级：表面大气+纹理球体 + 号码 + 底部分数标签
+      const planet = document.createElement("span");
+      planet.className = "planet";
+      planet.dataset.completed = String(Boolean(bestScoreRecord || best));
+      planet.dataset.difficulty = String(D);
       const number = document.createElement("span");
+      number.className = "node-number";
       number.textContent = String(item.id);
-      button.append(number);
-      if (best?.stars) {
-        const stars = document.createElement("small");
-        stars.textContent = "★".repeat(best.stars);
-        stars.setAttribute("aria-hidden", "true");
-        button.append(stars);
-      }
+      planet.append(number);
+      const scoreBadge = document.createElement("small");
+      scoreBadge.className = "node-score";
+      scoreBadge.dataset.kind = bestScoreRecord ? "best" : "perfect";
+      scoreBadge.setAttribute("aria-label", `${scoreLabel} ${displayedScore}`);
+      scoreBadge.innerHTML = `<em>${scoreLabel}</em><strong>${displayedScore}</strong>`;
+      button.append(planet, scoreBadge);
       button.addEventListener("click", () => startLevel(item.id));
       path.append(button);
     });
@@ -567,12 +598,16 @@ function showResult() {
   progress = completion.progress;
   latestCompletedLevel = isDailyGame ? null : level.id;
 
-  // —— 顶部标题行
+  const perfect = perfectScoreForLevel(level, isDailyGame);
+  const totalFinal = completion.scoreDetail?.score ?? finalScore.total;
+
+  // —— 顶部标题行（去掉 ★★★，改成「得分 / 本题总分」+ 步数）
   const titleText = isDailyGame
-    ? `🏆 今日挑战 · ${level.dateKey ?? todayKey()} · 步数 ${movesPlayed}`
-    : `${"★".repeat(completion.stars)} 步数 ${movesPlayed} / ${level.par}${completion.isNewHighScore ? " · 新的最高分！" : completion.isNewBest ? " · 新纪录" : ""}`;
+    ? `🏆 今日挑战 · ${level.dateKey ?? todayKey()} · 得分 ${totalFinal} / ${perfect} · 步数 ${movesPlayed}`
+    : `得分 ${totalFinal} / ${perfect} · 步数 ${movesPlayed} / ${level.par}${completion.isNewHighScore ? " · 🏆 新高分！" : completion.isNewBest ? " · 新纪录" : ""}`;
   resultScore.textContent = titleText;
-  renderStars(isDailyGame ? null : completion.stars);
+  // (通关页也不再显示星条：renderStars(null) 隐藏)
+  renderStars(null);
 
   // —— 积分明细(基础/步数/时间/合计)
   if (resultBreakdown) {

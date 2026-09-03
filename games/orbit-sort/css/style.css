@@ -270,38 +270,7 @@ body {
 }
 
 /* -- 今日星轨按钮：科幻切角 + 4 LED + 扫光 -- */
-.daily-button {
-  position: relative; overflow: hidden; isolation: isolate;
-  clip-path: polygon(14px 0, calc(100% - 14px) 0, 100% 14px, 100% calc(100% - 14px), calc(100% - 14px) 100%, 14px 100%, 0 calc(100% - 14px), 0 14px);
-  background: linear-gradient(135deg, rgba(100, 60, 10, .9), rgba(62, 20, 72, .94));
-  border: 1px solid rgba(255, 210, 140, .3);
-  color: #ffeac6;
-}
-.daily-button::before,
-.daily-button::after {
-  content: ""; position: absolute; inset: 0; pointer-events: none;
-  border: 1.5px solid rgba(255, 210, 140, .7); box-shadow: 0 0 8px rgba(255, 199, 102, .45);
-}
-.daily-button::before {
-  clip-path: polygon(0 0, 20px 0, 20px 2px, 2px 2px, 2px 20px, 0 20px,
-    calc(100% - 20px) 100%, 100% 100%, 100% calc(100% - 20px),
-    calc(100% - 2px) calc(100% - 20px), calc(100% - 2px) calc(100% - 2px),
-    calc(100% - 20px) calc(100% - 2px), calc(100% - 20px) 100%);
-}
-.daily-button::after {
-  clip-path: polygon(100% 0, calc(100% - 20px) 0, calc(100% - 20px) 2px, calc(100% - 2px) 2px, calc(100% - 2px) 20px, 100% 20px,
-    0 calc(100% - 20px), 2px calc(100% - 20px), 2px calc(100% - 2px), 20px calc(100% - 2px),
-    20px 100%, 0 100%);
-  /* 流光：daily 的专属扫光动画 */
-  animation: daily-sheen 6s ease-in-out infinite;
-  background: linear-gradient(115deg, transparent 0%, transparent 44%, rgba(255, 230, 170, .42) 50%, transparent 58%) 0 0 / 260% 100% no-repeat;
-  background-size: 260% 100%; background-position: 100% 0;
-  border: none; box-shadow: none;
-}
-@keyframes daily-sheen { 0%, 50% { background-position: 110% 0; } 72%, 100% { background-position: -10% 0; } }
-.continue-button { position: relative; overflow: hidden; isolation: isolate;
-  clip-path: polygon(12px 0, calc(100% - 12px) 0, 100% 12px, 100% calc(100% - 12px), calc(100% - 12px) 100%, 12px 100%, 0 calc(100% - 12px), 0 12px);
-}
+/* 旧 daily/continue 紫棕主题已删除，统一用下方 370+ 行 金属科幻风按钮 */
 
 /* -- 章节卡片：科幻外框 + 左上 / 右下 LED -- */
 .chapter-map {
@@ -333,23 +302,7 @@ body {
 .chapter-map::before { background: linear-gradient(90deg, transparent 0, rgba(126, 216, 255, .68) 50%, transparent 100%); }
 .chapter-map:first-child::before { background: linear-gradient(90deg, transparent 0, rgba(255, 199, 102, .72) 50%, transparent 100%); }
 
-/* -- 关卡节点圆圈：六边形角包 切角外框 -- */
-.level-node {
-  position: relative; isolation: isolate;
-  border: 1px solid rgba(126, 180, 255, .28);
-}
-.level-node::after,
-.level-node::before {
-  content: ""; position: absolute; inset: 42%; border-radius: 10%; pointer-events: none;
-  background: transparent; border: 1.5px solid rgba(160, 210, 255, .5); box-shadow: 0 0 5px rgba(126, 216, 255, .45);
-  transform: rotate(45deg);
-}
-.level-node::after { inset: 6%; clip-path: polygon(0 0, 10px 0, 10px 1.5px, 1.5px 1.5px, 1.5px 10px, 0 10px,
-  calc(100% - 10px) 100%, 100% 100%, 100% calc(100% - 10px),
-  calc(100% - 1.5px) calc(100% - 10px), calc(100% - 1.5px) calc(100% - 1.5px),
-  calc(100% - 10px) calc(100% - 1.5px), calc(100% - 10px) 100%); transform: none; border-color: rgba(160, 210, 255, .62); }
-.level-node::before { inset: 6%; clip-path: polygon(100% 0, calc(100% - 10px) 0, calc(100% - 10px) 1.5px, calc(100% - 1.5px) 1.5px, calc(100% - 1.5px) 10px, 100% 10px,
-  0 calc(100% - 10px), 1.5px calc(100% - 10px), 1.5px calc(100% - 1.5px), 10px calc(100% - 1.5px), 10px 100%, 0 100%); transform: none; border-color: rgba(160, 210, 255, .62); }
+/* -------- 旧 .level-node 六边形切角/边框 已被 459+ 行行星球样式替换，此处只留占位 -------- */
 
 /* -- 通关覆盖层按钮（下一关 / 重玩） 切角风格 -- */
 .win-primary, .win-ghost {
@@ -369,69 +322,365 @@ body {
 .level-grid { display: grid; width: 100%; gap: 22px; max-width: 920px; margin: 0 auto; position: relative; z-index: 1; }
 .continue-button, .daily-button {
   display: block;
+  position: relative; overflow: hidden; isolation: isolate;
   width: min(920px, 100%);
-  min-height: 54px;
+  min-height: 58px;
   margin: 0 auto 12px;
-  padding: 0 22px;
-  border-radius: 14px;
-  color: var(--text);
+  padding: 0 26px 0 68px;
+  border-radius: 16px;
+  color: #07142e;
   font: inherit;
-  font-size: 14px;
-  letter-spacing: .1em;
+  font-size: 15px;
+  font-weight: 800;
+  letter-spacing: .16em;
+  text-align: left;
   cursor: pointer;
-  position: relative;
-  overflow: hidden;
-  transition: transform 160ms ease, border-color 160ms ease, box-shadow 160ms ease, filter 160ms ease;
+  transition: transform 160ms ease, box-shadow 180ms ease, filter 160ms ease;
+  clip-path: polygon(18px 0, calc(100% - 18px) 0, 100% 50%, calc(100% - 18px) 100%, 18px 100%, 0 50%);
 }
 .continue-button[hidden] { display: none !important; }
-.continue-button {
-  border: 1px solid rgba(142, 172, 255, .34);
-  background: linear-gradient(110deg, rgba(30, 54, 132, .78), rgba(10, 20, 56, .88));
-  box-shadow: inset 0 1px 0 rgba(170, 206, 255, .12), 0 12px 28px rgba(0, 0, 0, .22);
-}
+
+/* —— 选关页：今日挑战 金橙金属科幻风 —— */
 .daily-button {
-  min-height: 58px;
-  margin-bottom: 20px;
-  border: 1px solid rgba(255, 206, 122, .48);
-  background: linear-gradient(110deg, rgba(78, 48, 18, .82) 0%, rgba(60, 24, 68, .82) 100%);
-  color: #ffeac6;
-  font-size: 15px;
-  letter-spacing: .16em;
-  box-shadow: inset 0 1px 0 rgba(255, 225, 172, .2), 0 0 0 1px rgba(255, 198, 102, .08), 0 16px 32px rgba(0, 0, 0, .28);
+  margin-bottom: 22px;
+  border: 1px solid rgba(255, 206, 140, .56);
+  /* 金→橙→冷蓝→白 金属渐变 */
+  background: linear-gradient(135deg,
+    #ffe0a8 0%,
+    #ffc468 22%,
+    #ffa94b 38%,
+    #a5eeff 68%,
+    #ffffff 100%);
+  color: #0b1a3a;
+  text-shadow: 0 1px 0 rgba(255,255,255,.8), 0 0 18px rgba(126,216,255,.26);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.9),
+    0 12px 32px rgba(255, 196, 104, .42),
+    0 12px 46px rgba(126, 216, 255, .28),
+    0 0 0 1px rgba(255, 206, 140, .22);
 }
-.daily-button::before { content: ""; position: absolute; inset: 0; pointer-events: none; background: linear-gradient(110deg, transparent 0%, rgba(255, 222, 178, .14) 45%, transparent 100%); mix-blend-mode: screen; }
+/* 扫光 */
+.daily-button::before {
+  content: ""; position: absolute; inset: 0; pointer-events: none; z-index: 1;
+  background: linear-gradient(110deg, transparent 0%, rgba(255,255,255,.0) 40%, rgba(255,255,255,.98) 50%, rgba(255,255,255,.0) 60%, transparent 100%);
+  background-size: 220% 100%; background-position: 120% 0; background-repeat: no-repeat;
+  mix-blend-mode: screen;
+  animation: challenge-sweep 4.8s cubic-bezier(.3, .7, .2, 1) infinite;
+}
+/* 左侧行星徽标 (木星风格) */
 .daily-button::after {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: -10%;
-  width: 32%;
-  height: 100%;
-  pointer-events: none;
-  background: linear-gradient(90deg, transparent, rgba(255, 238, 200, .16), transparent);
-  transform: skewX(-16deg) translateX(-120%);
-  animation: daily-sheen 5.5s ease-in-out infinite;
-  animation-delay: 1s;
+  content: ""; position: absolute; left: 22px; top: 50%; transform: translateY(-50%);
+  width: 30px; height: 30px; border-radius: 50%; pointer-events: none; z-index: 2;
+  background:
+    radial-gradient(circle at 30% 25%, rgba(255,255,255,.95) 0 8%, rgba(255,255,255,.22) 18%, rgba(255,255,255,0) 30%),
+    repeating-linear-gradient(3.5deg,
+      rgba(255, 220, 140, .3) 0 18%, rgba(255,255,255,.14) 18% 26%,
+      rgba(230, 140, 60, .45) 26% 40%, rgba(255,255,255,.1) 40% 48%,
+      rgba(255, 210, 140, .28) 48% 62%, rgba(140, 60, 20, .34) 62% 74%,
+      rgba(255, 220, 140, .28) 74% 90%, rgba(230, 140, 60, .42) 90% 100%),
+    radial-gradient(circle at 32% 30%, #ffe9b0 0%, #f3b658 46%, #8f4e1c 80%, #321a0a 100%);
+  box-shadow: inset -4px -6px 10px rgba(0,0,0,.5), inset 3px 5px 8px rgba(255,255,255,.22),
+              0 0 0 2px rgba(255, 206, 140, .45), 0 0 20px rgba(255, 196, 104, .55);
 }
-@keyframes daily-sheen { 0%, 55%, 100% { transform: skewX(-16deg) translateX(-120%); } 62% { transform: skewX(-16deg) translateX(460%); } }
-.continue-button:hover, .daily-button:hover { transform: translateY(-1px); filter: brightness(1.05); }
-.continue-button:hover { border-color: var(--accent-cool); box-shadow: 0 0 24px rgba(77, 142, 255, .24), inset 0 1px 0 rgba(170, 206, 255, .2); }
-.daily-button:hover { border-color: rgba(255, 224, 180, .86); box-shadow: 0 0 28px rgba(255, 199, 102, .34), inset 0 1px 0 rgba(255, 225, 172, .28), 0 16px 32px rgba(0, 0, 0, .3); }
+.daily-button:hover { filter: brightness(1.08) saturate(1.08); transform: translateY(-2px); }
+.daily-button:active { transform: translateY(0) scale(.99); }
+.daily-button:focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; }
+
+/* —— 继续主线 / 继续今日挑战：蓝银冷色金属 —— */
+.continue-button {
+  border: 1px solid rgba(142, 172, 255, .5);
+  background: linear-gradient(135deg,
+    #d9eaff 0%,
+    #8db7ff 28%,
+    #5a8dff 48%,
+    #a5eeff 72%,
+    #ffffff 100%);
+  color: #08183e;
+  text-shadow: 0 1px 0 rgba(255,255,255,.85), 0 0 16px rgba(126,216,255,.22);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.9),
+    0 12px 28px rgba(92, 142, 255, .36),
+    0 12px 40px rgba(126, 216, 255, .24),
+    0 0 0 1px rgba(126, 216, 255, .18);
+}
+.continue-button::before {
+  content: ""; position: absolute; inset: 0; pointer-events: none; z-index: 1;
+  background: linear-gradient(110deg, transparent 0%, rgba(255,255,255,.0) 40%, rgba(255,255,255,.95) 50%, rgba(255,255,255,.0) 60%, transparent 100%);
+  background-size: 220% 100%; background-position: 120% 0; background-repeat: no-repeat;
+  mix-blend-mode: screen;
+  animation: challenge-sweep 5.4s cubic-bezier(.3, .7, .2, 1) infinite;
+}
+.continue-button::after {
+  content: ""; position: absolute; left: 22px; top: 50%; transform: translateY(-50%);
+  width: 28px; height: 28px; border-radius: 8px; pointer-events: none; z-index: 2;
+  background: linear-gradient(135deg, #ffffff, #8ab9ff 50%, #3d68e0);
+  box-shadow: inset 0 1px rgba(255,255,255,.95), 0 0 0 2px rgba(135,170,255,.4), 0 0 18px rgba(96,140,255,.5);
+  opacity: .92;
+}
+.continue-button:hover { filter: brightness(1.08) saturate(1.06); transform: translateY(-2px); }
+.continue-button:active { transform: translateY(0) scale(.99); }
+
+@media (max-width: 700px) {
+  .continue-button, .daily-button {
+    width: 100%; min-height: 52px; padding: 0 20px 0 62px;
+    clip-path: polygon(14px 0, calc(100% - 14px) 0, 100% 50%, calc(100% - 14px) 100%, 14px 100%, 0 50%);
+    font-size: 14px; letter-spacing: .14em;
+  }
+  .daily-button::after { width: 24px; height: 24px; left: 18px; }
+  .continue-button::after { width: 22px; height: 22px; left: 18px; border-radius: 6px; }
+}
+/* -------- 旧 continue/daily 样式已统一在 370-478 选关按钮金属风区块 -------- */
+
+@keyframes daily-sheen { 0%, 55%, 100% { opacity: 0; } } /* placeholder, 实际已由 challenge-sweep 接管 */
+.continue-button:hover, .daily-button:hover { /* 主样式见上：370-478 */ }
 .continue-button:active, .daily-button:active { transform: translateY(0) scale(.994); }
-.chapter-map { position: relative; padding: 20px 22px 24px; border: 1px solid rgba(142, 172, 255, .2); border-radius: 18px; background: linear-gradient(135deg, rgba(17, 29, 70, .72), rgba(6, 12, 32, .72)); box-shadow: inset 0 1px rgba(255,255,255,.05), 0 16px 36px rgba(0,0,0,.16); }
-.chapter-map::before { position: absolute; top: 0; left: 22px; width: 72px; height: 3px; background: var(--accent-cool); box-shadow: 0 0 14px rgba(126,216,255,.8); content: ""; pointer-events: none; }
-.chapter-map:first-child::before { background: var(--accent); box-shadow: 0 0 14px rgba(255,199,102,.7); }
+/* ------------ 章节卡片统一样式：合并 padding + 保留 clip-path 切角 LED 角 ------------- */
+.chapter-map { padding: 22px 22px 26px; border-radius: 18px; }
+.chapter-title-light { position: absolute; top: -1px; left: 22px; width: 96px; height: 3px; background: linear-gradient(90deg, rgba(126,216,255,0), rgba(126,216,255,.82), rgba(126,216,255,0)); box-shadow: 0 0 16px rgba(126,216,255,.6); pointer-events: none; }
+.chapter-map:first-child > .chapter-title-light { background: linear-gradient(90deg, rgba(255,199,102,0), rgba(255,199,102,.86), rgba(255,199,102,0)); box-shadow: 0 0 16px rgba(255,199,102,.65); }
 .chapter-map h2 { margin: 0; font-size: 17px; letter-spacing: .06em; }.chapter-map p { margin: 6px 0 18px; color: var(--muted); font-size: 13px; }
-.chapter-path { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 18px 10px; padding: 4px 0; }
-.level-node { position: relative; z-index: 0; display: grid; place-items: center; min-height: 58px; aspect-ratio: 1; padding: 4px; border: 1px solid #4c65b0; border-radius: 50%; background: radial-gradient(circle at 35% 28%, #253f88, #0a1538 72%); color: var(--text); font: inherit; cursor: pointer; font-variant-numeric: tabular-nums; box-shadow: inset 0 1px rgba(255,255,255,.1), 0 8px 16px rgba(0,0,0,.2); transition: transform 160ms ease, border-color 160ms ease, box-shadow 160ms ease; }
-.level-node:hover:not(:disabled) { transform: scale(1.06); border-color: var(--accent-cool); box-shadow: 0 0 22px rgba(98, 153, 255, .38), inset 0 1px rgba(255,255,255,.18); }
-.level-node::before { position: absolute; z-index: -1; top: 50%; right: 100%; width: 10px; height: 2px; background: #3f579e; content: ""; pointer-events: none; }
+.chapter-path { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 28px 14px; padding: 4px 0 8px; }
+/* -------- 关卡球：真实科幻行星样式 -------- */
+.level-node {
+  position: relative; z-index: 0; display: flex; flex-direction: column; align-items: center; gap: 8px;
+  padding: 0 0 6px;
+  aspect-ratio: 1 / 1.22; /* 球体 + 分数徽章 纵向 */
+  border: 0;
+  background: transparent;
+  color: var(--text);
+  font: inherit;
+  cursor: pointer;
+  font-variant-numeric: tabular-nums;
+  transition: transform 160ms ease, filter 160ms ease;
+}
+.level-node .planet {
+  position: relative;
+  display: grid; place-items: center;
+  width: 78%;
+  aspect-ratio: 1 / 1;
+  border-radius: 50%;
+  isolation: isolate;
+  /* 基础大气层外圈光晕 */
+  box-shadow:
+    inset -6px -10px 18px rgba(0,0,0,.55),
+    inset 6px 8px 14px rgba(255,255,255,.18),
+    0 0 0 2px rgba(126, 216, 255, .18),
+    0 0 24px rgba(95, 145, 255, .28),
+    0 12px 24px rgba(0, 0, 0, .34);
+  transition: transform 160ms ease, box-shadow 160ms ease, filter 160ms ease;
+}
+/* 行星表面：D1 水星(蓝冰) → D2 青绿(地球) → D3 黄金(金星) → D4 橙红(火星) → D5 红巨(木星色环) → D6 紫青(天王) → D7 深蓝(海王) */
+.level-node .planet::before {
+  content: "";
+  position: absolute; inset: 0; border-radius: 50%; z-index: 0;
+  /* 默认 D1 蓝冰 + 极冠 白 */
+  background:
+    /* 斜向亮面高光 */
+    radial-gradient(circle at 30% 25%, rgba(255,255,255,.92) 0 8%, rgba(255,255,255,.28) 18%, rgba(255,255,255,0) 32%),
+    /* 横向环带条纹 (用 conic/repeating-lin) */
+    repeating-linear-gradient(
+      3.5deg,
+      rgba(126, 216, 255, .22) 0 14%,
+      rgba(255, 255, 255, .08) 14% 22%,
+      rgba(66, 117, 214, .3) 22% 36%,
+      rgba(255, 255, 255, .06) 36% 42%,
+      rgba(126, 216, 255, .16) 42% 58%,
+      rgba(28, 50, 105, .22) 58% 70%,
+      rgba(126, 216, 255, .18) 70% 86%,
+      rgba(66, 117, 214, .28) 86% 100%
+    ),
+    /* 基础底色径向渐变 */
+    radial-gradient(circle at 32% 30%, #5aaaff 0%, #2a63c8 48%, #0e2565 80%, #061237 100%);
+  mix-blend-mode: normal;
+}
+/* 行星大气外发光 (独立层) */
+.level-node .planet::after {
+  content: "";
+  position: absolute; inset: -6%;
+  border-radius: 50%;
+  z-index: -1;
+  background: radial-gradient(circle at 50% 50%, rgba(126,216,255,.32) 50%, rgba(126,216,255,.08) 70%, transparent 78%);
+  filter: blur(3px);
+}
+/* 难度色方案: 用 data-difficulty 覆盖条纹 + 底色 */
+.level-node .planet[data-difficulty="2"]::before {
+  background:
+    radial-gradient(circle at 30% 25%, rgba(255,255,255,.92) 0 8%, rgba(255,255,255,.28) 18%, rgba(255,255,255,0) 32%),
+    repeating-linear-gradient(3.5deg,
+      rgba(140, 255, 210, .24) 0 14%, rgba(255,255,255,.1) 14% 22%, rgba(30, 160, 120, .3) 22% 36%,
+      rgba(255,255,255,.06) 36% 42%, rgba(110, 230, 190, .18) 42% 58%, rgba(16, 78, 62, .25) 58% 70%,
+      rgba(140, 255, 210, .2) 70% 86%, rgba(30, 160, 120, .28) 86% 100%),
+    radial-gradient(circle at 32% 30%, #8af2c7 0%, #2aaf84 46%, #0a5c48 80%, #032a20 100%);
+}
+.level-node .planet[data-difficulty="3"]::before {
+  background:
+    radial-gradient(circle at 30% 25%, rgba(255,255,255,.92) 0 8%, rgba(255,255,255,.28) 18%, rgba(255,255,255,0) 32%),
+    repeating-linear-gradient(3.5deg,
+      rgba(255, 220, 140, .26) 0 14%, rgba(255,255,255,.1) 14% 22%, rgba(208, 140, 40, .34) 22% 36%,
+      rgba(255,255,255,.06) 36% 42%, rgba(255, 200, 110, .2) 42% 58%, rgba(105, 62, 18, .28) 58% 70%,
+      rgba(255, 220, 140, .22) 70% 86%, rgba(208, 140, 40, .3) 86% 100%),
+    radial-gradient(circle at 32% 30%, #ffe6b0 0%, #e0a955 46%, #7a5020 80%, #36220b 100%);
+}
+.level-node .planet[data-difficulty="4"]::before {
+  background:
+    radial-gradient(circle at 30% 25%, rgba(255,255,255,.9) 0 8%, rgba(255,255,255,.26) 18%, rgba(255,255,255,0) 32%),
+    repeating-linear-gradient(3.5deg,
+      rgba(255, 160, 90, .28) 0 14%, rgba(255,255,255,.09) 14% 22%, rgba(186, 78, 42, .36) 22% 36%,
+      rgba(255,255,255,.06) 36% 42%, rgba(255, 130, 70, .2) 42% 58%, rgba(96, 32, 16, .28) 58% 70%,
+      rgba(255, 160, 90, .24) 70% 86%, rgba(186, 78, 42, .32) 86% 100%),
+    radial-gradient(circle at 32% 30%, #ffc491 0%, #d66b3a 46%, #6f2d18 80%, #2d110a 100%);
+}
+.level-node .planet[data-difficulty="5"]::before { /* 红巨 + 环带风暴 */
+  background:
+    radial-gradient(circle at 30% 25%, rgba(255,255,255,.88) 0 8%, rgba(255,255,255,.22) 18%, rgba(255,255,255,0) 32%),
+    /* 大红斑: 椭圆色块 */
+    radial-gradient(ellipse 30% 18% at 60% 58%, rgba(255, 120, 60, .85) 0%, rgba(200, 50, 20, .5) 60%, transparent 80%),
+    repeating-linear-gradient(3deg,
+      rgba(255, 200, 140, .28) 0 10%, rgba(255, 250, 200, .08) 10% 14%,
+      rgba(220, 120, 60, .36) 14% 26%, rgba(255, 245, 200, .06) 26% 30%,
+      rgba(255, 170, 100, .28) 30% 44%, rgba(120, 30, 12, .32) 44% 54%,
+      rgba(255, 210, 140, .24) 54% 68%, rgba(170, 70, 30, .36) 68% 82%,
+      rgba(255, 230, 180, .22) 82% 100%),
+    radial-gradient(circle at 32% 30%, #ffd7a2 0%, #d88a3e 46%, #7a3a16 80%, #30130a 100%);
+}
+.level-node .planet[data-difficulty="6"]::before { /* 紫天王 */
+  background:
+    radial-gradient(circle at 30% 25%, rgba(255,255,255,.9) 0 8%, rgba(255,255,255,.22) 18%, rgba(255,255,255,0) 32%),
+    repeating-linear-gradient(3.5deg,
+      rgba(180, 160, 255, .28) 0 14%, rgba(255,255,255,.09) 14% 22%, rgba(110, 80, 220, .36) 22% 36%,
+      rgba(255,255,255,.06) 36% 42%, rgba(160, 190, 255, .2) 42% 58%, rgba(50, 30, 120, .3) 58% 70%,
+      rgba(190, 180, 255, .24) 70% 86%, rgba(110, 80, 220, .32) 86% 100%),
+    radial-gradient(circle at 32% 30%, #c8baff 0%, #7961db 46%, #312775 80%, #150d38 100%);
+}
+.level-node .planet[data-difficulty="7"]::before { /* 深蓝海王 + 风暴白点 */
+  background:
+    radial-gradient(circle at 30% 25%, rgba(255,255,255,.92) 0 8%, rgba(255,255,255,.24) 18%, rgba(255,255,255,0) 32%),
+    radial-gradient(ellipse 16% 12% at 62% 54%, rgba(255,255,255,.75) 0%, rgba(255,255,255,.25) 55%, transparent 75%),
+    repeating-linear-gradient(3.5deg,
+      rgba(120, 170, 255, .3) 0 14%, rgba(255,255,255,.09) 14% 22%, rgba(50, 80, 190, .4) 22% 36%,
+      rgba(255,255,255,.06) 36% 42%, rgba(100, 150, 255, .22) 42% 58%, rgba(20, 30, 90, .34) 58% 70%,
+      rgba(130, 180, 255, .26) 70% 86%, rgba(50, 80, 190, .36) 86% 100%),
+    radial-gradient(circle at 32% 30%, #8ab9ff 0%, #3462d8 46%, #142775 80%, #06103a 100%);
+}
+/* 已通关球：金铜光环 + 星尘扫光 */
+.level-node .planet[data-completed="true"] {
+  box-shadow:
+    inset -6px -10px 18px rgba(0,0,0,.5),
+    inset 6px 8px 14px rgba(255,255,255,.22),
+    0 0 0 2px rgba(255, 206, 120, .5),
+    0 0 36px rgba(255, 196, 104, .42),
+    0 14px 26px rgba(0,0,0,.36);
+}
+.level-node .planet[data-completed="true"]::before {
+  /* 叠一层金粉金属 + 原行星纹理 */
+  background-image:
+    radial-gradient(circle at 30% 22%, rgba(255,255,255,.96) 0 9%, rgba(255, 240, 200, .3) 20%, rgba(255,255,255,0) 34%),
+    linear-gradient(180deg, rgba(255,224,168,.22), rgba(255,255,255,.08) 45%, rgba(126,216,255,.18) 100%),
+    /* 保留原背景 (复制一份原 D1 作为 fallback，但 data-difficulty 已覆盖) */
+    radial-gradient(circle at 32% 30%, rgba(255, 230, 170, .45) 0%, transparent 60%),
+    linear-gradient(135deg, rgba(255,220,150,.0), rgba(255,220,150,0));
+  background-blend-mode: screen, normal, overlay, normal;
+}
+.level-node .planet[data-completed="true"]::after {
+  background: radial-gradient(circle at 50% 50%, rgba(255, 206, 120, .36) 45%, rgba(255, 170, 80, .12) 68%, transparent 78%);
+}
+/* 关卡号码 */
+.level-node .node-number {
+  position: relative; z-index: 2;
+  font-size: 28px; font-weight: 900; letter-spacing: .06em;
+  color: #fff;
+  text-shadow:
+    -1px -1px 0 rgba(0,0,0,.35), 0 0 10px rgba(0,0,0,.4),
+    0 0 22px rgba(255,255,255,.3);
+}
+/* 分数徽章：在球下方 */
+.level-node .node-score {
+  display: inline-flex; align-items: baseline; gap: 6px;
+  padding: 3px 10px 4px;
+  border-radius: 999px;
+  border: 1px solid rgba(126, 216, 255, .22);
+  background: linear-gradient(180deg, rgba(18,28,70,.78), rgba(8,14,36,.86));
+  box-shadow: 0 8px 18px rgba(0,0,0,.24), inset 0 1px rgba(255,255,255,.05);
+  color: var(--muted);
+  font: inherit;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.1;
+}
+.level-node .node-score em {
+  font-style: normal;
+  font-size: 10px;
+  letter-spacing: .12em;
+  color: #a6b7d9;
+}
+.level-node .node-score strong {
+  font-weight: 800;
+  font-size: 13px;
+  letter-spacing: .04em;
+  color: #d9e7ff;
+  text-shadow: 0 0 10px rgba(126,216,255,.3);
+}
+/* 已通关 "最高分" 徽章：金色 */
+.level-node .node-score[data-kind="best"] {
+  border-color: rgba(255, 206, 120, .44);
+  background: linear-gradient(180deg, rgba(82,58,20,.85), rgba(44,28,8,.92));
+  box-shadow: 0 8px 22px rgba(255, 170, 70, .18), 0 8px 18px rgba(0,0,0,.24), inset 0 1px rgba(255,224,170,.08);
+}
+.level-node .node-score[data-kind="best"] em { color: #ffd9a8; }
+.level-node .node-score[data-kind="best"] strong {
+  color: #ffecc8;
+  text-shadow: 0 0 12px rgba(255, 190, 90, .46);
+}
+
+/* 悬浮/动效: hover 上浮 + 球放大 + 扫光 */
+.level-node:hover:not(:disabled) { transform: translateY(-3px); }
+.level-node:hover:not(:disabled) .planet {
+  transform: scale(1.06);
+  filter: brightness(1.08) saturate(1.08);
+}
+.level-node:hover:not(:disabled) .planet::after { filter: blur(4px) brightness(1.2); }
+
+/* 原连接线 (node::before → 现在改用容器内部的 path 线；为了最小改动保留 level-node::before 但移到 planet 位置) */
+.level-node::before {
+  position: absolute; z-index: -2;
+  top: calc(39% - 1px); right: 100%;
+  width: 14px; height: 2px;
+  background: linear-gradient(90deg, rgba(140,170,255,.0), rgba(140,170,255,.5));
+  content: ""; pointer-events: none;
+}
+.level-node::after { /* 保留，无内容 (原 L-shaped corner decoration 移除) */
+  content: ""; position: absolute; pointer-events: none;
+}
 .level-node[data-row-start="true"]::before { display: none; }
-.level-node[data-completed="true"] { border-color: var(--accent); background: radial-gradient(circle at 35% 25%, #765b3b, #251d38 72%); box-shadow: 0 0 16px rgba(255, 190, 87, .2), inset 0 1px rgba(255,255,255,.12); }.level-node[data-completed="true"]::before { background: var(--accent); }
-.level-node[data-current="true"] { border-color: #9ac6ff; background: radial-gradient(circle at 35% 25%, #3867bd, #101d4f 72%); box-shadow: 0 0 0 5px rgba(112, 188, 255, .12), 0 0 28px rgba(112, 188, 255, .35); }
-.level-node[data-current="true"]::after { position: absolute; top: -8px; width: 8px; height: 8px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 10px var(--accent); content: ""; pointer-events: none; }
-.level-node.is-new { animation: unlock-node 620ms ease-out both; }
-.level-node:disabled { opacity: .38; cursor: default; }.level-node small { position: absolute; bottom: 4px; color: var(--accent); font-size: 9px; line-height: 1; }
+.level-node[data-completed="true"]::before { background: linear-gradient(90deg, rgba(255,200,120,.0), rgba(255,200,120,.72)); }
+
+/* 当前高亮关卡 (data-current=true): 脉冲光 + 环 */
+.level-node[data-current="true"] .planet {
+  box-shadow:
+    inset -6px -10px 18px rgba(0,0,0,.52),
+    inset 6px 8px 14px rgba(255,255,255,.22),
+    0 0 0 2px rgba(154, 198, 255, .68),
+    0 0 0 7px rgba(112, 188, 255, .14),
+    0 0 42px rgba(112, 188, 255, .45),
+    0 14px 26px rgba(0, 0, 0, .36);
+  animation: planet-pulse 2.6s ease-in-out infinite;
+}
+.level-node[data-current="true"] .planet::after {
+  background:
+    radial-gradient(circle at 50% 50%, rgba(154,198,255,.42) 45%, rgba(154,198,255,.08) 70%, transparent 80%);
+}
+@keyframes planet-pulse {
+  0%,100% { box-shadow:
+    inset -6px -10px 18px rgba(0,0,0,.52), inset 6px 8px 14px rgba(255,255,255,.22),
+    0 0 0 2px rgba(154, 198, 255, .68), 0 0 0 7px rgba(112, 188, 255, .14),
+    0 0 42px rgba(112, 188, 255, .45), 0 14px 26px rgba(0,0,0,.36); }
+  50%     { box-shadow:
+    inset -6px -10px 18px rgba(0,0,0,.52), inset 6px 8px 14px rgba(255,255,255,.28),
+    0 0 0 2px rgba(196, 224, 255, .9), 0 0 0 11px rgba(112, 188, 255, .10),
+    0 0 52px rgba(112, 188, 255, .62), 0 14px 26px rgba(0,0,0,.36); }
+}
+.level-node:disabled { filter: grayscale(.4) brightness(.72); opacity: .55; cursor: default; }
+.level-node:disabled .planet { filter: saturate(.35) brightness(.7); }
+
 .level-node:focus-visible, .continue-button:focus-visible, .daily-button:focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; }
 .chapter-progress { pointer-events: none; }
 .game-shell { display: none; position: relative; z-index: 1; }.game-shell.is-active { display: grid; }
@@ -833,7 +1082,12 @@ h1 { margin: 0; font-size: 22px; font-weight: 800; letter-spacing: .08em; text-s
 
 @media (max-width: 700px) {
   .select-screen { padding: 22px 20px; }
-  .chapter-path { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .chapter-path { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 22px 10px; }
+  .level-node .node-number { font-size: 22px; }
+  .level-node .node-score { padding: 3px 8px 4px; gap: 4px; }
+  .level-node .node-score em { font-size: 9px; letter-spacing: .1em; }
+  .level-node .node-score strong { font-size: 12px; }
+  .level-node { aspect-ratio: 1 / 1.28; }
   .game-header { padding: 14px 12px 6px; }
   .game-title { font-size: clamp(22px, 7vw, 30px); padding: 6px 18px 8px; }
   .select-header h1 { font-size: clamp(26px, 8vw, 38px); padding: 8px 20px 10px; }
@@ -880,8 +1134,10 @@ h1 { margin: 0; font-size: 22px; font-weight: 800; letter-spacing: .08em; text-s
   .deco-sat-orbit-1, .deco-ship, .deco-asteroid { animation: none !important; }
   .dock-halo { animation: none !important; }
   .tech-scan::after, .tool-button::after, .daily-button::after, .challenge-button::before { animation: none !important; background: transparent !important; }
-}
-  .level-node.is-new { animation: none; }
+  .level-node.is-new { animation: none !important; }
+  .level-node[data-current="true"] .planet { animation: none !important; }
   .level-node:active:not(:disabled) { transform: none; }
-  .level-node[data-current="true"] { box-shadow: 0 0 0 4px rgba(112, 188, 255, .16); }
+  .game-title, .select-header h1 { animation: none !important; }
 }
+.level-node[data-current="true"] { box-shadow: none; }
+.level-node[data-current="true"] .planet { box-shadow: inset -6px -10px 18px rgba(0,0,0,.52), inset 6px 8px 14px rgba(255,255,255,.22), 0 0 0 4px rgba(112,188,255,.4), 0 14px 26px rgba(0,0,0,.36); }
