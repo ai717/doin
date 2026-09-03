@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="zh-CN" data-theme="light">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <title>井字棋 · DOIN 在线小游戏</title>
+    <meta name="description" content="井字棋在线对弈：3×3 与 4×4 两种棋盘，轻松 / 普通 / 大师三档 AI，支持连胜爬塔、本地双人对战与深色模式，无需下载即点即玩。">
+    <link rel="canonical" href="https://doin.win/tic-tac-toe/">
+    <meta name="theme-color" content="#83ffe7">
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="DOIN">
+    <meta property="og:title" content="井字棋 · DOIN 在线小游戏">
+    <meta property="og:description" content="3×3 与 4×4 两种棋盘，三档 AI 难度，连胜爬塔 + 本地双人对战。">
+    <meta property="og:url" content="https://doin.win/tic-tac-toe/">
+    <meta property="og:locale" content="zh_CN">
+    <meta property="og:image" content="https://doin.win/assets/og-image.png">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="井字棋 · DOIN 在线小游戏">
+    <meta name="twitter:description" content="3×3 与 4×4 两种棋盘，三档 AI 难度，连胜爬塔 + 本地双人对战。">
+    <meta name="twitter:image" content="https://doin.win/assets/og-image.png">
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <link rel="stylesheet" href="css/style.css?v=dev">
+    <script>
+      try {
+        var stored = JSON.parse(localStorage.getItem("doin.tic-tac-toe.v1") || "{}");
+        if (stored && stored.prefs && stored.prefs.theme === "dark") {
+          document.documentElement.dataset.theme = "dark";
+        }
+      } catch (error) {
+        // 首次访问或存储被禁用，保持浅色主题。
+      }
+    </script>
+  </head>
+  <body>
+    <main class="stage">
+      <header class="hero">
+        <div class="hero-copy">
+          <h1 class="title">井字棋</h1>
+          <p class="lede">三子连一线。3×3 入门，4×4 见真章。</p>
+        </div>
+        <nav class="back"><a href="/">返回首页</a></nav>
+      </header>
+
+      <section class="controls" aria-label="对局设置">
+        <div class="control-group">
+          <span class="control-label">模式</span>
+          <div class="segmented" id="mode-group" role="group" aria-label="对战模式">
+            <button type="button" class="seg" data-mode="pve" aria-pressed="true">人机</button>
+            <button type="button" class="seg" data-mode="pvp" aria-pressed="false">双人</button>
+          </div>
+        </div>
+        <div class="control-group">
+          <span class="control-label">棋盘</span>
+          <div class="segmented" id="size-group" role="group" aria-label="棋盘规格">
+            <button type="button" class="seg" data-size="3" aria-pressed="true">3 × 3</button>
+            <button type="button" class="seg" data-size="4" aria-pressed="false">4 × 4</button>
+          </div>
+        </div>
+        <div class="control-group" id="difficulty-group-wrap">
+          <span class="control-label">难度</span>
+          <div class="segmented" id="difficulty-group" role="group" aria-label="AI 难度">
+            <button type="button" class="seg" data-difficulty="easy" aria-pressed="false">轻松</button>
+            <button type="button" class="seg" data-difficulty="normal" aria-pressed="true">普通</button>
+            <button type="button" class="seg" data-difficulty="master" aria-pressed="false">大师</button>
+          </div>
+        </div>
+      </section>
+
+      <section class="hud" aria-label="战绩面板">
+        <div class="hud-card">
+          <span class="hud-tag" id="hud-left-tag">你</span>
+          <b class="hud-value" id="hud-left">0</b>
+        </div>
+        <div class="hud-card">
+          <span class="hud-tag">平局</span>
+          <b class="hud-value" id="hud-draw">0</b>
+        </div>
+        <div class="hud-card">
+          <span class="hud-tag" id="hud-right-tag">AI</span>
+          <b class="hud-value" id="hud-right">0</b>
+        </div>
+        <div class="hud-card hud-streak">
+          <span class="hud-tag">连胜 · 最高 <span id="hud-best">0</span></span>
+          <b class="hud-value"><span id="hud-streak">0</span><span class="hud-unit">连</span></b>
+        </div>
+      </section>
+
+      <section class="board-stage">
+        <div class="board-wrap">
+          <div class="board" id="board" role="grid" aria-label="井字棋棋盘"></div>
+          <svg class="win-line" id="win-line" aria-hidden="true" focusable="false"></svg>
+        </div>
+        <p class="status" id="status" role="status" aria-live="polite">轮到你 · 你是红 X</p>
+        <p class="score-line" id="score-line" aria-live="polite"></p>
+      </section>
+
+      <section class="toolbar" aria-label="对局工具">
+        <button type="button" class="btn" id="undo" disabled>悔棋</button>
+        <button type="button" class="btn btn-icon" id="sound" aria-pressed="true" aria-label="音效" title="音效">♪</button>
+        <button type="button" class="btn btn-icon" id="theme" aria-label="深色模式" title="深色模式">◐</button>
+        <button type="button" class="btn btn-primary" id="restart">新的一局</button>
+      </section>
+
+      <footer class="footnote">
+        <p>键盘：<kbd>1</kbd>–<kbd>9</kbd> 直接落子，方向键移动后按 <kbd>Enter</kbd>，<kbd>Z</kbd> 悔棋，<kbd>R</kbd> 新局。</p>
+        <p class="saved">进度与战绩保存在本机浏览器，可离线游玩。</p>
+      </footer>
+    </main>
+
+    <div class="result-layer" id="result-layer" role="dialog" aria-modal="true" aria-labelledby="result-title" hidden>
+      <div class="result-panel">
+        <p class="result-badge" id="result-badge"></p>
+        <h2 class="result-title" id="result-title">平局</h2>
+        <p class="result-sub" id="result-sub"></p>
+        <div class="result-breakdown" id="result-breakdown" aria-label="得分明细"></div>
+        <div class="result-actions">
+          <button type="button" class="btn btn-primary" id="result-again">再来一局</button>
+          <button type="button" class="btn" id="result-close">看看棋盘</button>
+        </div>
+      </div>
+    </div>
+
+    <noscript><p class="noscript">需要启用 JavaScript 才能游玩井字棋。</p></noscript>
+    <script type="module" src="js/main.mjs?v=dev"></script>
+  </body>
+</html>

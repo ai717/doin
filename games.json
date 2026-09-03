@@ -20,6 +20,15 @@
       "url": "/2048/"
     },
     {
+      "title": "井字棋",
+      "slug": "tic-tac-toe",
+      "desc": "三子连一线。3×3 与 4×4 两种棋盘，轻松 / 普通 / 大师三档 AI，支持连胜爬塔与本地双人对战。",
+      "icon": "⭕",
+      "cover": "/assets/covers/tic-tac-toe.webp",
+      "tags": ["益智", "对战", "经典"],
+      "url": "/tic-tac-toe/"
+    },
+    {
       "title": "星轨调度大师",
       "slug": "orbit-sort",
       "desc": "调度彩色星体穿过中央星核，在有限中转空间中恢复每一条纯色星轨。",
