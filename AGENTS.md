@@ -133,7 +133,44 @@ generator.validateLevel 新增 intent rollout 门闩：对每个候选关卡跑�
 - 本地路径 `/games/orbit-sort/`；生产 `/orbit-sort/`。源码模块用 `?v=dev` 占位，
   生产构建会把所有 `?v=dev` 替换为单一 `BUILD_ID`（覆盖 Worker URL 和 Worker 内部 import）。
 
-## 6 · Homepage, SEO & Style（门户）
+## 6 · Tic-Tac-Toe · 稳定基线
+
+Plain 静态游戏（`games/tic-tac-toe/index.html`，无 package.json；测试走根 `package.json`
+的 `test:tic-tac-toe`）。模块分层与 orbit-sort 一致：engine / ai / score / storage / game
+(DOM-free) / ui (唯一 DOM 拥有者) / main (装配)。
+
+### 6.1 棋盘与胜负（engine.mjs 唯一权威）
+- 变长棋盘：`size ∈ {3,4}`，`winLength` = 3（size3）/ 4（size4）。
+- 连成一条长 `winLength` 的直线即胜；满盘未连 → draw（仅 `won` 是终止态）。
+- 纯函数 `createState / applyMove / getStatus / getWinLine`；直线覆盖行/列/主对角
+  （size4 反对角线长度不足，不计入）。
+
+### 6.2 AI（ai.mjs，难度 = 失误率，不是算力开关）
+- 难度档：`easy 0.45` / `normal 0.15` / `master 0`（失误率 ε）。
+  - ε：以 ε 概率走 `rankMoves` 里**非最优**的随机合法子（自然漏胜漏堵）。
+  - `guard`（能赢就赢、对手将赢就堵）：easy 关闭，normal/master 开启。
+  - master = ε0 + guard 开 = 完美博弈 → 3×3 不可战胜，成就设为"逼平"。
+- 搜索：negamax + α-β + 迭代加深（`maxDepth` / `budgetMs`）；size4 深度/预算从紧。
+- 不变式：**合法操作永不报错**，AI 始终落一个合法子。
+
+### 6.3 计分（score.mjs 唯一口径）
+```
+单局 = (base + effBonus + streakBonus) × difficultyCoef
+```
+- base：胜 100 / 平 30 / 负 0；effBonus：剩余空格 × 8；streakBonus：min(streak,5) × 20。
+- difficultyCoef：easy 0.6 / normal 1.0 / master 1.6。总积分 = `Σ bestScoresByLevel`，持久化。
+
+### 6.4 对局控制（game.mjs，DOM-free）
+- 模式：`pve`（人机，**先手每局自动轮换**避免掷硬币）/ `pvp`（本地双人）。
+- 悔棋栈**只压"等待人类决策"的局面**（pve 一次撤销 = 玩家一手 + AI 回应）。
+- AI 落子前强制 250–550ms 思考延迟（全局 `setTimeout`，非 `requestAnimationFrame`）。
+- 结算只在对局结束（status≠playing）时计算分数/连胜。
+
+### 6.5 测试门禁 & 路径
+- `npm run test:tic-tac-toe` 必须全绿（77 用例，含 AI 强度自对弈校验）。
+- 本地 `/games/tic-tac-toe/`；生产 `/tic-tac-toe/`。源码 `?v=dev` 占位由构建替换为 BUILD_ID。
+
+## 7 · Homepage, SEO & Style（门户）
 
 - 无框架原生 HTML/CSS/ES Module，无构建依赖。
 - `games.json` 驱动：卡片、JSON-LD、`scripts/gen-sitemap.mjs`。sitemap 只进首页和非
@@ -149,12 +186,13 @@ generator.validateLevel 新增 intent rollout 门闩：对每个候选关卡跑�
 - `cover` 必须 1:1，发布图 640×640 WebP，路径 `assets/covers/<slug>.webp`。
   非正方形 art `object-fit: cover` 裁剪。
 
-## 7 · Working Rules
+## 8 · Working Rules
 
 - **一次只发一个独立特性的小补丁**，然后更新 PROJECT_LOG.md。
 - 门户 / 构建脚本 / games.json / 部署 → 跑 `npm run build`。
 - 单游戏测试门禁：
   - Sudoku：`games/sudoku` 下 `npm run typecheck && npm test`。
   - 2048：`games/2048` 下 `node --test tests/engine.test.mjs tests/storage.test.mjs tests/i18n.test.mjs tests/markup.test.mjs`（Node 22 必须给文件名，不能只给 `tests` 目录）。
+  - Tic-Tac-Toe：根目录 `npm run test:tic-tac-toe`（77 用例）。
 - Commit message：英文，conventional-commit 前缀（feat/fix/docs/chore），body 解释为什么改。
 - Deploy workflow 已升级到 `actions/checkout@v5` + `actions/setup-node@v6`（Node 22）。
