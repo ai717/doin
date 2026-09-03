@@ -1,118 +1,160 @@
 # AGENTS.md
 
-## Project
+> 瘦身原则：只写"下次开工必须读"的规则。实现细节读 PROJECT_LOG.md，
+> 历史细节读 git log / `.workbuddy/memory/`。
 
-DOIN is a static browser-game portal. The homepage lists independent games
-published under /<slug>/; it never contains game implementation code.
-`games.json` is the single source of truth for the game list.
+***
 
-## Repository and deployment
+## 1 · Project
 
-- Repository: ai717/doin. main carries source only; never commit dist/ or game
-  build output.
-- GitHub Pages serves the gh-pages branch root. On every main push the workflow
-  builds the whole site into dist/ and replaces gh-pages with that output.
-- Production domain: doin.win. The PAGES_CNAME variable is set to doin.win and
-  the workflow must keep its cname input so each deploy rewrites the CNAME file.
-- Do not touch the legacy ai717/doin.win repository or the doin.win domain
-  without an explicit request.
+DOIN 是静态浏览器游戏门户：首页 `index.html` 列出独立游戏（不包含任何游戏实现代码），
+每款游戏发布到 `/<slug>/`。`games.json` 是唯一游戏清单来源。
 
-## Source layout
+## 2 · Repo & 部署
 
-    index.html, css/, js/, assets/  Homepage source
-    games.json                     Only game-list data source
-    games/<slug>/                  Independent game source
-    scripts/build-site.mjs         Site-level build entry point
-    start.bat                      Local launcher (auto-picks a free port
-                                   near 46810)
-    dist/                          Generated output, ignored
+- `ai717/doin`：main 只放源码；**永远不要 commit dist/ 或游戏构建产物**。
+- GitHub Pages = gh-pages 根目录。main 推送 → workflow 构建整个站点到 dist/ → 用 dist/
+  覆盖 gh-pages（不是增量）。
+- 生产域名 `doin.win`；Workflow 变量 `PAGES_CNAME=doin.win`，每次部署都要重写 CNAME
+  文件。
+- 不要碰遗留仓库 `ai717/doin.win` 或 doin.win 域名配置，除非用户显式要求。
 
-Locally the portal is served from the repo root, so games live at
-`/games/<slug>/`. In production they are at `/<slug>/` — the build flattens the
-path. Do not mix the two.
+## 3 · 目录结构
 
-## Games
+```
+index.html  css/  js/  assets/      Homepage 源码（无框架）
+games.json                            唯一游戏清单数据源
+games/<slug>/                         独立游戏源码
+scripts/build-site.mjs                站点级构建入口
+start.bat                             本地启动器 (自动选 46810 附近空闲端口)
+_dev-server.mjs                       零依赖最小 HTTP 静态服务 (优先使用: node _dev-server.mjs)
+dist/                                 构建产物 (git ignore)
+```
 
-- Plain static game: `games/<slug>/index.html`, no package.json.
-- Buildable game: `package.json` with a build script, output to
-  `games/<slug>/dist/`; it must set its asset base and router base to `/<slug>/`.
-- `spa: true` marks a browser-history SPA. GitHub Pages supports one generated
-  root fallback; deep links render but keep HTTP 404, so they stay out of the
-  sitemap.
-- games.json fields: `title, slug, desc, icon, cover, tags, url, comingSoon`;
-  `spa` and `exclude` are optional. `comingSoon` games are neither built nor
-  listed in the sitemap. `exclude` names extra source folders to keep out of
-  dist/; the build already skips `node_modules`, `dist`, `tests` and dot-folders,
-  so a static game may keep `tests/` beside its source.
-- Games define their own visual style. The portal theme below constrains the
-  homepage only.
+**路径约定**：本地 `/games/<slug>/`；生产 `/<slug>/`（构建时扁平）。绝不能混用。
 
-### orbit-sort stabilization baseline
+## 4 · Games 约定
 
-- Current release exposes exactly seven mainline levels from
-  `games/orbit-sort/levels.mjs` (`LEVELS = ALL_LEVELS.slice(0, 7)`), cut to the
-  D1..D7 progression in `games/orbit-sort/difficulty.mjs`; the older verified
-  catalog after level 7 is retained as source material only and must not be
-  re-exposed accidentally.
-- `difficulty.mjs` holds the hard parameter bounds (capacity 3..7, colorCount
-  3..6, dockCount 1..2, exactly one empty track) and the buffer-ratio rule that
-  a newly introduced parameter gets `dockCount: 2` for one level before it is
-  pulled back to 1. Do not add levels that violate those bounds.
-- `engine.mjs` is the sole authority for legality. A legal action must execute;
-  a deadlock is a post-move state, not a violation or a reason to block the
-  action. Only `won` is terminal. `game.mjs` accepts UI intents and delegates
-  them to the engine; page code must not construct rule actions or mutate game
-  state directly (the page's `state` is a mirror of `game.state`, so any direct
-  `state = {...state, ...}` is overwritten on the next `dispatch`).
-- UI feedback must go through the page helpers in `js/main.mjs`, not be
-  hard-coded per call site: status text via `message(text, tone)` with tone
-  `good|warn|bad|info`, touch feedback via `haptic()`, counters via `bump()`.
-  Every animation must degrade under `prefers-reduced-motion: reduce`.
-- `generator.mjs` validates balance, structure, solvability and every legal
-  first move. `deadEndFirstMoves` is an audit metric; use
-  `maxDeadEndFirstMoves` only when a release explicitly requires a stricter
-  level-quality threshold. Solver timeouts are unknown, not unsolvable.
-- After touching orbit-sort, run `npm run test:orbit-sort` from the repository
-  root. It is also a required pre-build CI gate. Run `npm run build` when the
-  portal, build scripts, games.json, or deployment workflow changes.
-- Local game URL is `/games/orbit-sort/`; production URL is `/orbit-sort/`.
-  Source modules use `?v=dev`; production build rewrites those references to
-  one build id, including Worker URLs and Worker imports.
+- **Plain 静态游戏**：`games/<slug>/index.html`，无 package.json。
+- **Buildable 构建游戏**：有 package.json 和 `build` 脚本，产物输出到 `games/<slug>/dist/`；
+  必须把 asset base / router base 设为 `/<slug>/`。
+- `spa: true` = 使用浏览器历史的 SPA。GitHub Pages 只支持一个根 404 回退，深层链接仍返回 404，
+  所以它们不进 sitemap。
+- `games.json` 字段：`title, slug, desc, icon, cover, tags, url, comingSoon`；可选
+  `spa, exclude`。`comingSoon` 的游戏既不构建也不进 sitemap。`exclude` 指定额外构建要排除
+  的源目录（默认已跳过 node_modules/dist/tests/.*）。
+- 各游戏自定义视觉风格。门户 Poki 主题只约束首页。
 
-## Homepage, SEO, and style
+## 5 · Orbit-sort · 稳定基线（开发准入规则）
 
-- Homepage code is native HTML, CSS and ES modules. No framework, no build
-  dependency for the portal itself.
-- games.json drives the cards, JSON-LD and `scripts/gen-sitemap.mjs`. Sitemap
-  entries stay limited to the homepage and non-comingSoon same-domain game roots.
-- Homepage theme is Poki-inspired, not pixel art: `--bg #83ffe7` mint over a
-  fixed `assets/bg-diamante.svg` texture, `--ink #002b50`, `--accent #009cff`,
-  white surfaces, `--radius 16px`, `--gap 16px`, soft `rgba(93,107,132,…)`
-  shadows. System sans-serif only — no webfont is loaded.
-- Cards are cover-only square tiles (`aspect-ratio: 1/1`) in an `auto-fill`
-  grid of `minmax(204px, 1fr)`, dropping to 140px under 520px. No tags,
-  description or category grouping on the card; the title is an overlay that
-  fades up on hover.
-- Hover is asymmetric on purpose: 0.6s `cubic-bezier(0.25,0.1,0.25,1)` at rest,
-  overridden to 0.3s while hovered, `scale(1.04) translateY(-4px)`. Hovered
-  tiles also need `z-index` because `container-type` makes each card a stacking
-  context. All motion degrades under `prefers-reduced-motion: reduce`.
-- `cover` in games.json must be a 1:1 image; the shipped set is 640x640 WebP
-  under `assets/covers/<slug>.webp`. Non-square art gets cropped by
-  `object-fit: cover`.
+### 5.1 关卡暴露 & 参数硬边界
+- 当前发布仅暴露 7 关主线：`LEVELS = ALL_LEVELS.slice(0, 7)`，对应 D1..D7，由
+  `difficulty.mjs paramsForDifficulty(1..7)` 决定。L8+ 保留为源码素材，**不得被运行路径
+  误导出**。
+- difficulty.mjs 硬边界：capacity ∈ [3..7]，colorCount ∈ [3..6]，dockCount ∈ [1..2]，
+  emptyTracks =  exactly 1。新引入参数的关卡需先让 `dockCount: 2` 缓冲一关再恢复 1。
+  **不允许**任何关卡违反这条。
 
-## Working rules
+### 5.2 引擎规则（engine.mjs 是唯一权威）
+- `validateAction` = 合法性判定；**合法就必须执行**。
+- 死局 = "操作后的状态"，不允许回退该操作或判定为非法；只提示不拦截。
+- 仅 `status === "won"` 为终止态。
+- `game.mjs` 收 UI 意图并调引擎。**页面代码不得构造 rule action 或直接改 game.state**
+  （页面的 `state = {...state, ...}` 是镜像，下一次 dispatch 立刻被覆盖）。
 
-- Ship one independent feature at a time in small patches, then update
-  PROJECT_LOG.md.
-- Run `npm run build` from the repository root after touching the portal,
-  games.json, build scripts or deployment.
-- Run each affected game's tests before pushing:
-  - Sudoku: `npm run typecheck && npm test` in `games/sudoku`.
-  - 2048: `node --test tests/engine.test.mjs tests/storage.test.mjs
-    tests/i18n.test.mjs tests/markup.test.mjs` in `games/2048`. Node 22 needs
-    file names or a glob — passing only the `tests` directory fails.
-- Commit messages follow the existing history: English, conventional-commit
-  prefix (feat / fix / docs / chore), explain the why in the body.
-- The deploy workflow still uses `actions/checkout@v4` and `actions/setup-node@v4`;
-  upgrade both to their current Node 24-compatible majors when a window opens.
+### 5.3 Intent Routing 不变量（合法操作永不报错）
+`applyIntent(click track | click dock)` 必须覆盖所有合理意图。若 primary 失败，按以下
+fallback 链（候选按最小 dock id deterministic 选取，不得产生歧义）：
+- **placing**（已选中 dock.orb）：
+  ① insert selectDock→track；② 还有 idle dock → extract via idledock；
+  ③ clickTrack 仍可 extract → clear selectDock + extract；
+  ④ 其它 occupied dock orb 匹配 track.top → 切那个 dock 再 insert。
+- **extracting**（未选中）：
+  ① extract clickTrack；② 存在 ≥1 occupied dock 可 canInsert(→clickTrack) →
+     选最小 id 那个直接 insert（1 个）或切 dock 再 insert（多个）。
+
+generator.validateLevel 新增 intent rollout 门闩：对每个候选关卡跑随机游走（默认
+10×40 步），只要出现"合理候选但 applyIntent 返回 invalid"就判 invalid。
+**所有将来批量生产的新关卡必须经过此门闩**，禁止再出现"合法操作仍报错"。
+
+### 5.4 Score 计分系统（score.mjs 是唯一口径）
+```
+单局 total = base + move + time  (3 维纯函数)
+```
+- **baseScoreFor(D, isDaily?)**：主线 = `80 + D·40`；今日挑战 **额外 +200**。
+- **moveScore(moves, par, isDaily?)**：
+  - 步数 ≤ par → 满分（主线 100 / 每日 150）。
+  - 超过 `Mmax = ⌈par·1.5⌉` → 每 1 步 -1；保底 = 主线 20 / 每日 40。
+- **timeScore(elapsedSec, D, isDaily?)**：
+  - 起始满分主线 = 100 / 每日 = 150。
+  - `Tmax = 45 + (D-1)·18`（今日 ×1.3 放宽）；超时 → 每 10 秒 -1；保底同上。
+- **perfectScoreForLevel(level, isDaily?)**：满分上限（HUD 分母 / 选关未通关显示）。
+  - 主线 = `80 + D·40 + 200`。例：L1=320, L7=560。
+  - 今日挑战 = `80 + D·40 + 200 + 150 + 150 = D·40 + 580`。例：D5=780, D6=820。
+- **总积分 (storage.progress)**：`Σ bestScoresByLevel[id].score`，单关取历史最高。
+  `loadProgress()` 每次调用强制 `recomputeTotals()` 防止本地数据改坏或损坏。
+- **步数 (storage.progress.totalMoves)**：引擎 `stats.movesPlayed` 每次真实 extract 才 +1；
+  undo/reset 取最大值永不回退；撤回不会让步数或步数得分减少。
+- **今日首通奖励**：`dailyBonusScore(1stToday)` 主线通关每日首次 +50（与 daily level 的
+  +200 bonus 互不冲突）；可通过 storage 参数控制。
+
+### 5.5 HUD 显示口径（UI 与 score.mjs 强绑定）
+- 原"调度 / 目标 / 已充能"已废弃。新 HUD：
+  - **步数** = `stats.movesPlayed`
+  - **目标** = `level.par`
+  - **得分** = `estimateLiveScore(state).total / perfectScoreForLevel(level, isDaily)`
+    （未通关分子是保守预估，通关后分母不动、分子替换为最终值）
+  - **总积分** = `progress.totalScore`
+- 选关页关卡球下方胶囊徽章：已通关 → 历史最高分；未通关 → 本题总分 perfectScore。
+- 通关弹窗顶行：`得分 X/Y · 步数 m/par · 🏆 新高分`（已删除 ★★★ 星级）；明细面板
+  三行 `基础分 / 步数分 / 时间分 / 合计得分`。
+
+### 5.6 今日挑战（daily.mjs）
+- 原"今日星轨"已改名；入口：选关页顶部 + 游戏内工具按钮下方常驻。
+- **O(1) Blueprint 构造**（UI 永不卡死）：`hash(dateKey)` → D5/D6 二选一、
+  paramsForDifficulty 上探 cap/color/dockCount=2/emptyCount≥2；Fisher-Yates 打乱 orbs、
+  循环分发填充到 non-empty tracks（每轨道长度 ≤ capacity；每色恰好 capacity 个球）。
+  同 dateKey 所有玩家得到完全一致的题目（same-day deterministic → true）。
+- par 给保守估计：`max(14, orbsFlat.length×2 + dockCount×3 + emptyCount×2)`。需要真实可解
+  与真实 par 可后台异步调用 `refineDailyLevel(dateKey, {timeLimitMs})`（不阻塞 UI），
+  成功则覆盖 par/validation，失败 blueprint 照常使用。
+- `renderSelect()` 不能直接调用 `createDailyLevel` 来判"继续今日挑战"。用快判：
+  `progress.daily.dateKey === todayKey() && currentGame.dateKey === todayKey() && currentGame.levelId === "daily" && isValidStoredState(currentGame)`。真实合法性在"开始今日挑战/继续"按钮的点击处理里再校验。
+
+### 5.7 UI 反馈通路（禁止在页面硬编码）
+- 提示：`message(text, tone)`，tone ∈ `good | warn | bad | info`；
+- 触感：`haptic()`（navigator.vibrate）；
+- 计数跳字：`bump()`；
+- 所有动画必须支持 `prefers-reduced-motion: reduce` 降级；
+
+### 5.8 开发 / 验证命令
+- 改了 orbit-sort 任何东西 → **先跑** `npm run test:orbit-sort`（CI 门禁）。
+- 改了门户/build/game.json/deployment → 再跑 `npm run build`。
+- 本地路径 `/games/orbit-sort/`；生产 `/orbit-sort/`。源码模块用 `?v=dev` 占位，
+  生产构建会把所有 `?v=dev` 替换为单一 `BUILD_ID`（覆盖 Worker URL 和 Worker 内部 import）。
+
+## 6 · Homepage, SEO & Style（门户）
+
+- 无框架原生 HTML/CSS/ES Module，无构建依赖。
+- `games.json` 驱动：卡片、JSON-LD、`scripts/gen-sitemap.mjs`。sitemap 只进首页和非
+  comingSoon 的同域游戏根。
+- Poki 风：`--bg #83ffe7` 薄荷绿 + 固定 `assets/bg-diamante.svg` 纹理；
+  `--ink #002b50`；`--accent #009cff`；白面；`--radius 16px`；`--gap 16px`；
+  软阴影 `rgba(93,107,132,…)`。**只用系统 sans-serif，不加载 webfont。**
+- 卡片：1:1 封面方格瓦片（`aspect-ratio: 1/1`）`auto-fill minmax(204px,1fr)`；
+  <520px 降到 140px。卡片上不挂 tags / description / 分组；标题 hover 渐显遮罩。
+- Hover 非对称：静止 0.6s `cubic-bezier(.25,.1,.25,1)`，hover 覆盖为 0.3s；
+  `scale(1.04) translateY(-4px)`。hover 需要 `z-index`（container-type 产生层叠上下文）。
+  全部 motion 支持 `prefers-reduced-motion: reduce` 降级。
+- `cover` 必须 1:1，发布图 640×640 WebP，路径 `assets/covers/<slug>.webp`。
+  非正方形 art `object-fit: cover` 裁剪。
+
+## 7 · Working Rules
+
+- **一次只发一个独立特性的小补丁**，然后更新 PROJECT_LOG.md。
+- 门户 / 构建脚本 / games.json / 部署 → 跑 `npm run build`。
+- 单游戏测试门禁：
+  - Sudoku：`games/sudoku` 下 `npm run typecheck && npm test`。
+  - 2048：`games/2048` 下 `node --test tests/engine.test.mjs tests/storage.test.mjs tests/i18n.test.mjs tests/markup.test.mjs`（Node 22 必须给文件名，不能只给 `tests` 目录）。
+- Commit message：英文，conventional-commit 前缀（feat/fix/docs/chore），body 解释为什么改。
+- Deploy workflow 已升级到 `actions/checkout@v5` + `actions/setup-node@v6`（Node 22）。
