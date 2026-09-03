@@ -2,8 +2,13 @@ import { canExtract, canInsert } from "../engine.mjs?v=dev";
 
 const NS = "http://www.w3.org/2000/svg";
 const CENTER = { x: 500, y: 500 };
-const COLORS = ["#ff6e78", "#6b9cff", "#68d69b", "#c18bff", "#ffad62", "#e6d36f"];
-const PLANET_SHADOWS = ["#8e253f", "#24428d", "#1d7b62", "#5b2e9f", "#9a4d29", "#9d8326"];
+const ORB_THEMES = Object.freeze({
+  aurora: { colors: ["#ff7f91", "#6eb7ff", "#72e0bd", "#c59aff", "#ffc071", "#f3e17d"], shadows: ["#84283f", "#204f94", "#1c765f", "#61329b", "#9d5328", "#8e7a21"] },
+  ember: { colors: ["#ff655f", "#ff9b54", "#ffd166", "#d97849", "#f1b36b", "#ffdf9a"], shadows: ["#7e201d", "#8b3d1e", "#8a6518", "#71301e", "#865225", "#8d642f"] },
+  verdant: { colors: ["#69e6a6", "#57c8b8", "#a0df68", "#4da9a0", "#d0e878", "#73d7dd"], shadows: ["#176343", "#155e58", "#4d6f1e", "#1a5550", "#66731d", "#206870"] },
+  violet: { colors: ["#d37cff", "#8e83ff", "#ff73b6", "#7ea8ff", "#e2a1ff", "#b16fe8"], shadows: ["#612783", "#39327f", "#84264f", "#2c4c88", "#70418b", "#4e2475"] },
+  abyss: { colors: ["#66d9ff", "#4f76ff", "#52e0dc", "#816cff", "#93b8ff", "#c4e8ff"], shadows: ["#145675", "#1b2d80", "#176b69", "#342582", "#324d82", "#49677e"] },
+});
 
 function svg(name, attributes = {}) {
   const node = document.createElementNS(NS, name);
@@ -46,6 +51,7 @@ export function createBoardRenderer(board, { onTrack, onDock }) {
   const dockNodes = new Map();
   let trackCount = 0;
   let capacity = 0;
+  let currentTheme = "aurora";
 
   function buildStructure(state) {
     for (const layer of Object.values(layers)) layer.replaceChildren();
@@ -56,7 +62,8 @@ export function createBoardRenderer(board, { onTrack, onDock }) {
     capacity = state.capacity;
 
     const defs = svg("defs");
-    COLORS.forEach((color, index) => {
+    const palette = ORB_THEMES[currentTheme] ?? ORB_THEMES.aurora;
+    palette.colors.forEach((color, index) => {
       const gradient = svg("radialGradient", {
         id: `planet-gradient-${index}`,
         cx: "32%",
@@ -66,7 +73,7 @@ export function createBoardRenderer(board, { onTrack, onDock }) {
       gradient.append(
         svg("stop", { offset: "0%", "stop-color": "#ffffff", "stop-opacity": ".78" }),
         svg("stop", { offset: "24%", "stop-color": color, "stop-opacity": "1" }),
-        svg("stop", { offset: "100%", "stop-color": PLANET_SHADOWS[index], "stop-opacity": "1" }),
+        svg("stop", { offset: "100%", "stop-color": palette.shadows[index], "stop-opacity": "1" }),
       );
       defs.append(gradient);
     });
@@ -258,7 +265,8 @@ export function createBoardRenderer(board, { onTrack, onDock }) {
     let node = orbNodes.get(orb.id);
     if (node) return node;
     node = svg("g", { class: "orb", tabindex: -1, "data-color": orb.color });
-    const color = COLORS[orb.color] ?? COLORS[0];
+    const palette = ORB_THEMES[currentTheme] ?? ORB_THEMES.aurora;
+    const color = palette.colors[orb.color] ?? palette.colors[0];
     const aura = svg("circle", { class: "orb-aura", r: 40, fill: color });
     const surface = svg("g", { class: "orb-surface" });
     const shape = svg("circle", { class: "orb-shape", r: 34, fill: `url(#planet-gradient-${orb.color ?? 0})` });
@@ -362,6 +370,13 @@ export function createBoardRenderer(board, { onTrack, onDock }) {
 
   return {
     render,
+    setTheme(theme) {
+      const nextTheme = ORB_THEMES[theme] ? theme : "aurora";
+      board.dataset.theme = nextTheme;
+      if (nextTheme === currentTheme) return;
+      currentTheme = nextTheme;
+      trackCount = 0;
+    },
     flashTrack(trackId) {
       flash(trackNodes.get(trackId)?.group, "is-illegal");
     },

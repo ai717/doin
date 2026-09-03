@@ -48,9 +48,9 @@ dist/                                 构建产物 (git ignore)
 ## 5 · Orbit-sort · 稳定基线（开发准入规则）
 
 ### 5.1 关卡暴露 & 参数硬边界
-- 当前发布仅暴露 7 关主线：`LEVELS = ALL_LEVELS.slice(0, 7)`，对应 D1..D7，由
-  `difficulty.mjs paramsForDifficulty(1..7)` 决定。L8+ 保留为源码素材，**不得被运行路径
-  误导出**。
+- 当前发布为 5 章 × 20 题，共 100 关主线。每章难度采用波浪式编排，整体随章节上升；
+  关卡由 `difficulty.mjs paramsForDifficulty(1..7)` 的 7 个母题经等价变换生成。
+  不得在运行路径暴露未纳入 `LEVELS` 的源码素材。
 - difficulty.mjs 硬边界：capacity ∈ [3..7]，colorCount ∈ [3..6]，dockCount ∈ [1..2]，
   emptyTracks =  exactly 1。新引入参数的关卡需先让 `dockCount: 2` 缓冲一关再恢复 1。
   **不允许**任何关卡违反这条。

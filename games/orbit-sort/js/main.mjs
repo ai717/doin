@@ -1,7 +1,7 @@
 import { canExtract, canInsert } from "../engine.mjs?v=dev";
 import { createAudio } from "./audio.mjs?v=dev";
 import { createDailyLevel, todayKey } from "./daily.mjs?v=dev";
-import { LEVELS, levelById } from "../levels.mjs?v=dev";
+import { CHAPTERS, LEVELS, levelById } from "../levels.mjs?v=dev";
 import { createGame } from "./game.mjs?v=dev";
 import { createBoardRenderer } from "./renderer.mjs?v=dev";
 import { isValidStoredState, loadProgress, recordCompletion, recordDailyCompletion, saveCurrentGame, saveSoundPreference } from "./storage.mjs?v=dev";
@@ -343,13 +343,14 @@ const againButton = document.querySelector("#again-button");
 const continueButton = document.querySelector("#continue-button");
 const dailyButton = document.querySelector("#daily-button");
 const continueDailyButton = document.querySelector("#continue-daily-button");
+const levelSelectButton = document.querySelector("#level-select-button");
+const levelInfoButton = document.querySelector("#level-info-button");
+const levelInfoLayer = document.querySelector("#level-info-layer");
+const levelInfoText = document.querySelector("#level-info-text");
+const levelInfoCloseButton = document.querySelector("#level-info-close-button");
 const resetConfirmButton = document.querySelector("#reset-confirm-button");
 const resetCancelButton = document.querySelector("#reset-cancel-button");
 const audio = createAudio({ soundOn: progress.settings.soundOn });
-const CHAPTERS = [
-  { id: 1, title: "初启航路", description: "掌握星核与中转槽 · 六关稳定版" },
-];
-
 function renderSoundButton(soundOn = audio.isOn()) {
   soundButton.setAttribute("aria-pressed", String(soundOn));
   soundButton.setAttribute("aria-label", soundOn ? "关闭声音" : "开启声音");
@@ -451,6 +452,14 @@ function requestSolvabilityCheck(nextState) {
 function renderSelect() {
   if (!levelGrid) return;
   continueButton.hidden = !isValidSavedGame(progress.currentGame);
+  const completedIds = Object.keys(progress?.bestByLevel ?? {})
+    .map(Number)
+    .filter(Number.isInteger);
+  const completedScoreIds = Object.keys(progress?.bestScoresByLevel ?? {})
+    .map(Number)
+    .filter(Number.isInteger);
+  const inferredUnlockedLevel = Math.max(1, ...completedIds, ...completedScoreIds) + 1;
+  const unlockedLevel = Math.min(LEVELS.length, Math.max(progress?.unlockedLevel | 0 || 1, inferredUnlockedLevel));
   // 快速判定（避免每次 renderSelect 都跑 generator+solver 阻塞主线）：
   //   只有 saved.dateKey == todayKey 且 game.levelId=="daily" 才认为是继续今日挑战
   //   game.state 具体合法性在点击 "继续今日挑战" 时 startDaily(restore) 再校验，不阻塞选关渲染
@@ -470,6 +479,7 @@ function renderSelect() {
     const completed = levels.filter((item) => progress?.bestByLevel?.[item.id]);
     const section = document.createElement("section");
     section.className = "chapter-map";
+    section.dataset.theme = chapter.theme;
     section.setAttribute("aria-labelledby", `chapter-title-${chapter.id}`);
     const heading = document.createElement("h2");
     heading.id = `chapter-title-${chapter.id}`;
@@ -486,7 +496,7 @@ function renderSelect() {
     path.className = "chapter-path";
     path.setAttribute("aria-label", `第 ${chapter.id} 章关卡`);
     levels.forEach((item, index) => {
-      const isUnlocked = (item.id ?? 0) <= (progress?.unlockedLevel ?? Infinity);
+      const isUnlocked = (item.id ?? 0) <= unlockedLevel;
       const best = progress?.bestByLevel?.[item.id] || null;
       const bestScoreRecord = progress?.bestScoresByLevel?.[item.id] || null;
       const button = document.createElement("button");
@@ -495,33 +505,32 @@ function renderSelect() {
       button.disabled = !isUnlocked;
       button.dataset.rowStart = String(index % 5 === 0);
       button.dataset.completed = String(Boolean(bestScoreRecord || best));
-      button.dataset.current = String(isUnlocked && item.id === progress?.unlockedLevel && !best && !bestScoreRecord);
+      button.dataset.current = String(isUnlocked && item.id === unlockedLevel && !best && !bestScoreRecord);
       button.style.animationDelay = `${index * 45}ms`;
       if (item.id === latestCompletedLevel) button.classList.add("is-new");
-      // 分数文案：已通关 → 历史最高 bestScoreRecord.score (兼容旧 best 没有分数时 fallback 到总分)
-      //         未通关 → 本关满分上限（perfect: base + move满分100 + time满分100 = 80+D*40+200）
-      const D = difficultyForLevel(item);
-      const perfect = (80 + D * 40) + 200;
-      const displayedScore = bestScoreRecord?.score ?? perfect;
-      const scoreLabel = bestScoreRecord ? "最高分" : "总分";
+      // 分数文案：已通关显示“得分 / 总分”，未游玩显示“总分”。
+      const perfect = perfectScoreForLevel(item, false);
+      const hasScore = Boolean(bestScoreRecord);
+      const displayedScore = hasScore ? `${bestScoreRecord.score}/${perfect}` : String(perfect);
+      const scoreLabel = hasScore ? "得分" : "总分";
       button.setAttribute(
         "aria-label",
-        bestScoreRecord
-          ? `第 ${item.id} 关，已通关，${scoreLabel} ${displayedScore}`
-          : isUnlocked ? `第 ${item.id} 关，${scoreLabel} ${displayedScore}，可开始` : `第 ${item.id} 关，未解锁，总分 ${displayedScore}`
+        hasScore
+          ? `第 ${item.id} 关，已通关，得分 ${bestScoreRecord.score}，总分 ${perfect}`
+          : isUnlocked ? `第 ${item.id} 关，总分 ${perfect}，可开始` : `第 ${item.id} 关，未解锁，总分 ${perfect}`
       );
       // 行星层级：表面大气+纹理球体 + 号码 + 底部分数标签
       const planet = document.createElement("span");
       planet.className = "planet";
       planet.dataset.completed = String(Boolean(bestScoreRecord || best));
-      planet.dataset.difficulty = String(D);
+      planet.dataset.difficulty = String(item.difficulty ?? difficultyForLevel(item));
       const number = document.createElement("span");
       number.className = "node-number";
       number.textContent = String(item.id);
       planet.append(number);
       const scoreBadge = document.createElement("small");
       scoreBadge.className = "node-score";
-      scoreBadge.dataset.kind = bestScoreRecord ? "best" : "perfect";
+      scoreBadge.dataset.kind = hasScore ? "best" : "perfect";
       scoreBadge.setAttribute("aria-label", `${scoreLabel} ${displayedScore}`);
       scoreBadge.innerHTML = `<em>${scoreLabel}</em><strong>${displayedScore}</strong>`;
       button.append(planet, scoreBadge);
@@ -547,7 +556,9 @@ function isValidDailyGame(saved, dailyLevel) {
 }
 
 function startLevel(levelId, restoredState = null) {
-  startGame(levelById(levelId), restoredState);
+  const selectedLevel = levelById(Number(levelId));
+  if (!selectedLevel) return;
+  startGame(selectedLevel, restoredState);
 }
 
 function startDaily(restoredState = null) {
@@ -557,6 +568,8 @@ function startDaily(restoredState = null) {
 function startGame(nextLevel, restoredState = null) {
   clearHint();
   level = nextLevel;
+  document.body.dataset.orbitTheme = level.theme ?? "aurora";
+  renderer.setTheme(level.theme ?? "aurora");
   game = createGame(level, restoredState);
   initialState = game.initialState;
   resultShown = false;
@@ -580,6 +593,27 @@ function startGame(nextLevel, restoredState = null) {
     const firstTrack = game.state.tracks.find((track) => canExtract(game.state, track.id));
     renderer.showGuide(firstTrack?.id);
   }
+}
+
+function showLevelSelect() {
+  if (!game || !selectScreen || !playScreen) return;
+  clearHint();
+  playScreen.classList.remove("is-active");
+  selectScreen.hidden = false;
+  renderSelect();
+  dailyButton?.focus();
+}
+
+function showLevelInfo() {
+  if (!level || !levelInfoLayer || !levelInfoText) return;
+  const difficulty = difficultyForLevel(level);
+  const tracks = level.tracks?.length ?? 0;
+  const capacity = level.capacity ?? "-";
+  const docks = level.dockCount ?? level.docks?.length ?? "-";
+  levelInfoText.textContent = level.id === "daily"
+    ? `今日挑战 · ${level.dateKey ?? todayKey()} · 难度 D${difficulty} · ${tracks} 条轨道 · 容量 ${capacity} · 中转槽 ${docks} · 目标 ${level.par} 步`
+    : `第 ${level.id} 关 · 难度 D${difficulty} · ${tracks} 条轨道 · 容量 ${capacity} · 中转槽 ${docks} · 目标 ${level.par} 步`;
+  openDialog(levelInfoLayer, levelInfoButton, levelInfoCloseButton);
 }
 
 function showResult() {
@@ -891,6 +925,7 @@ soundButton && soundButton.addEventListener("click", () => {
 document.addEventListener("keydown", (event) => {
   if (event.key === "Escape") {
     if (resetLayer && !resetLayer.hidden) return closeDialog(resetLayer);
+    if (levelInfoLayer && !levelInfoLayer.hidden) return closeDialog(levelInfoLayer);
     if (resultLayer && !resultLayer.hidden) {
       resultLayer.hidden = true;
       playScreen && playScreen.classList.remove("is-active");
@@ -928,6 +963,9 @@ againButton && againButton.addEventListener("click", () => {
 continueButton && continueButton.addEventListener("click", () => startLevel(progress.currentGame.levelId, progress.currentGame.state));
 dailyButton && dailyButton.addEventListener("click", () => startDaily());
 continueDailyButton && continueDailyButton.addEventListener("click", () => startDaily(progress.daily.currentGame));
+levelSelectButton && levelSelectButton.addEventListener("click", showLevelSelect);
+levelInfoButton && levelInfoButton.addEventListener("click", showLevelInfo);
+levelInfoCloseButton && levelInfoCloseButton.addEventListener("click", () => closeDialog(levelInfoLayer));
 // 游戏内「今日挑战」按钮（位于工具按钮下方）：点击直接开启当日挑战
 const challengeButton = document.querySelector("#challenge-button");
 challengeButton && challengeButton.addEventListener("click", () => {
@@ -942,5 +980,10 @@ challengeButton && challengeButton.addEventListener("click", () => {
   }
 });
 renderSelect();
-if (isValidSavedGame(progress.currentGame)) startLevel(progress.currentGame.levelId, progress.currentGame.state);
+if (isValidSavedGame(progress.currentGame)) {
+  startLevel(progress.currentGame.levelId, progress.currentGame.state);
+} else {
+  const nextLevelId = Math.min(Math.max(1, progress.unlockedLevel | 0 || 1), LEVELS.length);
+  startLevel(nextLevelId);
+}
 }

@@ -172,7 +172,7 @@ export function recordCompletion(progress, level, movesOrDetail) {
   const next = {
     version: 1,
     settings: { soundOn: progress.settings?.soundOn !== false },
-    unlockedLevel: Math.max(progress.unlockedLevel, Math.min(30, level.id + 1)),
+    unlockedLevel: Math.max(progress.unlockedLevel, Math.min(100, level.id + 1)),
     bestByLevel: { ...progress.bestByLevel, [level.id]: starBest },
     bestScoresByLevel: nextScores,
     totalScore,

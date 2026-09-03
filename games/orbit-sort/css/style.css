@@ -25,6 +25,11 @@ body {
   overflow-y: auto;
   background: linear-gradient(180deg, #02030b 0%, #050718 50%, #010107 100%);
 }
+body[data-orbit-theme="aurora"] { background: linear-gradient(180deg, #06132a 0%, #07162d 52%, #030817 100%); }
+body[data-orbit-theme="ember"] { background: linear-gradient(180deg, #1d101b 0%, #100d1d 52%, #050611 100%); }
+body[data-orbit-theme="verdant"] { background: linear-gradient(180deg, #061a22 0%, #071724 52%, #030812 100%); }
+body[data-orbit-theme="violet"] { background: linear-gradient(180deg, #160b2b 0%, #0d0b23 52%, #040611 100%); }
+body[data-orbit-theme="abyss"] { background: linear-gradient(180deg, #061327 0%, #070e22 52%, #02050f 100%); }
 
 /* --- 动态星空底层 --- */
 #starfield { position: fixed; inset: 0; z-index: -1; width: 100%; height: 100%; display: block; pointer-events: none; }
@@ -595,8 +600,9 @@ body {
 }
 /* 分数徽章：在球下方 */
 .level-node .node-score {
-  display: inline-flex; align-items: baseline; gap: 6px;
-  padding: 3px 10px 4px;
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+  width: 88px; min-height: 30px; box-sizing: border-box;
+  padding: 4px 7px;
   border-radius: 999px;
   border: 1px solid rgba(126, 216, 255, .22);
   background: linear-gradient(180deg, rgba(18,28,70,.78), rgba(8,14,36,.86));
@@ -611,6 +617,8 @@ body {
   font-size: 10px;
   letter-spacing: .12em;
   color: #a6b7d9;
+  white-space: nowrap;
+  flex: 0 0 auto;
 }
 .level-node .node-score strong {
   font-weight: 800;
@@ -618,6 +626,8 @@ body {
   letter-spacing: .04em;
   color: #d9e7ff;
   text-shadow: 0 0 10px rgba(126,216,255,.3);
+  white-space: nowrap;
+  flex: 0 0 auto;
 }
 /* 已通关 "最高分" 徽章：金色 */
 .level-node .node-score[data-kind="best"] {
@@ -804,16 +814,99 @@ button, a { -webkit-tap-highlight-color: transparent; }
 .tool-button:active { transform: translateY(1px) scale(.97); }
 .tool-button:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
 .tool-button:disabled { opacity: .38; cursor: default; }
+.level-select-button { clip-path: none; border-radius: 14px; font-size: 24px; line-height: 1; color: #b9d8ff; text-shadow: 0 0 10px rgba(126, 216, 255, .3); }
+.level-select-button:hover { color: #fff; }
+
+/* 今日挑战作为次级入口，降低横幅感并与工具栏融为一体。 */
+.challenge-button {
+  min-height: 40px;
+  padding: 7px 16px;
+  gap: 9px;
+  font-size: 14px;
+  letter-spacing: .08em;
+  color: #dbe8ff;
+  border: 1px solid rgba(126, 216, 255, .28);
+  border-radius: 999px;
+  background: rgba(10, 20, 54, .58);
+  box-shadow: inset 0 1px rgba(255,255,255,.08), 0 5px 16px rgba(0,0,0,.2);
+  clip-path: none;
+  text-shadow: 0 0 10px rgba(126, 216, 255, .2);
+}
+.challenge-button::before { display: none; }
+.challenge-button:hover {
+  filter: none;
+  transform: translateY(-1px);
+  border-color: rgba(126, 216, 255, .62);
+  background: rgba(18, 35, 82, .78);
+  box-shadow: inset 0 1px rgba(255,255,255,.12), 0 7px 20px rgba(24, 91, 158, .24);
+}
+.ch-icon { width: 22px; height: 22px; font-size: 13px; box-shadow: 0 0 9px rgba(255, 180, 80, .42), inset 0 1px rgba(255,255,255,.8); }
+.ch-hint { padding: 2px 8px; color: #abc8ee; background: rgba(126, 216, 255, .08); border-color: rgba(126, 216, 255, .2); }
+
+/* 选关页重制：清晰的任务控制台层级，保留行星节点作为关卡识别。 */
+.select-screen {
+  display: block;
+  padding: clamp(28px, 6vw, 72px) 20px 72px;
+  background: #050817;
+}
+.select-screen[hidden] { display: none !important; }
+.select-screen::before { width: min(900px, 94vw); height: min(900px, 94vw); top: 14%; border-color: rgba(126, 216, 255, .045); box-shadow: none; }
+.select-header { display: block; max-width: 920px; margin: 0 auto 24px; text-align: center; }
+.select-header h1 { padding-inline: 12px; font-size: clamp(30px, 5vw, 52px); }
+.select-header p { margin-top: 12px; color: #91a6cd; letter-spacing: .12em; }
+.level-grid { max-width: 920px; gap: 16px; }
+.continue-button, .daily-button {
+  width: min(540px, 100%);
+  min-height: 46px;
+  margin-bottom: 10px;
+  padding: 0 20px;
+  border: 1px solid rgba(126, 216, 255, .28);
+  border-radius: 12px;
+  clip-path: none;
+  background: rgba(14, 27, 67, .72);
+  color: #dceaff;
+  box-shadow: inset 0 1px rgba(255,255,255,.08), 0 8px 20px rgba(0,0,0,.18);
+  text-align: center;
+  text-shadow: 0 0 10px rgba(126,216,255,.18);
+}
+.daily-button { border-color: rgba(255, 199, 102, .34); background: rgba(54, 39, 40, .62); color: #ffe2ad; }
+.continue-button::before, .daily-button::before, .continue-button::after, .daily-button::after { display: none; }
+.continue-button:hover, .daily-button:hover { transform: translateY(-1px); filter: none; background: rgba(22, 42, 92, .88); box-shadow: inset 0 1px rgba(255,255,255,.12), 0 10px 24px rgba(35, 91, 160, .2); }
+.daily-button:hover { background: rgba(76, 52, 43, .78); }
+.chapter-map {
+  clip-path: none;
+  padding: 22px 26px 28px;
+  border: 1px solid rgba(126, 180, 255, .2);
+  border-radius: 16px;
+  background: rgba(9, 17, 45, .76);
+  box-shadow: 0 16px 38px rgba(0,0,0,.2);
+}
+.chapter-map::before, .chapter-map::after { display: none; }
+.chapter-map h2 { text-align: center; font-size: 18px; letter-spacing: .1em; }
+.chapter-map p { text-align: center; color: #879bc4; }
+.chapter-progress { max-width: 620px; margin: 0 auto 8px; background: rgba(126, 160, 226, .14); }
+.chapter-path { max-width: 760px; margin: 0 auto; gap: 24px 12px; }
+.chapter-map[data-theme="aurora"] { border-color: rgba(126, 216, 255, .28); }
+.chapter-map[data-theme="ember"] { border-color: rgba(255, 145, 92, .34); }
+.chapter-map[data-theme="verdant"] { border-color: rgba(105, 230, 166, .3); }
+.chapter-map[data-theme="violet"] { border-color: rgba(211, 124, 255, .32); }
+.chapter-map[data-theme="abyss"] { border-color: rgba(102, 217, 255, .3); }
+
+@media (max-width: 700px) {
+  .select-screen { padding: 28px 14px 48px; }
+  .chapter-map { padding: 18px 12px 22px; }
+  .chapter-path { gap: 20px 6px; }
+}
 
 h1 { margin: 0; font-size: 22px; font-weight: 800; letter-spacing: .08em; text-shadow: 0 0 20px rgba(126, 216, 255, .3); }
-.level-label { margin: 4px 0 0; padding: 5px 18px; font-size: 16px; font-weight: 600; letter-spacing: .08em; color: #dbe6ff; border: 1px solid rgba(142, 172, 255, .28); border-radius: 16px; background: rgba(10, 18, 48, .44); text-shadow: 0 0 8px rgba(126, 216, 255, .18); box-shadow: inset 0 1px rgba(255,255,255,.05), 0 0 14px rgba(76, 140, 255, .1); }
+.level-label { margin: 4px auto 0; padding: 5px 18px; font-size: 16px; font-weight: 600; letter-spacing: .08em; color: #dbe6ff; text-align: center; border: 1px solid rgba(142, 172, 255, .28); border-radius: 16px; background: rgba(10, 18, 48, .44); text-shadow: 0 0 8px rgba(126, 216, 255, .18); box-shadow: inset 0 1px rgba(255,255,255,.05), 0 0 14px rgba(76, 140, 255, .1); }
 
 /* --- HUD 数据卡片化（标签小字 + 数值大字） --- */
 .hud { display: flex; gap: 14px; margin-top: 10px; flex-wrap: wrap; justify-content: center; }
 .hud-card {
   display: inline-flex;
   flex-direction: column;
-  align-items: flex-start;
+  align-items: center;
   gap: 2px;
   padding: 8px 22px 10px;
   min-width: 96px;
@@ -826,7 +919,7 @@ h1 { margin: 0; font-size: 22px; font-weight: 800; letter-spacing: .08em; text-s
 }
 .hud-card::before { position: absolute; top: -1px; left: 16px; right: 16px; height: 2px; border-radius: 0 0 4px 4px; content: ""; opacity: .7; }
 .hud-tag { font-size: 10px; letter-spacing: .18em; text-transform: uppercase; color: var(--muted); opacity: .82; }
-.hud-value { font-size: 24px; font-weight: 700; font-variant-numeric: tabular-nums; line-height: 1.1; letter-spacing: .01em; display: inline-flex; align-items: baseline; gap: 3px; }
+.hud-value { width: 100%; justify-content: center; text-align: center; font-size: 24px; font-weight: 700; font-variant-numeric: tabular-nums; line-height: 1.1; letter-spacing: .01em; display: inline-flex; align-items: baseline; gap: 3px; }
 
 .hud-move { border-color: rgba(126, 216, 255, .32); }
 .hud-move::before { background: linear-gradient(90deg, transparent, var(--accent-cool), transparent); box-shadow: 0 0 8px rgba(126, 216, 255, .6); }
@@ -1084,7 +1177,7 @@ h1 { margin: 0; font-size: 22px; font-weight: 800; letter-spacing: .08em; text-s
   .select-screen { padding: 22px 20px; }
   .chapter-path { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 22px 10px; }
   .level-node .node-number { font-size: 22px; }
-  .level-node .node-score { padding: 3px 8px 4px; gap: 4px; }
+  .level-node .node-score { width: 82px; min-height: 28px; padding: 3px 4px 4px; gap: 3px; }
   .level-node .node-score em { font-size: 9px; letter-spacing: .1em; }
   .level-node .node-score strong { font-size: 12px; }
   .level-node { aspect-ratio: 1 / 1.28; }
@@ -1141,3 +1234,56 @@ h1 { margin: 0; font-size: 22px; font-weight: 800; letter-spacing: .08em; text-s
 }
 .level-node[data-current="true"] { box-shadow: none; }
 .level-node[data-current="true"] .planet { box-shadow: inset -6px -10px 18px rgba(0,0,0,.52), inset 6px 8px 14px rgba(255,255,255,.22), 0 0 0 4px rgba(112,188,255,.4), 0 14px 26px rgba(0,0,0,.36); }
+
+/* 标题重制：收敛金属装饰，突出清晰的星图标记感。 */
+.game-title,
+.select-header h1 {
+  display: inline-block;
+  position: relative;
+  margin: 0;
+  padding: 4px 18px 9px;
+  isolation: isolate;
+  color: #f2f7ff;
+  font-weight: 800;
+  letter-spacing: .12em;
+  line-height: 1.08;
+  text-shadow:
+    0 1px 0 #8ea8cf,
+    0 3px 0 rgba(27, 49, 92, .92),
+    0 8px 18px rgba(0, 0, 0, .56),
+    0 0 22px rgba(111, 196, 255, .3);
+  background: linear-gradient(180deg, #ffffff 0%, #dceaff 48%, #9eb9e5 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: none;
+}
+.game-title::before,
+.select-header h1::before {
+  content: "";
+  position: absolute;
+  left: 14%;
+  right: 14%;
+  top: -4px;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(126, 216, 255, .75), transparent);
+  box-shadow: 0 0 9px rgba(126, 216, 255, .42);
+}
+.game-title::after,
+.select-header h1::after {
+  content: "";
+  position: absolute;
+  left: 12%;
+  right: 12%;
+  bottom: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent 0 8%, #efbd68 8% 46%, #7ed8ff 46% 54%, #efbd68 54% 92%, transparent 92%);
+  box-shadow: 0 0 10px rgba(126, 216, 255, .35);
+}
+.select-header h1 { padding-top: 5px; }
+.select-header h1::after { left: 9%; right: 9%; }
+
+@media (max-width: 700px) {
+  .game-title { padding-inline: 10px; letter-spacing: .08em; }
+  .select-header h1 { padding-inline: 12px; letter-spacing: .08em; }
+}

@@ -2,27 +2,30 @@ import assert from "node:assert/strict";
 import test from "node:test";
 
 import { isSolved, isTrackComplete } from "../engine.mjs";
-import { createLevelState, LEVELS } from "../levels.mjs";
+import { CHAPTERS, createLevelState, LEVELS } from "../levels.mjs";
 import { replayActions, solve } from "../solver.mjs";
 
 function colorsIn(level) {
   return new Set(level.tracks.flat());
 }
 
-test("the published mainline release contains seven randomly generated difficulty levels", () => {
-  assert.equal(LEVELS.length, 7);
+test("the campaign contains five themed chapters with twenty unique levels each", () => {
+  assert.equal(CHAPTERS.length, 5);
+  assert.equal(LEVELS.length, 100);
   for (const [index, level] of LEVELS.entries()) {
     assert.equal(level.id, index + 1);
-    assert.equal(level.chapter, 1);
-    assert.match(level.seed, /^1788344956434-L[1-7]-\d+$/);
+    assert.equal(level.chapter, Math.floor(index / 20) + 1);
+    assert.equal(level.chapterIndex, (index % 20) + 1);
+    assert.match(level.seed, /^campaign-v1-c[1-5]-l(?:[1-9]|1\d|20)-d[1-7]-v\d+$/);
   }
-  // 难度渐进：cap 3→3→4→4→4→5→5；col 3→3→3→3→4→4→5；dock 2→1→2→1→2→1→2
-  // 严格符合：新参数(cap/col)首次出现给2dock，下一关收回为1dock；emptyCount=1固定
-  assert.deepEqual(
-    LEVELS.map((level) => [level.capacity, level.dockCount, colorsIn(level).size]),
-    [[3, 2, 3], [3, 1, 3], [4, 2, 3], [4, 1, 3], [4, 2, 4], [5, 1, 4], [5, 2, 5]],
-  );
-  assert.deepEqual(LEVELS.map((level) => level.par), [7, 7, 11, 13, 14, 23, 26]);
+  assert.equal(new Set(LEVELS.map((level) => JSON.stringify([level.capacity, level.dockCount, level.tracks]))).size, 100);
+  const averages = CHAPTERS.map((chapter) => chapter.difficulties.reduce((sum, value) => sum + value, 0) / 20);
+  assert.equal(averages.every((value, index) => index === 0 || value > averages[index - 1]), true);
+  for (const chapter of CHAPTERS) {
+    assert.equal(chapter.difficulties.length, 20);
+    assert.equal(chapter.difficulties.some((value, index) => index > 0 && value < chapter.difficulties[index - 1]), true);
+    assert.equal(LEVELS.filter((level) => level.chapter === chapter.id && level.theme === chapter.theme).length, 20);
+  }
 });
 
 test("each level has exact color counts and is not pre-solved", () => {
@@ -45,8 +48,10 @@ test("each level has exact color counts and is not pre-solved", () => {
   }
 });
 
-test("each level par is the 0-1 BFS minimum and its path wins", () => {
-  for (const level of LEVELS) {
+test("each canonical difficulty template has an exact par and winning replay", () => {
+  const representatives = [...new Map(LEVELS.map((level) => [level.sourceLevelId, level])).values()];
+  assert.equal(representatives.length, 7);
+  for (const level of representatives) {
     const initial = createLevelState(level);
     const result = solve(initial, { nodeLimit: 2_000_000, timeLimitMs: 5_000 });
     assert.equal(result.status, "solved", `level ${level.id} did not solve`);
@@ -56,6 +61,6 @@ test("each level par is the 0-1 BFS minimum and its path wins", () => {
   }
 });
 
-test("the published mainline keeps special mechanics out of the seven levels", () => {
+test("the campaign keeps special mechanics out of the one hundred levels", () => {
   assert.equal(LEVELS.every((level) => level.modifiers.length === 0), true);
 });

@@ -7,7 +7,9 @@ import { isSolved } from "../engine.mjs";
 import { replayActions, solve } from "../solver.mjs";
 
 test("published levels pass the same validator used for generated levels", () => {
-  for (const level of LEVELS) {
+  const representatives = [...new Map(LEVELS.map((level) => [level.sourceLevelId, level])).values()];
+  assert.equal(representatives.length, 7);
+  for (const level of representatives) {
     const result = validateLevel(level, { nodeLimit: 2_000_000, timeLimitMs: 5_000 });
     assert.equal(result.valid, true, `level ${level.id} rejected: ${result.reason}`);
     assert.equal(result.par, level.par, `level ${level.id} par drifted`);

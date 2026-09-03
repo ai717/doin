@@ -62,7 +62,10 @@ test("baseScore 今日挑战 +200 基础分奖励（高分翻倍爽感）", () =
 // —— 满分上限 perfectScoreForLevel (base + move满分 + time满分) ——
 test("perfectScore 主线关：D1=320 (120+100+100), D3/D7 按公式 80+D*40+200", async () => {
   const { LEVELS } = await import("../levels.mjs?v=dev");
-  const L1 = LEVELS[0], L3 = LEVELS[2], L7 = LEVELS[6];
+  // 章节内采用波浪式难度，不能再假设固定索引对应 D1/D3/D7。
+  const L1 = LEVELS.find((level) => level.difficulty === 1);
+  const L3 = LEVELS.find((level) => level.difficulty === 3);
+  const L7 = LEVELS.find((level) => level.difficulty === 7);
   const D1 = difficultyForLevel(L1);
   const D3 = difficultyForLevel(L3);
   const D7 = difficultyForLevel(L7);
@@ -99,7 +102,7 @@ test("perfectScore 今日挑战：加 +200 bonus 且维满分=150/150 → total 
   assert.equal(d6, 820, `D6 daily perfect = 820, actual ${d6}`);
 
   // 强制主线 L1 关使用每日满分公式：L1 D=1 → base=120+200=320, move=150, time=150 → total 620
-  const L1 = LEVELS[0];
+  const L1 = LEVELS.find((level) => level.difficulty === 1);
   const L1daily = perfectScoreForLevel(L1, true);
   const L1regular = perfectScoreForLevel(L1);
   assert.equal(L1regular, 320, `主线 L1 正常满分应 = 320`);

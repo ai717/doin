@@ -69,7 +69,7 @@
         <circle cx="30" cy="12" r="1" fill="rgba(255,240,210,.25)"/>
       </svg>
     </div>
-    <main id="select-screen" class="select-screen">
+    <main id="select-screen" class="select-screen" hidden>
       <header class="select-header"><div><h1>星轨调度大师</h1><p>选择一条星轨继续调度</p></div></header>
       <section><button id="daily-button" class="daily-button" type="button">今日挑战</button><button id="continue-daily-button" class="continue-button" type="button" hidden>继续今日挑战</button><button id="continue-button" class="continue-button" type="button" hidden>继续上次对局</button><div id="level-grid" class="level-grid" aria-label="主线关卡"></div></section>
     </main>
@@ -110,6 +110,8 @@
           </svg>
         </div>
         <div class="game-tools" aria-label="对局工具">
+          <button id="level-select-button" class="tool-button level-select-button" type="button" aria-label="关卡选择" title="关卡选择">▦</button>
+          <button id="level-info-button" class="tool-button" type="button" aria-label="关卡详情" title="关卡详情">ⓘ</button>
           <button id="sound-button" class="tool-button" type="button" aria-label="声音" aria-pressed="true" title="声音">&#9835;</button>
           <button id="hint-button" class="tool-button" type="button" aria-label="帮助" title="帮助 (H)">?</button>
           <button id="reset-button" class="tool-button" type="button" aria-label="重置" title="重置 (R)">&#8635;</button>
@@ -146,6 +148,9 @@
       </section>
       <section id="reset-layer" class="result-layer" role="dialog" aria-modal="true" aria-labelledby="reset-title" hidden>
         <div class="result-panel"><h2 id="reset-title">重新开始本关？</h2><p>当前调度将被清除。</p><button id="reset-confirm-button" type="button">重新开始</button><button id="reset-cancel-button" type="button">继续当前</button></div>
+      </section>
+      <section id="level-info-layer" class="result-layer" role="dialog" aria-modal="true" aria-labelledby="level-info-title" hidden>
+        <div class="result-panel"><h2 id="level-info-title">关卡详情</h2><p id="level-info-text"></p><button id="level-info-close-button" type="button">返回对局</button></div>
       </section>
     </main>
     <script type="module" src="./js/bootstrap.mjs?v=dev"></script>
