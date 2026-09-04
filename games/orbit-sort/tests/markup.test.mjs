@@ -86,6 +86,8 @@ test("renderer keeps the required keyed SVG layers and focusable controls", asyn
   assert.match(main, /openDialog/);
   assert.match(main, /event\.key === "Escape"/);
   assert.match(main, /renderer\.showGuide/);
+  assert.match(main, /soundButton\.querySelector\("\.tool-icon"\)/);
+  assert.match(main, /soundButton\.querySelector\("\.tool-label"\)/);
   assert.match(main, /createGame/);
   assert.match(main, /const nextLevelId = Math\.min\(Math\.max\(1, progress\.unlockedLevel/);
   assert.match(main, /function showLevelSelect\(\)/);

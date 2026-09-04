@@ -355,7 +355,10 @@ function renderSoundButton(soundOn = audio.isOn()) {
   soundButton.setAttribute("aria-pressed", String(soundOn));
   soundButton.setAttribute("aria-label", soundOn ? "关闭声音" : "开启声音");
   soundButton.title = soundOn ? "关闭声音" : "开启声音";
-  soundButton.textContent = soundOn ? "♫" : "×";
+  const icon = soundButton.querySelector(".tool-icon");
+  const label = soundButton.querySelector(".tool-label");
+  if (icon) icon.textContent = soundOn ? "♫" : "×";
+  if (label) label.textContent = soundOn ? "声音" : "静音";
 }
 
 let statusTimer = null;

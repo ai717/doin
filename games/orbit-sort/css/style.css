@@ -1346,3 +1346,56 @@ h1 { margin: 0; font-size: 22px; font-weight: 800; letter-spacing: .08em; text-s
   .tool-button { width: 52px; height: 66px; }
   .challenge-button { min-height: 52px; clip-path: none; }
 }
+
+/* 标题品牌化：轨道眉标 + 星核节点 + 分层字面，避免普通横幅标题感。 */
+.game-title {
+  margin-top: 12px;
+  padding: 20px 22px 10px;
+  color: #e7f4ff;
+  font-size: clamp(30px, 5.4vw, 56px);
+  font-weight: 850;
+  letter-spacing: .14em;
+  line-height: 1;
+  text-shadow:
+    0 2px 0 rgba(104, 139, 193, .9),
+    0 5px 0 rgba(24, 43, 92, .95),
+    0 12px 24px rgba(0, 0, 0, .5),
+    0 0 28px rgba(104, 202, 255, .38);
+  background: linear-gradient(180deg, #ffffff 0%, #dff1ff 38%, #8fb8e7 78%, #c6e8ff 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.game-title::before {
+  content: "ORBIT / SORT  ·  SECTOR 01";
+  display: block;
+  position: absolute;
+  top: 2px;
+  left: 24px;
+  color: rgba(145, 217, 255, .78);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: .34em;
+  line-height: 1;
+  text-shadow: 0 0 10px rgba(93, 202, 255, .6);
+  -webkit-text-fill-color: initial;
+}
+.game-title::after {
+  content: "";
+  position: absolute;
+  right: 8px;
+  bottom: 8px;
+  width: 8px;
+  height: 8px;
+  border: 2px solid #ffd27b;
+  border-radius: 50%;
+  background: #fff4c4;
+  box-shadow: 0 0 0 5px rgba(255, 210, 123, .12), 0 0 18px rgba(255, 210, 123, .9);
+}
+.select-header h1::before,
+.select-header h1::after { display: none !important; }
+@media (max-width: 700px) {
+  .game-title { padding: 18px 12px 9px; letter-spacing: .09em; }
+  .game-title::before { left: 14px; font-size: 8px; letter-spacing: .22em; }
+  .game-title::after { right: 2px; bottom: 7px; width: 6px; height: 6px; }
+}
