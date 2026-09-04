@@ -49,14 +49,12 @@ body {
 
 /* Brand chip: white 3D tile with diamond dot, text "Doin.win", home link. */
 .site-title {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 14px 22px;
+  display: inline-block;
+  padding: 16px 28px;
   color: var(--ink);
-  font-size: 22px;
-  font-weight: 700;
-  letter-spacing: 0.02em;
+  font-size: clamp(26px, 4vw, 34px);
+  font-weight: 800;
+  letter-spacing: -0.02em;
   line-height: 1.1;
   text-decoration: none;
   background: var(--surface);
@@ -67,24 +65,13 @@ body {
 
 .site-title:hover, .site-title:focus-visible { transform: scale(1.04) translateY(-4px); transition-duration: 0.3s; }
 
-.site-title-dot {
-  width: 12px;
-  height: 12px;
-  flex: none;
-  background: var(--accent);
-  border-radius: 4px;
-  transform: rotate(45deg);
-}
-
+/* ".win" 用品牌蓝渐变文字，给字标一点记忆点 */
 .site-title-tld {
-  color: var(--accent);
-  letter-spacing: 0.01em;
-}
-
-.site-title:hover .site-title-tld, .site-title:focus-visible .site-title-tld {
-  text-decoration: underline;
-  text-decoration-thickness: 2.5px;
-  text-underline-offset: 5px;
+  background: linear-gradient(120deg, var(--accent), #33d6ff);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  letter-spacing: -0.01em;
 }
 
 .page-head h1 {
