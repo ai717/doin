@@ -2,10 +2,19 @@
 
 export function createAudio({ soundOn: initialSoundOn = true } = {}) {
   let context = null;
+  let master = null;
   let soundOn = initialSoundOn;
 
   function activate() {
-    if (!context && "AudioContext" in window) context = new AudioContext();
+    if (!context && "AudioContext" in window) {
+      context = new AudioContext();
+      master = context.createGain();
+      // The synthesized tones are intentionally gentle, but laptop speakers
+      // make the old 0.02–0.05 envelope hard to hear. Lift the game mix while
+      // keeping the browser/system volume as the final user-controlled stage.
+      master.gain.value = 1.8;
+      master.connect(context.destination);
+    }
     if (context?.state === "suspended") context.resume().catch(() => {});
   }
 
@@ -20,7 +29,7 @@ export function createAudio({ soundOn: initialSoundOn = true } = {}) {
     envelope.gain.setValueAtTime(0.0001, now);
     envelope.gain.exponentialRampToValueAtTime(gain, now + 0.012);
     envelope.gain.exponentialRampToValueAtTime(0.0001, now + duration);
-    oscillator.connect(envelope).connect(context.destination);
+    oscillator.connect(envelope).connect(master ?? context.destination);
     oscillator.start(now);
     oscillator.stop(now + duration + 0.02);
   }

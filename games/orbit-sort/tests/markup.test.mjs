@@ -150,6 +150,8 @@ test("feedback uses synthesized audio and respects reduced motion", async () => 
   ]);
   assert.match(audio, /AudioContext/);
   assert.match(audio, /createOscillator/);
+  assert.match(audio, /master\.gain\.value = 1\.8/);
+  assert.match(audio, /connect\(master \?\? context\.destination\)/);
   assert.doesNotMatch(audio, /https?:\/\//);
   assert.match(stylesheet, /prefers-reduced-motion: reduce/);
   assert.match(stylesheet, /completion-burst/);
