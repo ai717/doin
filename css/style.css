@@ -43,53 +43,43 @@ body {
 
 .site-nav, .page, .site-footer { position: relative; z-index: 1; }
 
-/* Brand anchored left like Poki's header. */
-.site-nav {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: var(--gap) var(--gap) 0;
-}
-
-.brand {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 12px 20px;
-  color: var(--ink);
-  font-size: 22px;
-  font-weight: 700;
-  letter-spacing: 0.02em;
-  text-decoration: none;
-  background: var(--surface);
-  border-radius: var(--radius);
-  box-shadow: var(--shadow-chip);
-  transition: transform 0.6s var(--ease);
-}
-
-.brand:hover, .brand:focus-visible { transform: scale(1.04) translateY(-4px); transition-duration: 0.3s; }
-
-.brand-dot {
-  width: 12px;
-  height: 12px;
-  background: var(--accent);
-  border-radius: 4px;
-  transform: rotate(45deg);
-}
-
 .page { flex: 1; width: min(100%, 1024px); margin: 0 auto; padding: 28px var(--gap) 72px; }
 
 .page-head { margin-bottom: 24px; }
 
-/* Site title above the headline, left-aligned like Poki's logo block. */
+/* Brand wordmark: diamond dot + "Doin.win", doubles as home link. */
 .site-title {
-  font-size: clamp(30px, 6vw, 44px);
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  color: var(--ink);
+  font-size: clamp(32px, 6vw, 46px);
   font-weight: 800;
-  letter-spacing: -0.02em;
+  letter-spacing: -0.03em;
   line-height: 1.1;
+  text-decoration: none;
 }
 
-.site-title-tld { color: var(--accent); }
+.site-title-dot {
+  width: 14px;
+  height: 14px;
+  flex: none;
+  background: linear-gradient(135deg, var(--accent), #33d6ff);
+  border-radius: 4px;
+  transform: rotate(45deg);
+  box-shadow: 0 2px 6px rgba(0, 156, 255, 0.35);
+}
+
+.site-title-tld {
+  color: var(--accent);
+  letter-spacing: -0.01em;
+}
+
+.site-title:hover .site-title-tld, .site-title:focus-visible .site-title-tld {
+  text-decoration: underline;
+  text-decoration-thickness: 3px;
+  text-underline-offset: 6px;
+}
 
 .page-head h1 {
   margin-top: 6px;
@@ -210,8 +200,6 @@ body {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .brand { transition: none; }
-  .brand:hover, .brand:focus-visible { transform: none; }
   /* 卡片 hover 放大保留（位移 ≤4px 不构成动效风险），仅去掉过渡动画改为瞬时。 */
   .game-card { transition-duration: 0.01s; }
 }
