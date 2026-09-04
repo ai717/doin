@@ -97,10 +97,10 @@ body[data-orbit-theme="abyss"] { background: linear-gradient(180deg, #061327 0%,
 .tool-label { display: block; color: rgba(196, 214, 245, .72); font-size: 10px; line-height: 1; letter-spacing: .08em; }
 .tool-button:hover .tool-label { color: #fff; }
 .challenge-row { padding-top: 18px; }
-.challenge-button { min-width: min(360px, 88vw); min-height: 56px; padding: 9px 20px; border: 1px solid rgba(255, 215, 137, .58); border-radius: 18px; clip-path: none; background: linear-gradient(110deg, rgba(255, 207, 117, .96), rgba(255, 236, 186, .98) 48%, rgba(151, 224, 255, .95)); color: #18214d; box-shadow: 0 10px 28px rgba(255, 190, 100, .22), inset 0 1px rgba(255,255,255,.9); }
+.challenge-button { min-width: 250px; min-height: 46px; padding: 7px 16px; border: 1px solid rgba(255, 215, 137, .58); border-radius: 16px; clip-path: none; background: linear-gradient(110deg, rgba(255, 207, 117, .96), rgba(255, 236, 186, .98) 48%, rgba(151, 224, 255, .95)); color: #18214d; box-shadow: 0 8px 22px rgba(255, 190, 100, .2), inset 0 1px rgba(255,255,255,.9); }
 .challenge-button::before { opacity: .2; }
 .ch-icon { width: 30px; height: 30px; font-size: 17px; }
-.ch-label { font-size: 16px; font-weight: 800; letter-spacing: .12em; }
+.ch-label { font-size: 15px; font-weight: 800; letter-spacing: .1em; }
 .ch-hint { color: #26345d; background: rgba(255,255,255,.48); border-color: rgba(74, 142, 198, .32); }
 
 /* === 科幻切角框架 + LED 角线基础（给 HUD / 按钮 / 关卡卡片用）
@@ -1333,7 +1333,7 @@ h1 { margin: 0; font-size: 22px; font-weight: 800; letter-spacing: .08em; text-s
 .tool-label { display: block; color: rgba(196, 214, 245, .72); font-size: 10px; line-height: 1; letter-spacing: .08em; }
 .tool-button:hover .tool-label { color: #fff; }
 .challenge-row { padding-top: 18px; }
-.challenge-button { min-width: min(360px, 88vw); min-height: 56px; padding: 9px 20px; border: 1px solid rgba(255, 215, 137, .58); border-radius: 18px; clip-path: none; background: linear-gradient(110deg, rgba(255, 207, 117, .96), rgba(255, 236, 186, .98) 48%, rgba(151, 224, 255, .95)); color: #18214d; box-shadow: 0 10px 28px rgba(255, 190, 100, .22), inset 0 1px rgba(255,255,255,.9); }
+.challenge-button { min-width: 250px; min-height: 46px; padding: 7px 16px; border: 1px solid rgba(255, 215, 137, .58); border-radius: 16px; clip-path: none; background: linear-gradient(110deg, rgba(255, 207, 117, .96), rgba(255, 236, 186, .98) 48%, rgba(151, 224, 255, .95)); color: #18214d; box-shadow: 0 8px 22px rgba(255, 190, 100, .2), inset 0 1px rgba(255,255,255,.9); }
 .ch-icon { width: 30px; height: 30px; font-size: 17px; }
 .ch-label { font-size: 16px; font-weight: 800; letter-spacing: .12em; }
 .ch-hint { color: #26345d; background: rgba(255,255,255,.48); border-color: rgba(74, 142, 198, .32); }
@@ -1344,7 +1344,7 @@ h1 { margin: 0; font-size: 22px; font-weight: 800; letter-spacing: .08em; text-s
   .hud-tag { font-size: 10px; }
   .hud-value, .hud-score-num, .hud-score-perfect, .hud-total-num { font-size: 21px; }
   .tool-button { width: 52px; height: 66px; }
-  .challenge-button { min-height: 52px; clip-path: none; }
+  .challenge-button { min-width: 220px; min-height: 44px; clip-path: none; }
 }
 
 /* 标题品牌化：轨道眉标 + 星核节点 + 分层字面，避免普通横幅标题感。 */
