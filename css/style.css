@@ -43,13 +43,19 @@ body {
 
 .site-nav, .page, .site-footer { position: relative; z-index: 1; }
 
-.site-nav { display: flex; justify-content: center; padding: var(--gap) var(--gap) 0; }
+/* Brand anchored left like Poki's header. */
+.site-nav {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: var(--gap) var(--gap) 0;
+}
 
 .brand {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  padding: 14px 22px;
+  padding: 12px 20px;
   color: var(--ink);
   font-size: 22px;
   font-weight: 700;
@@ -75,9 +81,38 @@ body {
 
 .page-head { margin-bottom: 24px; }
 
-.page-head h1 { font-size: clamp(28px, 5vw, 36px); font-weight: 700; line-height: 1.2; }
+/* Site title above the headline, left-aligned like Poki's logo block. */
+.site-title {
+  font-size: clamp(30px, 6vw, 44px);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+}
 
-.page-head p { margin-top: 8px; color: var(--ink-soft); font-size: 16px; }
+.site-title-tld { color: var(--accent); }
+
+.page-head h1 {
+  margin-top: 6px;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  font-size: clamp(24px, 4.5vw, 32px);
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+/* One-line tagline chip beside the headline. */
+.head-chip {
+  padding: 6px 14px;
+  font-size: clamp(13px, 2.4vw, 16px);
+  font-weight: 700;
+  color: var(--ink);
+  background: var(--surface);
+  border-radius: 999px;
+  box-shadow: var(--shadow-chip);
+  white-space: nowrap;
+}
 
 .game-grid {
   display: grid;
@@ -116,32 +151,27 @@ body {
   border-radius: var(--radius);
 }
 
-/* Cover art is bright at the bottom, so the label carries its own scrim. */
+/* Game name lives in an always-visible white pill at the bottom-left —
+   no gradient scrim, keeps cover art clean (Poki-style label). */
 .game-card__title {
   position: absolute;
-  right: 0;
-  bottom: 0;
-  left: 0;
+  bottom: 6%;
+  left: 6%;
   z-index: 6;
-  display: block;
-  padding: 34% 8% 8%;
-  color: #ffffff;
-  font-size: clamp(12px, 8cqi, 22px);
+  max-width: 88%;
+  padding: 5px 12px;
+  overflow: hidden;
+  color: var(--ink);
+  font-size: clamp(11px, 7cqi, 16px);
   font-weight: 700;
   line-height: 1.3;
-  text-align: center;
-  text-shadow: 0 1px 3px rgba(0, 27, 50, 0.45);
-  background-image: linear-gradient(to top, rgba(0, 27, 50, 0.78) 0%, rgba(0, 27, 50, 0.42) 48%, rgba(0, 27, 50, 0) 100%);
-  opacity: 0;
-  transform: translateY(8px);
-  transition: transform 0.3s var(--ease) 0.1s, opacity 0.3s var(--ease) 0.1s;
-}
-
-.game-card:hover .game-card__title,
-.game-card:focus-visible .game-card__title,
-.game-card:focus-within .game-card__title {
-  opacity: 1;
-  transform: none;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  background: rgba(255, 255, 255, 0.92);
+  border-radius: 999px;
+  box-shadow: 0 2px 8px rgba(0, 27, 50, 0.18);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
 }
 
 .badge-soon {
@@ -180,10 +210,8 @@ body {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .brand, .game-card, .game-card__title { transition: none; }
-  .brand:hover, .brand:focus-visible,
-  .game-card:not(.is-soon):hover, .game-card:not(.is-soon):focus-visible { transform: none; }
-  .game-card:hover .game-card__title,
-  .game-card:focus-visible .game-card__title,
-  .game-card:focus-within .game-card__title { transform: none; }
+  .brand { transition: none; }
+  .brand:hover, .brand:focus-visible { transform: none; }
+  /* 卡片 hover 放大保留（位移 ≤4px 不构成动效风险），仅去掉过渡动画改为瞬时。 */
+  .game-card { transition-duration: 0.01s; }
 }

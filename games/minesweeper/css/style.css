@@ -41,9 +41,14 @@ body {
 .stage {
   max-width: 1080px;
   margin: 0 auto;
-  padding: 20px 16px 40px;
+  padding: 20px 16px calc(40px + env(safe-area-inset-bottom, 0px));
   display: grid;
   gap: 16px;
+}
+
+/* grid 隐式列默认 min-width:auto，会被超宽棋盘撑破视口 */
+.stage > * {
+  min-width: 0;
 }
 
 /* ---------- 头部 ---------- */
@@ -124,6 +129,13 @@ body {
   box-shadow: inset 0 0 0 1px var(--line);
 }
 
+@media (max-width: 360px) {
+  .seg {
+    padding: 7px 10px;
+    font-size: 13px;
+  }
+}
+
 /* ---------- HUD ---------- */
 
 .hud {
@@ -146,11 +158,25 @@ body {
 .hud-tag {
   color: var(--ink-dim);
   font-size: 13px;
+  white-space: nowrap;
 }
 
 .hud-value {
   font: 500 20px/1 ui-monospace, SFMono-Regular, Consolas, monospace;
   font-variant-numeric: tabular-nums;
+}
+
+@media (max-width: 480px) {
+  .hud-card {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 2px;
+    padding: 8px 12px;
+  }
+
+  .hud-value {
+    font-size: 18px;
+  }
 }
 
 /* ---------- 棋盘 ---------- */
@@ -178,7 +204,9 @@ body {
 
 .board-wrap {
   width: 100%;
+  max-width: 100%;
   overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
   display: flex;
   justify-content: center;
   padding: 12px;
@@ -187,11 +215,21 @@ body {
   border-radius: 16px;
 }
 
+.board-wrap::-webkit-scrollbar {
+  height: 6px;
+}
+
+.board-wrap::-webkit-scrollbar-thumb {
+  background: var(--cell);
+  border-radius: 3px;
+}
+
 .board {
   display: grid;
   grid-template-columns: repeat(var(--cols, 9), var(--cellsize));
   gap: 3px;
-  --cellsize: clamp(18px, calc((100vw - 72px) / var(--cols, 9)), 38px);
+  /* 84px = stage 两侧 padding 32 + wrap 内边距 24 + 边框与亚像素余量 */
+  --cellsize: clamp(18px, calc((100vw - 84px) / var(--cols, 9)), 38px);
   touch-action: manipulation;
   -webkit-touch-callout: none;
   -webkit-user-select: none;
@@ -218,7 +256,7 @@ body {
 
 @media (hover: hover) {
   .cell:not(.open):hover {
-    background: background: #374152;
+    background: #374152;
   }
 }
 

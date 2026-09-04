@@ -24,3 +24,7 @@ x/
 
 # Local Minesweeper browser QA screenshots
 __ms_*.png
+
+# Image-gen raw masters and homepage QA screenshots
+__cover_gen/
+__home_*.png
