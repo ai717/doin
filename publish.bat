@@ -18,7 +18,19 @@ echo [1/3] Selecting GitHub account: ai717
 gh auth switch --user ai717
 if errorlevel 1 goto :failed
 
-echo [2/3] Pushing main to GitHub...
+echo [2/4] Preparing a commit from pending changes...
+git add -A
+if errorlevel 1 goto :failed
+
+git diff --cached --quiet
+if errorlevel 1 (
+  git commit -m "chore: publish pending changes"
+  if errorlevel 1 goto :failed
+) else (
+  echo No uncommitted changes; reusing the current commit.
+)
+
+echo [3/4] Pushing main to GitHub...
 git push origin main
 if errorlevel 1 (
   echo.
@@ -30,7 +42,7 @@ if errorlevel 1 (
 )
 
 echo.
-echo [3/3] Push completed. GitHub Actions will publish the site automatically.
+echo [4/4] Push completed. GitHub Actions will publish the site automatically.
 pause
 exit /b 0
 

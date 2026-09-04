@@ -29,6 +29,16 @@
       "url": "/tic-tac-toe/"
     },
     {
+      "title": "扫雷",
+      "slug": "minesweeper",
+      "desc": "经典扫雷 + 无猜保证：首击安全、全程逻辑可解，死局自动免费透视，永不用运气定胜负。",
+      "icon": "💣",
+      "cover": "/assets/covers/minesweeper.webp",
+      "tags": ["益智", "经典", "无猜"],
+      "url": "/minesweeper/",
+      "exclude": ["scripts"]
+    },
+    {
       "title": "星轨调度大师",
       "slug": "orbit-sort",
       "desc": "调度彩色星体穿过中央星核，在有限中转空间中恢复每一条纯色星轨。",

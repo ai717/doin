@@ -192,13 +192,74 @@ Plain 静态游戏（`games/tic-tac-toe/index.html`，无 package.json；测试�
 - `cover` 必须 1:1，发布图 640×640 WebP，路径 `assets/covers/<slug>.webp`。
   非正方形 art `object-fit: cover` 裁剪。
 
-## 8 · Working Rules
+## 8 · Minesweeper · 稳定基线
+
+Plain 静态游戏（`games/minesweeper/index.html`，无 package.json）。模块分层：
+`engine`（规则唯一权威）/`solver`（无猜求解）/`level`（难度参数）/`score`（计分唯一口径）/
+`storage`（存档唯一口径）/`audio`（WebAudio 合成音效）/`game`（DOM-free 控制器）/
+`ui`（唯一 DOM 拥有者）/`main`（装配）。
+
+### 8.1 引擎规则（engine.mjs）
+- 棋盘：`rows × cols` 扁平数组，索引 = `row * cols + col`。
+- 延后布雷：`createState` 只建空盘；首次 `reveal` 才调用 `placeMines(safeIndex)`，
+  排除首击格及其 8 邻域 → **首击永不踩雷且必然展开一片**。
+- 雷格 `adjacency = -1`（`MINE_ADJACENCY`），保证任何"adjacency === 0 才扩散"的
+  分支遇雷即走保守路径，不可能自动揭雷。
+- `flood` 输出 `lastRevealed`（BFS 顺序），供 UI 做波纹扩散。
+- 胜利时 `settle()` 自动把剩余隐藏格插旗，`remainingMines()` 归零。
+- 无效果时返回**同一对象引用**；`applyIntent` 返回 `{state, action}`，action 为 null
+  表示"这一步没生效"，**合法操作永不报错**。
+- 点已揭开的数字格 = chord（现代扫雷一等公民操作）。
+
+### 8.2 无猜保证（solver.mjs）
+- 首击时 `game.mjs` 调用 `pickNoGuessSeed(config, firstIndex, baseSeed)`，
+  以 baseSeed 为起点线性探测，直到生成一个从首击后可**纯逻辑通关**的雷布局。
+- 推理规则：单点规则（数字格的隐藏邻数 == 剩余雷数 → 全安全/全雷）+
+  子集规则（隐藏邻集合包含关系 → 额外雷数可整体判定）。
+- `isNoGuessSolvable(state)` 用上述规则迭代到不动点；若卡住但仍有隐藏格 → 该布局需要猜测，
+  重试下一个种子。
+- 运行时兜底：`resolveDeadlock()` 在玩家走入死局时调用 `findSafeCell()`，
+  自动揭示一个可证明安全格并提示"免费透视"；因生成已保证无猜，此路径极少触发，
+  但存在即可防止任何运气决定胜负。
+
+### 8.3 难度与 UI
+- 经典三档：`beginner 9×9/10`、`intermediate 16×16/40`、`expert 16×30/99`。
+  自定义参数走 `resolveConfig({ rows, cols, mines })`，经 `normalizeConfig` 夹取边界。
+- DOM + CSS Grid 渲染棋盘；右键 / 长按（320ms）插旗；旗帜模式按钮兼容触屏；
+  点已揭开数字格 = chord。结算浮层 + 计时器 + 剩余雷数 HUD + 静音按钮。
+- Neon Grid 主题：深色玻璃底 + 金属浮雕未揭格 + 高饱和霓虹数字 + 发光雷核心。
+
+### 8.4 计分与存档
+- **计分唯一口径在 score.mjs**（UI / 结算面板不许自己算）：
+  单局 `total = base + time`，仅通关（won）计入，踩雷 = 0 分。
+  基础分按难度固定：beginner 120 / intermediate 280 / expert 560（保底，时间分不拉低它）。
+  时间分 = `round(base × 0.6 × clamp((par − elapsed)/par, 0..1))`，
+  par = beginner 30s / intermediate 120s / expert 300s；越快越高，超 par 归零。
+  combo/道具等未来特性不许改这个口径，只能在其上叠加。
+- **存档唯一口径在 storage.mjs**：key `doin.minesweeper.v1`，localStorage 不可用时
+  静默降级内存。结构 `{ version, prefs:{difficulty,muted}, best:{<diff>:{bestScore,bestTimeMs,plays,wins}} }`。
+  - `recordResult` 纯函数：plays 每次 +1，won 时 wins +1，bestScore/bestTimeMs 只在破纪录时更新，
+    返回 `{ state, isBestScore, isBestTime }`；不破纪录不写入（非最佳局只累计 plays）。
+  - 任何字段缺失/损坏/负值 → `normalize` 退回默认，绝不抛给 UI。老扁平 `{ difficulty }` 结构自动迁移。
+- **音效 audio.mjs 零资源 WebAudio 合成**：reveal 音调随单次展开格数升高（flood/chord 正反馈）、
+  flag/unflag/chord/win（五声音阶琶音）/lose（下行爆炸）/peek（上滑 blip）。AudioContext 需
+  用户手势解锁 → 发声入口先 `unlock()`；环境不支持或 muted 时整体静默，绝不抛异常。
+  结算时 `finishGame()`：win/lose 音 + 触感 + 算分 + 存档（全部走上面唯一口径）。
+
+### 8.5 测试门禁
+- `npm run test:minesweeper` 必须全绿（engine / game / solver / score / storage 共 55 用例）。
+- 改了 solver、engine 或生成逻辑 → 必须确认自动通关模拟无踩雷、无透视触发、胜率 100%。
+- 计分或存档口径变更 → score.test.mjs / storage.test.mjs 同步加回归用例。
+- 本地 `/games/minesweeper/`；生产 `/minesweeper/`。源码 `?v=dev` 由构建替换为 BUILD_ID；
+  URL 带 `?e2e` 时 main 暴露 `window.__ms`（state/intent/findSafeCell）供端到端验证，生产无影响。
+
+## 9 · Working Rules
 
 - **一次只发一个独立特性的小补丁**，然后更新 PROJECT_LOG.md。
 - 门户 / 构建脚本 / games.json / 部署 → 跑 `npm run build`。
 - 单游戏测试门禁：
   - Sudoku：`games/sudoku` 下 `npm run typecheck && npm test`。
-  - 2048：`games/2048` 下 `node --test tests/engine.test.mjs tests/storage.test.mjs tests/i18n.test.mjs tests/markup.test.mjs`（Node 22 必须给文件名，不能只给 `tests` 目录）。
-  - Tic-Tac-Toe：根目录 `npm run test:tic-tac-toe`（77 用例）。
+  - 2048：`games/2048` 下 `node --test tests/engine.test.mjs tests/storage.test.mjs tests/i18n.test.mjs tests/markup.test.mjs`（Node 22 必须显式列文件，不能只给 `tests` 目录）。
+  - orbit-sort / tic-tac-toe / minesweeper：根目录 `npm run test:orbit-sort` / `test:tic-tac-toe` / `test:minesweeper`（用例数见各自 §5.8 / §6.5 / §8.5）。
 - Commit message：英文，conventional-commit 前缀（feat/fix/docs/chore），body 解释为什么改。
 - Deploy workflow 已升级到 `actions/checkout@v5` + `actions/setup-node@v6`（Node 22）。

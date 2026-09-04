@@ -21,3 +21,6 @@ Thumbs.db
 
 # Local scratch and draft experiments
 x/
+
+# Local Minesweeper browser QA screenshots
+__ms_*.png

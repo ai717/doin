@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <title>扫雷 · DOIN 在线小游戏</title>
+    <meta name="description" content="扫雷在线玩：经典 9×9 / 16×16 / 30×16 三档难度，首击必安全、全程可推理不靠猜，支持速开 chord、长按插旗与波纹展开动画，即点即玩。">
+    <link rel="canonical" href="https://doin.win/minesweeper/">
+    <meta name="theme-color" content="#0b0e14">
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="DOIN">
+    <meta property="og:title" content="扫雷 · DOIN 在线小游戏">
+    <meta property="og:description" content="经典扫雷霓虹版：首击必安全，全程可推理，点数字速开，三档难度即点即玩。">
+    <meta property="og:url" content="https://doin.win/minesweeper/">
+    <meta property="og:locale" content="zh_CN">
+    <meta property="og:image" content="https://doin.win/assets/og-image.png">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="扫雷 · DOIN 在线小游戏">
+    <meta name="twitter:description" content="经典扫雷霓虹版：首击必安全，全程可推理，点数字速开，三档难度即点即玩。">
+    <meta name="twitter:image" content="https://doin.win/assets/og-image.png">
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <link rel="stylesheet" href="css/style.css?v=dev">
+  </head>
+  <body>
+    <main class="stage">
+      <header class="hero">
+        <div class="hero-copy">
+          <h1 class="title">扫雷</h1>
+          <p class="lede">排开雷区 · 首击必安全，全程不靠猜</p>
+        </div>
+        <nav class="back"><a href="/">返回首页</a></nav>
+      </header>
+
+      <section class="controls" aria-label="难度设置">
+        <span class="hud-tag">难度</span>
+        <div class="segmented" id="difficulty-group" role="group" aria-label="难度">
+          <button type="button" class="seg" data-difficulty="beginner" aria-pressed="true">初级 9×9</button>
+          <button type="button" class="seg" data-difficulty="intermediate" aria-pressed="false">中级 16×16</button>
+          <button type="button" class="seg" data-difficulty="expert" aria-pressed="false">高级 30×16</button>
+        </div>
+      </section>
+
+      <section class="hud" aria-label="对局面板">
+        <div class="hud-card">
+          <span class="hud-tag">剩余雷数</span>
+          <b class="hud-value" id="hud-mines">10</b>
+        </div>
+        <div class="hud-card">
+          <span class="hud-tag">用时</span>
+          <b class="hud-value" id="hud-time">0:00</b>
+        </div>
+        <div class="hud-card">
+          <span class="hud-tag">进度</span>
+          <b class="hud-value" id="hud-progress">0%</b>
+        </div>
+      </section>
+
+      <section class="board-stage" aria-label="雷区">
+        <p class="status" id="status" role="status" aria-live="polite">点击任意格开始 · 首击永远安全</p>
+        <div class="board-wrap">
+          <div class="board" id="board" role="grid" aria-label="扫雷棋盘"></div>
+        </div>
+        <p class="message" id="message" role="status" aria-live="polite" hidden></p>
+        <div class="toolbar" aria-label="对局工具">
+          <button type="button" class="btn btn-toggle" id="flag-mode" aria-pressed="false">旗帜模式</button>
+          <button type="button" class="btn btn-toggle" id="mute" aria-pressed="false">🔊 音效</button>
+          <button type="button" class="btn btn-primary" id="restart">新的一局</button>
+        </div>
+      </section>
+
+      <footer class="footnote">
+        <p>左键翻开 · 右键 / 长按插旗 · 点已揭开的数字快速展开周围 · 标错旗会炸。</p>
+        <p id="difficulty-label" hidden></p>
+      </footer>
+    </main>
+
+    <div class="result-layer" id="result-layer" role="dialog" aria-modal="true" aria-labelledby="result-title" hidden>
+      <div class="result-panel">
+        <p class="result-badge" id="result-badge"></p>
+        <h2 class="result-title" id="result-title"></h2>
+        <p class="result-sub" id="result-sub"></p>
+        <div class="result-rows" id="result-rows"></div>
+        <div class="result-actions">
+          <button type="button" class="btn btn-primary" id="result-again">再来一局</button>
+          <button type="button" class="btn" id="result-close">看看雷区</button>
+        </div>
+      </div>
+    </div>
+
+    <noscript><p class="footnote">需要启用 JavaScript 才能游玩扫雷。</p></noscript>
+    <script type="module" src="js/main.mjs?v=dev"></script>
+  </body>
+</html>
