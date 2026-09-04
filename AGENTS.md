@@ -176,21 +176,41 @@ Plain 静态游戏（`games/tic-tac-toe/index.html`，无 package.json；测试�
 - `npm run test:tic-tac-toe` 必须全绿（77 用例，含 AI 强度自对弈校验）。
 - 本地 `/games/tic-tac-toe/`；生产 `/tic-tac-toe/`。源码 `?v=dev` 占位由构建替换为 BUILD_ID。
 
-## 7 · Homepage, SEO & Style（门户）
+## 7 · Homepage, SEO, i18n & Style（门户）
 
 - 无框架原生 HTML/CSS/ES Module，无构建依赖。
 - `games.json` 驱动：卡片、JSON-LD、`scripts/gen-sitemap.mjs`。sitemap 只进首页和非
-  comingSoon 的同域游戏根。
-- Poki 风：`--bg #83ffe7` 薄荷绿 + 固定 `assets/bg-diamante.svg` 纹理；
-  `--ink #002b50`；`--accent #009cff`；白面；`--radius 16px`；`--gap 16px`；
-  软阴影 `rgba(93,107,132,…)`。**只用系统 sans-serif，不加载 webfont。**
-- 卡片：1:1 封面方格瓦片（`aspect-ratio: 1/1`）`auto-fill minmax(204px,1fr)`；
-  <520px 降到 140px。卡片上不挂 tags / description / 分组；标题 hover 渐显遮罩。
-- Hover 非对称：静止 0.6s `cubic-bezier(.25,.1,.25,1)`，hover 覆盖为 0.3s；
-  `scale(1.04) translateY(-4px)`。hover 需要 `z-index`（container-type 产生层叠上下文）。
+  comingSoon 的同域游戏根。`cover` 必须 1:1，发布图 640×640 WebP，路径
+  `assets/covers/<slug>.webp`；卡片文案可选 `en.title / en.desc`（英文名）。
+
+### 7.1 视觉规范（2026-09 配色定稿）
+- 背景：`.bg-pattern` 固定层承载 175° 三段渐变 `#96f3de → #6fe4cb → #55d3d0`
+  （CSS 变量 `--bg-top/--bg-mid/--bg-deep`）+ `assets/bg-diamante.svg` 白色低透明度纹理。
+  `--bg` = `var(--bg-mid)`（兼容旧引用）。**不要回退到荧光纯色。**
+- 色板：ink `#05384a`（深青，非纯蓝）；accent `#009cff`；白面；`--radius 16px`；
+  `--gap 16px`；投影一律青调双层软阴影 `rgba(4,68,77,…)`（tile / chip 两档变量）。
+- Header 层级：第一行 `.head-row` flex（space-between + center）放
+  「Doin.win 字标（白色芯片，".win" 用 `#009cff→#23cfc0` 渐变文字）←→ 语言按钮」；
+  第二行 h1 为次级（clamp 20–25px）。**不要让 h1 与字标抢字号。**
+- 卡片：1:1 封面 + 左下角**常显白色胶囊标签**（无渐变遮罩）；hover 非对称放大
+  （0.6s 回 / 0.3s 进，`scale(1.04) translateY(-4px)`，需 z-index）。
   全部 motion 支持 `prefers-reduced-motion: reduce` 降级。
-- `cover` 必须 1:1，发布图 640×640 WebP，路径 `assets/covers/<slug>.webp`。
-  非正方形 art `object-fit: cover` 裁剪。
+- **只用系统 sans-serif，不加载 webfont。**
+
+### 7.2 语言选择器与 i18n 规则（全站统一）
+- 首页语言切换 = `.lang-picker` 下拉面板：圆形地球按钮 → 白色圆角面板，
+  选项「中文 / EN」固定自称不翻译，当前语言 `.is-active` 深色胶囊（ink 底白字）。
+  点外部 / Esc 关闭；`aria-haspopup/expanded` + `menuitemradio/aria-checked`。
+- **全站共享偏好 `localStorage["doin.lang"]`**；默认规则：显式偏好 > `navigator.language`
+  （zh* → zh，其余 → en）；切换 = `saveLocale(locale)` + `location.reload()`。
+- i18n 统一 API（各游戏 `i18n.mjs` 与首页 `js/i18n.mjs` 同构）：`LOCALES / LANG_KEY /
+  DEFAULT_LOCALE / isLocale / strings / format / detectLocale / loadLocale / saveLocale /
+  htmlLang`。中英字符串表**键必须完全对齐且非空**（测试强制）。
+- 已双语：orbit-sort / tic-tac-toe / minesweeper / 首页（zh/en）；sudoku（zh-Hans/zh-Hant/en）、
+  2048（zh/en）本就有，但偏好 key **尚未统一到 `doin.lang`**（待办）。
+
+### 7.3 测试门禁
+- 改首页 i18n → `npm run test:home`；改门户结构/样式/game.json → `npm run build`。
 
 ## 8 · Minesweeper · 稳定基线
 
@@ -260,6 +280,7 @@ Plain 静态游戏（`games/minesweeper/index.html`，无 package.json）。模�
 - 单游戏测试门禁：
   - Sudoku：`games/sudoku` 下 `npm run typecheck && npm test`。
   - 2048：`games/2048` 下 `node --test tests/engine.test.mjs tests/storage.test.mjs tests/i18n.test.mjs tests/markup.test.mjs`（Node 22 必须显式列文件，不能只给 `tests` 目录）。
-  - orbit-sort / tic-tac-toe / minesweeper：根目录 `npm run test:orbit-sort` / `test:tic-tac-toe` / `test:minesweeper`（用例数见各自 §5.8 / §6.5 / §8.5）。
+  - orbit-sort / tic-tac-toe / minesweeper / 首页：根目录 `npm run test:orbit-sort` /
+    `test:tic-tac-toe` / `test:minesweeper` / `test:home`。
 - Commit message：英文，conventional-commit 前缀（feat/fix/docs/chore），body 解释为什么改。
 - Deploy workflow 已升级到 `actions/checkout@v5` + `actions/setup-node@v6`（Node 22）。
