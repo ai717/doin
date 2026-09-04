@@ -68,6 +68,11 @@ AGENTS.md                                    §8 Minesweeper 稳定基线
 
 ### 验证
 - `npm run test:minesweeper`：55/55（engine 22 + game 8 + solver 10 + score + storage）。
+
+## 2026-09-04 · 一键发布脚本
+
+- `publish.bat` 会自动暂存并提交待发布变更，再推送 `main`；无变更时跳过空提交。
+- 本地 Minesweeper 测试截图 `__ms_*.png` 已加入 `.gitignore`，避免误发布测试产物。
 - 回归：`test:orbit-sort` 90/90、`test:tic-tac-toe` 77/77。
 - `npm run build` 通过：dist/minesweeper/、封面、sitemap、首页卡片均就绪。
 

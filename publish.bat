@@ -14,7 +14,7 @@ set "HTTPS_PROXY=http://127.0.0.1:7897"
 set "HTTP_PROXY=http://127.0.0.1:7897"
 set "ALL_PROXY=http://127.0.0.1:7897"
 
-echo [1/3] Selecting GitHub account: ai717
+echo [1/4] Selecting GitHub account: ai717
 gh auth switch --user ai717
 if errorlevel 1 goto :failed
 
