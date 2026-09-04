@@ -1,6 +1,6 @@
 const KEY = "doin.orbit-sort.progress.v1";
 import { levelById } from "../levels.mjs?v=dev";
-import { perfectScoreForLevel } from "./score.mjs?v=dev";
+import { baseScoreFor, DAILY_SCORE_MAX_PER_DIM, perfectScoreForLevel } from "./score.mjs?v=dev";
 
 // ---- 积分系统数据结构说明 -------------------------------------------------
 // progress.bestScoresByLevel :: { [levelKey]: {
@@ -252,8 +252,12 @@ export function recordDailyCompletion(progress, dateKey, movesOrDetail) {
   let scoreBest = prevScore;
   let scoreImproved = false;
   if (scoreDetail) {
+    const dailyDifficulty = Number.isInteger(scoreDetail.difficulty)
+      ? Math.max(1, scoreDetail.difficulty)
+      : 5;
+    const dailyCeiling = baseScoreFor(dailyDifficulty, true) + DAILY_SCORE_MAX_PER_DIM * 2;
     const stored = {
-      score: scoreDetail.total | 0,
+      score: Math.max(0, Math.min(scoreDetail.total | 0, dailyCeiling)),
       base: scoreDetail.base | 0,
       move: scoreDetail.move | 0,
       time: scoreDetail.time | 0,

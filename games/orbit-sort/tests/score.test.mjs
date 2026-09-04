@@ -393,9 +393,9 @@ test("storage: recordDailyCompletion 重玩今日，低总分不覆盖高总分"
   ({ progress: p } = recordDailyCompletion(p, dk, payload(500)));
   assert.equal(p.daily.bestScore.score, 620); // 高分保持
   assert.equal(p.totalScore, 620);
-  ({ progress: p } = recordDailyCompletion(p, dk, payload(700))); // 新纪录 700>620 → 更新
-  assert.equal(p.daily.bestScore.score, 700);
-  assert.equal(p.totalScore, 700);
+  ({ progress: p } = recordDailyCompletion(p, dk, payload(700))); // 超过当前满分 620 → 截断并保持
+  assert.equal(p.daily.bestScore.score, 620);
+  assert.equal(p.totalScore, 620);
 });
 
 test("storage: loadProgress 从 localStorage 正确加载并自动 recompute totalScore/totalMoves", () => {
