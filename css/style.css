@@ -1,14 +1,18 @@
 :root {
-  --bg: #83ffe7;
-  --bg-deep: #00b894;
-  --ink: #002b50;
-  --ink-soft: rgba(0, 43, 80, 0.62);
+  /* 薄荷绿品识别保留，整体降饱和：顶部浅、底部深，带一点向青蓝过渡的纵深 */
+  --bg-top: #96f3de;
+  --bg-mid: #6fe4cb;
+  --bg-deep: #55d3d0;
+  --bg: var(--bg-mid); /* 兼容旧引用（soon 徽章等） */
+  --mint: #8af0db;
+  --ink: #05384a;
+  --ink-soft: rgba(5, 56, 74, 0.64);
   --surface: #ffffff;
   --accent: #009cff;
   --radius: 16px;
   --gap: 16px;
-  --shadow-tile: 0 7px 10px 4px rgba(93, 107, 132, 0.3);
-  --shadow-chip: 0 3px 5px 3px rgba(93, 107, 132, 0.2);
+  --shadow-tile: 0 10px 24px rgba(4, 68, 77, 0.18), 0 3px 8px rgba(4, 68, 77, 0.1);
+  --shadow-chip: 0 4px 12px rgba(4, 68, 77, 0.14), 0 1px 3px rgba(4, 68, 77, 0.08);
   --ease: cubic-bezier(0.25, 0.1, 0.25, 1);
   --font-body: "Proxima Nova", "Open Sans", -apple-system, BlinkMacSystemFont,
     "Segoe UI", "PingFang SC", "Microsoft YaHei", "Noto Sans SC", Arial, sans-serif;
@@ -16,7 +20,8 @@
 
 * { box-sizing: border-box; margin: 0; }
 
-html { background: var(--bg); }
+/* overscroll 露出的底色取渐变中值 */
+html { background: var(--bg-mid); }
 
 body {
   min-height: 100vh;
@@ -36,9 +41,9 @@ body {
   inset: 0;
   z-index: 0;
   pointer-events: none;
-  background-color: var(--bg);
-  background-image: url("../assets/bg-diamante.svg");
-  background-size: 60px 60px;
+  background-image: url("../assets/bg-diamante.svg"),
+    linear-gradient(175deg, var(--bg-top) 0%, var(--bg-mid) 52%, var(--bg-deep) 100%);
+  background-size: 60px 60px, 100% 100%;
 }
 
 .site-nav, .page, .site-footer { position: relative; z-index: 1; }
@@ -65,9 +70,9 @@ body {
 
 .site-title:hover, .site-title:focus-visible { transform: scale(1.04) translateY(-4px); transition-duration: 0.3s; }
 
-/* ".win" 用品牌蓝渐变文字，给字标一点记忆点 */
+/* ".win" 用品牌蓝→薄荷青渐变文字，与页面底色的渐变同语 */
 .site-title-tld {
-  background: linear-gradient(120deg, var(--accent), #33d6ff);
+  background: linear-gradient(120deg, var(--accent), #23cfc0);
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
