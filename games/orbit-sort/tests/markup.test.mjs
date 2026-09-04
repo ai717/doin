@@ -18,6 +18,7 @@ test("game markup has one page heading and accessible controls", async () => {
   assert.match(markup, />最少</);
   assert.match(markup, />本关得分</);
   assert.match(markup, /id="daily-button"/);
+  assert.match(markup, /每天一个高难度挑战关卡/);
   assert.match(markup, /id="level-select-button"/);
   assert.match(markup, /id="level-info-button"/);
   assert.match(markup, /id="level-info-layer"/);

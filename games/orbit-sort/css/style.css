@@ -84,6 +84,30 @@ body[data-orbit-theme="abyss"] { background: linear-gradient(180deg, #061327 0%,
 .game-title::after,
 .select-header h1::before,
 .select-header h1::after { display: none !important; }
+.select-screen .daily-button {
+  width: min(540px, 100%);
+  min-height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 14px;
+  padding: 9px 18px;
+  border: 1px solid rgba(255, 202, 112, .48);
+  border-radius: 18px;
+  background: linear-gradient(110deg, rgba(255, 188, 92, .2), rgba(44, 93, 150, .28));
+  color: #ffe4b0;
+  box-shadow: inset 0 1px rgba(255,255,255,.14), 0 12px 26px rgba(0,0,0,.2);
+  text-align: left;
+}
+.select-screen .daily-button::before,
+.select-screen .daily-button::after { display: none; }
+.daily-mark { display: grid; place-items: center; width: 34px; height: 34px; flex: 0 0 34px; border: 1px solid rgba(255, 211, 133, .7); border-radius: 50%; color: #fff0c9; background: radial-gradient(circle at 35% 28%, #fff 0, #ffd98a 34%, #d57a35 100%); box-shadow: 0 0 16px rgba(255, 181, 88, .55); font-size: 19px; }
+.daily-copy { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+.daily-copy strong { font-size: 16px; line-height: 1.1; letter-spacing: .12em; }
+.daily-copy small { color: rgba(220, 231, 255, .72); font-size: 11px; letter-spacing: .06em; white-space: nowrap; }
+.daily-arrow { margin-left: auto; color: #ffd98a; font-size: 22px; opacity: .82; }
+.select-screen .daily-button:hover { border-color: rgba(255, 215, 137, .72); background: linear-gradient(110deg, rgba(255, 188, 92, .3), rgba(44, 108, 174, .38)); transform: translateY(-2px); }
+@media (max-width: 700px) { .select-screen .daily-button { min-height: 58px; padding: 8px 14px; } .daily-mark { width: 30px; height: 30px; flex-basis: 30px; } .daily-copy strong { font-size: 15px; } .daily-copy small { font-size: 10px; } }
 .game-title { margin-bottom: 8px; line-height: 1.08; letter-spacing: .1em; }
 .hud { align-items: stretch; gap: 12px; }
 .hud-card { min-height: 66px; padding: 10px 16px 11px; justify-content: center; border-radius: 16px; }
