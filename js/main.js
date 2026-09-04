@@ -25,19 +25,52 @@ function applyStaticTexts() {
   grid.setAttribute("aria-label", t.gridAria);
   const noscript = document.querySelector("noscript");
   if (noscript) noscript.textContent = "<p class=\"noscript-msg\">" + t.noscript + "</p>";
-  // 语言切换按钮：显示"目标语言"。
+  // 语言按钮：图标按钮，悬浮提示保留文案。
   const langButton = document.querySelector("#lang-button");
   if (langButton) {
-    langButton.textContent = t.langShort;
     langButton.setAttribute("aria-label", t.langAria);
     langButton.title = t.langLabel;
   }
 }
 
+const langPicker = document.querySelector(".lang-picker");
 const langButton = document.querySelector("#lang-button");
-langButton?.addEventListener("click", () => {
-  saveLocale(locale === "zh" ? "en" : "zh");
-  location.reload();
+const langMenu = document.querySelector("#lang-menu");
+
+function setLangMenuOpen(open) {
+  if (!langMenu || !langButton) return;
+  langMenu.hidden = !open;
+  langButton.setAttribute("aria-expanded", String(open));
+}
+
+// 选项文案固定用各语言自称（中文 / EN），不随当前 locale 翻译。
+langMenu?.querySelectorAll(".lang-option").forEach((option) => {
+  const active = option.dataset.lang === locale;
+  option.classList.toggle("is-active", active);
+  option.setAttribute("aria-checked", String(active));
+  option.addEventListener("click", () => {
+    if (option.dataset.lang === locale) {
+      setLangMenuOpen(false);
+      return;
+    }
+    saveLocale(option.dataset.lang);
+    location.reload();
+  });
+});
+
+langButton?.addEventListener("click", (event) => {
+  event.stopPropagation();
+  setLangMenuOpen(Boolean(langMenu?.hidden));
+});
+
+document.addEventListener("click", (event) => {
+  if (!langMenu || langMenu.hidden) return;
+  if (langPicker?.contains(event.target)) return;
+  setLangMenuOpen(false);
+});
+
+document.addEventListener("keydown", (event) => {
+  if (event.key === "Escape") setLangMenuOpen(false);
 });
 
 function cardFor(game) {

@@ -20,7 +20,6 @@ const STRINGS = {
     noscript: "需要启用 JavaScript 才能加载游戏列表。",
     structuredName: "DOIN 小游戏合集",
     langLabel: "Switch to English",
-    langShort: "EN",
     langAria: "切换语言",
   },
   en: {
@@ -35,7 +34,6 @@ const STRINGS = {
     noscript: "JavaScript is required to load the game list.",
     structuredName: "DOIN mini games",
     langLabel: "切换到中文",
-    langShort: "中文",
     langAria: "Switch language",
   },
 };

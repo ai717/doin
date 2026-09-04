@@ -102,25 +102,64 @@ body {
   white-space: nowrap;
 }
 
-/* 语言切换按钮：与 head-chip 同语言的白胶囊，挂在标题区右上 */
+/* 语言选择器：圆形地球按钮 + 下拉面板，当前语言为深色胶囊（参考主流门户样式） */
+.lang-picker { position: absolute; top: 24px; right: 0; }
+
 .lang-toggle {
-  position: absolute;
-  top: 24px;
-  right: 0;
-  padding: 6px 14px;
-  font-size: clamp(13px, 2.4vw, 16px);
-  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 42px;
+  height: 42px;
   color: var(--ink);
   background: var(--surface);
   border: 0;
   border-radius: 999px;
   box-shadow: var(--shadow-chip);
-  white-space: nowrap;
   cursor: pointer;
   transition: transform 0.6s var(--ease);
 }
 
 .lang-toggle:hover, .lang-toggle:focus-visible { transform: scale(1.05); transition-duration: 0.3s; }
+
+.lang-menu {
+  position: absolute;
+  top: calc(100% + 10px);
+  right: 0;
+  z-index: 20;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 132px;
+  padding: 8px;
+  background: var(--surface);
+  border-radius: 20px;
+  box-shadow: 0 12px 32px rgba(4, 68, 77, 0.22), 0 2px 8px rgba(4, 68, 77, 0.12);
+  transform-origin: top right;
+  animation: lang-pop 0.25s var(--ease);
+}
+
+.lang-menu[hidden] { display: none; }
+
+@keyframes lang-pop {
+  from { opacity: 0; transform: scale(0.92) translateY(-4px); }
+}
+
+.lang-option {
+  padding: 9px 14px;
+  color: var(--ink);
+  font: inherit;
+  font-weight: 700;
+  text-align: left;
+  background: transparent;
+  border: 0;
+  border-radius: 999px;
+  cursor: pointer;
+}
+
+.lang-option:hover { background: rgba(5, 56, 74, 0.08); }
+
+.lang-option.is-active { color: #fff; background: var(--ink); }
 
 .game-grid {
   display: grid;
@@ -220,4 +259,5 @@ body {
 @media (prefers-reduced-motion: reduce) {
   /* 卡片 hover 放大保留（位移 ≤4px 不构成动效风险），仅去掉过渡动画改为瞬时。 */
   .game-card, .site-title { transition-duration: 0.01s; }
+  .lang-menu { animation: none; }
 }

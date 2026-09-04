@@ -29,7 +29,18 @@
   <main class="page">
     <header class="page-head">
       <a class="site-title" href="/" aria-label="Doin.win 首页">Doin<span class="site-title-tld">.win</span></a>
-      <button type="button" id="lang-button" class="lang-toggle" aria-label="切换语言">EN</button>
+      <div class="lang-picker">
+        <button type="button" id="lang-button" class="lang-toggle" aria-haspopup="true" aria-expanded="false" aria-controls="lang-menu" aria-label="切换语言">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+            <circle cx="12" cy="12" r="9"/>
+            <path d="M3 12h18M12 3c2.5 2.6 3.8 5.7 3.8 9s-1.3 6.4-3.8 9M12 3c-2.5 2.6-3.8 5.7-3.8 9s1.3 6.4 3.8 9"/>
+          </svg>
+        </button>
+        <div class="lang-menu" id="lang-menu" role="menu" hidden>
+          <button type="button" class="lang-option" role="menuitemradio" aria-checked="false" data-lang="zh">中文</button>
+          <button type="button" class="lang-option" role="menuitemradio" aria-checked="false" data-lang="en">EN</button>
+        </div>
+      </div>
       <h1>Free Mini Games <span class="head-chip">打开即玩</span></h1>
     </header>
     <section class="game-grid" id="game-grid" aria-label="游戏列表">
