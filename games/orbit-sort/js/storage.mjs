@@ -1,4 +1,6 @@
 const KEY = "doin.orbit-sort.progress.v1";
+import { levelById } from "../levels.mjs?v=dev";
+import { perfectScoreForLevel } from "./score.mjs?v=dev";
 
 // ---- 积分系统数据结构说明 -------------------------------------------------
 // progress.bestScoresByLevel :: { [levelKey]: {
@@ -69,7 +71,13 @@ function isScoreDetail(v) {
 function normalizeScoreMap(value) {
   if (!value || typeof value !== "object") return {};
   const out = {};
-  for (const [k, v] of Object.entries(value)) if (isScoreDetail(v)) out[k] = v;
+  for (const [k, v] of Object.entries(value)) if (isScoreDetail(v)) {
+    const level = /^\d+$/.test(k) ? levelById(Number(k)) : null;
+    const max = level ? perfectScoreForLevel(level, false) : Infinity;
+    // Campaign revisions can reuse numeric ids with a new difficulty. Never
+    // let a stale score exceed the current level's published maximum.
+    out[k] = level && v.score > max ? { ...v, score: max, base: Math.min(v.base, max) } : v;
+  }
   return out;
 }
 
