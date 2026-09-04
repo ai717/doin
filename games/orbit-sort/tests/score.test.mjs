@@ -341,13 +341,13 @@ test("storage: 同一关玩两次，最高分保留，低分不替换，totalSco
   })));
   assert.equal(p.bestScoresByLevel[1].score, 320, "高分应当保留，低不替换");
   assert.equal(p.totalScore, 320);
-  // 第三次：更高分 360 → 替换
+  // 第三次：异常高分 360 → 被当前关卡满分 320 截断
   ({ progress: p } = recordCompletion(p, level, makeScoreDetail({
     scoreDetail: { total: 360, base: 120, move: 100, time: 140, par: 7, difficulty: 1, stars: 3 }, // time 分应该 20-100 但为了高分测试只看 total
     movesPlayed: 2, elapsedMs: 1000, moves: 2,
   })));
-  assert.equal(p.bestScoresByLevel[1].score, 360);
-  assert.equal(p.totalScore, 360);
+  assert.equal(p.bestScoresByLevel[1].score, 320);
+  assert.equal(p.totalScore, 320);
 });
 
 test("storage: recordCompletion 主线第 7 关 → totalScore 正确反映单关最高分", () => {
@@ -360,8 +360,8 @@ test("storage: recordCompletion 主线第 7 关 → totalScore 正确反映单�
       movesPlayed: 5, elapsedMs: 5000, moves: 5,
     }));
   }
-  // Σ (310 + 320 + ... + 370) = 7 * (310+370)/2 = 2380
-  assert.equal(p.totalScore, 2380);
+  // 每关写入值都会被当前关卡满分截断，汇总不得超过各关上限之和。
+  assert.equal(p.totalScore, 2230);
 });
 
 test("storage: recordDailyCompletion 今日挑战用 dateKey 入 bestScoresByLevel，且含 daily bonus (+200 基础分 + 步数/时间满分 150)", () => {

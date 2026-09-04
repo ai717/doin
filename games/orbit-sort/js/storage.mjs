@@ -156,8 +156,12 @@ export function recordCompletion(progress, level, movesOrDetail) {
   let scoreBest = prevScore;
   let scoreImproved = false;
   if (scoreDetail) {
+    const scoreCeiling = perfectScoreForLevel(level, false);
     const stored = {
-      score: scoreDetail.total | 0,
+      // The engine normally supplies a bounded score, but storage is also
+      // called by legacy/replay paths. Clamp at the current level ceiling so
+      // a stale or malformed detail can never produce `score > perfect`.
+      score: Math.max(0, Math.min(scoreDetail.total | 0, scoreCeiling)),
       base: scoreDetail.base | 0,
       move: scoreDetail.move | 0,
       time: scoreDetail.time | 0,
