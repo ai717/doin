@@ -40,7 +40,16 @@ const server = http.createServer((req, res) => {
     // 目录 → index.html
     let st;
     try { st = fs.statSync(filePath); } catch { /* miss */ }
-    if (st && st.isDirectory()) filePath = path.join(filePath, "index.html");
+    if (st && st.isDirectory()) {
+      // 目录必须带尾斜杠：否则页面里的相对资源会解析到上一级目录而 404
+      const [pathname, ...rest] = req.url.split("?");
+      if (!pathname.endsWith("/")) {
+        res.writeHead(301, { Location: pathname + "/" + (rest.length ? "?" + rest.join("?") : "") });
+        res.end();
+        return;
+      }
+      filePath = path.join(filePath, "index.html");
+    }
     fs.readFile(filePath, (err, data) => {
       if (err) {
         // 游戏内 SPA fallback: 如果 games/<slug>/xxx 不存在且根 games/<slug>/index.html 存在 -> 回那个

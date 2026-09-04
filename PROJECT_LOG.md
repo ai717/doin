@@ -1,23 +1,44 @@
 # PROJECT_LOG.md
 
 > 精简原则：只留状态快照 + 最近一轮要点。细节查 git log / `.workbuddy/memory/`。
-> 游戏稳定规则写在 AGENTS.md（§5 orbit-sort / §6 tic-tac-toe / §7 homepage / §8 minesweeper），本文件不重复。
+> 游戏稳定规则写在 AGENTS.md（§5 orbit-sort / §6 tic-tac-toe / §7 homepage / §8 minesweeper /
+> §9 gold-miner），本文件不重复。
 
 ***
 
-## Current Baseline (2026-09-04)
+## Current Baseline (2026-09-05)
 
 - **门户**：薄荷渐变首页（`index.html` + `css/`），640×640 WebP 封面（3D 风格统一），
   白色胶囊卡片标签 + hover 放大；品牌行「Doin.win 字标 ←→ 地球语言按钮」+ 二级主标题；
-  中英双语（`doin.lang` 全站共享偏好）。CNAME `doin.win`。
+  中英双语（`doin.lang` 全站共享偏好）。CNAME `doin.win`。共 6 款游戏上架。
 - **orbit-sort**（已稳定）：5 章 × 20 题（100 关）、积分系统、今日挑战。规则见 AGENTS.md §5。
 - **tic-tac-toe**（已稳定）：3×3/4×4、难度=失误率、本地双人、WebAudio 音效。规则见 AGENTS.md §6。
 - **minesweeper**（已稳定）：经典三档 + 无猜保证 + 计分存档 + WebAudio 音效 + Neon Grid 主题 + 移动端适配。规则见 AGENTS.md §8。
-- **i18n**：orbit-sort / tic-tac-toe / minesweeper / 首页均中英双语；统一默认语言规则与
+- **gold-miner**（已稳定）：黄金矿工。钩爪物理 + 关卡配额递增 + 商店 + 神秘袋；
+  零依赖内联版拆成 9 模块，58 用例门禁。规则见 AGENTS.md §9。
+- **i18n**：orbit-sort / tic-tac-toe / minesweeper / gold-miner / 首页均中英双语；统一默认语言规则与
   共享偏好 key `doin.lang`（AGENTS.md §7）。2048（zh/en）、sudoku（zh-Hans/zh-Hant/en）
   本就已双语，但偏好 key 尚未统一到 `doin.lang`。
-- **本地服务**：`node _dev-server.mjs`（零依赖，端口 46810 起）。
+- **本地服务**：`node _dev-server.mjs`（零依赖，端口 46810 起）；目录请求缺尾斜杠时 301 补齐，
+  保证页面内相对资源解析正确。
 - **git**：正常，main 全部推送成功（此前 ai919≠ai717 的 403 已解除）。
+
+## 2026-09-05 · 黄金矿工上架（第 6 款游戏）
+
+### 做了什么
+1. **收敛三套并存原型**为单一实现：保留零依赖内联版玩法数值，删 `main.js` 与 `src/`
+   TS+pixi 版、`node_modules` 及无关同步工具脚本（移至仓库外备份目录，未删除）。
+2. **按仓库分层拆模块**：engine / score / storage / audio / render / game / ui / main / i18n，
+   玩法数值原样保留；两处刻意修正——生物巡逻移入引擎（暂停即停）、`alert()` 改非阻塞 toast。
+3. **测试门禁 58 用例**：engine 20 / score 7 / storage 9 / i18n 10 / markup 12；
+   markup 守装配契约（refs 表 ↔ ui 引用 ↔ 商店 data-* ↔ `?v=dev` 占位）。
+4. **上架闭环**：`games.json` 登记（含 en.title）、640×640 WebP 封面（ImageGen + 裁水印）、
+   `npm run build` 通过、sitemap 收录 `/gold-miner/`。
+5. **dev server 修尾斜杠**：目录请求无尾斜杠时 301 补齐，修掉"整页无样式"（相对资源 404）。
+
+### 已知偏差（刻意保留）
+- 商店文案写生力水/钻石亮油"下一关生效"，实现上购买后永久生效、从不消耗。
+  两侧均未改，避免扩大改动面；对齐前先读 AGENTS.md §9.2。
 
 ## 2026-09-04 · 首页视觉 + 全站 i18n（本轮收尾）
 

@@ -206,7 +206,7 @@ Plain 静态游戏（`games/tic-tac-toe/index.html`，无 package.json；测试�
 - i18n 统一 API（各游戏 `i18n.mjs` 与首页 `js/i18n.mjs` 同构）：`LOCALES / LANG_KEY /
   DEFAULT_LOCALE / isLocale / strings / format / detectLocale / loadLocale / saveLocale /
   htmlLang`。中英字符串表**键必须完全对齐且非空**（测试强制）。
-- 已双语：orbit-sort / tic-tac-toe / minesweeper / 首页（zh/en）；sudoku（zh-Hans/zh-Hant/en）、
+- 已双语：orbit-sort / tic-tac-toe / minesweeper / gold-miner / 首页（zh/en）；sudoku（zh-Hans/zh-Hant/en）、
   2048（zh/en）本就有，但偏好 key **尚未统一到 `doin.lang`**（待办）。
 
 ### 7.3 测试门禁
@@ -273,14 +273,44 @@ Plain 静态游戏（`games/minesweeper/index.html`，无 package.json）。模�
 - 本地 `/games/minesweeper/`；生产 `/minesweeper/`。源码 `?v=dev` 由构建替换为 BUILD_ID；
   URL 带 `?e2e` 时 main 暴露 `window.__ms`（state/intent/findSafeCell）供端到端验证，生产无影响。
 
-## 9 · Working Rules
+## 9 · Gold Miner · 稳定基线
+
+Plain 静态游戏（`games/gold-miner/index.html`，无 package.json）。模块分层：
+`engine`（物理与规则唯一权威，DOM-free）/`score`（配额与商店唯一口径）/`storage`（存档唯一口径）/
+`audio`（WebAudio 合成）/`render`（只读 state 的 Canvas 绘制 + 粒子）/`game`（DOM-free 控制器）/
+`ui`（唯一 DOM 拥有者）/`main`（装配）/`i18n`。
+
+### 9.1 玩法与引擎（engine.mjs）
+- 固定 800×600 内部坐标系；移动端只靠 CSS 缩放（`aspect-ratio: 4 / 3`），不改坐标。
+- 钩爪三态：SWINGING（±1.25rad 摆）/ SHOOTING（6.5/帧）/ RETRACTING；
+  收绳速度 = `REEL_FACTOR / item.weight`，空爪 12/帧；抓垫 GRAB_PAD 8。
+- `stepFrame` / `applyIntent` 返回 `{ state, events, action }`，action 为 null 表示没生效；
+  **合法操作永不报错**（pause/buy/drop/blast 在终止态均为 no-op）。
+- 生物（钻石变的游鱼）巡逻移动在引擎里做，暂停即停；TNT 爆炸半径 110 可连锁。
+- 60 秒一局；现金达配额 won、超时 lost；场地抓空提前结束。
+
+### 9.2 计分与存档（唯一口径）
+- 配额 `targetForLevel(n) = round(1000 × 1.65^(n-1))`；钻石 600，亮油后 900；
+  神秘袋 40% 现金 500 / 30% 炸药 2 / 30% 生力水 1（rng 可注入）。
+- 商店：炸药 200 / 生力水 280 / 亮油 320。**已知偏差（刻意保留）**：文案写生力水/亮油
+  "下一关生效"，实现上购买后永久生效、从不消耗；对齐前不要改任一侧。
+- 存档 key `doin.gold-miner.v1`：`{version, prefs:{muted}, progress:{level, money, record,
+  dynamite, potion, polish}}`；record 永不小于 money；损坏退回默认；破产 `clearRun` 保留 record。
+
+### 9.3 测试门禁
+- `npm run test:gold-miner` 必须全绿（engine / score / storage / i18n / markup 共 58 用例）。
+- markup 测试守装配契约：index.html 每个 id 都在 main 的 refs 表、ui 引用的 refs 全部已声明、
+  商店 data-type/data-cost 与 score.mjs 一致、`?v=dev` 占位与移动端/reduced-motion 样式在位。
+- 本地 `/games/gold-miner/`；生产 `/gold-miner/`。URL 带 `?e2e` 时 main 暴露 `window.__gm`。
+
+## 10 · Working Rules
 
 - **一次只发一个独立特性的小补丁**，然后更新 PROJECT_LOG.md。
 - 门户 / 构建脚本 / games.json / 部署 → 跑 `npm run build`。
 - 单游戏测试门禁：
   - Sudoku：`games/sudoku` 下 `npm run typecheck && npm test`。
   - 2048：`games/2048` 下 `node --test tests/engine.test.mjs tests/storage.test.mjs tests/i18n.test.mjs tests/markup.test.mjs`（Node 22 必须显式列文件，不能只给 `tests` 目录）。
-  - orbit-sort / tic-tac-toe / minesweeper / 首页：根目录 `npm run test:orbit-sort` /
-    `test:tic-tac-toe` / `test:minesweeper` / `test:home`。
+  - orbit-sort / tic-tac-toe / minesweeper / gold-miner / 首页：根目录 `npm run test:orbit-sort` /
+    `test:tic-tac-toe` / `test:minesweeper` / `test:gold-miner` / `test:home`。
 - Commit message：英文，conventional-commit 前缀（feat/fix/docs/chore），body 解释为什么改。
 - Deploy workflow 已升级到 `actions/checkout@v5` + `actions/setup-node@v6`（Node 22）。

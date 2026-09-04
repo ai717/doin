@@ -51,6 +51,16 @@
       "tags": ["益智", "排序", "每日挑战"],
       "url": "/orbit-sort/",
       "en": { "title": "Orbit Sort" }
+    },
+    {
+      "title": "黄金矿工",
+      "slug": "gold-miner",
+      "desc": "摆动钢爪抓金块、钻石与神秘袋，60 秒内凑够目标金额；炸药碎石、生力水加速、钻石亮油升值，关卡逐层加深。",
+      "icon": "⛏️",
+      "cover": "/assets/covers/gold-miner.webp",
+      "tags": ["休闲", "经典", "时机"],
+      "url": "/gold-miner/",
+      "en": { "title": "Gold Miner" }
     }
   ]
 }
