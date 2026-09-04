@@ -489,12 +489,6 @@ function renderSelect() {
     heading.textContent = `第 ${chapter.id} 章 ${chapter.title}`;
     const summary = document.createElement("p");
     summary.textContent = `${chapter.description} · 已稳定 ${completed.length} / ${levels.length}`;
-    const progressBar = document.createElement("div");
-    progressBar.className = "chapter-progress";
-    progressBar.setAttribute("aria-hidden", "true");
-    const fill = document.createElement("i");
-    fill.style.setProperty("--fill", `${levels.length ? Math.round((completed.length / levels.length) * 100) : 0}%`);
-    progressBar.append(fill);
     const path = document.createElement("div");
     path.className = "chapter-path";
     path.setAttribute("aria-label", `第 ${chapter.id} 章关卡`);
@@ -540,7 +534,7 @@ function renderSelect() {
       button.addEventListener("click", () => startLevel(item.id));
       path.append(button);
     });
-    section.append(heading, summary, progressBar, path);
+    section.append(heading, summary, path);
     return section;
   }));
   } catch (err) { /* 章节/关卡网格构建失败静默 */ console.error("[orbit-sort] renderSelect build fail:", err); }

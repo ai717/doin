@@ -112,6 +112,7 @@ test("renderer keeps the required keyed SVG layers and focusable controls", asyn
   assert.match(renderer, /空，可点击后继续调入/);
   assert.match(main, /item\.chapter === chapter\.id/);
   assert.match(main, /chapter-map/);
+  assert.doesNotMatch(main, /chapter-progress/);
   assert.match(main, /dataset\.current/);
   assert.match(renderer, /from "\.\.\/engine\.mjs\?v=dev"/);
   assert.doesNotMatch(renderer, /innerHTML/);
