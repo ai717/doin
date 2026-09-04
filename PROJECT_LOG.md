@@ -7,14 +7,14 @@
 
 ## Current Baseline (2026-09-04)
 
-- **门户**：Poki 风首页（`index.html` + `css/`），640×640 WebP 封面，CNAME `doin.win`。
+- **门户**：Poki 风首页（`index.html` + `css/`），640×640 WebP 封面（5 张 3D 风格统一），
+  卡片白色胶囊标签 + hover 放大，Doin.win 站点标题 + Free Mini Games 文案，CNAME `doin.win`。
 - **orbit-sort**（已稳定）：5 章 × 20 题（100 关）、积分系统、今日挑战。规则见 AGENTS.md §5。
 - **tic-tac-toe**（已稳定）：3×3/4×4、难度=失误率、本地双人、WebAudio 音效。规则见 AGENTS.md §6。
-- **minesweeper**（已稳定，本轮）：经典四难度 + 无猜保证 + 计分存档 + WebAudio 音效 + Neon Grid 主题。规则见 AGENTS.md §8。
+- **minesweeper**（已稳定，本轮）：经典四难度 + 无猜保证 + 计分存档 + WebAudio 音效 + Neon Grid 主题 + 移动端适配。规则见 AGENTS.md §8。
 - **本地服务**：`node _dev-server.mjs`（零依赖，端口 46810 起）。
 
-⚠️ **git push 仍未解决**：缓存 token 属于 `ai919`、仓库 owner 是 `ai717` → 403。
-main 领先 origin/main（09-03 起至少 5 commit，本轮扫雷改动尚未 commit）。恢复方式见 Archive。
+✅ **git 已恢复**：09-04 `7a2701f` 起全部推送成功（此前 ai919≠ai717 的 403 已解除）。
 
 ## 2026-09-04 · Minesweeper：MVP → P2（本轮收尾）
 
