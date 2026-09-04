@@ -108,9 +108,9 @@ test("renderer keeps the required keyed SVG layers and focusable controls", asyn
   assert.doesNotMatch(main, /const action = state\.selectedDockId/);
   assert.match(game, /import \{ applyIntent, legalActions, reset, undo \}/);
   assert.match(game, /const result = applyIntent\(state, intent\)/);
-  assert.match(main, /当前无后续调度/);
-  assert.match(main, /刚才的移动符合规则/);
-  assert.match(renderer, /空，可点击后继续调入/);
+  assert.match(main, /t\.msgStuck/);
+  assert.match(main, /i18n\.mjs\?v=dev/);
+  assert.match(renderer, /t\.dockEmpty/);
   assert.match(main, /item\.chapter === chapter\.id/);
   assert.match(main, /chapter-map/);
   assert.doesNotMatch(main, /chapter-progress/);
@@ -142,7 +142,7 @@ test("hint worker uses the deterministic solver without a random fallback", asyn
   assert.match(worker, /data\.kind === "solvability"/);
   assert.match(worker, /nodeLimit: 2_000_000/);
   assert.match(worker, /kind: data\.kind/);
-  assert.match(await readFile(new URL("js/main.mjs", root), "utf8"), /当前局面无法通关，建议撤销最近一步重新规划/);
+  assert.match(await readFile(new URL("js/main.mjs", root), "utf8"), /t\.msgUnsolvable/);
   assert.match(await readFile(new URL("js/main.mjs", root), "utf8"), /requestSolvabilityCheck\(next\)/);
 });
 

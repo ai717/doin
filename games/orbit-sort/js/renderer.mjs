@@ -1,4 +1,8 @@
 import { canExtract, canInsert } from "../engine.mjs?v=dev";
+import { format, loadLocale, strings } from "./i18n.mjs?v=dev";
+
+// locale 只在模块加载时读一次（切语言 = 整页刷新，模块级安全）。
+const t = strings(loadLocale());
 
 const NS = "http://www.w3.org/2000/svg";
 const CENTER = { x: 500, y: 500 };
@@ -322,10 +326,10 @@ export function createBoardRenderer(board, { onTrack, onDock }) {
       record.group.dataset.selected = String(state.selectedDockId === dock.id);
       record.group.dataset.occupied = String(Boolean(dock.orb));
       const orbHint = dock.orb
-        ? "颜色 " + String(dock.orb.color + 1)
-        : "空，可点击后继续调入";
-      const selectHint = state.selectedDockId === dock.id ? "，已选中" : "";
-      const ariaText = "中转槽 " + String(dock.id + 1) + "，" + orbHint + selectHint;
+        ? format(t.dockColor, dock.orb.color + 1)
+        : t.dockEmpty;
+      const selectHint = state.selectedDockId === dock.id ? t.dockSelected : "";
+      const ariaText = format(t.dockLabel, dock.id + 1, orbHint, selectHint);
       record.group.setAttribute("aria-label", ariaText);
       if (dock.orb) {
         const node = ensureOrb(dock.orb);

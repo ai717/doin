@@ -8,6 +8,7 @@ import { scoreResult } from "./score.mjs";
 import { createAudio } from "./audio.mjs";
 import * as storage from "./storage.mjs";
 import { findSafeCell } from "./solver.mjs";
+import { htmlLang, loadLocale, saveLocale, strings } from "./i18n.mjs";
 
 const byId = (id) => document.getElementById(id);
 
@@ -23,6 +24,7 @@ const refs = {
   flagModeButton: byId("flag-mode"),
   muteButton: byId("mute"),
   restartButton: byId("restart"),
+  langButton: byId("lang"),
   resultLayer: byId("result-layer"),
   resultBadge: byId("result-badge"),
   resultTitle: byId("result-title"),
@@ -31,6 +33,59 @@ const refs = {
   resultAgain: byId("result-again"),
   resultClose: byId("result-close"),
 };
+
+// —— i18n：统一语言规则（全站共享 doin.lang > 浏览器语言）——
+const locale = loadLocale();
+const t = strings(locale);
+document.documentElement.lang = htmlLang(locale);
+document.title = t.docTitle;
+const metaDesc = document.querySelector('meta[name="description"]');
+if (metaDesc) metaDesc.setAttribute("content", t.metaDesc);
+
+// 难度 label 不再取 level.mjs 的中文，改由 i18n 提供。
+const DIFF_TEXT_KEYS = {
+  beginner: "diffBeginner",
+  intermediate: "diffIntermediate",
+  expert: "diffExpert",
+};
+
+function diffText(id) {
+  return t[DIFF_TEXT_KEYS[id]] ?? id;
+}
+
+// 把 HTML 里的静态文案按当前语言统一刷一遍（HTML 保留中文默认值做 SEO 兜底）。
+function applyStaticTexts() {
+  const set = (id, text) => {
+    const el = byId(id);
+    if (el) el.textContent = text;
+  };
+  const q = (selector) => document.querySelector(selector);
+
+  q(".title").textContent = t.title;
+  q(".lede").textContent = t.lede;
+  q(".back a").textContent = t.backHome;
+  q(".controls > .hud-tag").textContent = t.difficulty;
+  q(".controls").setAttribute("aria-label", t.ariaControls);
+  q(".hud").setAttribute("aria-label", t.ariaHud);
+  q(".board-stage").setAttribute("aria-label", t.ariaBoardStage);
+  q(".toolbar").setAttribute("aria-label", t.ariaToolbar);
+  q(".footnote p").textContent = t.footnote;
+  set("status", t.statusReady);
+  set("flag-mode", t.flagMode);
+  set("restart", t.newGame);
+  set("result-again", t.again);
+  set("result-close", t.viewBoard);
+  set("difficulty-label", "");
+  const hudTags = document.querySelectorAll(".hud-card .hud-tag");
+  if (hudTags.length === 3) {
+    hudTags[0].textContent = t.hudMines;
+    hudTags[1].textContent = t.hudTime;
+    hudTags[2].textContent = t.hudProgress;
+  }
+  refs.board.setAttribute("aria-label", t.boardLabel);
+  refs.langButton.setAttribute("aria-label", t.ariaLang);
+  refs.langButton.setAttribute("title", t.ariaLang);
+}
 
 // 持久化统一走 storage 模块：难度/静音偏好 + 各难度最佳战绩。
 let persist = storage.load();
@@ -51,9 +106,7 @@ function syncDifficultyButtons() {
   for (const button of refs.difficultyGroup.querySelectorAll(".seg")) {
     button.setAttribute("aria-pressed", String(button.dataset.difficulty === active));
   }
-  refs.difficultyLabel.textContent = (
-    DIFFICULTIES.find((d) => d.id === active) || DIFFICULTIES[0]
-  ).label;
+  refs.difficultyLabel.textContent = diffText(active);
 }
 
 function setFlagMode(value) {
@@ -66,7 +119,12 @@ function syncMuteButton() {
   const muted = audio.isMuted();
   refs.muteButton.setAttribute("aria-pressed", String(muted));
   refs.muteButton.dataset.muted = String(muted);
-  refs.muteButton.textContent = muted ? "🔇 静音" : "🔊 音效";
+  refs.muteButton.textContent = muted ? "🔇 " + t.muted : "🔊 " + t.sound;
+}
+
+function syncLangButton() {
+  // 按钮显示"可切换到的语言"，与当前语言相反。
+  refs.langButton.textContent = t.langShort;
 }
 
 function playActionSound(action) {
@@ -109,7 +167,7 @@ function finishGame() {
 
 const ui = mountUI(refs, {
   onIntent: handleIntent,
-});
+}, t);
 
 function handleIntent(type, index) {
   const before = game.state;
@@ -121,7 +179,7 @@ function handleIntent(type, index) {
     // 无效果 ≠ 报错：只对"速开条件不满足"给出轻提示，其余静默
     if (effectiveType === "reveal" && game.state.status === STATUS_PLAYING) {
       if (before.cellState[index] === REVEALED && before.adjacency[index] > 0) {
-        ui.showMessage("旗数和数字不符，没法速开", "warn");
+        ui.showMessage(t.chordFail, "warn");
       }
     }
     return;
@@ -140,7 +198,7 @@ function handleIntent(type, index) {
   if (peek >= 0) {
     audio.peek();
     ui.render(game);
-    ui.showMessage("逻辑已穷尽 · 免费透视 +1", "good");
+    ui.showMessage(t.peek, "good");
     ui.vibrate(20);
     if (isOver(game)) finishGame();
   }
@@ -175,9 +233,17 @@ refs.muteButton.addEventListener("click", () => {
   if (!muted) audio.click();
 });
 
+// 语言切换：写入全站共享偏好后刷新，保持所有模块状态一致。
+refs.langButton.addEventListener("click", () => {
+  saveLocale(locale === "zh" ? "en" : "zh");
+  window.location.reload();
+});
+
 setFlagMode(flagMode);
 syncDifficultyButtons();
 syncMuteButton();
+syncLangButton();
+applyStaticTexts();
 ui.render(game);
 
 window.setInterval(() => ui.updateTimer(game), 250);

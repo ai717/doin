@@ -9,18 +9,21 @@ import {
   STATUS_WON,
   remainingMines,
 } from "./engine.mjs";
+import { format } from "./i18n.mjs";
 
 const FLAG_SVG =
   '<svg class="icon" viewBox="0 0 10 12" aria-hidden="true"><path d="M3 1.4v9.2" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/><path d="M3 2.2l4.6 1.5L3 5.2z" fill="currentColor"/></svg>';
 const MINE_SVG =
   '<svg class="icon" viewBox="0 0 12 12" aria-hidden="true"><circle cx="6" cy="6" r="2.8" fill="currentColor"/><path d="M6 .8v2M6 9.2v2M.8 6h2M9.2 6h2M2.2 2.2l1.4 1.4M8.4 8.4l1.4 1.4M9.8 2.2L8.4 3.6M3.6 8.4L2.2 9.8" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>';
 
-const STATUS_TEXT = {
-  [STATUS_READY]: "点击任意格开始 · 首击永远安全",
-  playing: "进行中 · 右键或长按插旗，点数字速开",
-  [STATUS_WON]: "雷区清空！",
-  [STATUS_LOST]: "踩雷了 · 亮红的是标错的旗",
-};
+function statusText(t) {
+  return {
+    [STATUS_READY]: t.statusReady,
+    playing: t.statusPlaying,
+    [STATUS_WON]: t.statusWon,
+    [STATUS_LOST]: t.statusLost,
+  };
+}
 
 function fmtTime(ms) {
   const total = Math.floor(ms / 1000);
@@ -29,7 +32,8 @@ function fmtTime(ms) {
   return m + ":" + String(s).padStart(2, "0");
 }
 
-export function mountUI(refs, hooks = {}) {
+// t：i18n 字符串包（strings(locale)），由 main 装配层传入。
+export function mountUI(refs, hooks = {}, t) {
   const board = refs.board;
   const reducedMotion =
     typeof window.matchMedia === "function" &&
@@ -109,7 +113,7 @@ export function mountUI(refs, hooks = {}) {
     refs.hudMines.textContent = String(Math.max(0, remainingMines(state)));
     refs.hudProgress.textContent =
       Math.round((state.revealedCount / (state.rows * state.cols - state.mines)) * 100) + "%";
-    refs.status.textContent = STATUS_TEXT[state.status] || "";
+    refs.status.textContent = statusText(t)[state.status] || "";
     refs.status.dataset.tone = state.status === STATUS_LOST ? "bad" : state.status === STATUS_WON ? "good" : "info";
     board.dataset.status = state.status;
   }
@@ -145,14 +149,13 @@ export function mountUI(refs, hooks = {}) {
 
     refs.resultBadge.textContent = won ? "CLEARED" : "BOOM";
     refs.resultBadge.dataset.tone = won ? "good" : "bad";
-    refs.resultTitle.textContent = won ? "雷区清空" : "踩雷了";
-    refs.resultSub.textContent =
-      "用时 " +
-      fmtTime(elapsedMs) +
-      " · 操作 " +
-      game.actionCount +
-      " 次 · 难度 " +
-      refs.difficultyLabel.textContent;
+    refs.resultTitle.textContent = won ? t.resultWon : t.resultLost;
+    refs.resultSub.textContent = format(
+      t.resultSub,
+      fmtTime(elapsedMs),
+      String(game.actionCount),
+      refs.difficultyLabel.textContent
+    );
 
     const rows = refs.resultRows;
     if (rows) {
@@ -165,7 +168,7 @@ export function mountUI(refs, hooks = {}) {
         if (record) {
           const tag = document.createElement("em");
           tag.className = "rec";
-          tag.textContent = "新纪录";
+          tag.textContent = t.rowNewRecord;
           value.appendChild(tag);
         }
         const span = document.createElement("span");
@@ -177,13 +180,13 @@ export function mountUI(refs, hooks = {}) {
 
       if (won && summary.score) {
         const s = summary.score;
-        addRow("本局得分", String(s.total), summary.isBestScore);
-        addRow("基础分", String(s.base));
-        addRow("时间分", String(s.time));
+        addRow(t.rowScore, String(s.total), summary.isBestScore);
+        addRow(t.rowBase, String(s.base));
+        addRow(t.rowTime, String(s.time));
       }
       const best = summary.best || {};
-      addRow("最佳得分", String(best.bestScore ?? 0));
-      addRow("最佳用时", best.bestTimeMs == null ? "—" : fmtTime(best.bestTimeMs));
+      addRow(t.rowBestScore, String(best.bestScore ?? 0));
+      addRow(t.rowBestTime, best.bestTimeMs == null ? "—" : fmtTime(best.bestTimeMs));
     }
 
     refs.resultLayer.hidden = false;

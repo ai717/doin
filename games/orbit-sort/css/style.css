@@ -1424,3 +1424,18 @@ h1 { margin: 0; font-size: 22px; font-weight: 800; letter-spacing: .08em; text-s
   .game-title::before { left: 14px; font-size: 8px; letter-spacing: .22em; }
   .game-title::after { right: 2px; bottom: 7px; width: 6px; height: 6px; }
 }
+
+/* 语言切换按钮：选关页右上角 + 对局工具栏 */
+.lang-switch {
+  align-self: flex-start;
+  padding: 8px 14px;
+  border: 1px solid rgba(160, 200, 255, .35);
+  border-radius: 12px;
+  background: rgba(20, 34, 68, .55);
+  color: #c7dbff;
+  font: 600 13px/1 inherit;
+  letter-spacing: .04em;
+  cursor: pointer;
+}
+.lang-switch:hover { color: #fff; border-color: rgba(160, 200, 255, .7); }
+.lang-icon { font-size: 15px !important; font-weight: 700; letter-spacing: .02em; }

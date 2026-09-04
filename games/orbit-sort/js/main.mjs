@@ -6,6 +6,7 @@ import { createGame } from "./game.mjs?v=dev";
 import { createBoardRenderer } from "./renderer.mjs?v=dev";
 import { isValidStoredState, loadProgress, recordCompletion, recordDailyCompletion, saveCurrentGame, saveSoundPreference } from "./storage.mjs?v=dev";
 import { computeScore, difficultyForLevel, baseScoreFor, moveScore, timeScore, moveMax, timeMax, perfectScoreForLevel } from "./score.mjs?v=dev";
+import { engineMessage, format, htmlLang, loadLocale, saveLocale, strings } from "./i18n.mjs?v=dev";
 
 // 计算通关/预估得分的辅助：
 //   - 计算本局"当前可保证的最低积分"（还没通关就显示这个当预览）
@@ -306,6 +307,9 @@ let initialState = null;
 // The game object is the SINGLE SOURCE OF TRUTH for state. `game.state` is
 // always authoritative. There is NO local state mirror — no dual-copy drift.
 let game = null;
+// i18n：locale 只在启动时读一次（切换语言 = saveLocale + 整页刷新，模块级安全）。
+const locale = loadLocale();
+const t = strings(locale);
 let progress = loadProgress();
 let resultShown = false;
 let hint = null;
@@ -353,12 +357,12 @@ const resetCancelButton = document.querySelector("#reset-cancel-button");
 const audio = createAudio({ soundOn: progress.settings.soundOn });
 function renderSoundButton(soundOn = audio.isOn()) {
   soundButton.setAttribute("aria-pressed", String(soundOn));
-  soundButton.setAttribute("aria-label", soundOn ? "关闭声音" : "开启声音");
-  soundButton.title = soundOn ? "关闭声音" : "开启声音";
+  soundButton.setAttribute("aria-label", soundOn ? t.toolSoundAriaOn : t.toolSoundAriaOff);
+  soundButton.title = soundOn ? t.toolSoundAriaOn : t.toolSoundAriaOff;
   const icon = soundButton.querySelector(".tool-icon");
   const label = soundButton.querySelector(".tool-label");
   if (icon) icon.textContent = soundOn ? "♫" : "×";
-  if (label) label.textContent = soundOn ? "声音" : "静音";
+  if (label) label.textContent = soundOn ? t.toolSound : t.toolSoundOff;
 }
 
 let statusTimer = null;
@@ -424,9 +428,9 @@ function render() {
   if (totalNum) totalNum.textContent = String(progress.totalScore | 0);
   undoButton.disabled = game.state.history.length === 0;
   resetButton.disabled = game.state.moves === 0;
-  if (game.state.status === "won") message("星轨已稳定", "good");
-  if (game.state.status === "stuck") message("当前无后续调度；刚才的移动符合规则，可撤销重规划", "warn");
-  if (game.state.status === "playing") message(game.state.selectedDockId === null ? "选择轨道入口，将星体调入星核" : "选择高亮轨道，落下星体");
+  if (game.state.status === "won") message(t.msgWon, "good");
+  if (game.state.status === "stuck") message(t.msgStuckRender, "warn");
+  if (game.state.status === "playing") message(game.state.selectedDockId === null ? t.msgSelectDock : t.msgSelectTrack);
 }
 
 function clearHint() {
@@ -486,12 +490,12 @@ function renderSelect() {
     section.setAttribute("aria-labelledby", `chapter-title-${chapter.id}`);
     const heading = document.createElement("h2");
     heading.id = `chapter-title-${chapter.id}`;
-    heading.textContent = `第 ${chapter.id} 章 ${chapter.title}`;
+    heading.textContent = format(t.chapterLabel, chapter.id, t[`ch${chapter.id}Title`]);
     const summary = document.createElement("p");
-    summary.textContent = `${chapter.description} · 已稳定 ${completed.length} / ${levels.length}`;
+    summary.textContent = format(t.chapterStable, t[`ch${chapter.id}Desc`], completed.length, levels.length);
     const path = document.createElement("div");
     path.className = "chapter-path";
-    path.setAttribute("aria-label", `第 ${chapter.id} 章关卡`);
+    path.setAttribute("aria-label", format(t.chapterPathAria, chapter.id));
     levels.forEach((item, index) => {
       const isUnlocked = (item.id ?? 0) <= unlockedLevel;
       const best = progress?.bestByLevel?.[item.id] || null;
@@ -509,12 +513,12 @@ function renderSelect() {
       const perfect = perfectScoreForLevel(item, false);
       const hasScore = Boolean(bestScoreRecord);
       const displayedScore = hasScore ? `${bestScoreRecord.score}/${perfect}` : String(perfect);
-      const scoreLabel = hasScore ? "得分" : "总分";
+      const scoreLabel = hasScore ? t.scoreBadgeBest : t.scoreBadgePerfect;
       button.setAttribute(
         "aria-label",
         hasScore
-          ? `第 ${item.id} 关，已通关，得分 ${bestScoreRecord.score}，总分 ${perfect}`
-          : isUnlocked ? `第 ${item.id} 关，总分 ${perfect}，可开始` : `第 ${item.id} 关，未解锁，总分 ${perfect}`
+          ? format(t.ariaLevelDone, item.id, bestScoreRecord.score, perfect)
+          : isUnlocked ? format(t.ariaLevelReady, item.id, perfect) : format(t.ariaLevelLocked, item.id, perfect)
       );
       // 行星层级：表面大气+纹理球体 + 号码 + 底部分数标签
       const planet = document.createElement("span");
@@ -579,13 +583,13 @@ function startGame(nextLevel, restoredState = null) {
   const levelNode = document.querySelector("#level-label");
   if (levelNode) {
     if (level.today === true || level.id === "daily") {
-      levelNode.textContent = `今日挑战${level.dateKey ? " · " + level.dateKey : ""}`;
+      levelNode.textContent = t.dailyNode + (level.dateKey ? " · " + level.dateKey : "");
     } else {
-      levelNode.textContent = `第 ${level.id} 关`;
+      levelNode.textContent = format(t.levelLabel, level.id);
     }
   }
   render();
-  message("选择轨道入口，将星体调入星核", "info");
+  message(t.msgSelectDock, "info");
   if (!restoredState && level.id === 1) {
     const firstTrack = game.state.tracks.find((track) => canExtract(game.state, track.id));
     renderer.showGuide(firstTrack?.id);
@@ -608,8 +612,8 @@ function showLevelInfo() {
   const capacity = level.capacity ?? "-";
   const docks = level.dockCount ?? level.docks?.length ?? "-";
   levelInfoText.textContent = level.id === "daily"
-    ? `今日挑战 · ${level.dateKey ?? todayKey()} · 难度 D${difficulty} · ${tracks} 条轨道 · 容量 ${capacity} · 中转槽 ${docks} · 目标 ${level.par} 步`
-    : `第 ${level.id} 关 · 难度 D${difficulty} · ${tracks} 条轨道 · 容量 ${capacity} · 中转槽 ${docks} · 目标 ${level.par} 步`;
+    ? format(t.infoDaily, level.dateKey ?? todayKey(), difficulty, tracks, capacity, docks, level.par)
+    : format(t.infoLevel, level.id, difficulty, tracks, capacity, docks, level.par);
   openDialog(levelInfoLayer, levelInfoButton, levelInfoCloseButton);
 }
 
@@ -645,8 +649,9 @@ function showResult() {
 
   // —— 顶部标题行（去掉 ★★★，改成「得分 / 本题总分」+ 步数）
   const titleText = isDailyGame
-    ? `🏆 今日挑战 · ${level.dateKey ?? todayKey()} · 得分 ${totalFinal} / ${perfect} · 步数 ${movesPlayed}`
-    : `得分 ${totalFinal} / ${perfect} · 步数 ${movesPlayed} / ${level.par}${completion.isNewHighScore ? " · 🏆 新高分！" : completion.isNewBest ? " · 新纪录" : ""}`;
+    ? format(t.resultDaily, level.dateKey ?? todayKey(), totalFinal, perfect, movesPlayed)
+    : format(t.resultMain, totalFinal, perfect, movesPlayed, level.par) +
+      (completion.isNewHighScore ? t.newHighScore : completion.isNewBest ? t.newBest : "");
   resultScore.textContent = titleText;
   // (通关页也不再显示星条：renderStars(null) 隐藏)
   renderStars(null);
@@ -669,10 +674,10 @@ function showResult() {
     const elapsedSec = Math.floor(finalScore.elapsedMs / 1000);
     const tmax = finalScore.tmax;
     const mmax = finalScore.mmax;
-    const badge = completion.isNewHighScore ? "🏆 新高分 · " : "";
-    const totalHint = `累计总积分 ${progress.totalScore | 0}`;
-    const moveNote = movesPlayed <= mmax ? `步数满分 (≤${mmax})` : `超满分步数 ${movesPlayed - mmax} 步`;
-    const timeNote = elapsedSec <= tmax ? `时间满分 (≤${tmax}s)` : `用时 ${elapsedSec}s (满分≤${tmax}s)`;
+    const badge = completion.isNewHighScore ? t.metaNewHigh : "";
+    const totalHint = format(t.totalHint, progress.totalScore | 0);
+    const moveNote = movesPlayed <= mmax ? format(t.moveFull, mmax) : format(t.moveOver, movesPlayed - mmax);
+    const timeNote = elapsedSec <= tmax ? format(t.timeFull, tmax) : format(t.timeOver, elapsedSec, tmax);
     resultMeta.textContent = `${badge}${moveNote} · ${timeNote} · ${totalHint}`;
   }
   nextButton.hidden = isDailyGame || level.id >= LEVELS.at(-1).id;
@@ -723,7 +728,7 @@ function transition(next, sound, transfer) {
   // controls available so the player can inspect, undo, or reset without a modal
   // overlay masking the authoritative rule result.
   if (next.status === "stuck") {
-    message("当前无后续调度；刚才的移动符合规则，可撤销或重置", "warn");
+    message(t.msgStuck, "warn");
   }
   if (next.status === "playing") progress = saveCurrentGame(progress, game.state);
   requestSolvabilityCheck(next);
@@ -733,29 +738,29 @@ hintWorker.addEventListener("message", ({ data }) => {
   if (data.kind === "solvability") {
     if (data.requestId !== advisoryRequestId) return;
     if (data.status === "exhausted") {
-      message("当前局面无法通关，建议撤销最近一步重新规划", "bad");
+      message(t.msgUnsolvable, "bad");
     }
     return;
   }
   if (data.requestId !== hintRequestId) return;
   hintButton.disabled = false;
   const action = data.actions?.[0];
-  if (data.status !== "solved" || !action) return message("先撤销最近一步试试", "info");
+  if (data.status !== "solved" || !action) return message(t.msgHintUndo, "info");
   if (action.type === "insert") {
     renderer.highlightTrack(action.trackId);
     game.useHint();
     progress = saveCurrentGame(progress, game.state);
-    return message("已标出推荐目标轨道", "info");
+    return message(t.msgHintInsert, "info");
   }
   const target = data.actions[1];
   hint = { targetTrackId: target?.type === "insert" ? target.trackId : null, expiresAt: performance.now() + 3_000 };
   renderer.highlightTrack(action.trackId);
-  message("已标出推荐调入轨道", "info");
+  message(t.msgHintExtract, "info");
 });
 
 hintWorker.addEventListener("error", () => {
   hintButton.disabled = false;
-  message("提示暂时不可用，请先自行尝试", "warn");
+  message(t.msgHintFail, "warn");
 });
 
 function requestHint() {
@@ -765,13 +770,13 @@ function requestHint() {
     game.useHint();
     progress = saveCurrentGame(progress, game.state);
     hint = null;
-    return message("已标出推荐目标轨道", "info");
+    return message(t.msgHintInsert, "info");
   }
   clearHint();
   hintButton.disabled = true;
   hintRequestId += 1;
   hintWorker.postMessage({ requestId: hintRequestId, state: game.state });
-  message("正在推演可行调度", "info");
+  message(t.msgThinking, "info");
 }
 
 function dockSignatures(list) {
@@ -812,20 +817,20 @@ function chooseTrack(trackId) {
     // Stuck board: a failed click is never productive; drop the harsh tone
     // and keep the stuck message visible so the player reaches for undo/reset.
     if (game.state.status === "stuck") {
-      message("当前无后续调度，建议撤销最近一步或重置本关", "warn");
+      message(t.msgStuckReset, "warn");
       return;
     }
     // Placing mode but the landing target is also a valid extraction: the
     // player likely intended to extract from this track instead of landing.
     // Explain the switch instead of flashing a rule violation.
     if (result.action?.type === "insert" && canExtract(game.state, trackId)) {
-      message("当前是放入模式；若要从这条轨道取出，请先再次点击中转槽取消选中", "info");
+      message(t.msgInsertMode, "info");
       return;
     }
     renderer.flashTrack(trackId);
     audio.play("invalid");
     haptic([26]);
-    message(result.message, "bad");
+    message(engineMessage(result.message), "bad");
     return;
   }
   const next = result.state;
@@ -848,25 +853,25 @@ function chooseDock(dockId) {
   if (result.action.type === "clear-selection" && result.valid) {
     render();
     if (game.state.status === "stuck") {
-      message("已切回取出模式；当前局面无后续调度，可撤销或重置", "warn");
+      message(t.msgBackToExtract, "warn");
     } else {
-      message("已切换为取出模式，可继续调入另一颗星体", "info");
+      message(t.msgToExtract, "info");
     }
     return;
   }
   if (!result.valid) {
     if (game.state.status === "stuck") {
-      message("当前无后续调度，建议撤销最近一步或重置本关", "warn");
+      message(t.msgStuckReset, "warn");
       return;
     }
     if (result.reason === "no-selection") {
-      message("当前已是取出模式，直接点击轨道入口即可调入星体", "info");
+      message(t.msgAlreadyExtract, "info");
       return;
     }
     renderer.flashDock(dockId);
     audio.play("invalid");
     haptic([26]);
-    message(result.message, "bad");
+    message(engineMessage(result.message), "bad");
     return;
   }
   transition(result.state, "insert");
@@ -885,7 +890,7 @@ undoButton.addEventListener("click", () => {
     transition(next, null);
     progress = saveCurrentGame(progress, game.state);
     haptic([14]);
-    message("已撤销一次调度", "info");
+    message(t.msgUndone, "info");
   }
 });
 
@@ -906,7 +911,7 @@ function confirmReset() {
     const firstTrack = game.state.tracks.find((track) => canExtract(game.state, track.id));
     renderer.showGuide(firstTrack?.id);
   }
-  message("已重置本关", "info");
+  message(t.msgResetDone, "info");
 }
 
 resetConfirmButton && resetConfirmButton.addEventListener("click", confirmReset);
@@ -978,6 +983,88 @@ challengeButton && challengeButton.addEventListener("click", () => {
     startDaily();
   }
 });
+// —— i18n：刷写 index.html 里的静态中文文案（SEO 兜底保留中文，运行时按 locale 覆盖）。
+function applyStaticTexts() {
+  document.title = t.docTitle;
+  document.documentElement.lang = htmlLang(locale);
+  const set = (node, text, attr) => {
+    if (!node) return;
+    if (attr) node.setAttribute(attr, text);
+    else node.textContent = text;
+  };
+  set(document.querySelector(".select-header h1"), t.title);
+  set(document.querySelector(".select-header p"), t.lede);
+  set(document.querySelector("#daily-button .daily-copy strong"), t.dailyTitle);
+  set(document.querySelector("#daily-button .daily-copy small"), t.dailyDesc);
+  set(dailyButton, t.challengeAria, "title");
+  set(continueDailyButton, t.continueDaily);
+  set(continueButton, t.continueGame);
+  set(levelGrid, t.levelGridAria, "aria-label");
+  set(document.querySelector(".game-title"), t.title);
+  set(document.querySelector(".hud"), t.hudAria, "aria-label");
+  set(moveLabel?.querySelector(".hud-tag"), t.hudMoves);
+  set(parLabel?.querySelector(".hud-tag"), t.hudPar);
+  set(parLabel?.querySelector(".hud-sep"), t.hudStep);
+  const scoreTags = constellationLabel?.querySelectorAll(".hud-tag");
+  if (scoreTags && scoreTags.length >= 2) {
+    scoreTags[0].textContent = t.hudScore;
+    scoreTags[scoreTags.length - 1].textContent = t.hudTotal;
+  }
+  set(totalScoreLabel?.querySelector(".hud-tag"), t.hudTotal);
+  set(document.querySelector(".board-stage"), t.boardStageAria, "aria-label");
+  set(board, t.boardAria, "aria-label");
+  set(document.querySelector(".game-tools"), t.toolsAria, "aria-label");
+  set(levelSelectButton, t.toolLevelAria, "aria-label");
+  set(levelSelectButton, t.toolLevelAria, "title");
+  set(levelSelectButton?.querySelector(".tool-label"), t.toolLevel);
+  set(levelInfoButton, t.toolInfoAria, "aria-label");
+  set(levelInfoButton, t.toolInfoAria, "title");
+  set(levelInfoButton?.querySelector(".tool-label"), t.toolInfo);
+  set(hintButton, t.toolHintAria, "aria-label");
+  set(hintButton, t.toolHintTitle, "title");
+  set(hintButton?.querySelector(".tool-label"), t.toolHint);
+  set(resetButton, t.toolResetAria, "aria-label");
+  set(resetButton, t.toolResetTitle, "title");
+  set(resetButton?.querySelector(".tool-label"), t.toolReset);
+  set(undoButton, t.toolUndoAria, "aria-label");
+  set(undoButton, t.toolUndoTitle, "title");
+  set(undoButton?.querySelector(".tool-label"), t.toolUndo);
+  set(document.querySelector(".challenge-row"), t.dailyTitle, "aria-label");
+  set(challengeButton, t.challengeAria, "title");
+  set(challengeButton?.querySelector(".ch-label"), t.dailyTitle);
+  set(document.querySelector("#result-title"), t.resultTitle);
+  set(resultBreakdown, t.breakdownAria, "aria-label");
+  for (const el of resultBreakdown?.querySelectorAll(".wb-name") ?? []) {
+    const key = el.parentElement?.querySelector(".wb-val")?.dataset.k;
+    set(el, key === "base" ? t.wbBase : key === "move" ? t.wbMove : key === "time" ? t.wbTime : t.wbTotal);
+  }
+  set(nextButton, t.nextLevel);
+  set(againButton, t.replay);
+  set(document.querySelector("#reset-title"), t.resetTitle);
+  set(document.querySelector("#reset-layer .result-panel p"), t.resetDesc);
+  set(resetConfirmButton, t.resetConfirm);
+  set(resetCancelButton, t.resetCancel);
+  set(document.querySelector("#level-info-title"), t.infoTitle);
+  set(levelInfoCloseButton, t.backToGame);
+  // 语言切换按钮：显示"目标语言"。
+  for (const btn of document.querySelectorAll("[data-lang-toggle]")) {
+    set(btn, t.langAria, "aria-label");
+    const icon = btn.querySelector(".lang-icon");
+    const label = btn.querySelector(".tool-label");
+    if (icon) icon.textContent = t.langShort;
+    if (label) label.textContent = t.langShort;
+    if (!icon && !label) btn.textContent = t.langShort;
+  }
+}
+
+for (const btn of document.querySelectorAll("[data-lang-toggle]")) {
+  btn?.addEventListener("click", () => {
+    saveLocale(locale === "zh" ? "en" : "zh");
+    location.reload();
+  });
+}
+applyStaticTexts();
+
 renderSelect();
 if (isValidSavedGame(progress.currentGame)) {
   startLevel(progress.currentGame.levelId, progress.currentGame.state);

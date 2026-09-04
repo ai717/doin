@@ -2,12 +2,10 @@
 // 只负责"把 view 画出来"和"把用户意图翻译成 onPlay 回调"，不持有任何规则判断。
 
 import { EMPTY, PLAYER_O, PLAYER_X, STATUS_DRAW, STATUS_PLAYING, STATUS_WON } from "./engine.mjs";
-import { DIFFICULTY_META } from "./ai.mjs";
+import { format } from "./i18n.mjs";
 import { MODES } from "./storage.mjs";
 
 const SVG_NS = "http://www.w3.org/2000/svg";
-const MARK_X = "红 X";
-const MARK_O = "蓝 O";
 
 function stroke(kind, d, length, delayed) {
   const node = document.createElementNS(SVG_NS, kind);
@@ -35,7 +33,12 @@ function buildMark(player) {
   return svg;
 }
 
-export function mountUI(refs, handlers) {
+// t：i18n 字符串包（strings(locale)），由 main 装配层传入。
+export function mountUI(refs, handlers, t) {
+  const markX = t.markX;
+  const markO = t.markO;
+  const diffText = (difficulty) =>
+    difficulty === "easy" ? t.diffEasy : difficulty === "master" ? t.diffMaster : t.diffNormal;
   let cellCount = 0;
   let lastMarks = [];
   const hudCache = {};
@@ -81,7 +84,7 @@ export function mountUI(refs, handlers) {
       const col = (index % state.size) + 1;
       cell.setAttribute(
         "aria-label",
-        "第 " + row + " 行第 " + col + " 列，" + (value === PLAYER_X ? MARK_X : value === PLAYER_O ? MARK_O : "空"),
+        format(t.cellAria, String(row), String(col), value === PLAYER_X ? markX : value === PLAYER_O ? markO : t.markEmpty),
       );
     }
   }
@@ -138,14 +141,14 @@ export function mountUI(refs, handlers) {
     const { config, state, thinking } = view;
     const isPvp = config.mode === MODES.PVP;
     if (state.status === STATUS_WON) {
-      const winner = state.winner === PLAYER_X ? MARK_X : MARK_O;
-      if (isPvp) return winner + " 获胜";
-      return state.winner === config.humanMark ? "你赢了！" : "AI 赢了";
+      const winner = state.winner === PLAYER_X ? markX : markO;
+      if (isPvp) return format(t.statusWonPvp, winner);
+      return state.winner === config.humanMark ? t.statusWonYou : t.statusWonAi;
     }
-    if (state.status === STATUS_DRAW) return "平局，势均力敌";
-    if (thinking) return "AI 正在思考";
-    if (isPvp) return "轮到" + (state.current === PLAYER_X ? MARK_X : MARK_O);
-    return "轮到你 · 你是" + MARK_X;
+    if (state.status === STATUS_DRAW) return t.statusDraw;
+    if (thinking) return t.statusThinking;
+    if (isPvp) return format(t.statusTurnPvp, state.current === PLAYER_X ? markX : markO);
+    return t.statusTurnYou;
   }
 
   function paintSegments(view, meta) {
@@ -160,8 +163,8 @@ export function mountUI(refs, handlers) {
       button.setAttribute("aria-pressed", String(button.dataset.difficulty === config.difficulty));
     }
     refs.difficultyWrap.hidden = config.mode === MODES.PVP;
-    refs.hudLeftTag.textContent = config.mode === MODES.PVP ? MARK_X : "你";
-    refs.hudRightTag.textContent = config.mode === MODES.PVP ? MARK_O : "AI";
+    refs.hudLeftTag.textContent = config.mode === MODES.PVP ? markX : t.hudYou;
+    refs.hudRightTag.textContent = config.mode === MODES.PVP ? markO : t.hudAi;
     refs.themeButton.setAttribute("aria-pressed", String(meta.prefs.theme === "dark"));
     refs.soundButton.setAttribute("aria-pressed", String(!meta.prefs.muted));
   }
@@ -187,8 +190,8 @@ export function mountUI(refs, handlers) {
     setHud("hudBest", meta.stats.bestStreak);
 
     refs.scoreLine.textContent = pvp
-      ? "双人同屏不计入战绩与连胜"
-      : "难度 " + DIFFICULTY_META[view.config.difficulty].label + " · 总积分 " + meta.stats.totalScore;
+      ? t.scoreLinePvp
+      : format(t.scoreLine, diffText(view.config.difficulty), String(meta.stats.totalScore));
 
     refs.undoButton.disabled = !view.canUndo;
   }

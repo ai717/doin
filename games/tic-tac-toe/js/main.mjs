@@ -8,6 +8,7 @@ import { createGameController } from "./game.mjs";
 import { MODES, applyOutcome, load, save } from "./storage.mjs";
 import { OUTCOME_DRAW, OUTCOME_WIN, breakdown } from "./score.mjs";
 import { mountUI } from "./ui.mjs";
+import { format, htmlLang, loadLocale, saveLocale, strings } from "./i18n.mjs";
 
 const byId = (id) => document.getElementById(id);
 
@@ -31,6 +32,7 @@ const refs = {
   restartButton: byId("restart"),
   soundButton: byId("sound"),
   themeButton: byId("theme"),
+  langButton: byId("lang"),
 };
 
 const resultRefs = {
@@ -42,6 +44,94 @@ const resultRefs = {
   again: byId("result-again"),
   close: byId("result-close"),
 };
+
+// —— i18n：统一语言规则（全站共享 doin.lang > 浏览器语言）——
+const locale = loadLocale();
+const t = strings(locale);
+document.documentElement.lang = htmlLang(locale);
+document.title = t.docTitle;
+const metaDesc = document.querySelector('meta[name="description"]');
+if (metaDesc) metaDesc.setAttribute("content", t.metaDesc);
+
+const BREAKDOWN_LABEL_KEYS = {
+  base: "rowBase",
+  efficiency: "rowEfficiency",
+  streak: "rowStreak",
+  total: "rowTotal",
+};
+
+const DIFF_TEXT_KEYS = { easy: "diffEasy", normal: "diffNormal", master: "diffMaster" };
+
+function diffText(id) {
+  return t[DIFF_TEXT_KEYS[id]] ?? id;
+}
+
+// 把 HTML 里的静态文案按当前语言统一刷一遍（HTML 保留中文默认值做 SEO 兜底）。
+function applyStaticTexts() {
+  const set = (id, text) => {
+    const el = byId(id);
+    if (el) el.textContent = text;
+  };
+  const q = (selector) => document.querySelector(selector);
+
+  q(".title").textContent = t.title;
+  q(".lede").textContent = t.lede;
+  q(".back a").textContent = t.backHome;
+  q(".controls").setAttribute("aria-label", t.ariaControls);
+  q(".hud").setAttribute("aria-label", t.ariaHud);
+  q(".toolbar").setAttribute("aria-label", t.ariaToolbar);
+  q(".board").setAttribute("aria-label", t.boardAria);
+  q("#result-breakdown").setAttribute("aria-label", t.breakdownAria);
+  const controlLabels = document.querySelectorAll(".control-label");
+  if (controlLabels.length === 3) {
+    controlLabels[0].textContent = t.modeLabel;
+    controlLabels[1].textContent = t.boardSizeLabel;
+    controlLabels[2].textContent = t.diffLabel;
+  }
+  q("#mode-group").setAttribute("aria-label", t.ariaModeGroup);
+  q("#size-group").setAttribute("aria-label", t.ariaSizeGroup);
+  q("#difficulty-group").setAttribute("aria-label", t.ariaDiffGroup);
+  const segs = (group) => Array.from(document.querySelectorAll(group + " .seg"));
+  const [modeSegs, sizeSegs, diffSegs] = [segs("#mode-group"), segs("#size-group"), segs("#difficulty-group")];
+  if (modeSegs.length === 2) {
+    modeSegs[0].textContent = t.modePve;
+    modeSegs[1].textContent = t.modePvp;
+  }
+  if (diffSegs.length === 3) {
+    diffSegs[0].textContent = t.diffEasy;
+    diffSegs[1].textContent = t.diffNormal;
+    diffSegs[2].textContent = t.diffMaster;
+  }
+  const drawTag = q(".hud-card:nth-child(2) .hud-tag");
+  if (drawTag) drawTag.textContent = t.hudDraw;
+  const streakTag = q(".hud-streak .hud-tag");
+  if (streakTag && streakTag.firstChild) streakTag.firstChild.textContent = t.hudStreak + " ";
+  const streakUnit = q(".hud-unit");
+  if (streakUnit) streakUnit.textContent = t.streakUnit;
+  set("status", t.statusTurnYou);
+  set("undo", t.undo);
+  set("restart", t.restart);
+  set("sound", "♪");
+  refs.soundButton.setAttribute("aria-label", t.sound);
+  refs.soundButton.setAttribute("title", t.sound);
+  refs.themeButton.setAttribute("aria-label", t.theme);
+  refs.themeButton.setAttribute("title", t.theme);
+  refs.langButton.setAttribute("aria-label", t.ariaLang);
+  refs.langButton.setAttribute("title", t.ariaLang);
+  set("result-again", t.resultAgain);
+  set("result-close", t.resultClose);
+  const footnote = q(".footnote p");
+  if (footnote) footnote.innerHTML = t.footnoteHtml;
+  const saved = q(".footnote .saved");
+  if (saved) saved.textContent = t.saved;
+  const noscript = q("noscript");
+  if (noscript) noscript.textContent = t.noscript;
+}
+
+// 语言按钮显示"可切换到的语言"，与当前语言相反。
+function syncLangButton() {
+  refs.langButton.textContent = t.langShort;
+}
 
 const data = load();
 const audio = createAudio({ muted: data.prefs.muted });
@@ -74,7 +164,7 @@ function fillBreakdown(rows) {
     const line = document.createElement("div");
     line.className = "rb-row" + (row.key === "total" ? " rb-total" : "");
     const name = document.createElement("span");
-    name.textContent = row.label;
+    name.textContent = t[BREAKDOWN_LABEL_KEYS[row.key]] ?? row.key;
     const value = document.createElement("span");
     value.textContent = (row.key === "total" ? "" : "+") + row.value;
     line.append(name, value);
@@ -87,22 +177,24 @@ function showResult(view, outcome, score, rows) {
   const winnerIsX = view.state.winner === 1;
 
   if (pvp) {
-    resultRefs.badge.textContent = "双人对战";
-    resultRefs.title.textContent = winnerIsX ? "红 X 获胜" : "蓝 O 获胜";
-    resultRefs.sub.textContent = "本局不计入战绩与连胜";
+    resultRefs.badge.textContent = t.resultPvpBadge;
+    resultRefs.title.textContent = winnerIsX ? t.resultPvpWinX : t.resultPvpWinO;
+    resultRefs.sub.textContent = t.resultPvpSub;
     resultRefs.breakdown.textContent = "";
   } else {
-    resultRefs.badge.textContent = outcome === OUTCOME_WIN ? "本局得分 +" + score.total : "本局结束";
-    resultRefs.title.textContent = outcome === OUTCOME_WIN ? "你赢了" : outcome === OUTCOME_DRAW ? "平局" : "AI 赢了";
+    resultRefs.badge.textContent =
+      outcome === OUTCOME_WIN ? format(t.resultScoreBadge, String(score.total)) : t.resultEndBadge;
+    resultRefs.title.textContent =
+      outcome === OUTCOME_WIN ? t.resultTitleWin : outcome === OUTCOME_DRAW ? t.resultTitleDraw : t.resultTitleLose;
     resultRefs.sub.textContent =
       outcome === OUTCOME_WIN
-        ? "当前连胜 " + data.stats.streak + " · 难度加成 ×" + score.factor
+        ? format(t.resultSubWin, String(data.stats.streak), String(score.factor))
         : outcome === OUTCOME_DRAW
-          ? "连胜 " + data.stats.streak + " 保持不变"
-          : "连胜已清零，再来一次";
+          ? format(t.resultSubDraw, String(data.stats.streak))
+          : t.resultSubLose;
     fillBreakdown(rows);
   }
-  resultRefs.again.textContent = "再来一局";
+  resultRefs.again.textContent = t.resultAgain;
   resultRefs.layer.hidden = false;
   resultRefs.again.focus();
 }
@@ -147,8 +239,7 @@ const ui = mountUI(refs, {
     audio.unlock();
     const player = game.view().state.current;
     if (game.play(index)) audio.place(player);
-  },
-  onUndo() {
+  },  onUndo() {
     if (game.undo()) audio.undo();
   },
   onRestart() {
@@ -189,7 +280,7 @@ const ui = mountUI(refs, {
     save(data);
     render(game.view());
   },
-});
+}, t);
 
 resultRefs.again.addEventListener("click", () => {
   resultRefs.layer.hidden = true;
@@ -200,9 +291,17 @@ resultRefs.close.addEventListener("click", () => {
   refs.restartButton.focus();
 });
 
+// 语言切换：写入全站共享偏好后刷新，保持所有模块状态一致。
+refs.langButton.addEventListener("click", () => {
+  saveLocale(locale === "zh" ? "en" : "zh");
+  window.location.reload();
+});
+
 const game = createGameController({ onChange: render, ai: chooseMove });
 
 applyTheme();
+applyStaticTexts();
+syncLangButton();
 
 // 只恢复"还没下完"的对局：已终局的存档在上一次结算时就记过账了，
 // 直接重放会导致战绩重复累加。

@@ -8,7 +8,8 @@
       "cover": "/assets/covers/sudoku.webp",
       "tags": ["益智", "经典"],
       "url": "/sudoku/",
-      "spa": true
+      "spa": true,
+      "en": { "title": "Sudoku" }
     },
     {
       "title": "2048",
@@ -17,7 +18,8 @@
       "icon": "🧮",
       "cover": "/assets/covers/2048.webp",
       "tags": ["益智", "经典", "数字"],
-      "url": "/2048/"
+      "url": "/2048/",
+      "en": { "title": "2048" }
     },
     {
       "title": "井字棋",
@@ -26,7 +28,8 @@
       "icon": "⭕",
       "cover": "/assets/covers/tic-tac-toe.webp",
       "tags": ["益智", "对战", "经典"],
-      "url": "/tic-tac-toe/"
+      "url": "/tic-tac-toe/",
+      "en": { "title": "Tic-Tac-Toe" }
     },
     {
       "title": "扫雷",
@@ -36,7 +39,8 @@
       "cover": "/assets/covers/minesweeper.webp",
       "tags": ["益智", "经典", "无猜"],
       "url": "/minesweeper/",
-      "exclude": ["scripts"]
+      "exclude": ["scripts"],
+      "en": { "title": "Minesweeper" }
     },
     {
       "title": "星轨调度大师",
@@ -45,7 +49,8 @@
       "icon": "🪐",
       "cover": "/assets/covers/orbit-sort.webp",
       "tags": ["益智", "排序", "每日挑战"],
-      "url": "/orbit-sort/"
+      "url": "/orbit-sort/",
+      "en": { "title": "Orbit Sort" }
     }
   ]
 }

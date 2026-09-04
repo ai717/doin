@@ -70,7 +70,7 @@
       </svg>
     </div>
     <main id="select-screen" class="select-screen" hidden>
-      <header class="select-header"><div><h1>星轨调度大师</h1><p>选择一条星轨继续调度</p></div></header>
+      <header class="select-header"><div><h1>星轨调度大师</h1><p>选择一条星轨继续调度</p></div><button id="lang-button-select" class="lang-switch" type="button" data-lang-toggle aria-label="切换语言">EN</button></header>
       <section><button id="daily-button" class="daily-button" type="button"><span class="daily-mark">✦</span><span class="daily-copy"><strong>今日挑战</strong><small>每天一个高难度挑战关卡</small></span><span class="daily-arrow">→</span></button><button id="continue-daily-button" class="continue-button" type="button" hidden>继续今日挑战</button><button id="continue-button" class="continue-button" type="button" hidden>继续上次对局</button><div id="level-grid" class="level-grid" aria-label="主线关卡"></div></section>
     </main>
     <main class="game-shell">
@@ -113,6 +113,7 @@
           <button id="level-select-button" class="tool-button level-select-button" type="button" aria-label="关卡选择" title="关卡选择"><span class="tool-icon">▦</span><span class="tool-label">关卡</span></button>
           <button id="level-info-button" class="tool-button" type="button" aria-label="关卡详情" title="关卡详情"><span class="tool-icon">ⓘ</span><span class="tool-label">详情</span></button>
           <button id="sound-button" class="tool-button" type="button" aria-label="声音" aria-pressed="true" title="声音"><span class="tool-icon">&#9835;</span><span class="tool-label">声音</span></button>
+          <button id="lang-button" class="tool-button" type="button" data-lang-toggle aria-label="切换语言" title="Language"><span class="tool-icon lang-icon">EN</span><span class="tool-label">Language</span></button>
           <button id="hint-button" class="tool-button" type="button" aria-label="帮助" title="帮助 (H)"><span class="tool-icon">?</span><span class="tool-label">提示</span></button>
           <button id="reset-button" class="tool-button" type="button" aria-label="重置" title="重置 (R)"><span class="tool-icon">&#8635;</span><span class="tool-label">重置</span></button>
           <button id="undo-button" class="tool-button" type="button" aria-label="撤销" title="撤销 (Z)"><span class="tool-icon">&#8617;</span><span class="tool-label">撤销</span></button>

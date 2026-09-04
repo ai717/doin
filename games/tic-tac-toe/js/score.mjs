@@ -53,12 +53,13 @@ export function scoreResult(options = {}) {
 }
 
 // 结算面板的四行明细：基础 / 效率 / 连胜 / 合计（合计已含难度系数）。
+// label 由 UI 层按当前语言提供（i18n 的 rowBase/rowEfficiency/rowStreak/rowTotal）。
 export function breakdown(options = {}) {
   const score = scoreResult(options);
   return [
-    { key: "base", label: "基础分", value: score.base },
-    { key: "efficiency", label: "效率奖励", value: score.efficiency },
-    { key: "streak", label: "连胜奖励", value: score.streak },
-    { key: "total", label: "合计得分", value: score.total },
+    { key: "base", value: score.base },
+    { key: "efficiency", value: score.efficiency },
+    { key: "streak", value: score.streak },
+    { key: "total", value: score.total },
   ];
 }
