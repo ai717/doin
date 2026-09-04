@@ -15,6 +15,8 @@ test("game markup has one page heading and accessible controls", async () => {
   assert.match(markup, /aria-label="重置"/);
   assert.match(markup, /id="hint-button"/);
   assert.match(markup, /id="constellation-label"/);
+  assert.match(markup, />最少</);
+  assert.match(markup, />本关得分</);
   assert.match(markup, /id="daily-button"/);
   assert.match(markup, /id="level-select-button"/);
   assert.match(markup, /id="level-info-button"/);
@@ -22,6 +24,8 @@ test("game markup has one page heading and accessible controls", async () => {
   assert.match(markup, /id="select-screen" class="select-screen" hidden/);
   assert.match(markup, /id="continue-daily-button"/);
   assert.match(markup, /id="reset-layer"/);
+  assert.match(markup, /class="tool-label">关卡</);
+  assert.match(markup, /class="tool-label">撤销</);
   assert.doesNotMatch(markup, /stuck-layer|stuck-undo-button|stuck-close-button/);
   assert.match(markup, /id="sound-button"/);
   assert.match(markup, /aria-pressed="true"/);
