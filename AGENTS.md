@@ -97,6 +97,7 @@ generator.validateLevel 新增 intent rollout 门闩：对每个候选关卡跑�
   - 今日挑战 = `80 + D·40 + 200 + 150 + 150 = D·40 + 580`。例：D5=780, D6=820。
 - **总积分 (storage.progress)**：`Σ bestScoresByLevel[id].score`，单关取历史最高。
   `loadProgress()` 每次调用强制 `recomputeTotals()` 防止本地数据改坏或损坏。
+- **分数上限铁律**：`recordCompletion` / `recordDailyCompletion` 写入前必须按当前关卡（或每日难度）满分钳制；读取旧存档也必须丢弃超过上限的记录，任何 UI 不得显示 `得分 > 总分`。
 - **步数 (storage.progress.totalMoves)**：引擎 `stats.movesPlayed` 每次真实 extract 才 +1；
   undo/reset 取最大值永不回退；撤回不会让步数或步数得分减少。
 - **今日首通奖励**：`dailyBonusScore(1stToday)` 主线通关每日首次 +50（与 daily level 的
@@ -133,6 +134,7 @@ generator.validateLevel 新增 intent rollout 门闩：对每个候选关卡跑�
 
 ### 5.8 开发 / 验证命令
 - 改了 orbit-sort 任何东西 → **先跑** `npm run test:orbit-sort`（CI 门禁）。
+- 关卡或规则变更必须确认 100 关全量可解、合法操作随机游走无误拦截，并检查章节难度整体递增但章内保持波浪式；上述检查由 `levels.test.mjs`、`generator.test.mjs`、`rules-property.test.mjs` 覆盖。
 - 改了门户/build/game.json/deployment → 再跑 `npm run build`。
 - 本地路径 `/games/orbit-sort/`；生产 `/orbit-sort/`。源码模块用 `?v=dev` 占位，
   生产构建会把所有 `?v=dev` 替换为单一 `BUILD_ID`（覆盖 Worker URL 和 Worker 内部 import）。

@@ -5,12 +5,35 @@
 
 ***
 
-## Current Baseline (2026-09-03)
+## Current Baseline (2026-09-04)
 
 - **门户**：Poki 风首页（`index.html` + `css/`），640×640 WebP 封面，CNAME `doin.win`。
 - **orbit-sort**（已稳定）：5 章 × 20 题（100 关）主题化主线、积分系统、今日挑战、Intent-routing 不变量。规则见 AGENTS.md §5。
 - **tic-tac-toe**（新上线）：3×3/4×4、难度=失误率、连胜爬塔、本地双人、WebAudio 音效、深色模式。规则见 AGENTS.md §6。
 - **本地服务**：优先 `node _dev-server.mjs`（零依赖，端口 46810 起）。
+
+## 2026-09-04 · 分数与全量关卡收尾审计
+
+### 做了什么
+- 审计并固定 Orbit Sort 单局计分上限：主线/今日挑战的存档写入均按当前难度满分截断，读取旧存档时丢弃超过关卡上限的记录；总积分仅累加各关历史最高有效分。
+- 全量检查 5 章 × 20 题（100 关）：可解性、合法操作执行、参数边界、章节波浪式难度均通过。
+
+### 修改文件
+```
+games/orbit-sort/js/storage.mjs       分数上限校验（主线与每日）
+games/orbit-sort/tests/score.test.mjs 更新超上限分数回归断言
+```
+
+### 关键实现
+- `recordCompletion` / `recordDailyCompletion` 写入前按 `perfectScoreForLevel` 或每日难度上限钳制分数。
+- `loadProgress` 规范化历史分数后重新计算 `totalScore` / `totalMoves`，避免旧版本数据污染 UI。
+
+### 遇到的问题
+- 旧版本关卡分数曾高于当前满分，造成关卡列表与游戏页分母不一致；已通过读取清理和写入钳制解决。
+
+### 验证
+- `npm run test:orbit-sort`：90/90 通过。
+- 100 关随机合法操作与求解验证通过；无发现合法操作被阻止或无解关卡。
 
 ***
 
