@@ -5,6 +5,10 @@ import { isSolved, isTrackComplete } from "../engine.mjs";
 import { CHAPTERS, createLevelState, LEVELS } from "../levels.mjs";
 import { replayActions, solve } from "../solver.mjs";
 
+// 该门禁校验"可解 + par 精确"，不校验墙钟速度；CI 共享 vCPU 比开发机慢数倍
+// （第 100 关本地 ~1.5s，CI 曾超 5s），故 CI 放宽求解预算避免假失败。
+const SOLVE_TIME_LIMIT_MS = process.env.CI ? 20_000 : 5_000;
+
 function colorsIn(level) {
   return new Set(level.tracks.flat());
 }
@@ -53,7 +57,7 @@ test("each canonical difficulty template has an exact par and winning replay", (
   assert.equal(representatives.length, 7);
   for (const level of representatives) {
     const initial = createLevelState(level);
-    const result = solve(initial, { nodeLimit: 2_000_000, timeLimitMs: 5_000 });
+    const result = solve(initial, { nodeLimit: 2_000_000, timeLimitMs: SOLVE_TIME_LIMIT_MS });
     assert.equal(result.status, "solved", `level ${level.id} did not solve`);
     assert.equal(result.par, level.par, `level ${level.id} par drifted`);
     const finalState = replayActions(initial, result.actions);
