@@ -535,7 +535,7 @@ function renderSelect() {
       scoreBadge.className = "node-score";
       scoreBadge.dataset.kind = hasScore ? "best" : "perfect";
       scoreBadge.setAttribute("aria-label", `${scoreLabel} ${displayedScore}`);
-      scoreBadge.innerHTML = `<em>${scoreLabel}</em><strong>${displayedScore}</strong>`;
+      scoreBadge.innerHTML = `<strong>${displayedScore}</strong>`;
       button.append(planet, scoreBadge);
       button.addEventListener("click", () => startLevel(item.id));
       path.append(button);

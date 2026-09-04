@@ -628,7 +628,7 @@ body[data-orbit-theme="abyss"] { background: linear-gradient(180deg, #061327 0%,
 /* 分数徽章：在球下方 */
 .level-node .node-score {
   display: inline-flex; align-items: center; justify-content: center; gap: 6px;
-  width: 88px; min-height: 30px; box-sizing: border-box;
+  width: 78px; min-height: 30px; box-sizing: border-box;
   padding: 4px 7px;
   border-radius: 999px;
   border: 1px solid rgba(126, 216, 255, .22);
@@ -656,6 +656,7 @@ body[data-orbit-theme="abyss"] { background: linear-gradient(180deg, #061327 0%,
   white-space: nowrap;
   flex: 0 0 auto;
 }
+.level-node .node-score em { display: none; }
 /* 已通关 "最高分" 徽章：金色 */
 .level-node .node-score[data-kind="best"] {
   border-color: rgba(255, 206, 120, .44);
@@ -1204,7 +1205,7 @@ h1 { margin: 0; font-size: 22px; font-weight: 800; letter-spacing: .08em; text-s
   .select-screen { padding: 22px 20px; }
   .chapter-path { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 22px 10px; }
   .level-node .node-number { font-size: 22px; }
-  .level-node .node-score { width: 82px; min-height: 28px; padding: 3px 4px 4px; gap: 3px; }
+  .level-node .node-score { width: 70px; min-height: 28px; padding: 3px 3px 4px; gap: 0; }
   .level-node .node-score em { font-size: 9px; letter-spacing: .1em; }
   .level-node .node-score strong { font-size: 12px; }
   .level-node { aspect-ratio: 1 / 1.28; }
