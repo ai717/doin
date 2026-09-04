@@ -74,9 +74,10 @@ function normalizeScoreMap(value) {
   for (const [k, v] of Object.entries(value)) if (isScoreDetail(v)) {
     const level = /^\d+$/.test(k) ? levelById(Number(k)) : null;
     const max = level ? perfectScoreForLevel(level, false) : Infinity;
-    // Campaign revisions can reuse numeric ids with a new difficulty. Never
-    // let a stale score exceed the current level's published maximum.
-    out[k] = level && v.score > max ? { ...v, score: max, base: Math.min(v.base, max) } : v;
+    // Campaign revisions can reuse numeric ids with a new difficulty. A stale
+    // record above the current ceiling is not a valid score for this level;
+    // discard it instead of displaying a misleading numerator/denominator pair.
+    if (!level || v.score <= max) out[k] = v;
   }
   return out;
 }
