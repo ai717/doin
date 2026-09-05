@@ -328,7 +328,7 @@ Plain 静态游戏（`games/gold-miner/index.html`，无 package.json）。模�
 - 单游戏测试门禁：
   - Sudoku：`games/sudoku` 下 `npm run typecheck && npm test`。
   - 2048：`games/2048` 下 `node --test tests/engine.test.mjs tests/storage.test.mjs tests/i18n.test.mjs tests/markup.test.mjs`（Node 22 必须显式列文件，不能只给 `tests` 目录）。
-  - orbit-sort / tic-tac-toe / minesweeper / gold-miner / 首页：根目录 `npm run test:orbit-sort` /
-    `test:tic-tac-toe` / `test:minesweeper` / `test:gold-miner` / `test:home`。
+  - orbit-sort / tic-tac-toe / minesweeper / gold-miner / tetris-neo / 首页：根目录 `npm run test:orbit-sort` /
+    `test:tic-tac-toe` / `test:minesweeper` / `test:gold-miner` / `test:tetris-neo` / `test:home`。
 - Commit message：英文，conventional-commit 前缀（feat/fix/docs/chore），body 解释为什么改。
 - Deploy workflow 已升级到 `actions/checkout@v5` + `actions/setup-node@v6`（Node 22）。

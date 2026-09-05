@@ -10,8 +10,7 @@
 
 - **门户**：薄荷渐变首页（`index.html` + `css/`），640×640 WebP 封面（3D 风格统一），
   白色胶囊卡片标签 + hover 放大；品牌行「Doin.win 字标 ←→ 地球语言按钮」+ 二级主标题；
-  中英双语（`doin.lang` 全站共享偏好）。CNAME `doin.win`。共 7 款游戏上架（tetris-neo
-  已登记并本地验收，待用户确认后发布）。
+  中英双语（`doin.lang` 全站共享偏好）。CNAME `doin.win`。共 7 款游戏上架。
 - **tetris-neo**（外部交付首款，已整改）：赛博霓虹俄罗斯方块，7-Bag / 三尺寸 / 三难度 /
   硬降墙踢幽灵落点。模块 engine / storage / i18n / main + 39 用例门禁；玩法数值与外部版逐字一致。
 - **orbit-sort**（已稳定）：5 章 × 20 题（100 关）、积分系统、今日挑战。规则见 AGENTS.md §5。
@@ -83,8 +82,9 @@ tic-tac-toe 19 pass；orbit-sort 15+4 waived；2048 16+3 waived；sudoku 7+12 wa
 的说明就被判违规，现改为先剥注释再扫。
 
 ### 状态
-本地预览 http://localhost:46810/games/tetris-neo/ 与首页卡片已就绪；**未 commit、未推送、
-未发布**，等用户试玩点头后再走提交与部署。
+已提交 `f3b21de` 并推送；Publish workflow 与 pages 部署均 success。
+生产验证：`https://doin.win/tetris-neo/` 200、`js/main.mjs` 200、封面 200、
+sitemap 收录 `/tetris-neo/`、`games.json` 含登记。本地预览同路径 `/games/tetris-neo/`。
 
 ## 2026-09-05 · 黄金矿工上架（第 6 款游戏）
 
