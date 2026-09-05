@@ -72,6 +72,16 @@
       "url": "/tetris-neo/",
       "exclude": ["scripts"],
       "en": { "title": "Tetris Neo" }
+    },
+    {
+      "title": "祖玛传奇",
+      "slug": "zuma",
+      "desc": "操控吐珠石蛙，阻止符文滚石坠入神庙深渊，体验经典连锁消除。",
+      "icon": "🐸",
+      "cover": "/assets/covers/zuma.webp",
+      "tags": ["休闲", "消除", "经典"],
+      "url": "/zuma/",
+      "en": { "title": "Zuma Legend", "desc": "Control the stone frog and clear chains of runic marbles before they reach the temple abyss." }
     }
   ]
 }
