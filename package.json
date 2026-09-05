@@ -8,6 +8,7 @@
     "test:tic-tac-toe": "node --test games/tic-tac-toe/tests/engine.test.mjs games/tic-tac-toe/tests/ai.test.mjs games/tic-tac-toe/tests/score.test.mjs games/tic-tac-toe/tests/storage.test.mjs games/tic-tac-toe/tests/game.test.mjs games/tic-tac-toe/tests/audio.test.mjs games/tic-tac-toe/tests/markup.test.mjs games/tic-tac-toe/tests/i18n.test.mjs",
     "test:home": "node --test tests/home-i18n.test.mjs",
     "test:minesweeper": "node --test games/minesweeper/tests/engine.test.mjs games/minesweeper/tests/game.test.mjs games/minesweeper/tests/solver.test.mjs games/minesweeper/tests/score.test.mjs games/minesweeper/tests/storage.test.mjs games/minesweeper/tests/i18n.test.mjs",
-    "test:gold-miner": "node --test games/gold-miner/tests/engine.test.mjs games/gold-miner/tests/score.test.mjs games/gold-miner/tests/storage.test.mjs games/gold-miner/tests/i18n.test.mjs games/gold-miner/tests/markup.test.mjs"
+    "test:gold-miner": "node --test games/gold-miner/tests/engine.test.mjs games/gold-miner/tests/score.test.mjs games/gold-miner/tests/storage.test.mjs games/gold-miner/tests/i18n.test.mjs games/gold-miner/tests/markup.test.mjs",
+    "test:tetris-neo": "node --test games/tetris-neo/tests/engine.test.mjs games/tetris-neo/tests/storage.test.mjs games/tetris-neo/tests/i18n.test.mjs games/tetris-neo/tests/markup.test.mjs"
   }
 }

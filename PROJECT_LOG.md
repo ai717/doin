@@ -10,7 +10,10 @@
 
 - **门户**：薄荷渐变首页（`index.html` + `css/`），640×640 WebP 封面（3D 风格统一），
   白色胶囊卡片标签 + hover 放大；品牌行「Doin.win 字标 ←→ 地球语言按钮」+ 二级主标题；
-  中英双语（`doin.lang` 全站共享偏好）。CNAME `doin.win`。共 6 款游戏上架。
+  中英双语（`doin.lang` 全站共享偏好）。CNAME `doin.win`。共 7 款游戏上架（tetris-neo
+  已登记并本地验收，待用户确认后发布）。
+- **tetris-neo**（外部交付首款，已整改）：赛博霓虹俄罗斯方块，7-Bag / 三尺寸 / 三难度 /
+  硬降墙踢幽灵落点。模块 engine / storage / i18n / main + 39 用例门禁；玩法数值与外部版逐字一致。
 - **orbit-sort**（已稳定）：5 章 × 20 题（100 关）、积分系统、今日挑战。规则见 AGENTS.md §5。
 - **tic-tac-toe**（已稳定）：3×3/4×4、难度=失误率、本地双人、WebAudio 音效。规则见 AGENTS.md §6。
 - **minesweeper**（已稳定）：经典三档 + 无猜保证 + 计分存档 + WebAudio 音效 + Neon Grid 主题 + 移动端适配。规则见 AGENTS.md §8。
@@ -56,6 +59,32 @@ gold-miner / minesweeper / tic-tac-toe 19 pass 0 fail 0 warn；orbit-sort 15 pas
 - 在 `AGENTS.md §4.1` 固化三类请求的处理边界：组装新游戏、只读检查新增游戏、处理新增游戏后续工作。
 - 明确外部网页 AI 只产出 `games/<slug>/`；门户代理负责验收、登记、封面、根测试、构建与预览，部署需用户明确要求。
 - `docs/GAME-SPEC.md §7` 增加同一职责边界提示，避免外部 AI 修改门户或自行发布。
+
+## 2026-09-05 · tetris-neo 整改上架（外部交付首款）
+
+### 做了什么（三个补丁）
+1. **补丁 1 · 修 bug + 收口**：`hardDrop()` 先置 `isDropLocked` 再调 `drop(true)` 被自身守卫吞掉
+   （硬降永不合并）；旋转墙踢全失败时只还原 matrix 却留下累加 `pos.x` 偏移（方块漂进墙/堆里）；
+   localStorage 偏好未校验导致坏存档白屏、SoundEngine 裸读存储在隐私模式崩溃。
+   存储收口到 `js/storage.mjs`（key `doin.tetris-neo.v1`，白名单 + 数值夹取 + 内存降级），
+   文案收口到 `js/i18n.mjs`（`doin.lang` 统一 API），入口 `game.js` → `js/main.mjs`（module）。
+2. **补丁 2 · 抽规则层 + 测试门禁**：棋盘/难度/消行分数/7-Bag/墙踢全部抽到 DOM-free
+   `js/engine.mjs`（数值与外部版逐字一致），main 改 import；新增 4 个测试文件共 39 用例
+   （engine 11 / storage 10 / i18n 8 / markup 10），根 `package.json` 注册 `test:tetris-neo`。
+3. **补丁 3 · 上架物料**：`games.json` 登记（en.title Tetris Neo，exclude scripts）、
+   `games/tetris-neo/scripts/make_cover.py` 生成 640×640 WebP 封面（霓虹井 + 消行白光 +
+   幽灵落点，无随机可复现）、`npm run build` 通过、sitemap 收录 `/tetris-neo/`。
+
+### 验收结果
+`node scripts/check-game.mjs tetris-neo`：19 pass / 0 fail(T1) / 0 warn(T2) / 0 waived。
+`npm run test:tetris-neo` 39/39 绿。存量六款复扫无回归（gold-miner / minesweeper /
+tic-tac-toe 19 pass；orbit-sort 15+4 waived；2048 16+3 waived；sudoku 7+12 waived）。
+顺带修了验收脚本一处误判：engine-module 扫描未剥注释，规则层写一句"不碰 document"
+的说明就被判违规，现改为先剥注释再扫。
+
+### 状态
+本地预览 http://localhost:46810/games/tetris-neo/ 与首页卡片已就绪；**未 commit、未推送、
+未发布**，等用户试玩点头后再走提交与部署。
 
 ## 2026-09-05 · 黄金矿工上架（第 6 款游戏）
 

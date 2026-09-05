@@ -146,8 +146,14 @@ check("icon-link", /rel="icon"/.test(indexHtml ?? ""), "建议 favicon");
 check("html-lang", /<html[^>]+lang="/.test(indexHtml ?? ""), "建议 html lang");
 check("i18n-module", read(resolve(gameDir, "js", "i18n.mjs")) !== null, "建议 js/i18n.mjs 集中双表");
 
+// 判"规则层是否碰 DOM/存储"前先剥注释：说明性注释里提到 document/localStorage 不算违规。
+function stripComments(source) {
+  return source.replace(/\/\*[\s\S]*?\*\//g, "").replace(/(^|[^:])\/\/.*$/gm, "$1");
+}
+
 const engineSource = read(resolve(gameDir, "js", "engine.mjs"));
-const domLeaks = engineSource ? ["document.", "window.", "localStorage", "sessionStorage"].filter((token) => engineSource.includes(token)) : [];
+const engineCode = engineSource === null ? "" : stripComments(engineSource);
+const domLeaks = engineSource ? ["document.", "window.", "localStorage", "sessionStorage"].filter((token) => engineCode.includes(token)) : [];
 check("engine-module", engineSource !== null && domLeaks.length === 0, domLeaks.length ? `engine 混入 DOM/存储: ${domLeaks.join(",")}` : "建议 js/engine.mjs 承载纯规则");
 
 const cssAll = collectSources(gameDir, [".css"]).map((file) => file.src).join("\n");

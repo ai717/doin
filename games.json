@@ -61,6 +61,17 @@
       "tags": ["休闲", "经典", "时机"],
       "url": "/gold-miner/",
       "en": { "title": "Gold Miner" }
+    },
+    {
+      "title": "俄罗斯方块",
+      "slug": "tetris-neo",
+      "desc": "赛博霓虹俄罗斯方块：7-Bag 国际随机算法，三种棋盘尺寸与三档速度，硬降、墙踢、幽灵落点手感齐全，进度与最高分本机保存。",
+      "icon": "🧱",
+      "cover": "/assets/covers/tetris-neo.webp",
+      "tags": ["益智", "经典", "街机"],
+      "url": "/tetris-neo/",
+      "exclude": ["scripts"],
+      "en": { "title": "Tetris Neo" }
     }
   ]
 }

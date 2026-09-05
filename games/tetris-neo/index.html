@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%2306070a'/%3E%3Cpath d='M14 18h36v12H38v16H26V30H14Z' fill='%2300f0ff' filter='drop-shadow(0 0 4px %2300f0ff)'/%3E%3Cpath d='M16 20h32v8H36v16H28V28H16Z' fill='%23fff' opacity='0.35'/%3E%3C/svg%3E">
+
+    <title>Tetris Neo | 经典俄罗斯方块在线游玩</title>
+    <meta name="description" content="Tetris Neo 赛博霓虹经典俄罗斯方块。支持 7-Bag 国际随机算法、实时难度与棋盘规格切换。">
+    <meta name="keywords" content="俄罗斯方块, Tetris, 7-Bag, 街机方块, 网页游戏, 益智游戏">
+    <meta name="author" content="DOIN.WIN">
+    <meta name="theme-color" content="#06070a">
+
+    <meta property="og:type" content="game">
+    <meta property="og:title" content="Tetris Neo">
+    <meta property="og:description" content="7-Bag 随机器、自由棋盘与难度定制的赛博霓虹俄罗斯方块。">
+
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "VideoGame",
+      "name": "Tetris Neo",
+      "genre": ["Puzzle", "Arcade"],
+      "playMode": "SinglePlayer",
+      "applicationCategory": "Game"
+    }
+    </script>
+
+    <link rel="stylesheet" href="css/style.css?v=dev">
+</head>
+<body>
+    <div class="arcade-chassis">
+        <noscript><p id="noscript-tip">需要启用 JavaScript 才能游玩 Tetris Neo。 / JavaScript is required to play.</p></noscript>
+        <!-- 顶栏快捷操作 -->
+        <header class="top-bar">
+            <div class="brand">TETRIS <span>NEO</span></div>
+            <div class="actions">
+                <a id="back-home" class="chip-btn" href="/" title="返回首页 / Home" aria-label="返回首页 / Home">🏠</a>
+                <button id="help-btn" class="chip-btn" title="操作说明 / Help" aria-label="Help">?</button>
+                <button id="pause-btn" class="chip-btn" title="暂停 / Pause" aria-label="Pause">⏸</button>
+                <button id="lang-btn" class="chip-btn" title="语言 / Language" aria-label="Language">中 / EN</button>
+                <button id="sound-btn" class="chip-btn" title="声音 / Sound" aria-label="Sound">🔊</button>
+            </div>
+        </header>
+
+        <!-- 顶部 HUD 紧凑仪表盘 -->
+        <section class="hud-dashboard">
+            <div class="hud-item next-box">
+                <span class="hud-title" data-i18n="next">NEXT</span>
+                <canvas id="next-canvas" width="44" height="44"></canvas>
+            </div>
+            <div class="hud-stats">
+                <div class="stat-col">
+                    <span class="hud-title" data-i18n="highScore">TOP</span>
+                    <span id="high-score" class="hud-val">0</span>
+                </div>
+                <div class="stat-col">
+                    <span class="hud-title" data-i18n="score">SCORE</span>
+                    <span id="score" class="hud-val">0</span>
+                </div>
+                <div class="stat-col">
+                    <span class="hud-title" data-i18n="level">LVL</span>
+                    <span id="level" class="hud-val">1</span>
+                </div>
+                <div class="stat-col">
+                    <span class="hud-title" data-i18n="lines">LINES</span>
+                    <span id="lines" class="hud-val">0</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- 核心游戏屏幕 (最大化利用空间) -->
+        <main class="screen-frame" id="screen-frame">
+            <div id="screen-glass" class="screen-glass">
+                <canvas id="tetris"></canvas>
+                
+                <!-- 主状态浮层 -->
+                <div id="game-overlay" class="overlay">
+                    <div class="overlay-modal">
+                        <h2 id="overlay-title">TETRIS NEO</h2>
+                        <p id="overlay-msg">空间折叠，秩序重建</p>
+                        <button id="start-btn" class="neon-btn">启动核心</button>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- 移动端底座控制台 -->
+        <nav class="gamepad-area" aria-label="Mobile Controls">
+            <div class="dpad-cluster">
+                <button class="pad-btn btn-nav" id="btn-left" aria-label="Left">◀</button>
+                <button class="pad-btn btn-nav" id="btn-down" aria-label="Soft Drop">▼</button>
+                <button class="pad-btn btn-nav" id="btn-right" aria-label="Right">▶</button>
+            </div>
+            <div class="action-cluster">
+                <button class="pad-btn round-btn btn-slam" id="btn-hard" aria-label="Hard Drop" title="即刻下落">⚡</button>
+                <button class="pad-btn round-btn btn-action" id="btn-rotate" aria-label="Rotate" title="旋转">↻</button>
+            </div>
+        </nav>
+
+        <!-- 底部快捷选择器 -->
+        <footer class="bottom-selectors">
+            <div class="selector-row">
+                <span class="sel-label" data-i18n="cfgDifficulty">难度</span>
+                <div class="pill-group" id="diff-pills">
+                    <button class="pill-btn" data-val="casual" data-i18n="diffCasual">休闲</button>
+                    <button class="pill-btn active" data-val="normal" data-i18n="diffNormal">标准</button>
+                    <button class="pill-btn" data-val="master" data-i18n="diffMaster">大师</button>
+                </div>
+            </div>
+            <div class="selector-row">
+                <span class="sel-label" data-i18n="cfgBoard">尺寸</span>
+                <div class="pill-group" id="board-pills">
+                    <button class="pill-btn" data-val="mini">8×16</button>
+                    <button class="pill-btn active" data-val="standard">10×20</button>
+                    <button class="pill-btn" data-val="wide">12×22</button>
+                </div>
+            </div>
+        </footer>
+
+        <!-- 帮助说明浮层 -->
+        <div id="help-overlay" class="modal-layer hidden">
+            <div class="modal-card">
+                <h3 id="help-title">控制中枢协议</h3>
+                <div class="help-content" id="help-text"></div>
+                <button id="close-help-btn" class="neon-btn mini">确认</button>
+            </div>
+        </div>
+    </div>
+
+    <script type="module" src="js/main.mjs?v=dev"></script>
+</body>
+</html>
