@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url><loc>https://doin.win/</loc><changefreq>weekly</changefreq><priority>1.0</priority></url>
+  <url><loc>https://doin.win/sudoku/</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://doin.win/2048/</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://doin.win/tic-tac-toe/</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://doin.win/minesweeper/</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://doin.win/orbit-sort/</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://doin.win/gold-miner/</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://doin.win/tetris-neo/</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://doin.win/zuma/</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://doin.win/Gravity-Echoes/</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://doin.win/Tile-Matching/</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+</urlset>

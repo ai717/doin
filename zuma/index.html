@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    
+    <title>祖玛传奇 - 经典阿兹特克秘境消除游戏 | DOIN.WIN</title>
+    <meta name="description" content="经典祖玛网页版游戏，纯原生代码打造。探索古代阿兹特克神庙，操控吐珠石蛙消除符文滚石，体验物理吸附碰撞与震撼连锁消除！">
+    <meta name="keywords" content="祖玛, 祖玛传奇, Zuma, 祖玛游戏, 经典小游戏, 网页游戏, 消除游戏, DOIN.WIN">
+    <meta name="author" content="DOIN.WIN">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://doin.win/games/zuma/">
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+
+    <meta property="og:type" content="game">
+    <meta property="og:title" content="祖玛传奇 - 经典阿兹特克秘境消除游戏">
+    <meta property="og:description" content="操控吐珠神蟾，阻止符文滚石坠入神庙深渊！支持中英双语、三种难度模式。">
+    <meta property="og:image" content="favicon.svg">
+    <meta property="og:url" content="https://doin.win/games/zuma/">
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="祖玛传奇 - Zuma Legend">
+    <meta name="twitter:description" content="纯原生开发的现代复刻经典祖玛，沉浸式神殿图腾视觉，流畅物理回滚手感。">
+
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "VideoGame",
+      "name": "祖玛传奇",
+      "alternateName": "Zuma Legend",
+      "genre": ["Puzzle", "Action"],
+      "playMode": "SinglePlayer",
+      "applicationCategory": "BrowserGame",
+      "operatingSystem": "Any"
+    }
+    </script>
+
+    <link rel="stylesheet" href="css/style.css?v=48f76844757c">
+</head>
+<body>
+    <div id="game-container">
+        <canvas id="game-canvas"></canvas>
+
+        <div id="ui-layer">
+            
+            <div id="screen-menu" class="screen active">
+                <div class="menu-card">
+                    <div class="logo-box">
+                        <div class="logo-emblem">
+                            <div class="emblem-core"></div>
+                        </div>
+                        <h1 data-i18n="title">祖玛传奇</h1>
+                        <div class="logo-sub" data-i18n="subtitle">TEMPLE OF AZTEC RUNES</div>
+                    </div>
+
+                    <div class="difficulty-picker">
+                        <span class="diff-title" data-i18n="select_diff">选择难度</span>
+                        <div class="diff-btn-group" id="menu-diff-group">
+                            <button type="button" class="btn diff-btn" data-diff="easy" data-i18n="diff_easy">简单</button>
+                            <button type="button" class="btn diff-btn active" data-diff="medium" data-i18n="diff_medium">中等</button>
+                            <button type="button" class="btn diff-btn" data-diff="hard" data-i18n="diff_hard">困难</button>
+                        </div>
+                    </div>
+
+                    <button type="button" id="btn-start" class="btn primary-gold" data-i18n="start">探索秘境</button>
+
+                    <div class="bottom-controls">
+                        <a class="btn stone-chip" href="/" data-i18n="back_home">🏠 返回首页</a>
+                        <button type="button" id="btn-lang" class="btn stone-chip">🌐 EN</button>
+                    </div>
+                </div>
+            </div>
+
+            <div id="screen-hud" class="screen hud-screen">
+                <div class="hud-top">
+                    <div class="hud-badges">
+                        <div class="score-board">
+                            <span class="score-label" data-i18n="score">分数</span>
+                            <span id="hud-score" class="score-value">0</span>
+                        </div>
+                        <div class="score-board">
+                            <span class="score-label" data-i18n="best">最高</span>
+                            <span id="hud-best" class="score-value">0</span>
+                        </div>
+                        <div class="score-board diff-badge">
+                            <span id="hud-diff" class="score-value">MED</span>
+                        </div>
+                    </div>
+                    <div class="hud-top-right">
+                        <button type="button" id="btn-pause" class="btn stone-chip mini" title="Pause">⏸</button>
+                    </div>
+                </div>
+            </div>
+
+            <div id="screen-pause" class="screen overlay-soft">
+                <div class="temple-modal pause-modal">
+                    <h2 data-i18n="paused">战局暂歇</h2>
+                    
+                    <div class="difficulty-picker in-pause">
+                        <span class="diff-title" data-i18n="select_diff">选择难度</span>
+                        <div class="diff-btn-group" id="pause-diff-group">
+                            <button type="button" class="btn diff-btn" data-diff="easy" data-i18n="diff_easy">简单</button>
+                            <button type="button" class="btn diff-btn" data-diff="medium" data-i18n="diff_medium">中等</button>
+                            <button type="button" class="btn diff-btn" data-diff="hard" data-i18n="diff_hard">困难</button>
+                        </div>
+                    </div>
+
+                    <div class="modal-actions-grid">
+                        <button type="button" id="btn-resume" class="btn primary-gold" data-i18n="resume">继续</button>
+                        <button type="button" id="btn-restart-pause" class="btn secondary-stone" data-i18n="restart">本关重开</button>
+                        <button type="button" id="btn-menu-pause" class="btn stone-chip" data-i18n="to_menu">返回主界面</button>
+                    </div>
+                </div>
+            </div>
+
+            <div id="screen-over" class="screen overlay">
+                <div class="temple-modal">
+                    <h2 class="danger-title" data-i18n="gameover">秘境坍塌</h2>
+                    <div class="final-score-card">
+                        <div class="score-label" data-i18n="final_score">最终得分</div>
+                        <div id="over-score" class="big-score">0</div>
+                    </div>
+                    <button type="button" id="btn-restart-over" class="btn primary-gold" data-i18n="try_again">再试一次</button>
+                </div>
+            </div>
+
+            <div id="screen-win" class="screen overlay">
+                <div class="temple-modal">
+                    <h2 class="victory-title" data-i18n="victory">秘境肃清！</h2>
+                    <div class="final-score-card">
+                        <div class="score-label" data-i18n="final_score">最终得分</div>
+                        <div id="win-score" class="big-score">0</div>
+                    </div>
+                    <button type="button" id="btn-next" class="btn primary-gold" data-i18n="next_level">晋级挑战</button>
+                </div>
+            </div>
+
+        </div>
+    </div>
+    
+    <noscript>
+        <div class="noscript-warn" style="position: absolute; top: 0; left: 0; right: 0; background: #801026; color: #ffe699; text-align: center; padding: 10px; z-index: 999; font-weight: bold;">
+            请启用 JavaScript 体验该游戏。 / Please enable JavaScript to play.
+        </div>
+    </noscript>
+
+    <script type="module" src="js/main.mjs?v=48f76844757c"></script>
+</body>
+</html>

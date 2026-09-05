@@ -1,0 +1,1 @@
+import{R as e}from"./store-uzFM8hYa.js";import{t}from"./play-screen-HHmNW2J5.js";import{n}from"./index-BPrunPri.js";var r=e();function i(){let{d:e}=n.useSearch();return(0,r.jsx)(t,{kind:`free`,difficulty:e})}export{i as component};

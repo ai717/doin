@@ -1,0 +1,1 @@
+import{R as e}from"./store-uzFM8hYa.js";import{t}from"./play-screen-HHmNW2J5.js";var n=e(),r=()=>(0,n.jsx)(t,{kind:`daily`});export{r as component};

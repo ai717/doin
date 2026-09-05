@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>黄金矿工 · DOIN 在线小游戏</title>
+  <meta name="description" content="黄金矿工在线玩：摆动钢爪抓金块、钻石与神秘袋，60 秒内凑够目标金额，炸药碎石、生力水加速、钻石亮油升值，关卡逐层加深。">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="css/style.css?v=48f76844757c">
+</head>
+<body>
+  <div id="game-header">
+    <div class="game-logo">
+      <span>⛏️</span>
+      <span id="title-text">黄金矿工 ⚡ Pro</span>
+    </div>
+    <div class="header-ctrls">
+      <a class="ctrl-btn" href="/" id="back-home">🏠 <span id="back-label">返回首页</span></a>
+      <button class="ctrl-btn" id="sound-btn">🔊 <span id="sound-label">音效: 开</span></button>
+      <button class="ctrl-btn" id="lang-btn">🌐 <span id="lang-label">English</span></button>
+      <button class="ctrl-btn btn-danger" id="reset-btn">🔄 <span id="reset-label">重置</span></button>
+    </div>
+  </div>
+
+  <div id="game-container">
+    <div id="hud">
+      <div class="hud-item">
+        <span class="hud-label" id="label-target">目标:</span>
+        <span class="hud-value val-target" id="hud-target">$1000</span>
+      </div>
+      <div class="hud-item">
+        <span class="hud-label" id="label-money">金钱:</span>
+        <span class="hud-value val-gold" id="hud-score">$0</span>
+      </div>
+      <div class="hud-item">
+        <span class="hud-label" id="label-record">最高:</span>
+        <span class="hud-value val-record" id="hud-record">$0</span>
+      </div>
+      <div class="hud-item">
+        <span class="hud-label" id="label-dynamite">炸药:</span>
+        <span class="hud-value val-dynamite" id="hud-dynamite">💣 x3</span>
+      </div>
+      <div class="hud-item">
+        <span class="buff-tag" id="buff-drink">⚡ 力量药水</span>
+        <span class="buff-tag" id="buff-polish">💎 钻石强化</span>
+      </div>
+      <div class="hud-item">
+        <span class="hud-label" id="label-level">关卡:</span>
+        <span class="hud-value val-level" id="hud-level">第 1 关</span>
+      </div>
+      <div class="hud-item">
+        <span class="hud-label" id="label-time">时间:</span>
+        <span class="hud-value val-time" id="hud-time">60s</span>
+      </div>
+    </div>
+
+    <canvas id="gameCanvas" width="800" height="600"></canvas>
+
+    <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+    <!-- 暂停菜单 -->
+    <div id="pause-modal" class="overlay">
+      <div class="modal-box">
+        <div class="modal-title" id="pause-title">⏸️ 游戏已暂停</div>
+        <div class="modal-desc" id="pause-desc">按空格键或点击下方按钮继续挖掘</div>
+        <button type="button" class="btn-primary" id="resume-btn">继续游戏</button>
+      </div>
+    </div>
+
+    <!-- 结算弹窗 -->
+    <div id="result-modal" class="overlay">
+      <div class="modal-box">
+        <div class="modal-title" id="result-title">🎉 关卡大捷！</div>
+        <div class="modal-desc" id="result-desc">目标金额达成！</div>
+        <button type="button" class="btn-primary" id="result-btn">前往矿工补给站</button>
+      </div>
+    </div>
+
+    <!-- 商店弹窗 -->
+    <div id="shop-modal" class="overlay">
+      <div class="modal-box">
+        <div class="modal-title title-win" id="shop-title">🛒 矿工补给站</div>
+        <div class="modal-desc" id="shop-desc">准备进入下一关，补充装备增强实力！</div>
+
+        <div class="shop-wallet">
+          <span id="shop-wallet-label">当前持有金钱:</span>
+          <span class="shop-wallet-amount" id="shop-current-money">$0</span>
+          <span id="shop-next-level-tip" style="margin-left: 8px; color: #4ade80;">(准备进入第 2 关)</span>
+        </div>
+        
+        <div class="shop-items">
+          <div class="shop-card">
+            <div class="shop-icon">💣</div>
+            <div class="shop-name" id="item-dyna-name">开山炸药</div>
+            <div class="shop-price">$200</div>
+            <div class="shop-desc" id="item-dyna-desc">拉拽时按 W 或 ↑ 碎裂废石</div>
+            <button class="shop-buy-btn" data-type="dynamite" data-cost="200" id="btn-buy-dyna">购买</button>
+          </div>
+
+          <div class="shop-card">
+            <div class="shop-icon">🧪</div>
+            <div class="shop-name" id="item-potion-name">生力水</div>
+            <div class="shop-price">$280</div>
+            <div class="shop-desc" id="item-potion-desc">下一关拉拽速度提升 3 倍</div>
+            <button class="shop-buy-btn" data-type="potion" data-cost="280" id="btn-buy-potion">购买</button>
+          </div>
+
+          <div class="shop-card">
+            <div class="shop-icon">✨</div>
+            <div class="shop-name" id="item-polish-name">钻石亮油</div>
+            <div class="shop-price">$320</div>
+            <div class="shop-desc" id="item-polish-desc">下一关钻石升值 50%</div>
+            <button class="shop-buy-btn" data-type="polish" data-cost="320" id="btn-buy-polish">购买</button>
+          </div>
+        </div>
+
+        <button type="button" class="btn-primary" id="next-level-btn">出发，进入下一关！</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="footer-tip">
+    <span id="tip-claw">点击画面或按 <span class="key-tag">↓</span>/<span class="key-tag">S</span> 释放钢爪</span>
+    <span id="tip-bomb">空格键暂停 | 按 <span class="key-tag">↑</span>/<span class="key-tag">W</span> 引爆炸药</span>
+  </div>
+
+  <noscript><p id="noscript-tip">需要启用 JavaScript 才能游玩黄金矿工。</p></noscript>
+  <script type="module" src="js/main.mjs?v=48f76844757c"></script>
+</body>
+</html>

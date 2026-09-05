@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>DOIN · Free Mini Games</title>
+  <meta name="description" content="DOIN 精选免费在线益智小游戏，无需下载，手机电脑即点即玩。">
+  <link rel="canonical" href="https://doin.win/">
+  <meta name="theme-color" content="#6fe4cb">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="DOIN">
+  <meta property="og:title" content="DOIN · Free Mini Games">
+  <meta property="og:description" content="精选免费在线益智小游戏，无需下载，即点即玩。">
+  <meta property="og:url" content="https://doin.win/">
+  <meta property="og:locale" content="zh_CN">
+  <meta property="og:image" content="https://doin.win/assets/og-image.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="DOIN Free Mini Games">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="DOIN · Free Mini Games">
+  <meta name="twitter:description" content="精选免费在线益智小游戏，无需下载，即点即玩。">
+  <meta name="twitter:image" content="https://doin.win/assets/og-image.png">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
+</head>
+<body>
+  <div class="bg-pattern" aria-hidden="true"></div>
+  <main class="page">
+    <header class="page-head">
+      <div class="head-row">
+        <a class="site-title" href="/" aria-label="Doin.win 首页">Doin<span class="site-title-tld">.win</span></a>
+        <div class="lang-picker">
+          <button type="button" id="lang-button" class="lang-toggle" aria-haspopup="true" aria-expanded="false" aria-controls="lang-menu" aria-label="切换语言">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+              <circle cx="12" cy="12" r="9"/>
+              <path d="M3 12h18M12 3c2.5 2.6 3.8 5.7 3.8 9s-1.3 6.4-3.8 9M12 3c-2.5 2.6-3.8 5.7-3.8 9s1.3 6.4 3.8 9"/>
+            </svg>
+          </button>
+          <div class="lang-menu" id="lang-menu" role="menu" hidden>
+            <button type="button" class="lang-option" role="menuitemradio" aria-checked="false" data-lang="zh">中文</button>
+            <button type="button" class="lang-option" role="menuitemradio" aria-checked="false" data-lang="en">EN</button>
+          </div>
+        </div>
+      </div>
+      <h1>Free Mini Games <span class="head-chip">打开即玩</span></h1>
+    </header>
+    <section class="game-grid" id="game-grid" aria-label="游戏列表">
+      <noscript><p class="noscript-msg">需要启用 JavaScript 才能加载游戏列表。</p></noscript>
+    </section>
+  </main>
+  <footer class="site-footer"><p>© <span id="year"></span> DOIN · Free Mini Games</p></footer>
+  <script type="module" src="js/main.js"></script>
+</body>
+</html>

@@ -1,0 +1,107 @@
+{
+  "games": [
+    {
+      "title": "数独",
+      "slug": "sudoku",
+      "desc": "经典 9x9 逻辑填数，从入门到骨灰级的烧脑修行。",
+      "icon": "🔢",
+      "cover": "/assets/covers/sudoku.webp",
+      "tags": ["益智", "经典"],
+      "url": "/sudoku/",
+      "spa": true,
+      "en": { "title": "Sudoku" }
+    },
+    {
+      "title": "2048",
+      "slug": "2048",
+      "desc": "数字合并益智：滑动方块，相同数字合二为一，目标是合出 2048。键盘、触屏滑动与方向键都能玩，进度本机保存，可离线运行。",
+      "icon": "🧮",
+      "cover": "/assets/covers/2048.webp",
+      "tags": ["益智", "经典", "数字"],
+      "url": "/2048/",
+      "en": { "title": "2048" }
+    },
+    {
+      "title": "井字棋",
+      "slug": "tic-tac-toe",
+      "desc": "三子连一线。3×3 与 4×4 两种棋盘，轻松 / 普通 / 大师三档 AI，支持连胜爬塔与本地双人对战。",
+      "icon": "⭕",
+      "cover": "/assets/covers/tic-tac-toe.webp",
+      "tags": ["益智", "对战", "经典"],
+      "url": "/tic-tac-toe/",
+      "en": { "title": "Tic-Tac-Toe" }
+    },
+    {
+      "title": "扫雷",
+      "slug": "minesweeper",
+      "desc": "经典扫雷 + 无猜保证：首击安全、全程逻辑可解，死局自动免费透视，永不用运气定胜负。",
+      "icon": "💣",
+      "cover": "/assets/covers/minesweeper.webp",
+      "tags": ["益智", "经典", "无猜"],
+      "url": "/minesweeper/",
+      "exclude": ["scripts"],
+      "en": { "title": "Minesweeper" }
+    },
+    {
+      "title": "星轨调度大师",
+      "slug": "orbit-sort",
+      "desc": "调度彩色星体穿过中央星核，在有限中转空间中恢复每一条纯色星轨。",
+      "icon": "🪐",
+      "cover": "/assets/covers/orbit-sort.webp",
+      "tags": ["益智", "排序", "每日挑战"],
+      "url": "/orbit-sort/",
+      "en": { "title": "Orbit Sort" }
+    },
+    {
+      "title": "黄金矿工",
+      "slug": "gold-miner",
+      "desc": "摆动钢爪抓金块、钻石与神秘袋，60 秒内凑够目标金额；炸药碎石、生力水加速、钻石亮油升值，关卡逐层加深。",
+      "icon": "⛏️",
+      "cover": "/assets/covers/gold-miner.webp",
+      "tags": ["休闲", "经典", "时机"],
+      "url": "/gold-miner/",
+      "en": { "title": "Gold Miner" }
+    },
+    {
+      "title": "俄罗斯方块",
+      "slug": "tetris-neo",
+      "desc": "赛博霓虹俄罗斯方块：7-Bag 国际随机算法，三种棋盘尺寸与三档速度，硬降、墙踢、幽灵落点手感齐全，进度与最高分本机保存。",
+      "icon": "🧱",
+      "cover": "/assets/covers/tetris-neo.webp",
+      "tags": ["益智", "经典", "街机"],
+      "url": "/tetris-neo/",
+      "exclude": ["scripts"],
+      "en": { "title": "Tetris Neo" }
+    },
+    {
+      "title": "祖玛传奇",
+      "slug": "zuma",
+      "desc": "操控吐珠石蛙，阻止符文滚石坠入神庙深渊，体验经典连锁消除。",
+      "icon": "🐸",
+      "cover": "/assets/covers/zuma.webp",
+      "tags": ["休闲", "消除", "经典"],
+      "url": "/zuma/",
+      "en": { "title": "Zuma Legend", "desc": "Control the stone frog and clear chains of runic marbles before they reach the temple abyss." }
+    },
+    {
+      "title": "重力回响",
+      "slug": "Gravity-Echoes",
+      "desc": "在扭曲弹道的微型奇点间击碎星环：甜点反弹积攒共振，选取遗物构筑，穿越五层重力试炼。",
+      "icon": "🌀",
+      "cover": "/assets/covers/Gravity-Echoes.webp",
+      "tags": ["街机", "物理", "肉鸽"],
+      "url": "/Gravity-Echoes/",
+      "en": { "title": "Gravity Echoes", "desc": "Bend trajectories around micro-singularities, build resonance with precise rebounds, and draft relics across five orbital rings." }
+    },
+    {
+      "title": "开心消消乐",
+      "slug": "Tile-Matching",
+      "desc": "滑动交换缤纷方块，凑齐三连触发连锁消除；收集关卡目标、解锁更多挑战，享受爽快的三消节奏。",
+      "icon": "🍬",
+      "cover": "/assets/covers/Tile-Matching.webp",
+      "tags": ["休闲", "消除", "益智"],
+      "url": "/Tile-Matching/",
+      "en": { "title": "Happy Tile Match", "desc": "Swap colorful tiles, chain satisfying three-in-a-row clears, and complete each level's collection goals." }
+    }
+  ]
+}

@@ -1,0 +1,158 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#050817">
+    <title>星轨调度大师</title>
+    <link rel="icon" href="./favicon.svg" type="image/svg+xml">
+    <link rel="stylesheet" href="./css/style.css?v=48f76844757c">
+  </head>
+  <body>
+    <canvas id="starfield" aria-hidden="true"></canvas>
+    <!-- 全局装饰层：通信卫星 / 飞船 / 小行星。pointer-events:none 不阻挡任何交互。-->
+    <div class="cosmos-deco" aria-hidden="true">
+      <!-- 近景轨道卫星：太阳能板 + 抛物面天线 + 主体 -->
+      <svg class="deco-sat deco-sat-orbit-1" viewBox="0 0 80 80" width="80" height="80" aria-hidden="true">
+        <defs>
+          <linearGradient id="sat-panel" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#1b3366"/><stop offset=".5" stop-color="#3a66c9"/><stop offset="1" stop-color="#1b3366"/></linearGradient>
+          <linearGradient id="sat-body" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#d8e5ff"/><stop offset="1" stop-color="#7992c8"/></linearGradient>
+          <radialGradient id="sat-dish" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#fff2c2"/><stop offset=".7" stop-color="#e2a13e"/><stop offset="1" stop-color="#3a1f00"/></radialGradient>
+        </defs>
+        <!-- 左翼太阳能板 -->
+        <g transform="translate(4 32)">
+          <rect x="0" y="0" width="24" height="16" fill="url(#sat-panel)" stroke="rgba(170,200,255,.55)" stroke-width=".6" rx="1"/>
+          <path d="M6 0 V 16 M12 0 V16 M18 0 V16 M0 4 H24 M0 8 H24 M0 12 H24" stroke="rgba(10,20,60,.7)" stroke-width=".5" fill="none"/>
+          <rect x="-1" y="7" width="3" height="2" fill="#4b5c8c"/>
+        </g>
+        <!-- 右翼太阳能板 -->
+        <g transform="translate(52 32)">
+          <rect x="0" y="0" width="24" height="16" fill="url(#sat-panel)" stroke="rgba(170,200,255,.55)" stroke-width=".6" rx="1"/>
+          <path d="M6 0 V 16 M12 0 V16 M18 0 V16 M0 4 H24 M0 8 H24 M0 12 H24" stroke="rgba(10,20,60,.7)" stroke-width=".5" fill="none"/>
+          <rect x="22" y="7" width="3" height="2" fill="#4b5c8c"/>
+        </g>
+        <!-- 主体舱 -->
+        <g transform="translate(30 24)">
+          <rect x="0" y="0" width="20" height="32" rx="4" fill="url(#sat-body)" stroke="rgba(40,60,110,.8)" stroke-width=".6"/>
+          <circle cx="10" cy="8" r="2.2" fill="#ffdcaa" stroke="#a6781a" stroke-width=".4"/>
+          <circle cx="10" cy="18" r="2" fill="#4dd9ff" stroke="#0a5d7a" stroke-width=".4"/>
+          <circle cx="10" cy="26" r="1.6" fill="#c4a0ff"/>
+        </g>
+        <!-- 抛物面天线 -->
+        <g transform="translate(39 8)">
+          <path d="M -9 9 A 9 9 0 0 1 9 9 Z" fill="url(#sat-dish)" stroke="rgba(255,200,100,.7)" stroke-width=".4"/>
+          <rect x="-1" y="9" width="2" height="7" fill="#827161"/>
+          <circle cx="0" cy="4" r="1.4" fill="#fff8e1"/>
+        </g>
+      </svg>
+      <!-- 远景小飞船：三角机身 + 尾焰 -->
+      <svg class="deco-ship" viewBox="0 0 60 30" width="60" height="30" aria-hidden="true">
+        <defs>
+          <linearGradient id="ship-body" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#d3e7ff"/><stop offset=".55" stop-color="#7495d1"/><stop offset="1" stop-color="#1e2a55"/></linearGradient>
+          <linearGradient id="ship-flame" x1="0" y1=".5" x2="1" y2=".5"><stop offset="0" stop-color="#fff4bf"/><stop offset=".35" stop-color="#ffb464"/><stop offset=".7" stop-color="#ff6b4a" stop-opacity=".6"/><stop offset="1" stop-color="#ff2a00" stop-opacity="0"/></linearGradient>
+        </defs>
+        <path d="M 52 15 L 18 3 L 8 15 L 18 27 Z" fill="url(#ship-body)" stroke="rgba(200,220,255,.55)" stroke-width=".6"/>
+        <circle cx="30" cy="15" r="2.6" fill="#4ef0ff" stroke="#0c5c70" stroke-width=".4"/>
+        <path d="M 8 12 L -2 15 L 8 18 Z" fill="url(#ship-flame)"/>
+        <path d="M 18 7 L 12 3 L 16 9 Z" fill="rgba(120,145,200,.75)"/>
+        <path d="M 18 23 L 12 27 L 16 21 Z" fill="rgba(120,145,200,.75)"/>
+      </svg>
+      <!-- 近景小行星/陨石：多边形表面坑 -->
+      <svg class="deco-asteroid" viewBox="0 0 40 40" width="40" height="40" aria-hidden="true">
+        <defs>
+          <radialGradient id="ast-g" cx=".38" cy=".32" r=".8"><stop offset="0" stop-color="#7a6f5d"/><stop offset=".5" stop-color="#4a3f34"/><stop offset="1" stop-color="#1b1408"/></radialGradient>
+        </defs>
+        <path d="M 20 2 L 32 6 L 38 18 L 34 30 L 22 38 L 10 34 L 2 22 L 6 10 Z" fill="url(#ast-g)" stroke="rgba(220,200,160,.35)" stroke-width=".6"/>
+        <circle cx="15" cy="16" r="3" fill="rgba(30,22,12,.6)" stroke="rgba(0,0,0,.4)"/>
+        <circle cx="26" cy="22" r="2" fill="rgba(30,22,12,.55)"/>
+        <circle cx="18" cy="28" r="1.4" fill="rgba(30,22,12,.45)"/>
+        <circle cx="30" cy="12" r="1" fill="rgba(255,240,210,.25)"/>
+      </svg>
+    </div>
+    <main id="select-screen" class="select-screen" hidden>
+      <header class="select-header"><div><h1>星轨调度大师</h1><p>选择一条星轨继续调度</p></div><button id="lang-button-select" class="lang-switch" type="button" data-lang-toggle aria-label="切换语言">EN</button></header>
+      <section><button id="daily-button" class="daily-button" type="button"><span class="daily-mark">✦</span><span class="daily-copy"><strong>今日挑战</strong><small>每天一个高难度挑战关卡</small></span><span class="daily-arrow">→</span></button><button id="continue-daily-button" class="continue-button" type="button" hidden>继续今日挑战</button><button id="continue-button" class="continue-button" type="button" hidden>继续上次对局</button><div id="level-grid" class="level-grid" aria-label="主线关卡"></div></section>
+    </main>
+    <main class="game-shell">
+      <header class="game-header">
+        <p class="game-title">星轨调度大师</p>
+        <p id="level-label" class="level-label">第 1 关</p>
+        <div class="hud" aria-label="积分面板">
+          <div class="hud-card hud-move" id="move-label">
+            <span class="hud-tag">步数</span>
+            <b class="hud-value">0</b>
+          </div>
+          <div class="hud-card hud-par" id="par-label">
+            <span class="hud-tag">最少</span>
+            <b class="hud-value"><span class="hud-par-val">7</span><span class="hud-sep">步</span></b>
+          </div>
+          <div class="hud-card hud-score" id="constellation-label" aria-live="polite">
+            <span class="hud-tag">本关得分</span>
+            <b class="hud-value"><span class="hud-score-num">0</span><span class="hud-sep">/</span><span class="hud-score-perfect">0</span></b>
+          </div>
+          <div class="hud-card hud-total" id="total-score-label">
+            <span class="hud-tag">总积分</span>
+            <b class="hud-value"><span class="hud-total-num">0</span></b>
+          </div>
+        </div>
+        <p id="status-message" class="status-bar" aria-live="polite" hidden></p>
+      </header>
+
+      <section class="board-stage" aria-label="星轨棋盘">
+        <div class="board-wrap">
+          <svg id="game-board" width="1000" height="1000" viewBox="0 0 1000 1000" role="group" aria-label="星轨调度棋盘">
+            <g data-layer="background"></g>
+            <g data-layer="tracks"></g>
+            <g data-layer="track-effects"></g>
+            <g data-layer="core"></g>
+            <g data-layer="orbs"></g>
+            <g data-layer="overlay-effects"></g>
+          </svg>
+        </div>
+        <div class="game-tools" aria-label="对局工具">
+          <button id="level-select-button" class="tool-button level-select-button" type="button" aria-label="关卡选择" title="关卡选择"><span class="tool-icon">▦</span><span class="tool-label">关卡</span></button>
+          <button id="level-info-button" class="tool-button" type="button" aria-label="关卡详情" title="关卡详情"><span class="tool-icon">ⓘ</span><span class="tool-label">详情</span></button>
+          <button id="sound-button" class="tool-button" type="button" aria-label="声音" aria-pressed="true" title="声音"><span class="tool-icon">&#9835;</span><span class="tool-label">声音</span></button>
+          <button id="lang-button" class="tool-button" type="button" data-lang-toggle aria-label="切换语言" title="Language"><span class="tool-icon lang-icon">EN</span><span class="tool-label">Language</span></button>
+          <button id="hint-button" class="tool-button" type="button" aria-label="帮助" title="帮助 (H)"><span class="tool-icon">?</span><span class="tool-label">提示</span></button>
+          <button id="reset-button" class="tool-button" type="button" aria-label="重置" title="重置 (R)"><span class="tool-icon">&#8635;</span><span class="tool-label">重置</span></button>
+          <button id="undo-button" class="tool-button" type="button" aria-label="撤销" title="撤销 (Z)"><span class="tool-icon">&#8617;</span><span class="tool-label">撤销</span></button>
+        </div>
+        <div class="challenge-row" aria-label="今日挑战入口">
+          <button id="challenge-button" class="challenge-button" type="button" title="每日随机高难度挑战，高分奖励">
+            <span class="ch-icon">&#9733;</span>
+            <span class="ch-label">今日挑战</span>
+          </button>
+        </div>
+      </section>
+      <section id="result-layer" class="result-layer" role="dialog" aria-modal="true" aria-labelledby="result-title" hidden>
+        <div class="win-stage">
+          <div class="win-ring win-ring-1" aria-hidden="true"></div>
+          <div class="win-ring win-ring-2" aria-hidden="true"></div>
+          <div class="win-ring win-ring-3" aria-hidden="true"></div>
+          <h2 id="result-title" class="win-title">恭喜，星轨已稳定</h2>
+          <p id="result-score" class="win-score"></p>
+          <div id="result-stars" class="win-stars" aria-hidden="true"></div>
+          <div id="result-breakdown" class="win-breakdown" aria-label="积分明细">
+            <div class="wb-row wb-base"><span class="wb-name">基础分</span><span class="wb-val" data-k="base">0</span></div>
+            <div class="wb-row wb-move"><span class="wb-name">步数分</span><span class="wb-val" data-k="move">0</span></div>
+            <div class="wb-row wb-time"><span class="wb-name">时间分</span><span class="wb-val" data-k="time">0</span></div>
+            <div class="wb-row wb-total"><span class="wb-name">合计得分</span><span class="wb-val" data-k="total">0</span></div>
+          </div>
+          <p id="result-meta" class="win-meta"></p>
+          <div class="win-actions">
+            <button id="next-button" type="button" class="win-primary">下一关 →</button>
+            <button id="again-button" type="button" class="win-ghost">重玩</button>
+          </div>
+        </div>
+      </section>
+      <section id="reset-layer" class="result-layer" role="dialog" aria-modal="true" aria-labelledby="reset-title" hidden>
+        <div class="result-panel"><h2 id="reset-title">重新开始本关？</h2><p>当前调度将被清除。</p><button id="reset-confirm-button" type="button">重新开始</button><button id="reset-cancel-button" type="button">继续当前</button></div>
+      </section>
+      <section id="level-info-layer" class="result-layer" role="dialog" aria-modal="true" aria-labelledby="level-info-title" hidden>
+        <div class="result-panel"><h2 id="level-info-title">关卡详情</h2><p id="level-info-text"></p><button id="level-info-close-button" type="button">返回对局</button></div>
+      </section>
+    </main>
+    <script type="module" src="./js/bootstrap.mjs?v=48f76844757c"></script>
+  </body>
+</html>

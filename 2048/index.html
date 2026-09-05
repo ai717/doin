@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="zh-CN" data-theme="light">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>2048 · DOIN 在线小游戏</title>
+  <meta name="description" content="2048 数字合并益智：滑动方块，相同数字撞在一起合成两倍，目标是合出 2048。支持键盘、触屏滑动与方向键，进度本机保存，可离线游玩。">
+  <link rel="canonical" href="https://doin.win/2048/">
+  <meta name="theme-color" content="#f6f1e6">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="DOIN">
+  <meta property="og:title" content="2048 · DOIN 在线小游戏">
+  <meta property="og:description" content="滑动方块，相同数字合二为一，目标 2048。键盘与触屏都能玩，可离线运行。">
+  <meta property="og:url" content="https://doin.win/2048/">
+  <meta property="og:locale" content="zh_CN">
+  <meta property="og:image" content="https://doin.win/assets/og-image.png">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="2048 · DOIN 在线小游戏">
+  <meta name="twitter:description" content="滑动方块，相同数字合二为一，目标 2048。键盘与触屏都能玩，可离线运行。">
+  <meta name="twitter:image" content="https://doin.win/assets/og-image.png">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
+  <script>
+    try {
+      var stored = JSON.parse(localStorage.getItem("doin.2048.prefs") || "{}");
+      if (stored && stored.theme === "dark") document.documentElement.dataset.theme = "dark";
+    } catch (error) {
+      // First visit or storage blocked — the light theme stays.
+    }
+  </script>
+</head>
+<body>
+  <main class="page">
+    <div class="stage">
+      <header class="hero">
+        <div class="hero-copy">
+          <div class="eyebrow-row">
+            <p class="eyebrow" data-i18n="eyebrow"></p>
+            <button class="lang" id="lang" type="button">
+              <span class="lang-other" data-i18n="langOther"></span>
+            </button>
+          </div>
+          <h1 class="title">2048</h1>
+          <p class="lede" data-i18n="lede"></p>
+        </div>
+        <div class="scores">
+          <div class="score-card">
+            <span class="score-label" data-i18n="score"></span>
+            <span class="score-value" id="score">0</span>
+            <span class="score-gain" id="score-gain" aria-hidden="true"></span>
+          </div>
+          <div class="score-card">
+            <span class="score-label" data-i18n="best"></span>
+            <span class="score-value" id="best">0</span>
+          </div>
+        </div>
+      </header>
+
+      <div class="board-wrap" id="board-wrap">
+        <div class="board" id="board" role="group" aria-label="2048 棋盘">
+          <div class="board-grid" id="board-grid" aria-hidden="true"></div>
+          <div class="tiles" id="tiles" aria-hidden="true"></div>
+          <div class="overlay" id="overlay" role="dialog" aria-modal="true" hidden></div>
+        </div>
+      </div>
+
+      <div class="stats">
+        <span class="stat"><span class="stat-label" data-i18n="statsGames"></span><span class="stat-value" id="stat-games">0</span></span>
+        <span class="stat"><span class="stat-label" data-i18n="statsWins"></span><span class="stat-value" id="stat-wins">0</span></span>
+        <span class="stat"><span class="stat-label" data-i18n="statsTop"></span><span class="stat-value" id="stat-top">—</span></span>
+        <span class="saved" data-i18n="savedNote"></span>
+      </div>
+
+      <div class="toolbar">
+        <p class="hint">
+          <span class="hint-keys" data-i18n="hintKeys"></span>
+          <span class="hint-touch" data-i18n="hintTouch"></span>
+        </p>
+        <div class="actions">
+          <button class="btn btn-icon" id="undo" type="button" disabled></button>
+          <button class="btn btn-icon" id="mute" type="button"></button>
+          <button class="btn btn-icon" id="theme" type="button"></button>
+          <button class="btn btn-icon" id="help" type="button"></button>
+          <button class="btn btn-primary" id="new-game" type="button">
+            <span class="btn-icon-glyph" id="new-game-icon" aria-hidden="true"></span>
+            <span class="btn-text" data-i18n="newGame"></span>
+          </button>
+        </div>
+      </div>
+
+      <div class="dpad" id="dpad">
+        <button class="btn btn-pad" data-dir="up" type="button"></button>
+        <button class="btn btn-pad" data-dir="left" type="button"></button>
+        <button class="btn btn-pad" data-dir="down" type="button"></button>
+        <button class="btn btn-pad" data-dir="right" type="button"></button>
+      </div>
+
+      <nav class="back"><a href="/" data-i18n="backHome"></a></nav>
+    </div>
+  </main>
+
+  <p class="sr-only" id="announce" role="status" aria-live="polite"></p>
+  <noscript><p class="noscript">需要启用 JavaScript 才能游玩 2048。</p></noscript>
+  <script type="module" src="js/main.mjs"></script>
+</body>
+</html>
