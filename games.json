@@ -92,6 +92,16 @@
       "tags": ["街机", "物理", "肉鸽"],
       "url": "/Gravity-Echoes/",
       "en": { "title": "Gravity Echoes", "desc": "Bend trajectories around micro-singularities, build resonance with precise rebounds, and draft relics across five orbital rings." }
+    },
+    {
+      "title": "开心消消乐",
+      "slug": "Tile-Matching",
+      "desc": "滑动交换缤纷方块，凑齐三连触发连锁消除；收集关卡目标、解锁更多挑战，享受爽快的三消节奏。",
+      "icon": "🍬",
+      "cover": "/assets/covers/Tile-Matching.webp",
+      "tags": ["休闲", "消除", "益智"],
+      "url": "/Tile-Matching/",
+      "en": { "title": "Happy Tile Match", "desc": "Swap colorful tiles, chain satisfying three-in-a-row clears, and complete each level's collection goals." }
     }
   ]
 }

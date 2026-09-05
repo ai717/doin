@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>开心消消乐 | Tile-Matching - DOIN.WIN</title>
+  <meta name="description" content="经典纯正开心消消乐：滑动交换三消，连击合成特效，策略收集目标，体验沉浸式爽快消除。">
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
+  <link rel="stylesheet" href="css/style.css?v=dev">
+</head>
+<body>
+  <noscript>
+    <div class="noscript-banner">
+      <p>游戏需要启用 JavaScript 才能运行，请在浏览器中开启。</p>
+    </div>
+  </noscript>
+
+  <div id="game-app" class="app-viewport">
+    <div class="ambient-glow glow-1"></div>
+    <div class="ambient-glow glow-2"></div>
+
+    <!-- 顶部常驻工具条 -->
+    <header class="top-nav">
+      <div class="brand">
+        <a class="home-link" href="/" aria-label="返回 DOIN 首页" title="返回首页">← <span>DOIN</span></a>
+        <span class="brand-badge">MATCH 3</span>
+        <h1 id="i18n-game-title" class="brand-title">开心消消乐</h1>
+      </div>
+      <div class="nav-controls">
+        <button id="btn-select-level" class="nav-btn" aria-label="Level Select" title="关卡列表">
+          <svg class="svg-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="3" width="7" height="7" rx="1"></rect>
+            <rect x="14" y="3" width="7" height="7" rx="1"></rect>
+            <rect x="14" y="14" width="7" height="7" rx="1"></rect>
+            <rect x="3" y="14" width="7" height="7" rx="1"></rect>
+          </svg>
+          <span id="i18n-nav-level">关卡</span>
+        </button>
+        <button id="btn-audio" class="nav-btn" aria-label="Toggle Sound" title="音效开关">
+          <svg id="icon-sound-on" class="svg-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+            <path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+            <path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path>
+          </svg>
+          <svg id="icon-sound-off" class="svg-icon hidden" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+            <line x1="23" y1="9" x2="17" y2="15"></line>
+            <line x1="17" y1="9" x2="23" y2="15"></line>
+          </svg>
+        </button>
+        <button id="btn-lang" class="nav-btn" aria-label="Toggle Language" title="切换语言">
+          <span class="lang-tag">EN</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- 双栏剧场化工作台 -->
+    <main class="workbench-layout">
+      <!-- 侧边仪表栏：开心消消乐经典关卡目标驱动 -->
+      <aside class="game-dashboard">
+        <!-- 关卡状态卡 -->
+        <div class="dashboard-card level-card">
+          <div class="level-meta">
+            <span id="hud-level-number" class="level-num">LEVEL 1</span>
+            <div id="hud-star-container" class="level-stars">
+              <span class="star">★</span>
+              <span class="star">★</span>
+              <span class="star">★</span>
+            </div>
+          </div>
+          <p id="hud-level-desc" class="level-desc">收集指定元素的指定数量即可过关！</p>
+        </div>
+
+        <!-- 关卡核心目标：收集物清单与剩余需求 -->
+        <div class="dashboard-card goals-card">
+          <span id="i18n-label-target" class="card-label">本关通关目标</span>
+          <div id="goals-container" class="goals-list"></div>
+        </div>
+
+        <!-- 步数与积分 -->
+        <div class="dashboard-card status-card">
+          <div class="metric-block moves-block">
+            <span id="i18n-label-moves" class="metric-title">剩余步数</span>
+            <div id="hud-moves" class="metric-number">25</div>
+          </div>
+          <div class="metric-block score-block">
+            <span id="i18n-label-score" class="metric-title">当前得分</span>
+            <div id="hud-score" class="metric-number">0</div>
+          </div>
+        </div>
+
+        <!-- 辅助操作 -->
+        <div class="side-action-group">
+          <button id="btn-hint" class="side-btn hint-btn">
+            <svg class="svg-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M9 18h6"></path>
+              <path d="M10 22h4"></path>
+              <path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1 .23 2.23 1.5 3.5A4.61 4.61 0 0 1 8.91 14"></path>
+            </svg>
+            <span id="i18n-btn-hint">寻路提示</span>
+          </button>
+          <button id="btn-restart" class="side-btn restart-btn">
+            <svg class="svg-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path>
+              <path d="M3 3v5h5"></path>
+            </svg>
+            <span id="i18n-btn-restart">重新开始</span>
+          </button>
+        </div>
+      </aside>
+
+      <!-- 棋盘主舞台：8x8 永远满格 -->
+      <section class="stage-section">
+        <div class="board-container">
+          <div id="board-grid-bg" class="board-grid-bg"></div>
+          <div id="board-interactive" class="board-interactive"></div>
+          <div id="fx-layer" class="fx-layer"></div>
+          <div id="combo-banner" class="combo-banner hidden"></div>
+          <div id="shuffle-banner" class="shuffle-banner hidden">重排棋盘中...</div>
+        </div>
+      </section>
+    </main>
+
+    <!-- 关卡选择弹窗 -->
+    <div id="level-modal" class="modal-backdrop hidden" role="dialog">
+      <div class="modal-box level-selector-box">
+        <div class="modal-header">
+          <h2 id="i18n-level-select-title">选择关卡</h2>
+          <button id="btn-close-level-modal" class="close-x-btn">&times;</button>
+        </div>
+        <div id="level-grid-list" class="level-grid"></div>
+      </div>
+    </div>
+
+    <!-- 结算结果弹窗 -->
+    <div id="result-modal" class="modal-backdrop hidden" role="dialog" aria-modal="true">
+      <div class="modal-box result-box">
+        <div id="result-badge" class="result-badge">🏆</div>
+        <h2 id="result-title" class="result-title">通关成功！</h2>
+        <div id="result-stars" class="result-stars">★★★</div>
+        <p id="result-desc" class="result-desc">太棒了！所有目标全部达成！</p>
+
+        <div class="result-stats-card">
+          <div class="stat-item">
+            <span id="i18n-res-score-label">最终得分</span>
+            <span id="result-score-val" class="num-val">0</span>
+          </div>
+          <div class="stat-item">
+            <span id="i18n-res-moves-label">步数奖励加分</span>
+            <span id="result-moves-val" class="num-val">0</span>
+          </div>
+          <div class="stat-item">
+            <span id="i18n-res-best-label">历史最佳</span>
+            <span id="result-best-val" class="num-val">0</span>
+          </div>
+        </div>
+
+        <div class="result-action-row">
+          <button id="btn-result-replay" class="btn-sub">
+            <span id="i18n-btn-replay">重新游玩</span>
+          </button>
+          <button id="btn-result-next" class="btn-main">
+            <span id="i18n-btn-next">进入下一关</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="js/main.mjs?v=dev"></script>
+</body>
+</html>
