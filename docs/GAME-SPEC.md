@@ -129,6 +129,10 @@ function storage() {
 }
 ```
 
+**存档 key 命名**：统一 `doin.<slug>.v1`（需要分域时用 `doin.<slug>.<域>.v1`，
+如 orbit-sort 的 `doin.orbit-sort.progress.v1`）。禁止自造前缀（`tetris_neo_state_*`
+这类私有命名是反例）——统一前缀才能整站排查、清理与迁移存档。
+
 i18n API 形状（与存量游戏同构，键名一致）：
 `LOCALES / LANG_KEY="doin.lang" / DEFAULT_LOCALE / isLocale / strings / format /
 detectLocale / loadLocale / saveLocale / htmlLang`。切换语言 = `saveLocale(locale)` 后
@@ -162,7 +166,8 @@ detectLocale / loadLocale / saveLocale / htmlLang`。切换语言 = `saveLocale(
 3. JS 里引用的每个 `id` 在 `index.html` 中都存在，装配表双向闭合。
 4. 本地 script/link 全部带 `?v=dev`；零 CDN、零外链字体、零外链图片、零 npm 依赖。
 5. 语言偏好读写 `doin.lang`；中英字符串表的键完全对齐且非空。
-6. localStorage 集中一处封装并包 try/catch；读到的每个值都 normalize，坏值回默认。
+6. localStorage 集中一处封装并包 try/catch；读到的每个值都 normalize，坏值回默认；
+   存档 key 用 `doin.<slug>.v1`，不自造前缀。
 7. 有 `<a href="/">` 返回首页、`<noscript>` 兜底，动效带 `prefers-reduced-motion` 降级。
 8. `tests/` 下 ≥3 个 `*.test.mjs`（engine / storage / i18n / markup），按 `node --test`
    显式列文件的形式书写；有随机性的生成/发牌逻辑可注入 `rng`。
