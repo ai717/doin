@@ -48,9 +48,14 @@
 gold-miner / minesweeper / tic-tac-toe 19 pass 0 fail 0 warn；orbit-sort 15 pass 4 waived；
 2048 16 pass 3 waived；sudoku 7 pass 12 waived（均 exit 0）。
 `games/tetris-neo/`（外部渠道首个成品，尚未提交）5 pass / 7 fail(T1) / 7 warn(T2)，
-另有 2 个脚本查不出的真实 bug：`hardDrop()` 先置 `isDropLocked` 再调 `drop(true)`
+    另有 2 个脚本查不出的真实 bug：`hardDrop()` 先置 `isDropLocked` 再调 `drop(true)`
 被自己的 `isManual && isDropLocked` 拦截 → 硬降永不合并；localStorage 偏好未校验，
-坏值直接 `BOARD_CONFIGS[currentBoard].cols` 会崩。整改待用户点头，作为独立补丁。
+    坏值直接 `BOARD_CONFIGS[currentBoard].cols` 会崩。整改待用户点头，作为独立补丁。
+
+### 2026-09-05 · 新游戏协作指令
+- 在 `AGENTS.md §4.1` 固化三类请求的处理边界：组装新游戏、只读检查新增游戏、处理新增游戏后续工作。
+- 明确外部网页 AI 只产出 `games/<slug>/`；门户代理负责验收、登记、封面、根测试、构建与预览，部署需用户明确要求。
+- `docs/GAME-SPEC.md §7` 增加同一职责边界提示，避免外部 AI 修改门户或自行发布。
 
 ## 2026-09-05 · 黄金矿工上架（第 6 款游戏）
 
