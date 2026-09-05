@@ -19,9 +19,38 @@
 - **i18n**：orbit-sort / tic-tac-toe / minesweeper / gold-miner / 首页均中英双语；统一默认语言规则与
   共享偏好 key `doin.lang`（AGENTS.md §7）。2048（zh/en）、sudoku（zh-Hans/zh-Hant/en）
   本就已双语，但偏好 key 尚未统一到 `doin.lang`。
+- **交付契约**：`docs/GAME-SPEC.md`（自包含，可整篇贴给外部开发者/网页对话 AI）+
+  `scripts/check-game.mjs`（两级门禁：T1 上架底线 fail 即 exit 1，T2 一致性只 WARN，存量豁免内置）。
+  外部方只产出 `games/<slug>/` 内文件（SPEC §7A 人工自查），组装与验收在门户方（§7B）。
 - **本地服务**：`node _dev-server.mjs`（零依赖，端口 46810 起）；目录请求缺尾斜杠时 301 补齐，
   保证页面内相对资源解析正确。
 - **git**：正常，main 全部推送成功（此前 ai919≠ai717 的 403 已解除）。
+
+## 2026-09-05 · 外部游戏交付契约（GAME-SPEC + 两级验收脚本）
+
+### 做了什么
+1. **`docs/GAME-SPEC.md`**：自包含交付契约，可整篇贴给外部开发者或网页对话 AI。
+   含目录形状、T1/T2 门禁表、禁止清单、可照抄骨架（index.html / storage 降级 / i18n API 形状）、
+   测试要求、上架物料、§7A 外部方人工自查清单 + §7B 门户方验收流程。
+2. **`scripts/check-game.mjs`**：零依赖机器验收，`node scripts/check-game.mjs <slug>`。
+   两级——T1（index-html / games-json / cover / v-dev / back-home / doin-lang /
+   storage-guard / tests-min / tests-root-script）FAIL 即 exit 1；T2 只 WARN。
+   `LEGACY_WAIVERS` 内置存量豁免（orbit-sort 4 项 / 2048 3 项 / sudoku 12 项）打印为
+   `WAIVED` + 原因，新 slug 零豁免。WebP 尺寸自解析（VP8X/VP8 /VP8L），不引依赖。
+3. **AGENTS.md §4** 加指针条目：外发只贴 SPEC 正文，对方可能无运行环境，
+   组装/验收/上架物料永远在门户方。
+
+### 为什么是两级
+用户明确反对过严约束（"单独的子游戏能运行即可"），但也要有底线。故只把"不满足就无法进
+构建与部署流水线、或会破坏全站"的 9 条设为 fail，其余一致性建议降级 WARN。
+
+### 现状复扫（本轮验证）
+gold-miner / minesweeper / tic-tac-toe 19 pass 0 fail 0 warn；orbit-sort 15 pass 4 waived；
+2048 16 pass 3 waived；sudoku 7 pass 12 waived（均 exit 0）。
+`games/tetris-neo/`（外部渠道首个成品，尚未提交）5 pass / 7 fail(T1) / 7 warn(T2)，
+另有 2 个脚本查不出的真实 bug：`hardDrop()` 先置 `isDropLocked` 再调 `drop(true)`
+被自己的 `isManual && isDropLocked` 拦截 → 硬降永不合并；localStorage 偏好未校验，
+坏值直接 `BOARD_CONFIGS[currentBoard].cols` 会崩。整改待用户点头，作为独立补丁。
 
 ## 2026-09-05 · 黄金矿工上架（第 6 款游戏）
 

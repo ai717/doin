@@ -44,6 +44,12 @@ dist/                                 构建产物 (git ignore)
   `spa, exclude`。`comingSoon` 的游戏既不构建也不进 sitemap。`exclude` 指定额外构建要排除
   的源目录（默认已跳过 node_modules/dist/tests/.*）。
 - 各游戏自定义视觉风格。门户 Poki 主题只约束首页。
+- **新游戏交付契约**：自包含规范在 `docs/GAME-SPEC.md`（可直接外发给外部开发者/AI）；
+  机器验收 `node scripts/check-game.mjs <slug>` 分两级——T1 上架底线 fail 才拒收，
+  T2 一致性只 WARN；存量豁免表内置于脚本、新 slug 零豁免。
+  **外发只贴 SPEC 正文**：承接方可能只是无运行环境的网页对话 AI（跑不了 node、开不了浏览器），
+  它按 SPEC §7A 人工自查、只产出 `games/<slug>/` 内的文件；组装、跑验收脚本、补
+  games.json/封面/`test:<slug>`/构建（SPEC §7B）永远在我们这边。
 
 ## 5 · Orbit-sort · 稳定基线（开发准入规则）
 
