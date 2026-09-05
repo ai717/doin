@@ -10,6 +10,7 @@
     "test:minesweeper": "node --test games/minesweeper/tests/engine.test.mjs games/minesweeper/tests/game.test.mjs games/minesweeper/tests/solver.test.mjs games/minesweeper/tests/score.test.mjs games/minesweeper/tests/storage.test.mjs games/minesweeper/tests/i18n.test.mjs",
     "test:gold-miner": "node --test games/gold-miner/tests/engine.test.mjs games/gold-miner/tests/score.test.mjs games/gold-miner/tests/storage.test.mjs games/gold-miner/tests/i18n.test.mjs games/gold-miner/tests/markup.test.mjs",
     "test:tetris-neo": "node --test games/tetris-neo/tests/engine.test.mjs games/tetris-neo/tests/storage.test.mjs games/tetris-neo/tests/i18n.test.mjs games/tetris-neo/tests/markup.test.mjs"
-    ,"test:zuma": "node --test games/zuma/tests/engine.test.mjs"
+    ,"test:zuma": "node --test games/zuma/tests/engine.test.mjs",
+    "test:Gravity-Echoes": "node --test games/Gravity-Echoes/tests/engine.test.mjs games/Gravity-Echoes/tests/storage.test.mjs games/Gravity-Echoes/tests/i18n.test.mjs games/Gravity-Echoes/tests/markup.test.mjs"
   }
 }

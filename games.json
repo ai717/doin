@@ -82,6 +82,16 @@
       "tags": ["休闲", "消除", "经典"],
       "url": "/zuma/",
       "en": { "title": "Zuma Legend", "desc": "Control the stone frog and clear chains of runic marbles before they reach the temple abyss." }
+    },
+    {
+      "title": "重力回响",
+      "slug": "Gravity-Echoes",
+      "desc": "在扭曲弹道的微型奇点间击碎星环：甜点反弹积攒共振，选取遗物构筑，穿越五层重力试炼。",
+      "icon": "🌀",
+      "cover": "/assets/covers/Gravity-Echoes.webp",
+      "tags": ["街机", "物理", "肉鸽"],
+      "url": "/Gravity-Echoes/",
+      "en": { "title": "Gravity Echoes", "desc": "Bend trajectories around micro-singularities, build resonance with precise rebounds, and draft relics across five orbital rings." }
     }
   ]
 }

@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>重力回响 | Gravity Echoes - DOIN.WIN</title>
+  <meta name="description" content="重力回响 (Gravity Echoes) - 一款结合引力场、音爆节拍与肉鸽构筑的太空物理打砖块游戏。">
+  <meta name="keywords" content="打砖块, 重力回响, Gravity Echoes, 网页小游戏, Roguelike, HTML5小游戏, 街机">
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
+  <link rel="stylesheet" href="css/style.css?v=dev">
+</head>
+<body>
+  <a id="back-home" class="home-link" href="/" aria-label="返回 DOIN 首页">← DOIN</a>
+  <noscript>
+    <div class="noscript-banner">
+      <h1>需要启用 JavaScript / JavaScript Required</h1>
+      <p>《重力回响》是一款基于 HTML5 Canvas 和物理模拟的网页游戏，请在浏览器设置中启用 JavaScript。</p>
+    </div>
+  </noscript>
+
+  <div id="desktop-wrapper" class="stage-container">
+    <!-- 纯粹一体化核心视窗 -->
+    <main id="app" class="game-container">
+      <!-- 顶部轻量 HUD 工具栏 -->
+      <header class="game-header">
+        <div class="brand">
+          <h1 class="logo-title" data-i18n="gameTitle">重力回响</h1>
+          <span class="version-tag">Echo Arcade</span>
+        </div>
+
+        <div class="header-hud">
+          <div class="hud-capsule">
+            <span class="hud-cap-label" data-i18n="scoreLabel">分数</span>
+            <span id="hud-score" class="hud-cap-val highlight">0</span>
+          </div>
+          <div class="hud-capsule">
+            <span class="hud-cap-label" data-i18n="sectorLabel">星环</span>
+            <span id="hud-sector" class="hud-cap-val">1 / 5</span>
+          </div>
+          <div class="hud-capsule resonance-capsule">
+            <span class="hud-cap-label" data-i18n="resonanceLabel">共振</span>
+            <div class="resonance-bar-wrapper">
+              <div id="hud-resonance-bar" class="resonance-fill" style="width: 0%;"></div>
+            </div>
+          </div>
+          <div class="hud-capsule">
+            <span class="hud-cap-label" data-i18n="livesLabel">装甲</span>
+            <div id="hud-lives" class="lives-container" aria-label="剩余装甲">
+              <span class="life-pip active"></span>
+              <span class="life-pip active"></span>
+              <span class="life-pip active"></span>
+            </div>
+          </div>
+        </div>
+
+        <div class="header-controls">
+          <button id="lang-btn" class="icon-btn" type="button" aria-label="切换语言 / Switch Language" title="Language">
+            <span id="lang-indicator">EN</span>
+          </button>
+          <button id="audio-btn" class="icon-btn" type="button" aria-label="切换音效 / Toggle Audio" title="Audio">
+            <svg id="audio-icon-on" class="svg-icon" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/>
+            </svg>
+            <svg id="audio-icon-off" class="svg-icon hidden" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.2.05-.41.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51C20.63 14.91 21 13.5 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06c1.38-.31 2.63-.95 3.69-1.81L19.73 21 21 19.73 4.27 3zM12 4L9.91 6.09 12 8.18V4z"/>
+            </svg>
+          </button>
+          <button id="pause-btn" class="icon-btn" type="button" aria-label="暂停游戏 / Pause Game" title="Pause">
+            <svg id="pause-icon" class="svg-icon" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>
+            </svg>
+            <svg id="play-icon" class="svg-icon hidden" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M8 5v14l11-7z"/>
+            </svg>
+          </button>
+        </div>
+      </header>
+
+      <!-- 核心画布视窗 -->
+      <div class="canvas-wrapper" id="canvas-wrapper">
+        <canvas id="game-canvas"></canvas>
+        <div id="touch-hint" class="touch-hint hidden" data-i18n="touchHint">滑动移动底板 · 点击任意位置发射</div>
+      </div>
+
+      <!-- 底部遗物矩阵 -->
+      <footer class="game-footer">
+        <div class="relic-tray">
+          <span class="relic-tray-label" data-i18n="relicsTitle">已同调切片:</span>
+          <div id="active-relics" class="relic-badges">
+            <span class="relic-empty" data-i18n="noRelics">虚空未同调</span>
+          </div>
+        </div>
+      </footer>
+
+      <!-- 遮罩层：开始菜单 -->
+      <div id="overlay-start" class="modal-overlay">
+        <div class="modal-card">
+          <div class="modal-badge" data-i18n="introBadge">引力物理 · 节拍共振 · 肉鸽构筑</div>
+          <h2 class="modal-title" data-i18n="gameTitle">重力回响</h2>
+          <p class="modal-quote" data-i18n="gameQuote">“我们被困在因果的闭环里，直到有一颗球偏离了轨道。”</p>
+          <div class="modal-guide">
+            <div class="guide-item">
+              <span class="guide-icon">🌌</span>
+              <p data-i18n="guideGravity">核心微型奇点扭曲弹道，打破直觉反射角。</p>
+            </div>
+            <div class="guide-item">
+              <span class="guide-icon">🎵</span>
+              <p data-i18n="guideResonance">用底板中心迎击积攒共振，达到阈值触发音爆贯穿。</p>
+            </div>
+            <div class="guide-item">
+              <span class="guide-icon">🧩</span>
+              <p data-i18n="guideRoguelike">每破一层星环可获 1 次装甲维修并提取量子被动特质。</p>
+            </div>
+          </div>
+          <div class="start-actions">
+            <button id="btn-start" class="glow-button" type="button" data-i18n="btnStart">开启共振</button>
+          </div>
+          <div class="high-score-record">
+            <span data-i18n="highScoreLabel">历史最高分:</span>
+            <span id="start-high-score">0</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 遮罩层：三选一肉鸽选择界面 -->
+      <div id="overlay-draft" class="modal-overlay hidden">
+        <div class="modal-card modal-card-wide">
+          <div class="modal-badge" data-i18n="draftBadge">现实坍缩 · 记忆提取</div>
+          <h2 class="modal-title" data-i18n="draftTitle">同调记忆切片</h2>
+          <p class="modal-subtitle" data-i18n="draftSubtitle">星环已瓦解并修复 1 点装甲，选择一项量子特质重构法则：</p>
+          <div id="draft-choices" class="draft-grid"></div>
+        </div>
+      </div>
+
+      <!-- 遮罩层：暂停菜单 -->
+      <div id="overlay-pause" class="modal-overlay hidden">
+        <div class="modal-card">
+          <h2 class="modal-title" data-i18n="pauseTitle">时空凝固</h2>
+          <p class="modal-subtitle" data-i18n="pauseSubtitle">引力潮汐暂时止息</p>
+          <div class="pause-actions">
+            <button id="btn-resume" class="glow-button" type="button" data-i18n="btnResume">继续航行</button>
+            <button id="btn-restart-pause" class="ghost-button" type="button" data-i18n="btnRestart">重构本局</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 遮罩层：游戏结算 -->
+      <div id="overlay-gameover" class="modal-overlay hidden">
+        <div class="modal-card">
+          <div id="gameover-badge" class="modal-badge">MISSION RESULT</div>
+          <h2 id="gameover-title" class="modal-title" data-i18n="gameOverTitle">星尘坍陷</h2>
+          <p id="gameover-desc" class="modal-quote" data-i18n="gameOverDesc">弹珠滑入无尽事件视界，回声化为叹息。</p>
+
+          <div class="stat-summary">
+            <div class="stat-box">
+              <span class="stat-label" data-i18n="finalScore">本局积分</span>
+              <span id="gameover-score" class="stat-value">0</span>
+            </div>
+            <div class="stat-box">
+              <span class="stat-label" data-i18n="sectorsCleared">击破星环</span>
+              <span id="gameover-sector" class="stat-value">0</span>
+            </div>
+            <div class="stat-box">
+              <span class="stat-label" data-i18n="highScore">历史记录</span>
+              <span id="gameover-high" class="stat-value">0</span>
+            </div>
+          </div>
+
+          <div class="gameover-actions">
+            <button id="btn-play-again" class="glow-button" type="button" data-i18n="btnPlayAgain">再启回响</button>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script type="module" src="js/main.mjs?v=dev"></script>
+</body>
+</html>
