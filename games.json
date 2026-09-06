@@ -102,6 +102,16 @@
       "tags": ["休闲", "消除", "益智"],
       "url": "/Tile-Matching/",
       "en": { "title": "Happy Tile Match", "desc": "Swap colorful tiles, chain satisfying three-in-a-row clears, and complete each level's collection goals." }
+    },
+    {
+      "title": "果园贪吃蛇",
+      "slug": "snake-orchard",
+      "desc": "在鲜果飘香的果园中操控小蛇成长：吃下红苹果冲分，争夺限时金色星果，连击不断加速挑战。",
+      "icon": "🐍",
+      "cover": "/assets/covers/snake-orchard.webp",
+      "tags": ["休闲", "经典", "反应"],
+      "url": "/snake-orchard/",
+      "en": { "title": "Snake Orchard", "desc": "Guide a growing snake through a lush orchard, collect apples and timed golden star fruit, and build high-score combos." }
     }
   ]
 }

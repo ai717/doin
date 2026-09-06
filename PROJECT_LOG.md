@@ -10,8 +10,9 @@
 
 - **门户**：薄荷渐变首页（`index.html` + `css/`），640×640 WebP 封面（3D 风格统一），
   白色胶囊卡片标签 + hover 放大；品牌行「Doin.win 字标 ←→ 地球语言按钮」+ 二级主标题；
-  中英双语（`doin.lang` 全站共享偏好）。CNAME `doin.win`。共 10 款游戏上架（新增 Tile Matching）。
+  中英双语（`doin.lang` 全站共享偏好）。CNAME `doin.win`。共 11 款游戏上架（新增 Snake Orchard）。
 
+- **Snake Orchard**（新增组装）：果园贪吃蛇已登记至 `games.json`，补齐 640×640 WebP 封面与根 `test:snake-orchard` 门禁。`check-game` 19 项全通过，engine / storage / i18n / markup 共 16 项测试通过；站点构建、sitemap 与本地 HTTP 预览均已验证。
 - **zuma**（新增组装）：祖玛传奇静态游戏已登记至 `games.json`，补齐 640×640 WebP 封面、返回首页链接与 `?v=dev` 资源占位；根目录新增 `test:zuma` 脚本。T1 验收 18 项通过（T2 tests-dir 仅提示），引擎测试 2 项通过，站点构建与本地预览验证通过。
 - **Gravity Echoes**（新增组装）：重力奇点打砖块已登记至 `games.json`，补齐 640×640 WebP 封面、首页返回入口、存档边界归一化，以及 engine / storage / i18n / markup 共 12 个测试。`check-game` 19 项全通过，构建与 sitemap 已验证。
 - **Tile Matching**（新增组装）：三消游戏已登记至 `games.json`，补齐 640×640 WebP 封面、首页返回入口、favicon 与根测试入口；补充共享 `doin.lang` API 与 i18n / storage 回归测试，保留外部交付的玩法实现不变。`check-game` 19 项全通过，测试 5 项通过，站点构建、sitemap 与本地 HTTP 预览均已验证。

@@ -12,6 +12,7 @@
     "test:tetris-neo": "node --test games/tetris-neo/tests/engine.test.mjs games/tetris-neo/tests/storage.test.mjs games/tetris-neo/tests/i18n.test.mjs games/tetris-neo/tests/markup.test.mjs"
     ,"test:zuma": "node --test games/zuma/tests/engine.test.mjs",
     "test:Gravity-Echoes": "node --test games/Gravity-Echoes/tests/engine.test.mjs games/Gravity-Echoes/tests/storage.test.mjs games/Gravity-Echoes/tests/i18n.test.mjs games/Gravity-Echoes/tests/markup.test.mjs",
-    "test:Tile-Matching": "node --test games/Tile-Matching/tests/core.test.mjs games/Tile-Matching/tests/i18n.test.mjs games/Tile-Matching/tests/storage.test.mjs"
+    "test:Tile-Matching": "node --test games/Tile-Matching/tests/core.test.mjs games/Tile-Matching/tests/i18n.test.mjs games/Tile-Matching/tests/storage.test.mjs",
+    "test:snake-orchard": "node --test games/snake-orchard/tests/engine.test.mjs games/snake-orchard/tests/storage.test.mjs games/snake-orchard/tests/i18n.test.mjs games/snake-orchard/tests/markup.test.mjs"
   }
 }
