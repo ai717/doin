@@ -34,8 +34,6 @@ const LEGACY_WAIVERS = {
   },
   "2048": {
     "v-dev": "上架早于 BUILD_ID 占位约定",
-    "doin-lang": "偏好 key 统一是已记录待办（AGENTS.md §7.2）",
-    "tests-root-script": "测试在 games/2048 目录内跑（AGENTS.md §10）",
   },
   sudoku: {
     "v-dev": "vite 构建产物自带 hash，无需占位",
@@ -48,7 +46,6 @@ const LEGACY_WAIVERS = {
     "storage-guard": "TS 源码在 src/",
     "tests-min": "TS 测试走目录内 vitest（npm test）",
     "i18n-module": "TS 源码在 src/，三语自有实现",
-    "doin-lang": "偏好 key 统一是已记录待办（AGENTS.md §7.2）",
     "tests-dir": "测试在目录内 npm test",
     "tests-root-script": "测试在目录内 npm test",
   },
@@ -120,7 +117,7 @@ check("v-dev", localAssets.length > 0 && unversioned.length === 0, unversioned.j
 
 check("back-home", /<a[^>]+href="\/"/.test(indexHtml ?? ""), "缺返回首页链接");
 
-const jsSources = collectSources(gameDir, [".mjs", ".js"]);
+const jsSources = collectSources(gameDir, [".mjs", ".js", ".ts", ".tsx"]);
 check("doin-lang", jsSources.some((file) => file.src.includes("doin.lang")), "语言偏好必须读写全站共享 key doin.lang");
 
 const storageModule = read(resolve(gameDir, "js", "storage.mjs"));

@@ -5,6 +5,7 @@ import {
   BEST_KEY,
   DEFAULT_PREFS,
   EMPTY_STATS,
+  LANG_KEY,
   SAVE_KEY,
   SAVE_VERSION,
   clearSave,
@@ -200,12 +201,20 @@ describe("preferences", () => {
     const next = savePrefs({ theme: "dark" });
     assert.deepEqual(next, { locale: "zh", theme: "dark", muted: false });
     assert.deepEqual(loadPrefs(), next);
+    assert.equal(globalThis.localStorage.getItem(LANG_KEY), "zh");
     assert.deepEqual(savePrefs({ muted: true }), { locale: "zh", theme: "dark", muted: true });
   });
 
   it("replaces unknown values with the defaults", () => {
     savePrefs({ locale: "fr", theme: "neon", muted: "yes" });
     assert.deepEqual(loadPrefs(), { locale: "zh", theme: "light", muted: false });
+    assert.equal(globalThis.localStorage.getItem(LANG_KEY), "zh");
+  });
+
+  it("syncs with external doin.lang changes", () => {
+    savePrefs({ theme: "dark" });
+    globalThis.localStorage.setItem(LANG_KEY, "en");
+    assert.equal(loadPrefs().locale, "en");
   });
 });
 

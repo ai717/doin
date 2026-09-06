@@ -2,22 +2,42 @@ import assert from "node:assert/strict";
 import { afterEach, describe, it } from "node:test";
 import {
   DEFAULT_LOCALE,
+  LANG_KEY,
   LOCALES,
   detectLocale,
+  format,
   htmlLang,
   isLocale,
+  loadLocale,
+  saveLocale,
   strings,
 } from "../js/i18n.mjs";
 
 const original = Object.getOwnPropertyDescriptor(globalThis, "navigator");
+const originalStorage = Object.getOwnPropertyDescriptor(globalThis, "localStorage");
 
 function installNavigator(value) {
   Object.defineProperty(globalThis, "navigator", { configurable: true, value });
 }
 
+function installStorage(initial = new Map()) {
+  const store = new Map(initial);
+  Object.defineProperty(globalThis, "localStorage", {
+    configurable: true,
+    value: {
+      getItem: (key) => (store.has(key) ? store.get(key) : null),
+      setItem: (key, value) => store.set(key, String(value)),
+      removeItem: (key) => store.delete(key),
+    },
+  });
+  return store;
+}
+
 afterEach(() => {
   if (original) Object.defineProperty(globalThis, "navigator", original);
   else delete globalThis.navigator;
+  if (originalStorage) Object.defineProperty(globalThis, "localStorage", originalStorage);
+  else delete globalThis.localStorage;
 });
 
 describe("copy catalog", () => {
@@ -49,6 +69,14 @@ describe("copy catalog", () => {
   });
 });
 
+describe("format helper", () => {
+  it("interpolates positional parameters", () => {
+    assert.equal(format("Score: {0}", 100), "Score: 100");
+    assert.equal(format("{0} + {1} = {2}", 1, 2, 3), "1 + 2 = 3");
+    assert.equal(format("Keep {0} and {1}", "A"), "Keep A and {1}");
+  });
+});
+
 describe("locale detection", () => {
   it("picks Chinese for any zh tag", () => {
     installNavigator({ languages: ["zh-Hans-CN", "en"], language: "zh-Hans-CN" });
@@ -64,3 +92,51 @@ describe("locale detection", () => {
     assert.equal(detectLocale(), "en");
   });
 });
+
+describe("shared preference doin.lang", () => {
+  it("uses the unified constant doin.lang", () => {
+    assert.equal(LANG_KEY, "doin.lang");
+  });
+
+  it("prioritizes explicit doin.lang preference over navigator", () => {
+    installNavigator({ language: "en-US", languages: ["en-US"] });
+    installStorage(new Map([[LANG_KEY, "zh"]]));
+    assert.equal(loadLocale(), "zh");
+
+    installNavigator({ language: "zh-CN", languages: ["zh-CN"] });
+    installStorage(new Map([[LANG_KEY, "en"]]));
+    assert.equal(loadLocale(), "en");
+  });
+
+  it("falls back to detection when doin.lang is invalid or missing", () => {
+    installNavigator({ language: "zh-CN", languages: ["zh-CN"] });
+    installStorage(new Map([[LANG_KEY, "invalid-lang"]]));
+    assert.equal(loadLocale(), "zh");
+
+    installStorage();
+    assert.equal(loadLocale(), "zh");
+  });
+
+  it("writes valid locale and rejects invalid ones", () => {
+    const store = installStorage();
+    assert.equal(saveLocale("en"), true);
+    assert.equal(store.get(LANG_KEY), "en");
+    assert.equal(saveLocale("zh"), true);
+    assert.equal(store.get(LANG_KEY), "zh");
+    assert.equal(saveLocale("fr"), false);
+    assert.equal(store.get(LANG_KEY), "zh");
+  });
+
+  it("gracefully degrades when localStorage throws", () => {
+    Object.defineProperty(globalThis, "localStorage", {
+      configurable: true,
+      get() {
+        throw new Error("QuotaExceededError");
+      },
+    });
+    installNavigator({ language: "zh-CN", languages: ["zh-CN"] });
+    assert.equal(loadLocale(), "zh");
+    assert.equal(saveLocale("en"), true);
+  });
+});
+

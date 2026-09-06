@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>纸牌：经典空当接龙 | DOIN.WIN</title>
+  <meta name="description" content="经典空当接龙卡牌解谜游戏，纯自包含无外链，极致复刻经典微软牌局与现代丝滑质感。">
+  <link rel="icon" type="image/svg+xml" href="favicon.svg?v=dev">
+  <link rel="stylesheet" href="css/style.css?v=dev">
+</head>
+<body>
+  <div id="game-container" class="game-container">
+    <header class="game-header">
+      <div class="header-left">
+        <a id="portal-home-link" href="/" class="icon-button" title="返回门户首页" aria-label="返回门户首页">
+          <svg class="ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+        </a>
+        <div class="game-meta">
+          <span class="meta-label" id="label-deal">牌局</span>
+          <span id="deal-number" class="meta-value">#1</span>
+        </div>
+        <select id="select-difficulty" class="diff-select" aria-label="难度选择">
+          <option value="easy">简单</option>
+          <option value="normal" selected>普通</option>
+          <option value="hard">专家</option>
+        </select>
+      </div>
+      
+      <div class="header-center">
+        <div class="stat-pill">
+          <span class="stat-title" id="label-score">得分</span>
+          <span id="score-display" class="stat-number">0</span>
+        </div>
+        <div class="stat-pill">
+          <span class="stat-title" id="label-time">时间</span>
+          <span id="timer-display" class="stat-number">00:00</span>
+        </div>
+        <div class="stat-pill">
+          <span class="stat-title" id="label-moves">步数</span>
+          <span id="moves-display" class="stat-number">0</span>
+        </div>
+      </div>
+
+      <div class="header-right">
+        <button id="btn-sound" class="icon-button" title="静音切换" aria-label="静音切换">
+          <svg id="icon-sound-on" class="ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/></svg>
+          <svg id="icon-sound-off" class="ui-icon hidden" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/></svg>
+        </button>
+        <button id="btn-lang" class="icon-button text-btn" title="切换语言" aria-label="切换语言">EN</button>
+        <button id="btn-rules" class="icon-button" title="玩法说明" aria-label="玩法说明">
+          <svg class="ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+        </button>
+      </div>
+    </header>
+
+    <main class="canvas-wrap">
+      <canvas id="game-canvas"></canvas>
+    </main>
+
+    <footer class="game-footer">
+      <button id="btn-new-game" class="action-btn secondary">
+        <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+        <span id="text-new-game">新游戏</span>
+      </button>
+      <button id="btn-restart" class="action-btn secondary">
+        <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/></svg>
+        <span id="text-restart">重玩</span>
+      </button>
+      <button id="btn-undo" class="action-btn primary" disabled>
+        <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 7v6h6"/><path d="M21 17a9 9 0 0 0-9-9 9 9 0 0 0-6 2.3L3 13"/></svg>
+        <span id="text-undo">撤回</span>
+      </button>
+      <button id="btn-hint" class="action-btn secondary">
+        <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/></svg>
+        <span id="text-hint">提示</span>
+      </button>
+      <button id="btn-pause" class="action-btn secondary">
+        <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
+        <span id="text-pause">暂停</span>
+      </button>
+    </footer>
+
+    <div id="modal-overlay" class="modal-backdrop hidden" aria-hidden="true">
+      <div id="modal-rules" class="modal-card hidden" role="dialog" aria-modal="true" aria-labelledby="rules-title">
+        <h2 id="rules-title" class="modal-title">空当接龙玩法说明</h2>
+        <div class="rules-body" id="rules-content">
+          <p><strong>目标：</strong>将全部 52 张牌按同花色由 A 至 K 顺序移动到右上角 4 个本位槽（Foundation）。</p>
+          <p><strong>中转空当（左上 4 格）：</strong>每个单元可暂时存放任意 1 张纸牌。</p>
+          <p><strong>下方牌叠（8 列）：</strong>纸牌按红黑交替、点数递减（K 到 A）的规则级联接龙。</p>
+          <p><strong>多张移动：</strong>若有足够的中转单元与空列，系统将自动允许整组有序序列一并移动。</p>
+          <p><strong>技巧：</strong>双击纸牌或快速轻扫可触发安全自动归位。</p>
+        </div>
+        <button id="btn-rules-close" class="modal-submit-btn">知道了</button>
+      </div>
+
+      <div id="modal-pause" class="modal-card hidden" role="dialog" aria-modal="true" aria-labelledby="pause-title">
+        <h2 id="pause-title" class="modal-title">游戏已暂停</h2>
+        <p class="modal-desc" id="pause-desc">牌局已封存，点击继续即可恢复战斗。</p>
+        <button id="btn-resume" class="modal-submit-btn">继续游戏</button>
+      </div>
+
+      <div id="modal-gameover" class="modal-card hidden" role="dialog" aria-modal="true" aria-labelledby="gameover-title">
+        <h2 id="gameover-title" class="modal-title win-title">恭喜获胜！</h2>
+        <div class="settle-box">
+          <div class="settle-item">
+            <span class="settle-label" id="label-settle-score">最终得分</span>
+            <span id="final-score" class="settle-val">0</span>
+          </div>
+          <div class="settle-item">
+            <span class="settle-label" id="label-settle-time">通关时间</span>
+            <span id="final-time" class="settle-val">00:00</span>
+          </div>
+          <div class="settle-item">
+            <span class="settle-label" id="label-settle-moves">总步数</span>
+            <span id="final-moves" class="settle-val">0</span>
+          </div>
+        </div>
+        <button id="btn-play-again" class="modal-submit-btn">开始新牌局</button>
+      </div>
+    </div>
+
+    <noscript>
+      <div class="noscript-banner">请启用 JavaScript 以在浏览器中游玩经典空当接龙游戏。</div>
+    </noscript>
+  </div>
+
+  <script type="module" src="js/main.mjs?v=dev"></script>
+</body>
+</html>

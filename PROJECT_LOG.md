@@ -10,8 +10,11 @@
 
 - **门户**：薄荷渐变首页（`index.html` + `css/`），640×640 WebP 封面（3D 风格统一），
   白色胶囊卡片标签 + hover 放大；品牌行「Doin.win 字标 ←→ 地球语言按钮」+ 二级主标题；
-  中英双语（`doin.lang` 全站共享偏好）。CNAME `doin.win`。共 11 款游戏上架（新增 Snake Orchard）。
+  中英双语（`doin.lang` 全站共享偏好）。CNAME `doin.win`。共 12 款游戏上架（新增 FreeCell）。
 
+- **FreeCell**（新增组装）：空当接龙静态游戏已登记至 `games.json`，补齐 640×640 WebP
+  封面与根 `test:freecell` 门禁。`check-game` 19 项全通过，engine / storage / i18n /
+  markup 共 13 项测试通过；站点构建、sitemap 与本地 HTTP 预览均已验证。
 - **Snake Orchard**（新增组装）：果园贪吃蛇已登记至 `games.json`，补齐 640×640 WebP 封面与根 `test:snake-orchard` 门禁。`check-game` 19 项全通过，engine / storage / i18n / markup 共 16 项测试通过；站点构建、sitemap 与本地 HTTP 预览均已验证。
 - **zuma**（新增组装）：祖玛传奇静态游戏已登记至 `games.json`，补齐 640×640 WebP 封面、返回首页链接与 `?v=dev` 资源占位；根目录新增 `test:zuma` 脚本。T1 验收 18 项通过（T2 tests-dir 仅提示），引擎测试 2 项通过，站点构建与本地预览验证通过。
 - **Gravity Echoes**（新增组装）：重力奇点打砖块已登记至 `games.json`，补齐 640×640 WebP 封面、首页返回入口、存档边界归一化，以及 engine / storage / i18n / markup 共 12 个测试。`check-game` 19 项全通过，构建与 sitemap 已验证。
@@ -23,15 +26,94 @@
 - **minesweeper**（已稳定）：经典三档 + 无猜保证 + 计分存档 + WebAudio 音效 + Neon Grid 主题 + 移动端适配。规则见 AGENTS.md §8。
 - **gold-miner**（已稳定）：黄金矿工。钩爪物理 + 关卡配额递增 + 商店 + 神秘袋；
   零依赖内联版拆成 9 模块，58 用例门禁。规则见 AGENTS.md §9。
-- **i18n**：orbit-sort / tic-tac-toe / minesweeper / gold-miner / 首页均中英双语；统一默认语言规则与
-  共享偏好 key `doin.lang`（AGENTS.md §7）。2048（zh/en）、sudoku（zh-Hans/zh-Hant/en）
-  本就已双语，但偏好 key 尚未统一到 `doin.lang`。
+- **i18n**：全站游戏（orbit-sort / tic-tac-toe / minesweeper / gold-miner / 2048 / sudoku / 首页）
+  均已支持多语言并统一对齐全站共享偏好 key `doin.lang`（AGENTS.md §7）。
 - **交付契约**：`docs/GAME-SPEC.md`（自包含，可整篇贴给外部开发者/网页对话 AI）+
   `scripts/check-game.mjs`（两级门禁：T1 上架底线 fail 即 exit 1，T2 一致性只 WARN，存量豁免内置）。
   外部方只产出 `games/<slug>/` 内文件（SPEC §7A 人工自查），组装与验收在门户方（§7B）。
+- **外部 AI 子游戏模板**：已定稿任务参数 + 三轮交付格式。新 slug 仅小写英文/数字/连字符；
+  视觉按玩法在 Canvas/WebGL 与 DOM/CSS 间选择，Canvas 需 DPR、resize、坐标换算与受限 dt；
+  本地资源相对引用并保留 `?v=dev`（返回首页例外为 `href="/"`）。外部方交付
+  `index.html`/favicon/CSS、按需模块和 engine/storage/i18n/markup 四类原生测试；最终只作
+  人工自查，不得虚报运行结果。
 - **本地服务**：`node _dev-server.mjs`（零依赖，端口 46810 起）；目录请求缺尾斜杠时 301 补齐，
   保证页面内相对资源解析正确。
 - **git**：正常，main 全部推送成功（此前 ai919≠ai717 的 403 已解除）。
+
+## 2026-09-07 · 重渲门户 Open Graph 封面图 (og-image.png)
+
+### 做了什么
+1. **视觉规范统一**：将 `assets/og-image.png` 由旧版深色像素风重构为定稿的 Poki 主题设计；
+2. **渐变与底纹渲染**：准确复现 175° 三段薄荷向纵深渐变（`#96f3de → #6fe4cb → #55d3d0`）并几何绘制 60×60 `bg-diamante.svg` 菱形低透明度纹理；
+3. **品牌与展品排版**：中央置入高对比度立体芯片字标「Doin.win」（深青 ink `#05384a` + `.win` 蓝青渐变 `#009cff → #23cfc0`）与胶囊徽标，两侧斜角悬浮 6 款代表性 3D 游戏封面与柔和软阴影；
+4. **脚本工具收录**：提供可复现生成的 `scripts/make_og_image.py` 自动化脚本。
+
+### 修改/新增文件
+- `assets/og-image.png`
+- `scripts/make_og_image.py`
+- `PROJECT_LOG.md`
+
+## 2026-09-07 · Sudoku 对齐全站 doin.lang 与单元测试
+
+### 做了什么
+1. **i18n 对齐**：`games/sudoku/src/i18n/locale.ts` 引入 `LANG_KEY = "doin.lang"`，新增 `readSharedLocale()` 与 `writeSharedLocale()`；`resolveLocale` 实现全站共享偏好（`doin.lang`）优先，并保留繁体中文（`zh-Hant`）分支精准识别；
+2. **状态与存储联动**：`games/sudoku/src/game/persist.ts` 的 `savePersisted` 与 `games/sudoku/src/game/store.ts` 的 `setSettings` 在语言变动时同步写共享偏好 `doin.lang`；
+3. **单元测试门禁**：新增 `games/sudoku/src/i18n/locale.test.ts`（10 项测试），覆盖读写校验、回退机制、Hans/Hant 变体解析及隐私模式异常降级；`games/sudoku/package.json` 的 `npm test` 扩充包含该测试；
+4. **验收脚本优化**：`scripts/check-game.mjs` 支持解析 `.ts` / `.tsx` 源文件，移除 `sudoku` 的 `doin-lang` 豁免项，机器验收原生通过。
+
+### 修改文件
+- `games/sudoku/src/i18n/locale.ts`
+- `games/sudoku/src/i18n/index.ts`
+- `games/sudoku/src/game/persist.ts`
+- `games/sudoku/src/game/store.ts`
+- `games/sudoku/src/i18n/locale.test.ts`
+- `games/sudoku/package.json`
+- `scripts/check-game.mjs`
+- `AGENTS.md`
+- `PROJECT_LOG.md`
+
+## 2026-09-07 · 2048 对齐全站 doin.lang 与根测试门禁
+
+### 做了什么
+1. **i18n 对齐**：`games/2048/js/i18n.mjs` 补齐 `LANG_KEY = "doin.lang"`、`format`、`loadLocale` 与 `saveLocale`，实现全站统一偏好 > 浏览器语言的级联回退与异常降级；
+2. **存档联动**：`games/2048/js/storage.mjs` 的 `loadPrefs` / `savePrefs` 读写 `doin.lang`，与门户双向同步语言偏好；`games/2048/js/main.mjs` 启动加载 `loadLocale()`；
+3. **测试与验收**：`games/2048/tests/i18n.test.mjs` 与 `tests/storage.test.mjs` 补充偏好共享、写入校验与异常降级测试，测试用例扩充至 55 项全绿；根 `package.json` 注册 `test:2048`；
+4. **门禁豁免收敛**：`scripts/check-game.mjs` 移除 2048 的 `doin-lang` 与 `tests-root-script` 豁免项，2048 达到 18 pass / 1 waived（仅保留老项目 `v-dev` 豁免）。
+
+### 修改文件
+- `games/2048/js/i18n.mjs`
+- `games/2048/js/storage.mjs`
+- `games/2048/js/main.mjs`
+- `games/2048/tests/i18n.test.mjs`
+- `games/2048/tests/storage.test.mjs`
+- `package.json`
+- `scripts/check-game.mjs`
+- `AGENTS.md`
+- `PROJECT_LOG.md`
+
+## 2026-09-06 · 外部 AI 子游戏交付模板定稿
+
+### 做了什么
+1. 定稿面向网页对话 AI 的子游戏提示词：任务参数、目录与路径边界、自包含资源、渲染选择、
+   按需模块、语言/存档规则、Canvas 输入与时间步、状态执行、四类 Node 原生测试及三轮输出流程。
+2. 明确外部方只生成 `games/<slug>/`；门户方仍负责 `games.json`、封面、根测试脚本、
+   `check-game`、构建、浏览器验收与发布。
+3. 将 `AGENTS.md` 的外发规则改为“SPEC 为基线 + 定稿模板补充”，避免旧的“只贴 SPEC”表述
+   与本轮协作流程冲突。
+
+### 修改文件
+- `AGENTS.md`
+- `PROJECT_LOG.md`
+
+### 关键实现方式
+- 模板要求 slug 为 lower-kebab-case；内部资源使用相对路径与 `?v=dev`，仅返回门户使用 `href="/"`。
+- 连续图形按需使用 Canvas/WebGL，文字、HUD、弹窗和语言控件保留 DOM；合法 engine 操作必须执行，
+  渲染只反映最新状态。
+- 每个交付必须含 engine、storage、i18n、markup 四个原生 `node:test` 文件；无执行环境时仅允许
+  输出可审计的人工核对，禁止虚报测试已运行。
+
+### 遇到的问题
+- 无游戏代码或构建配置变动，未运行测试或构建；本轮仅更新协作规范与收尾记录。
 
 ## 2026-09-05 · 外部游戏交付契约（GAME-SPEC + 两级验收脚本）
 
@@ -171,4 +253,3 @@ AGENTS.md  PROJECT_LOG.md                                   基线记录
 - **git push 凭据错配（恢复方式）**：缓存 token 属 `ai919`、仓库 owner `ai717` → 403。
   用 clash 7897 授权 `ai717`，或 Windows 凭据管理器换 PAT。
 - 2048 零依赖上线 `doin.win/2048/`；Sudoku 有 typecheck + mocha。
-- `assets/og-image.png` 仍是旧像素风，建议重渲为新配色 1200×630。

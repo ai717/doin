@@ -26,6 +26,7 @@ import { crossedCheers, fillRatio } from "./cheer";
 import { earnedStamps, monthKeyOf, scoreGame } from "./score";
 import { playSfx, setSfxEnabled } from "@/lib/sfx";
 import { applyDocumentLocale, t } from "@/i18n/core";
+import { writeSharedLocale } from "@/i18n/locale";
 
 const DAILY_DIFFICULTY: Difficulty = "medium";
 let startSeq = 0;
@@ -233,7 +234,10 @@ export const useGame = create<GameState>((set, get) => ({
       setSfxEnabled(patch.sound);
       if (patch.sound) playSfx("place");
     }
-    if (patch.locale != null) applyDocumentLocale(next.locale);
+    if (patch.locale != null) {
+      writeSharedLocale(patch.locale);
+      applyDocumentLocale(next.locale);
+    }
     schedulePersist(get);
   },
 

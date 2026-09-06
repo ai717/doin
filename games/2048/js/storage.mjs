@@ -5,6 +5,7 @@ export const SAVE_KEY = PREFIX + "save";
 export const BEST_KEY = PREFIX + "best";
 export const STATS_KEY = PREFIX + "stats";
 export const PREFS_KEY = PREFIX + "prefs";
+export const LANG_KEY = "doin.lang";
 export const SAVE_VERSION = 1;
 
 export const THEMES = Object.freeze(["light", "dark"]);
@@ -224,9 +225,15 @@ export function hasPrefs() {
 
 export function loadPrefs() {
   const raw = readJSON(PREFS_KEY);
-  if (!raw) return { ...DEFAULT_PREFS };
+  const sharedLang = readRaw(LANG_KEY);
+  const locale = LOCALES.includes(sharedLang)
+    ? sharedLang
+    : raw && LOCALES.includes(raw.locale)
+      ? raw.locale
+      : DEFAULT_PREFS.locale;
+  if (!raw) return { ...DEFAULT_PREFS, locale };
   return {
-    locale: LOCALES.includes(raw.locale) ? raw.locale : DEFAULT_PREFS.locale,
+    locale,
     theme: THEMES.includes(raw.theme) ? raw.theme : DEFAULT_PREFS.theme,
     muted: flag(raw.muted),
   };
@@ -237,6 +244,7 @@ export function savePrefs(patch) {
   if (!LOCALES.includes(next.locale)) next.locale = DEFAULT_PREFS.locale;
   if (!THEMES.includes(next.theme)) next.theme = DEFAULT_PREFS.theme;
   next.muted = flag(next.muted);
+  writeRaw(LANG_KEY, next.locale);
   writeJSON(PREFS_KEY, next);
   return next;
 }

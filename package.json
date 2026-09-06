@@ -4,13 +4,15 @@
   "type": "module",
   "scripts": {
     "build": "node scripts/build-site.mjs",
+    "test:2048": "node --test games/2048/tests/engine.test.mjs games/2048/tests/storage.test.mjs games/2048/tests/i18n.test.mjs games/2048/tests/markup.test.mjs",
     "test:orbit-sort": "node --test games/orbit-sort/tests/engine.test.mjs games/orbit-sort/tests/solver.test.mjs games/orbit-sort/tests/levels.test.mjs games/orbit-sort/tests/daily.test.mjs games/orbit-sort/tests/storage.test.mjs games/orbit-sort/tests/markup.test.mjs games/orbit-sort/tests/generator.test.mjs games/orbit-sort/tests/rules-property.test.mjs games/orbit-sort/tests/game.test.mjs games/orbit-sort/tests/score.test.mjs games/orbit-sort/tests/i18n.test.mjs",
     "test:tic-tac-toe": "node --test games/tic-tac-toe/tests/engine.test.mjs games/tic-tac-toe/tests/ai.test.mjs games/tic-tac-toe/tests/score.test.mjs games/tic-tac-toe/tests/storage.test.mjs games/tic-tac-toe/tests/game.test.mjs games/tic-tac-toe/tests/audio.test.mjs games/tic-tac-toe/tests/markup.test.mjs games/tic-tac-toe/tests/i18n.test.mjs",
     "test:home": "node --test tests/home-i18n.test.mjs",
     "test:minesweeper": "node --test games/minesweeper/tests/engine.test.mjs games/minesweeper/tests/game.test.mjs games/minesweeper/tests/solver.test.mjs games/minesweeper/tests/score.test.mjs games/minesweeper/tests/storage.test.mjs games/minesweeper/tests/i18n.test.mjs",
     "test:gold-miner": "node --test games/gold-miner/tests/engine.test.mjs games/gold-miner/tests/score.test.mjs games/gold-miner/tests/storage.test.mjs games/gold-miner/tests/i18n.test.mjs games/gold-miner/tests/markup.test.mjs",
     "test:tetris-neo": "node --test games/tetris-neo/tests/engine.test.mjs games/tetris-neo/tests/storage.test.mjs games/tetris-neo/tests/i18n.test.mjs games/tetris-neo/tests/markup.test.mjs"
-    ,"test:zuma": "node --test games/zuma/tests/engine.test.mjs",
+    ,"test:freecell": "node --test games/freecell/tests/engine.test.mjs games/freecell/tests/storage.test.mjs games/freecell/tests/i18n.test.mjs games/freecell/tests/markup.test.mjs",
+    "test:zuma": "node --test games/zuma/tests/engine.test.mjs",
     "test:Gravity-Echoes": "node --test games/Gravity-Echoes/tests/engine.test.mjs games/Gravity-Echoes/tests/storage.test.mjs games/Gravity-Echoes/tests/i18n.test.mjs games/Gravity-Echoes/tests/markup.test.mjs",
     "test:Tile-Matching": "node --test games/Tile-Matching/tests/core.test.mjs games/Tile-Matching/tests/i18n.test.mjs games/Tile-Matching/tests/storage.test.mjs",
     "test:snake-orchard": "node --test games/snake-orchard/tests/engine.test.mjs games/snake-orchard/tests/storage.test.mjs games/snake-orchard/tests/i18n.test.mjs games/snake-orchard/tests/markup.test.mjs"

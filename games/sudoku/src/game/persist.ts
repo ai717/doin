@@ -1,5 +1,6 @@
 import type { Difficulty } from "@/engine/types";
 import { DIFFICULTIES } from "@/engine/types";
+import { writeSharedLocale } from "@/i18n/locale";
 import {
   DEFAULT_SETTINGS,
   DEFAULT_TIPS,
@@ -113,6 +114,7 @@ export function loadPersisted(): PersistedV1 {
 export function savePersisted(data: PersistedV1): boolean {
   try {
     if (typeof localStorage === "undefined") return false;
+    writeSharedLocale(data.settings.locale);
     const copy: PersistedV1 = {
       ...data,
       free: freezeRunning(data.free),

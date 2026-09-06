@@ -32,6 +32,16 @@
       "en": { "title": "Tic-Tac-Toe" }
     },
     {
+      "title": "空当接龙",
+      "slug": "freecell",
+      "desc": "经典空当接龙：利用四个中转空当整理八列牌叠，将全部纸牌按花色收回本位。",
+      "icon": "🃏",
+      "cover": "/assets/covers/freecell.webp",
+      "tags": ["益智", "纸牌", "经典"],
+      "url": "/freecell/",
+      "en": { "title": "FreeCell", "desc": "Classic FreeCell solitaire: use four open cells to build down in alternating colors and send every card home." }
+    },
+    {
       "title": "扫雷",
       "slug": "minesweeper",
       "desc": "经典扫雷 + 无猜保证：首击安全、全程逻辑可解，死局自动免费透视，永不用运气定胜负。",

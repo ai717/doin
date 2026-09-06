@@ -8,7 +8,7 @@
     "build": "vite build",
     "preview": "vite preview",
     "typecheck": "tsc --noEmit",
-    "test": "node --experimental-strip-types --test src/engine/engine.test.ts src/game/score.test.ts src/game/cheer.test.ts",
+    "test": "node --experimental-strip-types --test src/engine/engine.test.ts src/game/score.test.ts src/game/cheer.test.ts src/i18n/locale.test.ts",
     "lint": "eslint .",
     "format": "prettier --write ."
   },

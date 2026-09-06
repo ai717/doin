@@ -3,7 +3,16 @@ import { translate, type MessageKey } from "./core.ts";
 import { resolveLocale } from "./locale.ts";
 
 export type { Locale, LocaleSetting, MessageKey } from "./core";
-export { LOCALES, detectLocale, htmlLang, localeTag, resolveLocale } from "./locale";
+export {
+  LOCALES,
+  LANG_KEY,
+  detectLocale,
+  htmlLang,
+  localeTag,
+  resolveLocale,
+  readSharedLocale,
+  writeSharedLocale,
+} from "./locale";
 export {
   t,
   translate,

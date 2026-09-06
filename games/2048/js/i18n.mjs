@@ -1,4 +1,5 @@
 export const LOCALES = Object.freeze(["zh", "en"]);
+export const LANG_KEY = "doin.lang";
 export const DEFAULT_LOCALE = "zh";
 
 const STRINGS = {
@@ -102,6 +103,13 @@ export function strings(locale) {
   return STRINGS[locale] ?? STRINGS[DEFAULT_LOCALE];
 }
 
+export function format(template, ...args) {
+  return String(template).replace(/\{(\d+)\}/g, (match, index) => {
+    const value = args[Number(index)];
+    return value === undefined ? match : String(value);
+  });
+}
+
 export function detectLocale() {
   const languages = globalThis.navigator?.languages ?? [];
   const single = globalThis.navigator?.language ?? "";
@@ -111,6 +119,32 @@ export function detectLocale() {
   return "en";
 }
 
+function readStore() {
+  try {
+    return globalThis.localStorage ?? null;
+  } catch {
+    return null;
+  }
+}
+
+export function loadLocale() {
+  const store = readStore();
+  const saved = store?.getItem(LANG_KEY);
+  if (isLocale(saved)) return saved;
+  return detectLocale();
+}
+
+export function saveLocale(locale) {
+  if (!isLocale(locale)) return false;
+  try {
+    readStore()?.setItem(LANG_KEY, locale);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 export function htmlLang(locale) {
   return locale === "zh" ? "zh-CN" : "en";
 }
+

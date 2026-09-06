@@ -47,8 +47,9 @@ dist/                                 构建产物 (git ignore)
 - **新游戏交付契约**：自包含规范在 `docs/GAME-SPEC.md`（可直接外发给外部开发者/AI）；
   机器验收 `node scripts/check-game.mjs <slug>` 分两级——T1 上架底线 fail 才拒收，
   T2 一致性只 WARN；存量豁免表内置于脚本、新 slug 零豁免。
-  **外发只贴 SPEC 正文**：承接方可能只是无运行环境的网页对话 AI（跑不了 node、开不了浏览器），
-  它按 SPEC §7A 人工自查、只产出 `games/<slug>/` 内的文件；组装、跑验收脚本、补
+  **外发模板**：以 SPEC 为基线，填写任务参数后可附本轮定稿的三轮交付约束（Canvas/DOM
+  按玩法选择、零外链、相对路径与 `?v=dev`、四类原生测试、最终人工核对）。承接方可能
+  无运行环境，按 SPEC §7A 人工自查、只产出 `games/<slug>/`；组装、验收、补
   games.json/封面/`test:<slug>`/构建（SPEC §7B）永远在我们这边。
 
 ### 4.1 新游戏协作指令（代理执行边界）
@@ -224,8 +225,7 @@ Plain 静态游戏（`games/tic-tac-toe/index.html`，无 package.json；测试�
 - i18n 统一 API（各游戏 `i18n.mjs` 与首页 `js/i18n.mjs` 同构）：`LOCALES / LANG_KEY /
   DEFAULT_LOCALE / isLocale / strings / format / detectLocale / loadLocale / saveLocale /
   htmlLang`。中英字符串表**键必须完全对齐且非空**（测试强制）。
-- 已双语：orbit-sort / tic-tac-toe / minesweeper / gold-miner / 首页（zh/en）；sudoku（zh-Hans/zh-Hant/en）、
-  2048（zh/en）本就有，但偏好 key **尚未统一到 `doin.lang`**（待办）。
+- 已多语言且对齐 `doin.lang`：orbit-sort / tic-tac-toe / minesweeper / gold-miner / 2048 / sudoku / 首页（全部支持全站共享偏好 `doin.lang`）。
 
 ### 7.3 测试门禁
 - 改首页 i18n → `npm run test:home`；改门户结构/样式/game.json → `npm run build`。
@@ -327,8 +327,7 @@ Plain 静态游戏（`games/gold-miner/index.html`，无 package.json）。模�
 - 门户 / 构建脚本 / games.json / 部署 → 跑 `npm run build`。
 - 单游戏测试门禁：
   - Sudoku：`games/sudoku` 下 `npm run typecheck && npm test`。
-  - 2048：`games/2048` 下 `node --test tests/engine.test.mjs tests/storage.test.mjs tests/i18n.test.mjs tests/markup.test.mjs`（Node 22 必须显式列文件，不能只给 `tests` 目录）。
-  - orbit-sort / tic-tac-toe / minesweeper / gold-miner / tetris-neo / 首页：根目录 `npm run test:orbit-sort` /
+  - 2048 / orbit-sort / tic-tac-toe / minesweeper / gold-miner / tetris-neo / 首页：根目录 `npm run test:2048` / `npm run test:orbit-sort` /
     `test:tic-tac-toe` / `test:minesweeper` / `test:gold-miner` / `test:tetris-neo` / `test:home`。
 - Commit message：英文，conventional-commit 前缀（feat/fix/docs/chore），body 解释为什么改。
 - Deploy workflow 已升级到 `actions/checkout@v5` + `actions/setup-node@v6`（Node 22）。

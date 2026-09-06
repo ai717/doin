@@ -8,7 +8,7 @@ import {
   startGame,
 } from "./engine.mjs";
 import { bindKeyboard, bindSwipe } from "./input.mjs";
-import { detectLocale, strings } from "./i18n.mjs";
+import { detectLocale, loadLocale, strings } from "./i18n.mjs";
 import {
   hasPrefs,
   loadBest,
@@ -207,7 +207,8 @@ function flush() {
 }
 
 function boot() {
-  if (!hasPrefs()) prefs = savePrefs({ locale: detectLocale() });
+  if (!hasPrefs()) prefs = savePrefs({ locale: loadLocale() });
+  else prefs = loadPrefs();
   copy = strings(prefs.locale);
 
   const saved = loadSave();
