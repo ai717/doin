@@ -15,6 +15,7 @@
     "test:zuma": "node --test games/zuma/tests/engine.test.mjs",
     "test:Gravity-Echoes": "node --test games/Gravity-Echoes/tests/engine.test.mjs games/Gravity-Echoes/tests/storage.test.mjs games/Gravity-Echoes/tests/i18n.test.mjs games/Gravity-Echoes/tests/markup.test.mjs",
     "test:Tile-Matching": "node --test games/Tile-Matching/tests/core.test.mjs games/Tile-Matching/tests/i18n.test.mjs games/Tile-Matching/tests/storage.test.mjs",
-    "test:snake-orchard": "node --test games/snake-orchard/tests/engine.test.mjs games/snake-orchard/tests/storage.test.mjs games/snake-orchard/tests/i18n.test.mjs games/snake-orchard/tests/markup.test.mjs"
+    "test:snake-orchard": "node --test games/snake-orchard/tests/engine.test.mjs games/snake-orchard/tests/storage.test.mjs games/snake-orchard/tests/i18n.test.mjs games/snake-orchard/tests/markup.test.mjs",
+    "test:one-line": "node --test games/one-line/tests/engine.test.mjs games/one-line/tests/interaction.test.mjs games/one-line/tests/storage.test.mjs games/one-line/tests/markup.test.mjs games/one-line/tests/i18n.test.mjs games/one-line/tests/endless.test.mjs"
   }
 }

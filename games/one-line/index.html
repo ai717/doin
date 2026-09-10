@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="description" content="一笔画完 (One Line) - 经典益智连线小游戏，一笔走完所有格子，不可惊扰小动物。">
+  <title>一笔画完 - DOIN.WIN</title>
+  <link rel="icon" href="favicon.svg?v=dev" type="image/svg+xml">
+  <link rel="stylesheet" type="text/css" href="css/style.css?v=dev">
+</head>
+<body>
+  <noscript>
+    <div class="noscript-tip">一笔画完需要启用 JavaScript 才能运行，请在浏览器设置中开启后刷新页面。</div>
+  </noscript>
+  <div id="game-app" class="game-viewport">
+    <!-- 紧凑游戏核心控制台 -->
+    <div class="game-console">
+      <!-- 紧凑仪表顶栏 -->
+      <div class="console-hud">
+        <div class="hud-group-left">
+          <a href="/" class="btn-tool" id="btn-home" aria-label="门户首页" title="门户首页">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
+              <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/>
+            </svg>
+          </a>
+          <span class="game-logo" id="txt-title">一笔画完</span>
+        </div>
+
+        <div class="hud-group-center">
+          <div class="hud-item">
+            <span class="hud-k" id="lbl-level">规格</span>
+            <span class="hud-v" id="val-level">4×4 #1</span>
+          </div>
+          <div class="hud-sep"></div>
+          <div class="hud-item hud-progress">
+            <span class="hud-k" id="lbl-progress">进度</span>
+            <span class="hud-v val-highlight" id="val-progress-text">0 / 0</span>
+            <div class="progress-track">
+              <div class="progress-fill" id="val-progress-bar"></div>
+            </div>
+          </div>
+          <div class="hud-sep"></div>
+          <div class="hud-item">
+            <span class="hud-k" id="lbl-time">时间</span>
+            <span class="hud-v" id="val-time">00:00</span>
+          </div>
+        </div>
+
+        <div class="hud-group-right">
+          <button id="btn-audio-toggle" class="btn-tool" aria-label="音效">
+            <svg id="icon-sound-on" viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
+              <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/>
+            </svg>
+            <svg id="icon-sound-off" class="hidden" viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
+              <path d="M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.2.05-.41.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51C20.63 14.91 21 13.5 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06c1.38-.31 2.63-.95 3.69-1.81L19.73 21 21 19.73 4.27 3zM12 4L9.91 6.09 12 8.18V4z"/>
+            </svg>
+          </button>
+          <button id="btn-lang-toggle" class="btn-tool lang-text" aria-label="语言">EN</button>
+          <button id="btn-how-to-play" class="btn-tool" aria-label="说明">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
+              <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 16h-2v-2h2v2zm1.07-7.75l-.9.92C12.45 11.9 12 12.5 12 14h-2v-.5c0-1.1.45-2.1 1.17-2.83l1.24-1.26c.37-.36.59-.86.59-1.41 0-1.1-.9-2-2-2s-2 .9-2 2H7c0-2.76 2.24-5 5-5s5 2.24 5 5c0 1.04-.42 1.99-1.07 2.75z"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- 棋盘视窗 -->
+      <main class="console-screen" id="stage-wrapper">
+        <canvas id="game-canvas"></canvas>
+        <div id="status-hint" class="status-hint hidden" role="status"></div>
+      </main>
+
+      <!-- 紧凑游戏底栏 -->
+      <div class="console-controls">
+        <button id="btn-undo" class="ctrl-pad-btn">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
+            <path d="M12.5 8c-2.65 0-5.05.99-6.9 2.6L2 7v9h9l-3.62-3.62c1.39-1.16 3.16-1.88 5.12-1.88 3.54 0 6.55 2.31 7.6 5.5l2.37-.78C21.08 11.03 17.15 8 12.5 8z"/>
+          </svg>
+          <span id="txt-undo">撤回</span>
+        </button>
+        <button id="btn-reset" class="ctrl-pad-btn">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
+            <path d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/>
+          </svg>
+          <span id="txt-reset">重置</span>
+        </button>
+        <button id="btn-hint" class="ctrl-pad-btn btn-hint-glow">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
+            <path d="M9 21c0 .55.45 1 1 1h4c.55 0 1-.45 1-1v-1H9v1zm3-19C8.14 2 5 5.14 5 9c0 2.38 1.19 4.47 3 5.74V17c0 .55.45 1 1 1h6c.55 0 1-.45 1-1v-2.26c1.81-1.27 3-3.36 3-5.74 0-3.86-3.14-7-7-7z"/>
+          </svg>
+          <span id="txt-hint">提示</span>
+        </button>
+        <button id="btn-select-level" class="ctrl-pad-btn btn-primary-glow">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
+            <path d="M4 11h5V5H4v6zm0 7h5v-6H4v6zm6 0h5v-6h-5v6zm6 0h5v-6h-5v6zm-6-7h5V5h-5v6zm6-6v6h5V5h-5z"/>
+          </svg>
+          <span id="txt-levels">切换规格</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- 弹窗：玩法说明 -->
+    <div id="modal-help" class="modal-overlay hidden" role="dialog" aria-modal="true">
+      <div class="modal-card">
+        <div class="modal-header">
+          <h2 id="help-title">玩法说明</h2>
+          <button class="modal-close" id="btn-close-help">&times;</button>
+        </div>
+        <div class="modal-body">
+          <p id="help-desc-1">1. 从金色发光的起点方块出发，滑动或点击连线。</p>
+          <p id="help-desc-2">2. 只能上下左右正交行走，每个格子只能经过一次。</p>
+          <p id="help-desc-3">3. 守护小动物是禁区，绕过它们把所有空格一笔连完！</p>
+          <p id="help-desc-4">4. 走进死胡同点“撤回”或“重置”；卡住了点“提示”看真解。</p>
+        </div>
+        <div class="modal-footer">
+          <button id="btn-confirm-help" class="modal-btn-primary">开始挑战</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 弹窗：规格选择 -->
+    <div id="modal-levels" class="modal-overlay hidden" role="dialog" aria-modal="true">
+      <div class="modal-card modal-card-wide">
+        <div class="modal-header">
+          <h2 id="levels-title">选择棋盘规格</h2>
+          <button class="modal-close" id="btn-close-levels">&times;</button>
+        </div>
+        <div class="modal-body">
+          <div class="size-pill-group" id="size-selector-row">
+            <button class="size-pill active" data-size="4">4 × 4</button>
+            <button class="size-pill" data-size="5">5 × 5</button>
+            <button class="size-pill" data-size="6">6 × 6</button>
+            <button class="size-pill" data-size="7">7 × 7</button>
+            <button class="size-pill" data-size="8">8 × 8</button>
+          </div>
+          <div class="level-grid" id="level-list-container"></div>
+          <button class="endless-card" id="btn-endless">
+            <span class="endless-title" id="txt-endless">无尽模式</span>
+            <span class="endless-sub" id="val-endless-progress">最高 0 关</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 弹窗：通关结算 -->
+    <div id="modal-victory" class="modal-overlay hidden" role="dialog" aria-modal="true">
+      <div class="modal-card modal-card-accent">
+        <div class="modal-header victory-header">
+          <h2 id="victory-title">顺利通关！</h2>
+        </div>
+        <div class="modal-body victory-body">
+          <div class="star-rating" id="victory-stars">
+            <span class="star-icon full">&#9733;</span>
+            <span class="star-icon full">&#9733;</span>
+            <span class="star-icon full">&#9733;</span>
+          </div>
+          <div class="victory-stats">
+            <div class="stat-row">
+              <span id="lbl-vic-time">本次用时</span>
+              <strong id="val-vic-time">00:00</strong>
+            </div>
+            <div class="stat-row">
+              <span id="lbl-vic-extra">多余步数</span>
+              <strong id="val-vic-extra">0</strong>
+            </div>
+            <div class="stat-row">
+              <span id="lbl-vic-hint">提示次数</span>
+              <strong id="val-vic-hint">0</strong>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer victory-footer">
+          <button id="btn-replay" class="modal-btn-secondary">重玩此关</button>
+          <button id="btn-next-level" class="modal-btn-primary">下一关</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="js/main.mjs?v=dev"></script>
+</body>
+</html>

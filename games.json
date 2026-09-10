@@ -122,6 +122,16 @@
       "tags": ["休闲", "经典", "反应"],
       "url": "/snake-orchard/",
       "en": { "title": "Snake Orchard", "desc": "Guide a growing snake through a lush orchard, collect apples and timed golden star fruit, and build high-score combos." }
+    },
+    {
+      "title": "一笔连线",
+      "slug": "one-line",
+      "desc": "一笔画连线：用一条不重复的线穿过所有格子。5 种盘面尺寸 + 随机无尽模式，进度本机保存，可离线运行。",
+      "icon": "🖊️",
+      "cover": "/assets/covers/one-line.webp",
+      "tags": ["益智", "连线", "一笔画"],
+      "url": "/one-line/",
+      "en": { "title": "One Line", "desc": "Connect every cell with a single unbroken line. Five board sizes plus a randomized endless mode, with local progress saved." }
     }
   ]
 }
