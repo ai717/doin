@@ -28,3 +28,4 @@ __ms_*.png
 # Image-gen raw masters and homepage QA screenshots
 __cover_gen/
 __home_*.png
+generated-images/

@@ -151,8 +151,14 @@ detectLocale / loadLocale / saveLocale / htmlLang`。切换语言 = `saveLocale(
 ## 6 · 上架物料（门户方负责，外部开发者可跳过）
 
 - `games.json` 追加：`title, slug, desc, icon(emoji), cover, tags(2-3), url, en.title`。
-- 封面：640×640 WebP（quality≈88），明亮 3D 渲染风、无文字无水印、主体居中，
-  与 `assets/covers/` 现有封面同风格语言；放 `assets/covers/<slug>.webp`。
+- 封面：640×640 WebP，放 `assets/covers/<slug>.webp`。**风格硬约束**（门户内完整规范见
+  `docs/COVER-STYLE.md`，外发时以本条为准）：
+  - 3D 软胶 / 黏土质感（soft 3D clay、glossy toy-plastic），**禁止**扁平矢量、像素、
+    写实渲染、线框霓虹；
+  - 单一居中主体，约占画面 60%–75%；**禁止**并列拼贴、游戏 UI 截图；
+  - 背景为平滑的单色系彩色渐变，整体偏亮；**禁止**纯白、纯黑、暗黑霓虹；
+  - 散布少量漂浮粒子 / 火花点缀；
+  - **禁止任何文字**（标题、字母、数字、logo、UI 角标），水印也必须清干净。
 - 登记后跑 `npm run build` 确认 `dist/<slug>/` 产出、sitemap 收录。
 
 ## 7 · 交付与验收

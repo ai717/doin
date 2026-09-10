@@ -44,6 +44,10 @@ dist/                                 构建产物 (git ignore)
   `spa, exclude`。`comingSoon` 的游戏既不构建也不进 sitemap。`exclude` 指定额外构建要排除
   的源目录（默认已跳过 node_modules/dist/tests/.*）。
 - 各游戏自定义视觉风格。门户 Poki 主题只约束首页。
+- **封面风格强制统一**：所有 `assets/covers/<slug>.webp` 必须遵循 `docs/COVER-STYLE.md`
+  ——3D 软胶质感 / 单一居中主体 / 彩色渐变背景 / 漂浮粒子 / **无文字** / 640×640 WebP。
+  新增或重做封面：按该文档的 Prompt 模板生成 → 固定 bbox 去右下角水印 → 缩放落盘
+  → `npm run build`。禁止扁平 UI 截图风、暗黑霓虹风、带文字、纯白背景。
 - **新游戏交付契约**：自包含规范在 `docs/GAME-SPEC.md`（可直接外发给外部开发者/AI）；
   机器验收 `node scripts/check-game.mjs <slug>` 分两级——T1 上架底线 fail 才拒收，
   T2 一致性只 WARN；存量豁免表内置于脚本、新 slug 零豁免。
@@ -55,7 +59,8 @@ dist/                                 构建产物 (git ignore)
 ### 4.1 新游戏协作指令（代理执行边界）
 - 用户说“请组装新的子游戏”时：扫描 `games/` 找出新增/未登记 slug；逐个运行
   `node scripts/check-game.mjs <slug>`，先修游戏目录本身的 T1 问题，再补
-  `games.json`、640×640 封面和根 `test:<slug>`，运行该游戏测试与 `npm run build`，最后启动本地服务给出预览。
+  `games.json`、640×640 封面（**按 `docs/COVER-STYLE.md` 生成**）和根 `test:<slug>`，
+  运行该游戏测试与 `npm run build`，最后启动本地服务给出预览。
 - 用户说“请检查是否新增了游戏”时：只做只读盘点——比较 `games/` 目录与 `games.json`，
   标出缺入口、未登记、缺封面、缺测试脚本或被排除的 slug；不要自动修改或发布。
 - 用户说“请处理新增游戏后续工作”时：按 §7B 完成组装、验收、测试、构建和本地预览；
