@@ -132,6 +132,16 @@
       "tags": ["益智", "连线", "一笔画"],
       "url": "/one-line/",
       "en": { "title": "One Line", "desc": "Connect every cell with a single unbroken line. Five board sizes plus a randomized endless mode, with local progress saved." }
+    },
+    {
+      "title": "华容道",
+      "slug": "klotski",
+      "desc": "挪动方块，把曹操从下方出口送出。50 关由浅入深，收官是经典「横刀立马」；拖拽与键盘双操作，支持撤销、重玩与本地进度保存。",
+      "icon": "🧩",
+      "cover": "/assets/covers/klotski.webp",
+      "tags": ["益智", "经典", "策略"],
+      "url": "/klotski/",
+      "en": { "title": "Klotski", "desc": "Slide the blocks and walk Cao Cao out through the bottom exit. 50 levels ramp up to the classic Heng Dao Li Ma endgame, with drag and keyboard controls, undo, replay and local progress." }
     }
   ]
 }

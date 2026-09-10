@@ -1,0 +1,44 @@
+<!-- filepath: games/klotski/favicon.svg -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" role="img" aria-label="Klotski">
+  <defs>
+    <linearGradient id="cc" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#d9524b"/>
+      <stop offset="1" stop-color="#a51f22"/>
+    </linearGradient>
+    <linearGradient id="nv" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#3d6091"/>
+      <stop offset="1" stop-color="#22385c"/>
+    </linearGradient>
+    <linearGradient id="tl" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#3a8b83"/>
+      <stop offset="1" stop-color="#1f5751"/>
+    </linearGradient>
+    <linearGradient id="cr" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#e8d8b4"/>
+      <stop offset="1" stop-color="#c4ab77"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="64" height="64" rx="13" fill="#171310"/>
+  <rect x="8" y="4" width="48" height="58" rx="6" fill="#231c17"/>
+  <rect x="8" y="4" width="48" height="58" rx="6" fill="none" stroke="#7c6237" stroke-width="1.2" opacity="0.75"/>
+
+  <g>
+    <rect x="12" y="8" width="8" height="18" rx="2.5" fill="url(#nv)"/>
+    <rect x="44" y="8" width="8" height="18" rx="2.5" fill="url(#nv)"/>
+    <rect x="22" y="8" width="20" height="20" rx="3" fill="url(#cc)"/>
+    <rect x="22" y="8" width="20" height="20" rx="3" fill="none" stroke="#e8c37a" stroke-width="1.4"/>
+
+    <rect x="12" y="28" width="8" height="18" rx="2.5" fill="url(#nv)"/>
+    <rect x="44" y="28" width="8" height="18" rx="2.5" fill="url(#nv)"/>
+    <rect x="22" y="28" width="20" height="8" rx="2.5" fill="url(#tl)"/>
+
+    <rect x="22" y="38" width="8" height="8" rx="2.5" fill="url(#cr)"/>
+    <rect x="32" y="38" width="8" height="8" rx="2.5" fill="url(#cr)"/>
+    <rect x="12" y="48" width="8" height="8" rx="2.5" fill="url(#cr)"/>
+    <rect x="44" y="48" width="8" height="8" rx="2.5" fill="url(#cr)"/>
+  </g>
+
+  <path d="M32 52.5 L32 61" stroke="#e8c37a" stroke-width="2.4" stroke-linecap="round" opacity="0.95"/>
+  <path d="M28.6 57.6 L32 61 L35.4 57.6" fill="none" stroke="#e8c37a" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" opacity="0.95"/>
+</svg>
