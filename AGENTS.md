@@ -17,6 +17,7 @@ DOIN 是静态浏览器游戏门户：首页 `index.html` 列出独立游戏（�
   覆盖 gh-pages（不是增量）。
 - 生产域名 `doin.win`；Workflow 变量 `PAGES_CNAME=doin.win`，每次部署都要重写 CNAME
   文件。
+- **全局脚本/统计/广告标签**：全站通用代码（如 GA4 `G-D67E3XTNSS`）在 `scripts/build-site.mjs` 中集中配置，通过 `injectGlobalSiteTags` 在构建时统一注入 `dist/` 所有 HTML 的 `<head>`，**禁止在源码 `index.html` 或各子游戏源文件中硬编码重复标签**。
 - 不要碰遗留仓库 `ai717/doin.win` 或 doin.win 域名配置，除非用户显式要求。
 
 ## 3 · 目录结构

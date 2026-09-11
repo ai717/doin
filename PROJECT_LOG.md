@@ -19,7 +19,20 @@
 - **i18n**：全站游戏均支持 `doin.lang` 共享偏好。
 - **交付契约**：`docs/GAME-SPEC.md` + `scripts/check-game.mjs`（T1 fail / T2 warn 两级）。
 - **本地服务**：`node _dev-server.mjs`（零依赖，端口 46810 起）。
+- **Analytics & SEO**：GA4 `G-D67E3XTNSS` 已接入；集中式构建脚本 `scripts/build-site.mjs` 自动向 `dist/` 所有 HTML 注入统计代码；`sitemap.xml` 自动编译 15 页面；`robots.txt` 声明正常。
 - **git**：正常，main 推送成功，workflow 自动构建部署到 gh-pages。
+
+## 2026-09-11 · GA4 全局统计接入与 SEO 验证 (G-D67E3XTNSS)
+
+### 做了什么
+1. **构建期集中注入架构**：在 `scripts/build-site.mjs` 中增加 `injectGlobalSiteTags(output)` 函数，在 `npm run build` 打包 `dist/` 时自动向全站所有 `.html`（包含首页、独立静态游戏、Vite 编译 SPA 游戏及 404 页）的 `<head>` 中注入 GA4 统计代码 `G-D67E3XTNSS`；源码解耦免手动粘贴；
+2. **源码保持纯粹**：将开发过程中在 `games/*/index.html` 及 `index.html` 临时添加的标签干净回滚，防止源文件冗余与后续 ID 更新困难；
+3. **SEO & Sitemap 验证**：排查并验证线上 `https://doin.win/sitemap.xml` 200 OK 且输出 15 个全量页面，解析了 Google Search Console 刚提交时“无法抓取（上次读取时间为空）”的假性显示延迟机制。
+
+### 修改文件
+- `scripts/build-site.mjs`
+- `AGENTS.md`
+- `PROJECT_LOG.md`
 
 ## 2026-09-11 · Klotski 英文棋子刻字修复
 
