@@ -142,6 +142,16 @@
       "tags": ["益智", "经典", "策略"],
       "url": "/klotski/",
       "en": { "title": "Klotski", "desc": "Slide the blocks and walk Cao Cao out through the bottom exit. 50 levels ramp up to the classic Heng Dao Li Ma endgame, with drag and keyboard controls, undo, replay and local progress." }
+    },
+    {
+      "title": "拼图",
+      "slug": "jigsaw",
+      "desc": "拖动碎片交换位置，把被打乱的图案拼回完整。50 关程序化生成的抽象艺术图，拼到正确位置自动锁定，3 次重排与今日拼图，中英双语。",
+      "icon": "🎨",
+      "cover": "/assets/covers/jigsaw.webp",
+      "tags": ["益智", "视觉", "每日挑战"],
+      "url": "/jigsaw/",
+      "en": { "title": "Jigsaw", "desc": "Drag a piece onto another to swap them and rebuild the shuffled picture. 50 procedurally generated artworks, auto-lock on correct placement, plus a daily puzzle." }
     }
   ]
 }

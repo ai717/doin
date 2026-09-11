@@ -17,6 +17,7 @@
     "test:Tile-Matching": "node --test games/Tile-Matching/tests/core.test.mjs games/Tile-Matching/tests/i18n.test.mjs games/Tile-Matching/tests/storage.test.mjs",
     "test:snake-orchard": "node --test games/snake-orchard/tests/engine.test.mjs games/snake-orchard/tests/storage.test.mjs games/snake-orchard/tests/i18n.test.mjs games/snake-orchard/tests/markup.test.mjs",
     "test:one-line": "node --test games/one-line/tests/engine.test.mjs games/one-line/tests/interaction.test.mjs games/one-line/tests/storage.test.mjs games/one-line/tests/markup.test.mjs games/one-line/tests/i18n.test.mjs games/one-line/tests/endless.test.mjs",
-    "test:klotski": "node --test games/klotski/tests/engine.test.mjs games/klotski/tests/storage.test.mjs games/klotski/tests/i18n.test.mjs games/klotski/tests/markup.test.mjs"
+    "test:klotski": "node --test games/klotski/tests/engine.test.mjs games/klotski/tests/storage.test.mjs games/klotski/tests/i18n.test.mjs games/klotski/tests/markup.test.mjs",
+    "test:jigsaw": "node --test games/jigsaw/tests/engine.test.mjs games/jigsaw/tests/artwork.test.mjs games/jigsaw/tests/score.test.mjs games/jigsaw/tests/storage.test.mjs games/jigsaw/tests/i18n.test.mjs games/jigsaw/tests/markup.test.mjs games/jigsaw/tests/render.test.mjs"
   }
 }
