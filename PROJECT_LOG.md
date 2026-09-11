@@ -1,8 +1,9 @@
 # PROJECT_LOG.md
 
 > 精简原则：只留状态快照 + 最近一轮要点。细节查 git log / `.workbuddy/memory/`。
-> 游戏稳定规则写在 AGENTS.md（§5 orbit-sort / §6 tic-tac-toe / §7 homepage / §8 minesweeper /
-> §9 gold-miner / §10 klotski / §11 jigsaw），本文件不重复。
+> AGENTS.md 已重构为**跨游戏通用规范**（§1 平台架构 / §2 协作模式 / §3 算法健全性 /
+> §4 桌面 UI 美学 / §5 工程规范与不变量 / §6 玩法范式 / §7 工作纪律），
+> **不再按游戏分节**；单游戏稳定基线记录在本文件各轮条目中。
 
 ***
 
@@ -13,12 +14,12 @@
   中英双语（`doin.lang` 全站共享偏好）。CNAME `doin.win`。共 15 款游戏上架（新增 Jigsaw）。
 - **Jigsaw**（新增）：拼图，50 关（3×3 → 4×4 → 5×5）+ 今日拼图，交换碎片复原图案。
   每关一张程序化生成的抽象艺术图（同 seed 同图，零图库零版权），Canvas 渲染 + 桌面双栏 UI。
-  稳定基线固化在 AGENTS.md §11。
+  已提交 `771009b` 并部署上线 `doin.win/jigsaw/`；线上 E2E 17/17。稳定基线见本轮条目。
 - **Klotski**：华容道滑块解谜，50 关递进，Canvas 渲染 + 桌面双栏游戏化 UI。
-  稳定基线固化在 AGENTS.md §10。已推送部署上线 `doin.win/klotski/`。
+  已推送部署上线 `doin.win/klotski/`；稳定基线见 2026-09-10 条目。
 - **Sudoku / 2048 / Tic-Tac-Toe / Minesweeper / Orbit-Sort / Gold-Miner / Tetris-Neo /
-  FreeCell / Snake-Orchard / Zuma / Gravity-Echoes / Tile-Matching / One-Line**：均稳定。
-  规则见 AGENTS.md 对应章节。
+  FreeCell / Snake-Orchard / Zuma / Gravity-Echoes / Tile-Matching / One-Line**：均稳定，
+  各自的门禁测试与构建配置见 `package.json` 与 `games/<slug>/`。
 - **i18n**：全站游戏均支持 `doin.lang` 共享偏好。
 - **交付契约**：`docs/GAME-SPEC.md` + `scripts/check-game.mjs`（T1 fail / T2 warn 两级）。
 - **本地服务**：`node _dev-server.mjs`（零依赖，端口 46810 起）。
@@ -323,6 +324,41 @@ ctx.drawImage(art, dragged.c * slice, dragged.r * slice, slice, slice, x, y, w, 
 
 **注意**：AGENTS.md 已被并行重构为 150 行通用规范（原 §11 jigsaw 章节不再存在），
 本次改造直接对齐其新增的 **§4 桌面端 UI 美学与游戏化设计标准**。
+
+### 封装与发布
+
+用户指令「封装本游戏 并提交发布」；经询问，提交范围选择 **「全部合并为一个提交」**。
+
+| 项 | 值 |
+|---|---|
+| 提交 | `771009b feat(jigsaw): add jigsaw puzzle game with procedural artwork and game-styled UI` |
+| 规模 | 37 文件 / +9206 / −391 |
+| 推送 | `4950493..771009b  main -> main`（fast-forward，已用 `merge-base --is-ancestor` 预检） |
+| 部署 | 轮询 `https://doin.win/jigsaw/`，第 5 次由 404 转 **200** |
+
+**提交刻意合并了并行改动**（AGENTS.md 通用化重构、两个新 skill、jigsaw + sokoban PRD、
+COVER-STYLE/GAME-SPEC 刷新、klotski CRLF 修复），并在提交正文逐条列明，避免日后归属不清。
+
+**生产产物校验**：`?v=771009ba7c2f`（= commit SHA 前 12 位）已注入 `style.css` / `main.mjs`；
+`v=dev` 残留 **0**；GA4 注入 2 处；`#panel` / `#level-bar` / `#hud-score-bar` / `.burst` /
+`#btn-home` 均存在；封面 `200 image/webp 12880 字节`（与本地一致）；sitemap 16 条含 `/jigsaw/`；
+gh-pages `CNAME = doin.win`。
+
+**线上 E2E（`x/jigsaw/cdp-prod.mjs`）17 pass / 0 fail** —— 对真实 `doin.win` 跑真浏览器：
+
+- 首页 15 张卡片；拼图卡片 `href=/jigsaw/`、标题「拼图」、`soon=false`、封面 `naturalWidth=640`
+- 游戏入口无 404、50 关载入、首关 3×3 / 满分 800、`phase=playing`
+- **切片契约线上成立**：每格画的是该格碎片的原位图案，不一致 **0/9**；9/9 格可见打乱
+- 真实指针拖拽完成交换 `{moves:1, locked:1}`；可拼完并弹出结算 `800/800`
+- 390px 不横向溢出；移动端棋盘 350×350 正方形
+
+**为什么必须写这个脚本**：首页卡片是 **JS 客户端渲染**，`curl` 抓到的 HTML 里
+`jigsaw 卡片链接数: 0 / 首页卡片总数: 0` —— 静态抓取永远验证不了客户端渲染的内容。
+以后验收"线上首页是否正确列出某游戏"，只能用无头浏览器。
+
+**发布期踩坑**：
+1. 沙箱内写 `/tmp` 会**静默失败**（curl 报 `http=200` 但文件没落地，后续 grep 报 no such file）→ 改写到工作区 `x/` 下。
+2. `gh` CLI 未登录（`gh run list` 要求 `gh auth login`）→ 改用**轮询生产 URL** 判断部署完成，比等 API 更直接。
 
 
 ## 2026-09-11 · GA4 全局统计接入与 SEO 验证 (G-D67E3XTNSS)
