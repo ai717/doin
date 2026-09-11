@@ -19,6 +19,7 @@ import {
   altLabel,
 } from "../js/i18n.mjs";
 import { LEVELS } from "../js/levels.mjs";
+import { KIND } from "../js/engine.mjs";
 
 test("导出契约齐全，语言 key 为全站共享的 doin.lang", () => {
   assert.deepEqual(LOCALES, ["zh", "en"]);
@@ -66,6 +67,23 @@ test("每条关卡都有中英文名字", () => {
       assert.ok(name.trim().length > 0);
     }
   }
+});
+
+test("棋子刻字：每种 KIND 都有中英文，英文不得回落到中文", () => {
+  const kinds = Object.values(KIND);
+  assert.ok(kinds.length >= 4, "KIND 应覆盖曹操/关羽/将/兵四类");
+  for (const kind of kinds) {
+    for (const locale of LOCALES) {
+      const value = strings[locale][`piece.${kind}`];
+      assert.equal(typeof value, "string", `${locale} 缺 piece.${kind}`);
+      assert.ok(value.trim().length > 0, `${locale}.piece.${kind} 不应为空`);
+    }
+    assert.ok(
+      /^[\x20-\x7e]+$/.test(strings.en[`piece.${kind}`]),
+      `piece.${kind} 的英文必须是 ASCII（不能是中文），实际 ${strings.en[`piece.${kind}`]}`
+    );
+  }
+  assert.match(strings.zh["piece.caocao"], /[\u4e00-\u9fa5]/, "中文刻字应为汉字");
 });
 
 test("format：替换占位符，缺失参数保留原样", () => {

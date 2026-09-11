@@ -21,6 +21,12 @@ const ZH = {
   "aria.levelCard": "第 {n} 关：{name}",
   "aria.levelLocked": "第 {n} 关：未解锁",
 
+  // 棋子上的刻字（按 KIND 取值，render.mjs 用）
+  "piece.caocao": "曹操",
+  "piece.guanyu": "关羽",
+  "piece.general": "将",
+  "piece.soldier": "兵",
+
   "hud.level": "关卡",
   "hud.moves": "步数",
   "hud.par": "目标",
@@ -171,6 +177,12 @@ const EN = {
   "aria.board": "Klotski board. Use arrow keys or drag blocks to move them",
   "aria.levelCard": "Level {n}: {name}",
   "aria.levelLocked": "Level {n}: locked",
+
+  // 棋子上的刻字（按 KIND 取值，render.mjs 用）
+  "piece.caocao": "Cao Cao",
+  "piece.guanyu": "Guan Yu",
+  "piece.general": "Gen",
+  "piece.soldier": "Pawn",
 
   "hud.level": "Level",
   "hud.moves": "Moves",

@@ -1,7 +1,7 @@
 # AGENTS.md
 
 > 瘦身原则：只写"下次开工必须读"的规则。实现细节读 PROJECT_LOG.md，
-> 历史细节读 git log / `.workbuddy/memory/`。
+> 历史细节读 git log / `.workbuddy/memory/`。游戏稳定基线：§5–§11。
 
 ***
 
@@ -326,13 +326,69 @@ Plain 静态游戏（`games/gold-miner/index.html`，无 package.json）。模�
   商店 data-type/data-cost 与 score.mjs 一致、`?v=dev` 占位与移动端/reduced-motion 样式在位。
 - 本地 `/games/gold-miner/`；生产 `/gold-miner/`。URL 带 `?e2e` 时 main 暴露 `window.__gm`。
 
-## 10 · Working Rules
+## 10 · Klotski · 稳定基线
+
+Plain 静态游戏（`games/klotski/index.html`，无 package.json）。模块分层与 orbit-sort 一致：
+`engine`（规则唯一权威，DOM-free）/`levels`（50 关数据，par 由多源 BFS 实算）/
+`score`（计分唯一口径）/`storage`（存档唯一口径）/`audio`（WebAudio 合成）/`render`（Canvas 绘制）/
+`game`（DOM-free 控制器）/`ui`（唯一 DOM 拥有者）/`main`（装配）/`i18n`。
+
+### 10.1 棋盘与引擎（engine.mjs 唯一权威）
+- 5 行 × 4 列棋盘；方块用字符网格解析（同字符连通 = 一块，形状由包围盒推断 kind）。
+- 四类方块：`caocao`(2×2) / `guanyu`(1×2 横) / `general`(2×1 竖) / `soldier`(1×1)。
+- 曹操左上角到达 (3,1) 即过关（占据底部中央两列可滑出）。
+- 纯函数 `parseGrid / canMove / applyMove / applySlide / undo / isSolved`。
+- `applySlide` 连滑多格按格计步；半途受阻走到能走的最远位置。
+- `undo` 完整回滚位置与步数；空历史返回 null。
+- **合法操作铁律**：`canMove` 返回 true 的移动必须执行，合法走法永不报错。
+
+### 10.2 关卡（levels.mjs）
+- 50 关，par 8→116 严格递增；第 50 关为经典「横刀立马」（最优 116 步）。
+- 每关 10 块（1 曹操 + 1 关羽 + 4 竖将 + 4 兵）+ 2 空格。
+- par 由多源 BFS 实算，保证数学可解且 par 真实可达。
+- `mulberry32(seed)` 确定性 PRNG，`textureSeeds(levelId, count)` 为同关渲染生成稳定木纹种子。
+
+### 10.3 计分与存档（唯一口径）
+- **计分**：`total = base(200) + move(max 300) + time(max 300)`，满分 **PERFECT = 800**。
+  - `moveScore(moves, par)`：≤ par 满分 300；超 par 每步 -5 保底 60。
+  - `timeScore(timeMs, par)`：`targetSeconds(par) = 45 + par×2`；超时每 10s -4 保底 60。
+- **存档** key `doin.klotski.v1`：`{version, unlocked, current, muted, levels:{<id>:{cleared,
+  stars, bestScore, bestMoves, bestTimeMs}}}`。bestScore 钳制 ≤ PERFECT；损坏归一化退回默认。
+
+### 10.4 渲染（render.mjs，Canvas）
+- 方块纹理：对角高光 + 左侧光 + 底部厚度渐变 + 阴影；四角回纹装饰；
+  曹操回纹 / 关羽偃月 / 将铠甲竖纹 / 兵铜钱差异化；选中态鎏金环 + 阴刻文字。
+- `drawBoard` 自绘鎏金描边外壳（`ox-6, oy-6, w+12, h+12`），CSS 不再画第二层框。
+- DPR-aware Canvas 缩放。
+- **棋子刻字走 i18n**：`piece.caocao/guanyu/general/soldier` 经 `main.pieceLabels()` →
+  `renderer.setLabelMap()` 注入；中英都必须有字，**禁止硬编码中文，也禁止用
+  `labels:false` 按语言关掉绘制**（英文下曾因此完全没有刻字）。块内排版由 `fitLabel`
+  按块宽 ×0.84 / 块高 ×0.8 自适应（两行优先，再缩字号），英文名必须用短词
+  （`Gen` / `Pawn`），否则 1×1 兵块会压到手机端约 12px。
+
+### 10.5 桌面双栏布局（css/style.css）
+- `@media (min-width:900px) and (min-height:560px)` 下 `#stage` 转 CSS Grid：
+  `grid-template-areas: "board hud" "board badge" "board pad" "board tools"`。
+  左棋盘通栏，右侧 HUD(2×2 牌卡 + 对角回纹) / 关卡匾额 / 装饰留白 / 操作台(两列键位)。
+- 棋盘尺寸：`width: min(100%, calc((100dvh-120px)*0.8)); aspect-ratio:4/5; height:auto`
+  精确贴合 Canvas 棋盘 + 外框，全视口比例无错位。
+- body::before 朱红/鎏金双光晕缓慢 drift；标题左右鎏金饰线；四角回纹外框。
+- 移动端保持单列 flex 布局。
+
+### 10.6 测试门禁
+- `npm run test:klotski` 必须全绿（engine 14 / storage / i18n / markup，共 56 用例）。
+  i18n 用例含「每种 KIND 都有中英文刻字，且英文必须是 ASCII」的回归门禁。
+- 本地 `/games/klotski/`；生产 `/klotski/`。源码 `?v=dev` 由构建替换为 BUILD_ID。
+- `node scripts/check-game.mjs klotski`：19 pass / 0 fail / 0 warn（零豁免）。
+
+## 11 · Working Rules
 
 - **一次只发一个独立特性的小补丁**，然后更新 PROJECT_LOG.md。
 - 门户 / 构建脚本 / games.json / 部署 → 跑 `npm run build`。
 - 单游戏测试门禁：
   - Sudoku：`games/sudoku` 下 `npm run typecheck && npm test`。
-  - 2048 / orbit-sort / tic-tac-toe / minesweeper / gold-miner / tetris-neo / 首页：根目录 `npm run test:2048` / `npm run test:orbit-sort` /
-    `test:tic-tac-toe` / `test:minesweeper` / `test:gold-miner` / `test:tetris-neo` / `test:home`。
+  - 2048 / orbit-sort / tic-tac-toe / minesweeper / gold-miner / tetris-neo / klotski / 首页：
+    根目录 `npm run test:2048` / `test:orbit-sort` / `test:tic-tac-toe` / `test:minesweeper` /
+    `test:gold-miner` / `test:tetris-neo` / `test:klotski` / `test:home`。
 - Commit message：英文，conventional-commit 前缀（feat/fix/docs/chore），body 解释为什么改。
 - Deploy workflow 已升级到 `actions/checkout@v5` + `actions/setup-node@v6`（Node 22）。

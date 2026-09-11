@@ -12,7 +12,6 @@ import {
   applyI18n,
   loadLocale,
   saveLocale,
-  getLocale,
   toggleLocale,
   t,
 } from "./i18n.mjs";
@@ -34,6 +33,14 @@ const KEY_DIR = {
 
 const DIR_LABEL = { up: "dir.up", down: "dir.down", left: "dir.left", right: "dir.right" };
 
+/** 棋子刻字随语言切换（中英都要有字，不能只在中文下显示） */
+const pieceLabels = () => ({
+  caocao: t("piece.caocao"),
+  guanyu: t("piece.guanyu"),
+  general: t("piece.general"),
+  soldier: t("piece.soldier"),
+});
+
 function boot() {
   const canvas = document.getElementById("board");
   if (!canvas) return;
@@ -42,7 +49,7 @@ function boot() {
   const data = storage.load();
 
   const game = createGame();
-  const renderer = createRenderer(canvas, { labels: getLocale() === "zh" });
+  const renderer = createRenderer(canvas, { labelMap: pieceLabels() });
   const ui = createUI({
     onPickLevel: (index, unlocked) => {
       if (!unlocked) {
@@ -97,7 +104,7 @@ function boot() {
       toggleLocale();
       applyI18n(document);
       ui.applyText();
-      renderer.setLabels(getLocale() === "zh");
+      renderer.setLabelMap(pieceLabels());
       ui.syncMeta(game);
       ui.renderLevels(game);
       audio.play("click");

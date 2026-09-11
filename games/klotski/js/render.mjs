@@ -18,12 +18,44 @@ const PALETTE = {
   [KIND.SOLDIER]: { top: "#f6eeda", mid: "#e4d6b4", bottom: "#bda87c", edge: "#8a7550", label: "#4a3c26" },
 };
 
+// 默认刻字（中文兜底）。多语言由 i18n 通过 labelMap 覆盖，见 setLabelMap()。
 const LABELS = {
   [KIND.CAOCAO]: "曹操",
   [KIND.GUANYU]: "关羽",
   [KIND.GENERAL]: "将",
   [KIND.SOLDIER]: "兵",
 };
+
+/** 标签的候选行组合：多行优先（方块够高时更醒目），再退回单行 */
+function labelLineOptions(text) {
+  const raw = String(text == null ? "" : text).trim();
+  if (!raw) return [];
+  const words = raw.split(/\s+/).filter(Boolean);
+  if (words.length >= 2) {
+    const mid = Math.ceil(words.length / 2);
+    return [[words.slice(0, mid).join(" "), words.slice(mid).join(" ")], [raw]];
+  }
+  return [[raw]];
+}
+
+/**
+ * 自适应排版：在 maxW × maxH 内取尽可能大的字号。
+ * 返回 { size, lines }；完全放不下时返回 null，由调用方兜底。
+ */
+function fitLabel(ctx, text, baseSize, maxW, maxH) {
+  if (typeof ctx.measureText !== "function") return null;
+  const minSize = Math.max(10, Math.round(baseSize * 0.5));
+  const start = Math.max(minSize, Math.round(baseSize));
+  for (const lines of labelLineOptions(text)) {
+    for (let size = start; size >= minSize; size -= 1) {
+      ctx.font = `600 ${size}px ${FONT}`;
+      let widest = 0;
+      for (const line of lines) widest = Math.max(widest, ctx.measureText(line).width);
+      if (widest <= maxW && size * 1.12 * lines.length <= maxH) return { size, lines };
+    }
+  }
+  return null;
+}
 
 function prefersReduced() {
   try {
@@ -80,6 +112,7 @@ export function createRenderer(canvas, options = {}) {
   let levelId = "";
   let selectedId = null;
   let showLabels = options.labels !== false;
+  let labelMap = options.labelMap || null;
   let drag = null;
   let reduce = prefersReduced();
 
@@ -400,24 +433,30 @@ export function createRenderer(canvas, options = {}) {
       ctx.stroke();
     }
 
-    // 文字：先描深色边再填充，做出凹刻感
-    if (showLabels) {
-      const size = Math.round(
-        piece.kind === KIND.CAOCAO ? cell * 0.42 : piece.kind === KIND.SOLDIER ? cell * 0.3 : cell * 0.34
-      );
-      const text = LABELS[piece.kind] || "";
+    // 文字：先描深色边再填充，做出凹刻感；按方块尺寸自适应字号/换行
+    const text = (labelMap && labelMap[piece.kind]) || LABELS[piece.kind] || "";
+    if (showLabels && text) {
+      const base =
+        piece.kind === KIND.CAOCAO ? cell * 0.42 : piece.kind === KIND.SOLDIER ? cell * 0.3 : cell * 0.34;
+      const fitted = fitLabel(ctx, text, base, w * 0.84, h * 0.8);
+      const size = fitted ? fitted.size : Math.max(10, Math.round(base * 0.5));
+      const lines = fitted ? fitted.lines : [String(text).trim()];
+      const lineH = size * 1.12;
       ctx.font = `600 ${size}px ${FONT}`;
       ctx.textAlign = "center";
       ctx.textBaseline = "middle";
       ctx.globalAlpha = piece.kind === KIND.SOLDIER ? 0.85 : 0.96;
       const tx = x + w / 2;
-      const ty = y + h / 2 + 1;
+      const ty = y + h / 2 + 1 - ((lines.length - 1) * lineH) / 2;
       ctx.lineWidth = Math.max(2, size * 0.14);
       ctx.lineJoin = "round";
       ctx.strokeStyle = "rgba(0,0,0,0.3)";
-      ctx.strokeText(text, tx, ty);
       ctx.fillStyle = skin.label;
-      ctx.fillText(text, tx, ty);
+      for (let i = 0; i < lines.length; i++) {
+        const ly = ty + i * lineH;
+        ctx.strokeText(lines[i], tx, ly);
+        ctx.fillText(lines[i], tx, ly);
+      }
       ctx.globalAlpha = 1;
     }
     ctx.restore();
@@ -654,6 +693,13 @@ export function createRenderer(canvas, options = {}) {
 
     setLabels(value) {
       showLabels = value !== false;
+      dirty = true;
+      schedule();
+    },
+
+    /** 覆盖棋子刻字，形如 { caocao: "Cao Cao", ... }；传 null 回落内置中文表 */
+    setLabelMap(map) {
+      labelMap = map || null;
       dirty = true;
       schedule();
     },
