@@ -44,6 +44,34 @@ function runNpm(args, cwd) {
   }
 }
 
+const GLOBAL_SITE_TAGS = `
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-D67E3XTNSS"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+
+    gtag('config', 'G-D67E3XTNSS');
+  </script>
+`;
+
+function injectGlobalSiteTags(directory) {
+  for (const entry of readdirSync(directory)) {
+    const path = resolve(directory, entry);
+    if (statSync(path).isDirectory()) {
+      injectGlobalSiteTags(path);
+      continue;
+    }
+    if (!entry.endsWith(".html")) continue;
+    let html = readFileSync(path, "utf8");
+    if (!html.includes("G-D67E3XTNSS") && html.includes("<head>")) {
+      html = html.replace("<head>", `<head>${GLOBAL_SITE_TAGS}`);
+      writeFileSync(path, html);
+    }
+  }
+}
+
 function rewriteBuildVersion(directory) {
   const extensions = new Set([".css", ".html", ".js", ".mjs"]);
   for (const entry of readdirSync(directory)) {
@@ -104,6 +132,7 @@ for (const game of games) {
 
 if (spaFallback) cpSync(spaFallback, resolve(output, "404.html"));
 
+injectGlobalSiteTags(output);
 rewriteBuildVersion(output);
 
 execFileSync("node", [resolve(root, "scripts/gen-sitemap.mjs"), resolve(output, "sitemap.xml")], { stdio: "inherit" });
