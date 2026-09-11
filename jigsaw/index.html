@@ -1,0 +1,188 @@
+<!-- filepath: games/jigsaw/index.html -->
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-D67E3XTNSS"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+
+    gtag('config', 'G-D67E3XTNSS');
+  </script>
+
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="拼图 Jigsaw — 拖动碎片交换位置，把被打乱的抽象艺术图拼回完整。50 关程序化生成的壁纸级图案、拼完自动锁定、3 次重排与今日拼图，中英双语。">
+<meta name="theme-color" content="#F4F1EC">
+<meta name="color-scheme" content="light">
+<title>拼图 · Jigsaw · DOIN</title>
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="css/style.css?v=26665477a7d6">
+</head>
+<body>
+<div id="app">
+  <header id="topbar">
+    <a id="btn-home" class="home-link" href="/">
+      <span class="home-arrow" aria-hidden="true">&#8592;</span>
+      <span data-i18n="home">返回门户</span>
+    </a>
+
+    <div class="brand">
+      <h1 id="game-title" data-i18n="app.title">拼图</h1>
+      <p id="game-sub" data-i18n="app.subtitle">Jigsaw · 交换碎片复原图案</p>
+    </div>
+
+    <div class="top-actions">
+      <button id="btn-lang" type="button" class="icon-btn" data-i18n-aria="aria.lang" aria-label="切换语言">EN</button>
+      <button id="btn-sound" type="button" class="icon-btn" data-i18n-aria="aria.sound" aria-label="音效开关" aria-pressed="true">
+        <svg id="icon-sound-on" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9v6h3.5L12 19V5L7.5 9H4z"/><path d="M15.5 8.5a4.5 4.5 0 0 1 0 7" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M18 6a8 8 0 0 1 0 12" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+        <svg id="icon-sound-off" viewBox="0 0 24 24" aria-hidden="true" hidden><path d="M4 9v6h3.5L12 19V5L7.5 9H4z"/><path d="M16 9.5l5 5M21 9.5l-5 5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <main id="stage">
+    <aside id="panel">
+      <div id="level-badge">
+        <span id="level-chapter" class="chapter">—</span>
+        <span id="level-name">—</span>
+        <span id="hud-level" class="level-count">1/50</span>
+        <span class="meter level-meter"><i id="level-bar"></i></span>
+      </div>
+
+      <section id="hud" aria-label="游戏状态">
+        <div class="hud-hero">
+          <span class="hud-hero-key" data-i18n="hud.score">得分</span>
+          <span class="hud-hero-val" id="hud-score">800/800</span>
+          <span class="meter hud-meter"><i id="hud-score-bar"></i></span>
+        </div>
+        <div class="hud-grid">
+          <div class="stat"><span class="stat-key" data-i18n="hud.moves">步数</span><span class="stat-val" id="hud-moves">0</span></div>
+          <div class="stat"><span class="stat-key" data-i18n="hud.par">标准</span><span class="stat-val" id="hud-par">12</span></div>
+          <div class="stat"><span class="stat-key" data-i18n="hud.time">时间</span><span class="stat-val" id="hud-time">00:00</span></div>
+        </div>
+      </section>
+
+      <nav id="toolbar" aria-label="游戏操作">
+        <button id="btn-preview" type="button" class="tool-btn" aria-pressed="false">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12z" fill="none" stroke="currentColor" stroke-width="1.8"/><circle cx="12" cy="12" r="3.2" fill="none" stroke="currentColor" stroke-width="1.8"/></svg>
+          <span data-i18n="btn.preview">原图</span>
+        </button>
+        <button id="btn-reshuffle" type="button" class="tool-btn">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h4l3 5 3-5h4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M4 17h4l3-5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M15 17h5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M18 4.5l3 2.5-3 2.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M18 14.5l3 2.5-3 2.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <span data-i18n="btn.reshuffle">重排</span>
+          <span id="shuffle-count" class="tool-count">3</span>
+        </button>
+        <button id="btn-restart" type="button" class="tool-btn">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 12a8 8 0 1 1-2.6-5.9" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M20 4v4h-4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <span data-i18n="btn.restart">重玩</span>
+        </button>
+        <button id="btn-levels" type="button" class="tool-btn">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h7v7H4zM13 5h7v4h-7zM13 11h7v8h-7zM4 14h7v5H4z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>
+          <span data-i18n="btn.levels">选关</span>
+        </button>
+        <button id="btn-help" type="button" class="tool-btn tool-btn--ghost">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9.2 9a2.9 2.9 0 1 1 4.3 2.5c-.9.6-1.5 1-1.5 2" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="12" cy="17.4" r="1.2"/><circle cx="12" cy="12" r="9.2" fill="none" stroke="currentColor" stroke-width="1.6"/></svg>
+          <span data-i18n="btn.help">玩法</span>
+        </button>
+      </nav>
+    </aside>
+
+    <div id="board-wrap">
+      <canvas id="board" tabindex="0" role="application" data-i18n-aria="aria.board" aria-label="拼图棋盘，拖动碎片交换位置"></canvas>
+      <div id="toast" role="status" aria-live="polite"></div>
+    </div>
+
+    <p id="sr-status" class="sr-only" role="status" aria-live="polite"></p>
+  </main>
+
+  <!-- 开始 -->
+  <div id="ov-start" class="overlay" role="dialog" aria-modal="true" aria-labelledby="ov-start-title">
+    <div class="panel">
+      <h2 id="ov-start-title" data-i18n="start.title">拼图</h2>
+      <p id="ov-start-desc" class="panel-desc" data-i18n="start.desc">拖动一块碎片放到另一块上，两块交换位置。拼到正确位置的碎片会自动锁定。</p>
+      <div class="panel-actions">
+        <button id="btn-start" type="button" class="primary-btn" data-i18n="start.cta">开始拼图</button>
+        <button id="btn-start-daily" type="button" class="ghost-btn" data-i18n="start.daily">今日拼图</button>
+        <button id="btn-start-levels" type="button" class="ghost-btn" data-i18n="start.levels">选择关卡</button>
+        <button id="btn-start-help" type="button" class="ghost-btn" data-i18n="start.help">玩法说明</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 结算 -->
+  <div id="ov-win" class="overlay" role="dialog" aria-modal="true" aria-labelledby="win-title" hidden>
+    <div class="burst" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+    <div class="panel win-panel">
+      <h2 id="win-title" data-i18n="win.title">拼好了！</h2>
+      <p id="win-newbest" class="win-flag" data-i18n="win.newbest" hidden>新纪录！</p>
+      <dl class="win-grid">
+        <div><dt data-i18n="win.moves">步数</dt><dd id="win-moves">0</dd></div>
+        <div><dt data-i18n="win.par">标准</dt><dd id="win-par">0</dd></div>
+        <div><dt data-i18n="win.time">用时</dt><dd id="win-time">00:00</dd></div>
+        <div><dt data-i18n="win.score">得分</dt><dd><span id="win-score">0</span>/<span id="win-perfect">800</span></dd></div>
+      </dl>
+      <p id="win-best" class="win-best"></p>
+      <div class="panel-actions">
+        <button id="btn-next" type="button" class="primary-btn" data-i18n="win.next">下一关</button>
+        <button id="btn-replay" type="button" class="ghost-btn" data-i18n="win.replay">再拼一次</button>
+        <button id="btn-win-levels" type="button" class="ghost-btn" data-i18n="btn.levels">选关</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 选关 -->
+  <div id="ov-levels" class="overlay" role="dialog" aria-modal="true" aria-labelledby="levels-title" hidden>
+    <div class="panel levels-panel">
+      <h2 id="levels-title" data-i18n="levels.title">选择关卡</h2>
+      <p id="levels-total" class="panel-desc"></p>
+      <div class="daily-box">
+        <div class="daily-text">
+          <span id="daily-label" data-i18n="levels.daily">今日拼图</span>
+          <span id="daily-hint" class="daily-hint" data-i18n="levels.dailyHint">每天一张，全服同图</span>
+        </div>
+        <button id="btn-daily" type="button" class="primary-btn small" data-i18n="levels.daily">今日拼图</button>
+      </div>
+      <div id="levels-grid" class="levels-grid"></div>
+      <div class="panel-actions">
+        <button id="btn-levels-close" type="button" class="ghost-btn" data-i18n="btn.close">返回</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 玩法说明 -->
+  <div id="ov-help" class="overlay" role="dialog" aria-modal="true" aria-labelledby="help-title" hidden>
+    <div class="panel help-panel">
+      <h2 id="help-title" data-i18n="help.title">玩法说明</h2>
+      <div class="help-body">
+        <h3 data-i18n="help.goalTitle">目标</h3>
+        <p data-i18n="help.goal"></p>
+        <h3 data-i18n="help.rulesTitle">规则</h3>
+        <ul data-i18n-list="help.rulesList"></ul>
+        <h3 data-i18n="help.ctrlTitle">操作</h3>
+        <ul data-i18n-list="help.ctrlList"></ul>
+        <h3 data-i18n="help.scoreTitle">计分</h3>
+        <p data-i18n="help.score"></p>
+        <h3 data-i18n="help.keysTitle">快捷键</h3>
+        <ul data-i18n-list="help.keysList"></ul>
+      </div>
+      <div class="panel-actions">
+        <button id="btn-help-close" type="button" class="primary-btn" data-i18n="btn.close">知道了</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<noscript>
+  <div class="noscript">
+    <h1>拼图 · Jigsaw</h1>
+    <p>本游戏需要启用 JavaScript 才能运行。请开启后刷新页面。</p>
+    <p>This game requires JavaScript. Please enable it and reload.</p>
+  </div>
+</noscript>
+
+<script type="module" src="js/main.mjs?v=26665477a7d6"></script>
+</body>
+</html>

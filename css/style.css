@@ -1,0 +1,271 @@
+:root {
+  /* 薄荷绿品识别保留，整体降饱和：顶部浅、底部深，带一点向青蓝过渡的纵深 */
+  --bg-top: #96f3de;
+  --bg-mid: #6fe4cb;
+  --bg-deep: #55d3d0;
+  --bg: var(--bg-mid); /* 兼容旧引用（soon 徽章等） */
+  --mint: #8af0db;
+  --ink: #05384a;
+  --ink-soft: rgba(5, 56, 74, 0.64);
+  --surface: #ffffff;
+  --accent: #009cff;
+  --radius: 16px;
+  --gap: 16px;
+  --shadow-tile: 0 10px 24px rgba(4, 68, 77, 0.18), 0 3px 8px rgba(4, 68, 77, 0.1);
+  --shadow-chip: 0 4px 12px rgba(4, 68, 77, 0.14), 0 1px 3px rgba(4, 68, 77, 0.08);
+  --ease: cubic-bezier(0.25, 0.1, 0.25, 1);
+  --font-body: "Proxima Nova", "Open Sans", -apple-system, BlinkMacSystemFont,
+    "Segoe UI", "PingFang SC", "Microsoft YaHei", "Noto Sans SC", Arial, sans-serif;
+}
+
+* { box-sizing: border-box; margin: 0; }
+
+/* overscroll 露出的底色取渐变中值 */
+html { background: var(--bg-mid); }
+
+body {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  overflow-x: hidden;
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-size: 16px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Fixed texture layer, mirroring Poki's bg-diamante backdrop. */
+.bg-pattern {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background-image: url("../assets/bg-diamante.svg"),
+    linear-gradient(175deg, var(--bg-top) 0%, var(--bg-mid) 52%, var(--bg-deep) 100%);
+  background-size: 60px 60px, 100% 100%;
+}
+
+.site-nav, .page, .site-footer { position: relative; z-index: 1; }
+
+.page { flex: 1; width: min(100%, 1024px); margin: 0 auto; padding: 28px var(--gap) 72px; }
+
+.page-head { position: relative; margin-bottom: 24px; }
+
+/* 第一行：品牌字标与语言按钮同行，垂直居中；第二行才是页面主标题 */
+.head-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--gap);
+}
+
+/* Brand chip: white 3D tile, text "Doin.win", home link. */
+.site-title {
+  display: inline-block;
+  padding: 12px 22px;
+  color: var(--ink);
+  font-size: clamp(24px, 4vw, 30px);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+  text-decoration: none;
+  background: var(--surface);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-chip);
+  transition: transform 0.6s var(--ease);
+}
+
+.site-title:hover, .site-title:focus-visible { transform: scale(1.04) translateY(-4px); transition-duration: 0.3s; }
+
+/* ".win" 用品牌蓝→薄荷青渐变文字，与页面底色的渐变同语 */
+.site-title-tld {
+  background: linear-gradient(120deg, var(--accent), #23cfc0);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  letter-spacing: -0.01em;
+}
+
+.page-head h1 {
+  margin-top: 18px;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  font-size: clamp(20px, 3.5vw, 25px);
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+/* One-line tagline chip beside the headline. */
+.head-chip {
+  padding: 6px 14px;
+  font-size: clamp(13px, 2.4vw, 16px);
+  font-weight: 700;
+  color: var(--ink);
+  background: var(--surface);
+  border-radius: 999px;
+  box-shadow: var(--shadow-chip);
+  white-space: nowrap;
+}
+
+/* 语言选择器：圆形地球按钮 + 下拉面板，当前语言为深色胶囊（参考主流门户样式） */
+.lang-picker { position: relative; flex-shrink: 0; }
+
+.lang-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 42px;
+  height: 42px;
+  color: var(--ink);
+  background: var(--surface);
+  border: 0;
+  border-radius: 999px;
+  box-shadow: var(--shadow-chip);
+  cursor: pointer;
+  transition: transform 0.6s var(--ease);
+}
+
+.lang-toggle:hover, .lang-toggle:focus-visible { transform: scale(1.05); transition-duration: 0.3s; }
+
+.lang-menu {
+  position: absolute;
+  top: calc(100% + 10px);
+  right: 0;
+  z-index: 20;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 132px;
+  padding: 8px;
+  background: var(--surface);
+  border-radius: 20px;
+  box-shadow: 0 12px 32px rgba(4, 68, 77, 0.22), 0 2px 8px rgba(4, 68, 77, 0.12);
+  transform-origin: top right;
+  animation: lang-pop 0.25s var(--ease);
+}
+
+.lang-menu[hidden] { display: none; }
+
+@keyframes lang-pop {
+  from { opacity: 0; transform: scale(0.92) translateY(-4px); }
+}
+
+.lang-option {
+  padding: 9px 14px;
+  color: var(--ink);
+  font: inherit;
+  font-weight: 700;
+  text-align: left;
+  background: transparent;
+  border: 0;
+  border-radius: 999px;
+  cursor: pointer;
+}
+
+.lang-option:hover { background: rgba(5, 56, 74, 0.08); }
+
+.lang-option.is-active { color: #fff; background: var(--ink); }
+
+.game-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 204px), 1fr));
+  gap: var(--gap);
+}
+
+.game-card {
+  position: relative;
+  display: block;
+  aspect-ratio: 1 / 1;
+  overflow: hidden;
+  container-type: inline-size;
+  background: var(--surface);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-tile);
+  text-decoration: none;
+  /* Hover-in is quick (0.3s); hover-out eases back slowly (0.6s), as on Poki. */
+  transition: transform 0.6s var(--ease);
+}
+
+.game-card:not(.is-soon):hover,
+.game-card:not(.is-soon):focus-visible {
+  z-index: 2;
+  transform: scale(1.04) translateY(-4px);
+  transition-duration: 0.3s;
+}
+
+.game-card:focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; }
+
+.game-card__cover {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: var(--radius);
+}
+
+/* Game name lives in an always-visible white pill at the bottom-left —
+   no gradient scrim, keeps cover art clean (Poki-style label). */
+.game-card__title {
+  position: absolute;
+  bottom: 6%;
+  left: 6%;
+  z-index: 6;
+  max-width: 88%;
+  padding: 5px 12px;
+  overflow: hidden;
+  color: var(--ink);
+  font-size: clamp(11px, 7cqi, 16px);
+  font-weight: 700;
+  line-height: 1.3;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  background: rgba(255, 255, 255, 0.92);
+  border-radius: 999px;
+  box-shadow: 0 2px 8px rgba(0, 27, 50, 0.18);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+}
+
+.badge-soon {
+  position: absolute;
+  top: 8%;
+  right: 8%;
+  z-index: 7;
+  padding: 6px 10px;
+  color: var(--ink);
+  font-size: clamp(10px, 6cqi, 14px);
+  font-weight: 700;
+  background: var(--bg);
+  border-radius: 999px;
+  box-shadow: var(--shadow-chip);
+}
+
+.game-card.is-soon { cursor: default; }
+.game-card.is-soon .game-card__cover { filter: saturate(0.6); }
+
+.noscript-msg, .load-err {
+  grid-column: 1 / -1;
+  padding: 40px 16px;
+  color: var(--ink-soft);
+  font-size: 16px;
+  text-align: center;
+  background: var(--surface);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-chip);
+}
+
+.site-footer { padding: 0 var(--gap) 32px; color: var(--ink-soft); font-size: 14px; text-align: center; }
+
+@media (max-width: 520px) {
+  .page { padding-top: 20px; }
+  .game-grid { grid-template-columns: repeat(auto-fill, minmax(min(100%, 140px), 1fr)); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  /* 卡片 hover 放大保留（位移 ≤4px 不构成动效风险），仅去掉过渡动画改为瞬时。 */
+  .game-card, .site-title { transition-duration: 0.01s; }
+  .lang-menu { animation: none; }
+}

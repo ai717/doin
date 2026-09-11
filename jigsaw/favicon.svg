@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Jigsaw">
+  <rect width="64" height="64" rx="14" fill="#F4F1EC"/>
+  <path d="M14 16h14a5 5 0 0 1 0-8 5 5 0 0 1 0 8h14v14a5 5 0 0 1 8 0 5 5 0 0 1-8 0v14H28a5 5 0 0 0 0 8 5 5 0 0 0 0-8H14V16z" fill="#2A9D8F"/>
+  <path d="M14 16h14a5 5 0 0 1 0-8 5 5 0 0 1 0 8h14v14a5 5 0 0 1 8 0 5 5 0 0 1-8 0v14H28a5 5 0 0 0 0 8 5 5 0 0 0 0-8H14V16z" fill="none" stroke="#1F7A6F" stroke-width="2" stroke-linejoin="round"/>
+  <circle cx="47" cy="47" r="7" fill="#D4A84B"/>
+</svg>
