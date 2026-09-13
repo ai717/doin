@@ -1,7 +1,10 @@
 // 唯一本地持久化封装：读取 / 写入 / normalize / 内存降级。
 // 存档 Key：doin.pair-link.v1（语言偏好不在此 key 内，统一走全局 doin.lang）。
+//
+// 关于 VERSION：每日一盘是**追加字段**（daily），不是破坏性变更，所以 v 保持 1 ——
+// 老存档里没有 daily 时由 normalizeProgress 补默认值，玩家不会丢主线进度。
 
-import { LEVEL_COUNT } from "./engine.mjs";
+import { LEVEL_COUNT, isDateKey } from "./engine.mjs";
 import { MAX_SCORE } from "./score.mjs";
 
 export const STORAGE_KEY = "doin.pair-link.v1";
@@ -12,6 +15,7 @@ export const DEFAULT_PROGRESS = Object.freeze({
   unlocked: 1,
   levels: {},
   endlessBest: 0,
+  daily: { dateKey: "", bestScore: 0 },
   muted: false,
   lastLevel: 1
 });
@@ -22,7 +26,15 @@ function clampInt(value, min, max, fallback) {
 }
 
 function defaultProgress() {
-  return { v: VERSION, unlocked: 1, levels: {}, endlessBest: 0, muted: false, lastLevel: 1 };
+  return {
+    v: VERSION,
+    unlocked: 1,
+    levels: {},
+    endlessBest: 0,
+    daily: { dateKey: "", bestScore: 0 },
+    muted: false,
+    lastLevel: 1
+  };
 }
 
 /** 严格数据清洗：任何缺失 / 错误类型 / NaN / 越界都回退到安全值。 */
@@ -42,6 +54,16 @@ export function normalizeProgress(raw) {
       out.levels[String(key)] = {
         score: clampInt(value.score, 0, MAX_SCORE, 0),
         stars: clampInt(value.stars, 0, 3, 0)
+      };
+    }
+  }
+
+  // 每日一盘：日期键必须合法，否则整条回退（避免出现"某个不存在的日期的最佳分"）
+  if (raw.daily && typeof raw.daily === "object" && !Array.isArray(raw.daily)) {
+    if (isDateKey(raw.daily.dateKey)) {
+      out.daily = {
+        dateKey: raw.daily.dateKey,
+        bestScore: clampInt(raw.daily.bestScore, 0, MAX_SCORE, 0)
       };
     }
   }
@@ -112,6 +134,34 @@ export function recordEndless(progress, score) {
   const base = normalizeProgress(progress);
   base.endlessBest = Math.max(base.endlessBest, clampInt(score, 0, MAX_SCORE, 0));
   return base;
+}
+
+/**
+ * 取某个日期的最佳分；日期不是"存档里那一天"时返回 0。
+ * （跨天后旧记录要失效 —— 每日挑战比的是今天。）
+ */
+export function dailyBest(progress, dateKey) {
+  const record = progress && progress.daily ? progress.daily : null;
+  if (!record || !isDateKey(dateKey) || record.dateKey !== dateKey) return 0;
+  return clampInt(record.bestScore, 0, MAX_SCORE, 0);
+}
+
+/**
+ * 记录一次每日一盘的成绩：跨天则重置为今天的成绩，同一天取最高。
+ * **不触碰** unlocked / levels / lastLevel —— 每日挑战与主线进度完全解耦。
+ * 返回 { progress, isNewBest }。
+ */
+export function recordDaily(progress, dateKey, score) {
+  const base = normalizeProgress(progress);
+  if (!isDateKey(dateKey)) return { progress: base, isNewBest: false };
+  const total = clampInt(score, 0, MAX_SCORE, 0);
+  const sameDay = base.daily.dateKey === dateKey;
+  const isNewBest = !sameDay || total > base.daily.bestScore;
+  base.daily = {
+    dateKey: dateKey,
+    bestScore: sameDay ? Math.max(total, base.daily.bestScore) : total
+  };
+  return { progress: base, isNewBest: isNewBest };
 }
 
 /** 清空存档（破坏性操作，调用方负责二次确认）。 */

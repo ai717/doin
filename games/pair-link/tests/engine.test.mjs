@@ -6,31 +6,47 @@ import {
   AUTO_SHUFFLE_LIMIT,
   COLS,
   COMBO_WINDOW_MS,
+  FROZEN_OFFSET,
   LEVEL_COUNT,
   MOTIF_COUNT,
   ROWS,
   SOLID_COLS,
   SOLID_ROWS,
   applyPick,
+  breakShellsAround,
   createLevel,
   createState,
+  dailyLevelIndex,
+  dailyParams,
+  dailySeed,
+  dateKey,
   findAnyPair,
   findHint,
   findLinkPath,
+  freezeValue,
+  frozenCells,
   hasAnyPair,
+  hasFrozen,
   hashSeed,
   isBoardCleared,
+  isDateKey,
+  isFrozenValue,
   levelOutcome,
   levelParams,
   levelSeed,
   makeRng,
+  meltAll,
+  meltValue,
   motifCounts,
+  motifOf,
   restartLevel,
   resolveDeadlock,
+  shortDateKey,
   shuffleBoard,
   startGame,
   straightClear,
   tick,
+  todayKey,
   useHint,
   useShuffle
 } from "../js/engine.mjs";
@@ -155,6 +171,12 @@ test("关卡参数公式：全 36 关与派生表逐行一致", () => {
     2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
     3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3
   ];
+  // 冰封壳派生表：[0,4,8][chapter-1] + [0,1,2][chapter-1]·step
+  const frozen = [
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    4, 4, 4, 4, 5, 5, 5, 5, 6, 6, 6, 6,
+    8, 8, 8, 8, 10, 10, 10, 10, 12, 12, 12, 12
+  ];
 
   for (let level = 1; level <= LEVEL_COUNT; level += 1) {
     const params = levelParams(level);
@@ -164,6 +186,8 @@ test("关卡参数公式：全 36 关与派生表逐行一致", () => {
     assert.equal(params.kinds, kinds[i], "第 " + level + " 关图案种类不符");
     assert.equal(params.tiles, tiles[i], "第 " + level + " 关实心块数不符");
     assert.equal(params.timeMs, timeMs[i], "第 " + level + " 关时限不符");
+    assert.equal(params.frozen, frozen[i], "第 " + level + " 关冰封壳数不符");
+    assert.ok(params.frozen < params.tiles, "冰封壳数必须小于瓷片总数，否则可能全盘锁死");
     assert.equal(params.hints, 3);
     assert.equal(params.shuffles, 2);
     assert.equal(params.tiles % 2, 0, "实心块数必须为偶数");
@@ -735,4 +759,320 @@ test("全 36 关均可清盘获胜：贪心求解每一关，全程不允许出�
     assert.equal(tilesOf(state.board).length, 0, "第 " + level + " 关清盘后棋盘必须为空");
     assert.ok(state.score > 0 && state.score <= MAX_SCORE);
   }
+});
+
+/* ------------------------------------------------------------ 冰封壳 */
+
+test("冰封壳编码：带壳值 = 母题 id + 偏移，可无损往返", () => {
+  for (let id = 1; id <= MOTIF_COUNT; id += 1) {
+    const shelled = freezeValue(id);
+    assert.equal(shelled, id + FROZEN_OFFSET);
+    assert.equal(isFrozenValue(shelled), true);
+    assert.equal(motifOf(shelled), id, "带壳也必须能取到真身母题");
+    assert.equal(meltValue(shelled), id);
+  }
+  assert.equal(freezeValue(0), 0, "空格不该被套壳");
+  assert.equal(isFrozenValue(0), false);
+  assert.equal(motifOf(0), 0);
+  assert.equal(meltValue(0), 0);
+  assert.equal(freezeValue(freezeValue(3)), freezeValue(3), "重复套壳必须幂等");
+  assert.equal(meltValue(3), 3, "融壳对无壳值必须是恒等");
+  // 带壳值不得与任何正常母题 id 撞号
+  assert.ok(FROZEN_OFFSET >= MOTIF_COUNT);
+});
+
+test("冰封壳：带壳块不参与配对，也不能当折线端点", () => {
+  const board = blank();
+  board[1][1] = freezeValue(2);
+  board[1][2] = 2;
+  assert.equal(findAnyPair(board), null, "只剩一枚可玩块时不该有可消对");
+  assert.equal(hasAnyPair(board), false);
+  assert.equal(hasFrozen(board), true);
+  assert.deepEqual(frozenCells(board), [{ r: 1, c: 1 }]);
+
+  // 两枚同图案但都带壳：依然不可消
+  const twin = blank();
+  twin[1][1] = freezeValue(2);
+  twin[1][3] = freezeValue(2);
+  assert.equal(hasAnyPair(twin), false, "带壳的同图案对不可消");
+  assert.equal(findLinkPath(twin, { r: 1, c: 1 }, { r: 1, c: 3 }), null, "带壳块不能作为折线端点");
+
+  // 脱壳后立刻可消
+  const melted = meltAll(twin);
+  assert.equal(hasFrozen(melted), false);
+  assert.equal(hasAnyPair(melted), true);
+});
+
+test("冰封壳：消除震碎周围 8 格（含斜向），远处不受影响", () => {
+  const board = blank();
+  board[4][4] = 5;
+  board[4][6] = 5;
+  const around = [[3, 3], [3, 4], [3, 5], [4, 3], [4, 5], [5, 3], [5, 4], [5, 5]];
+  around.forEach((p, i) => { board[p[0]][p[1]] = freezeValue((i % 6) + 1); });
+  board[7][9] = freezeValue(1); // 距离足够远
+
+  assert.equal(frozenCells(board).length, 9);
+  const res = breakShellsAround(board, [{ r: 4, c: 4 }, { r: 4, c: 6 }]);
+  assert.equal(res.broken.length, 8, "8 邻域内的壳都应被震碎");
+  assert.deepEqual(frozenCells(res.board), [{ r: 7, c: 9 }], "远处的壳不该受影响");
+  assert.equal(frozenCells(board).length, 9, "breakShellsAround 必须返回新盘面，不得就地修改");
+  assert.deepEqual(motifCounts(res.board), motifCounts(board), "震碎只脱壳，不改图案计数");
+  assert.equal(isFrozenValue(res.board[3][3]), false);
+  assert.equal(motifOf(res.board[3][3]), motifOf(board[3][3]));
+});
+
+test("冰封壳：8 邻域之外不震碎，重复坐标不重复计数", () => {
+  const board = blank();
+  // (2,2) 的 8 邻域是行 1..3 × 列 1..3 —— 这两块都在外面
+  board[1][4] = freezeValue(3);
+  board[6][6] = freezeValue(4);
+  const res = breakShellsAround(board, [{ r: 2, c: 2 }, { r: 2, c: 2 }]);
+  assert.equal(res.broken.length, 0);
+  assert.equal(frozenCells(res.board).length, 2);
+
+  // 斜向相邻必须算在内（这条正是上面那个坐标写错时抓出来的）
+  const diagonal = blank();
+  diagonal[1][1] = freezeValue(3);
+  const diag = breakShellsAround(diagonal, [{ r: 2, c: 2 }]);
+  assert.deepEqual(diag.broken, [{ r: 1, c: 1 }], "斜向相邻的壳必须被震碎");
+
+  // 多个消除点共享同一个邻居时只能算一次
+  const shared = blank();
+  shared[2][2] = freezeValue(3);
+  const res2 = breakShellsAround(shared, [{ r: 1, c: 1 }, { r: 2, c: 1 }, { r: 3, c: 1 }]);
+  assert.equal(res2.broken.length, 1);
+  assert.deepEqual(res2.broken, [{ r: 2, c: 2 }]);
+
+  // 空数组 / 非法入参必须安全
+  assert.deepEqual(breakShellsAround(shared, []).broken, []);
+  assert.deepEqual(breakShellsAround(shared, null).broken, []);
+});
+
+test("冰封壳：点选带壳块返回 frozen，且不改动盘面与选中态", () => {
+  const board = blank();
+  board[1][1] = freezeValue(2);
+  board[1][3] = 2;
+  const state = customState(board, { phase: "playing" });
+
+  const blocked = applyPick(state, { r: 1, c: 1 });
+  assert.equal(blocked.action.type, "frozen");
+  assert.deepEqual(blocked.action.cell, { r: 1, c: 1 });
+  assert.equal(blocked.state.selected, null, "点带壳块不该产生选中态");
+  assert.deepEqual(blocked.state.board, board, "点带壳块不该改动盘面");
+  assert.equal(blocked.state.lastEvent, "frozen");
+
+  // 已有选中时点带壳块：保留选中态（试探友好），只抖一下
+  const picked = applyPick(state, { r: 1, c: 3 });
+  assert.equal(picked.action.type, "select");
+  const after = applyPick(picked.state, { r: 1, c: 1 });
+  assert.equal(after.action.type, "frozen");
+  assert.deepEqual(after.state.selected, { r: 1, c: 3 }, "选中态必须保留");
+});
+
+test("冰封壳：消除后相邻壳真的被震碎（走完整状态机）", () => {
+  const board = blank();
+  board[4][4] = 5;
+  board[4][5] = 5;
+  board[3][4] = freezeValue(1);
+  board[5][5] = freezeValue(1); // 与 (3,4) 同图案：脱壳后仍可消
+  const state = customState(board, {
+    phase: "playing",
+    remainingMs: 200000,
+    params: Object.assign({}, levelParams(1), { timeMs: 200000 })
+  });
+
+  const done = applyPick(applyPick(state, { r: 4, c: 4 }).state, { r: 4, c: 5 });
+  assert.equal(done.action.type, "clear");
+  assert.equal(done.action.broken.length, 2, "相邻两枚壳都应被震碎");
+  assert.equal(hasFrozen(done.state.board), false);
+  assert.equal(done.state.shellsBroken, 2);
+  assert.equal(done.state.phase, "playing", "还剩两枚瓷片，不该判胜");
+  assert.ok(hasAnyPair(done.state.board), "脱壳后必须马上有可消对");
+
+  // 再把剩下这一对消掉 → 判胜
+  const win = applyPick(applyPick(done.state, { r: 3, c: 4 }).state, { r: 5, c: 5 });
+  assert.equal(win.action.type, "clear");
+  assert.equal(win.state.phase, "won");
+  assert.equal(win.state.shellsBroken, 2, "没壳可震时计数不该涨");
+});
+
+test("冰封壳兜底：全盘带壳时融壳再洗，绝不把死盘交给玩家", () => {
+  const board = blank();
+  board[1][1] = freezeValue(1);
+  board[1][2] = freezeValue(1);
+  assert.equal(hasAnyPair(board), false);
+  const resolved = resolveDeadlock(board, makeRng(42));
+  assert.equal(resolved.melted, true, "全盘带壳必须触发融壳兜底");
+  assert.equal(resolved.solvable, true);
+  assert.equal(hasFrozen(resolved.board), false);
+  assert.ok(hasAnyPair(resolved.board));
+});
+
+test("冰封壳兜底：已有可消对时不得动用融壳", () => {
+  const board = blank();
+  board[1][1] = 1;
+  board[1][2] = 1;
+  board[3][3] = freezeValue(4);
+  const resolved = resolveDeadlock(board, makeRng(7));
+  assert.equal(resolved.melted, false, "已有可消对时不该融壳");
+  assert.equal(resolved.shuffles, 0);
+  assert.equal(hasFrozen(resolved.board), true, "兜底不该顺手把壳融掉");
+});
+
+test("洗牌：壳随瓷片一起置换，壳数与图案计数都不变", () => {
+  const board = createLevel(25, makeRng(levelSeed(25))).board;
+  const frozenBefore = frozenCells(board).length;
+  assert.ok(frozenBefore > 0, "第 25 关应当有冰封壳");
+  const shuffled = shuffleBoard(board, makeRng(99));
+  assert.equal(frozenCells(shuffled).length, frozenBefore, "洗牌不得增减壳");
+  assert.deepEqual(motifCounts(shuffled), motifCounts(board), "洗牌不得改变图案计数");
+  assertOuterRingEmpty(shuffled);
+
+  // 只换位置不换值：连"带壳值"的出现次数都必须一一对应
+  const histogram = (b) => {
+    const m = new Map();
+    for (let r = 0; r < ROWS; r += 1) {
+      for (let c = 0; c < COLS; c += 1) m.set(b[r][c], (m.get(b[r][c]) || 0) + 1);
+    }
+    return [...m.entries()].sort((x, y) => x[0] - y[0]);
+  };
+  assert.deepEqual(histogram(shuffled), histogram(board));
+});
+
+test("生成：带壳块数等于关卡参数，壳只出现在实心区的瓷片上", () => {
+  for (let level = 1; level <= LEVEL_COUNT; level += 1) {
+    const params = levelParams(level);
+    const board = createLevel(level, makeRng(levelSeed(level))).board;
+    assert.equal(frozenCells(board).length, params.frozen, "第 " + level + " 关带壳块数不符");
+    frozenCells(board).forEach((p) => {
+      assert.ok(p.r >= 1 && p.r <= SOLID_ROWS && p.c >= 1 && p.c <= SOLID_COLS, "壳不得出现在外圈通道");
+      assert.notEqual(board[p.r][p.c], 0);
+      assert.ok(isFrozenValue(board[p.r][p.c]));
+    });
+    assertPairedCounts(board);
+    assertOuterRingEmpty(board);
+    assert.ok(hasAnyPair(board), "第 " + level + " 关开局必须有可消对（带壳的不算）");
+  }
+});
+
+test("生成：同种子逐格可复现（含壳的位置）", () => {
+  const a = createLevel(25, makeRng(levelSeed(25))).board;
+  const b = createLevel(25, makeRng(levelSeed(25))).board;
+  assert.deepEqual(a, b);
+  assert.deepEqual(frozenCells(a), frozenCells(b), "壳的位置也必须确定性");
+});
+
+/* ------------------------------------------------------------ 每日一盘 */
+
+test("日期键：本地时区 YYYY-MM-DD，非法输入安全回退", () => {
+  assert.equal(dateKey(new Date(2026, 8, 13)), "2026-09-13");
+  assert.equal(dateKey(new Date(2026, 0, 1)), "2026-01-01");
+  assert.equal(dateKey(new Date(2026, 11, 31)), "2026-12-31");
+  assert.match(dateKey(), /^\d{4}-\d{2}-\d{2}$/);
+  assert.equal(dateKey(new Date("nope")), dateKey(), "非法 Date 必须回退到今天");
+  assert.equal(todayKey(new Date(2026, 8, 13)), "2026-09-13");
+
+  assert.equal(isDateKey("2026-09-13"), true);
+  assert.equal(isDateKey("2026-9-3"), false, "必须补零");
+  assert.equal(isDateKey("20260913"), false);
+  assert.equal(isDateKey(""), false);
+  assert.equal(isDateKey(null), false);
+  assert.equal(isDateKey(20260913), false);
+});
+
+test("每日一盘：同日期同盘、确定性、与主线进度无关", () => {
+  const key = "2026-09-13";
+  const a = createState(1, { mode: "daily", dateKey: key });
+  const b = createState(1, { mode: "daily", dateKey: key });
+  assert.equal(a.mode, "daily");
+  assert.equal(a.dateKey, key);
+  assert.deepEqual(a.board, b.board, "同一天必须给出逐格相同的盘面");
+  assert.equal(a.params.daily, true);
+  assert.equal(a.params.dateKey, key);
+  assert.equal(a.params.chapterName.zh, "今日灯市");
+  assert.equal(a.level, dailyLevelIndex(key));
+  assert.ok(dailyLevelIndex(key) >= 1 && dailyLevelIndex(key) <= LEVEL_COUNT);
+  assert.equal(dailySeed(key), dailySeed(key));
+  assert.equal(shortDateKey(key), "09-13");
+  assert.ok(hasAnyPair(a.board), "每日盘开局必须有可消对");
+
+  // 非法 dateKey 回退到今天，而不是抛错或给出空盘
+  const fallback = createState(1, { mode: "daily", dateKey: "bad" });
+  assert.equal(fallback.dateKey, todayKey());
+  assert.ok(hasAnyPair(fallback.board));
+});
+
+test("每日一盘：不同日期给出不同盘面", () => {
+  const seen = new Set();
+  let distinct = 0;
+  for (let i = 0; i < 60; i += 1) {
+    const key = dateKey(new Date(2026, 0, 1 + i * 5));
+    const sig = createState(1, { mode: "daily", dateKey: key })
+      .board.map((row) => row.join(",")).join("|");
+    if (!seen.has(sig)) { seen.add(sig); distinct += 1; }
+  }
+  assert.ok(distinct >= 55, "60 个不同日期应给出至少 55 种不同盘面，实际 " + distinct);
+});
+
+test("每日一盘：重玩给同一副盘面", () => {
+  const key = "2026-09-13";
+  const state = startGame(createState(1, { mode: "daily", dateKey: key }));
+  const replay = restartLevel(state);
+  assert.equal(replay.mode, "daily");
+  assert.equal(replay.dateKey, key);
+  assert.deepEqual(replay.board, state.board, "每日一盘重玩必须给同一盘（公平重试）");
+  assert.equal(replay.replays, 1);
+  assert.equal(replay.phase, "ready");
+});
+
+test("每日一盘：能正常清盘判胜，走关卡制的结算分支", () => {
+  const key = "2026-09-13";
+  let state = startGame(createState(1, { mode: "daily", dateKey: key }));
+  const totalPairs = state.params.tiles / 2;
+  let cleared = 0;
+  const guard = totalPairs * 3 + 100;
+  while (state.phase === "playing" && cleared < guard) {
+    const pair = findAnyPair(state.board);
+    assert.ok(pair, "每日一盘在还剩 " + tilesOf(state.board).length + " 块时出现死局");
+    state = applyPick(state, pair[0]).state;
+    const done = applyPick(state, pair[1]);
+    assert.equal(done.action.type, "clear");
+    state = done.state;
+    cleared += 1;
+    if (state.phase !== "playing") break;
+    state = tick(state, 16);
+  }
+  assert.equal(state.phase, "won", "每日一盘必须能清盘");
+  assert.equal(state.mode, "daily");
+  assert.equal(cleared, totalPairs);
+  assert.equal(tilesOf(state.board).length, 0);
+  assert.ok(state.stars >= 1 && state.stars <= 3);
+});
+
+test("每日一盘：抽到带壳章节（第 2/3 章）的日期同样能清盘", () => {
+  const keys = [];
+  for (let i = 0; i < 400 && keys.length < 3; i += 1) {
+    const key = dateKey(new Date(2026, 0, 1 + i));
+    if (dailyLevelIndex(key) > 12) keys.push(key);
+  }
+  assert.equal(keys.length, 3, "一年内应当存在落在第 2/3 章的日期");
+  keys.forEach((key) => {
+    let state = startGame(createState(1, { mode: "daily", dateKey: key }));
+    assert.ok(frozenCells(state.board).length > 0, key + " 应当带冰封壳");
+    let cleared = 0;
+    const guard = state.params.tiles * 2 + 100;
+    while (state.phase === "playing" && cleared < guard) {
+      const pair = findAnyPair(state.board);
+      assert.ok(pair, key + " 出现死局");
+      state = applyPick(state, pair[0]).state;
+      const done = applyPick(state, pair[1]);
+      assert.equal(done.action.type, "clear");
+      state = done.state;
+      cleared += 1;
+      if (state.phase !== "playing") break;
+      state = tick(state, 16);
+    }
+    assert.equal(state.phase, "won", key + " 未能清盘");
+    assert.equal(hasFrozen(state.board), false, "清盘后不该还有壳");
+  });
 });

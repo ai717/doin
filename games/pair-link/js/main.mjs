@@ -2,14 +2,16 @@
 // 不绕过 engine 修改任何规则状态。
 
 import { createAudio } from "./audio.mjs";
-import { COLS, ROWS, createState } from "./engine.mjs";
+import { COLS, ROWS, createState, todayKey } from "./engine.mjs";
 import { createGame } from "./game.mjs";
 import { format, loadLocale, saveLocale, t } from "./i18n.mjs";
 import { createRenderer } from "./render.mjs";
 import { endBonus } from "./score.mjs";
 import {
+  dailyBest,
   levelStat,
   loadProgress,
+  recordDaily,
   recordEndless,
   recordLevel,
   saveProgress
@@ -46,7 +48,7 @@ function boot(view) {
 
   renderer.setState(game.getState());
   view.render(game.getState(), hudMeta(game.getState()));
-  view.setStartProgress(progress);
+  refreshStartProgress();
   view.openPanel("start");
 
   /* ------------------------------------------------------------ 事件处理 */
@@ -55,8 +57,16 @@ function boot(view) {
     if (state.mode === "endless") {
       return { best: progress.endlessBest, stars: 0 };
     }
+    if (state.mode === "daily") {
+      return { best: dailyBest(progress, state.dateKey), stars: 0 };
+    }
     const record = levelStat(progress, state.level);
     return { best: record.score, stars: record.stars };
+  }
+
+  /** 开始面板上的进度与今日最佳（今日最佳要按"今天"取，跨天自然归零）。 */
+  function refreshStartProgress() {
+    view.setStartProgress(progress, dailyBest(progress, todayKey()));
   }
 
   function handleState({ state, source }) {
@@ -88,20 +98,30 @@ function boot(view) {
         audio.play("invalid");
         view.toast("toastInvalid");
         break;
+      case "frozen":
+        view.flash(action.cell, "frozen");
+        audio.play("invalid");
+        view.toast("toastFrozen");
+        break;
       case "hint":
         audio.play("hint");
         view.toast("toastHint");
+        if (action.melted) window.setTimeout(() => view.toast("toastMelted"), 1400);
         break;
       case "shuffle":
         renderer.playShuffle();
         audio.play("shuffle");
-        view.toast("toastShuffle");
+        view.toast(action.melted ? "toastMelted" : "toastShuffle");
         break;
       case "clear": {
         renderer.playLink(action.cells, action.folds);
         renderer.playClear(action.cells);
         audio.play("link", { folds: action.folds });
         window.setTimeout(() => audio.play("clear"), 240);
+        if (action.broken && action.broken.length > 0) {
+          view.flashMelt(action.broken);
+          window.setTimeout(() => audio.play("shuffle"), 120);
+        }
         if (action.combo >= 1) {
           audio.play("combo", { combo: action.combo });
         }
@@ -109,7 +129,9 @@ function boot(view) {
           view.flashComboLamp();
           renderer.playBoardGlow();
         }
-        if (action.autoShuffles > 0) view.toast("toastAutoShuffle");
+        // 融壳兜底优先播报：它比普通自动洗牌更值得让玩家知道
+        if (action.melted) view.toast("toastMelted");
+        else if (action.autoShuffles > 0) view.toast("toastAutoShuffle");
         if (action.boardCleared && state.phase === "playing") {
           view.toast("toastBoardCleared", { n: state.clearedBoards + 1 });
         }
@@ -122,6 +144,7 @@ function boot(view) {
 
   function handleEnd({ state, reason }) {
     const isEndless = state.mode === "endless";
+    const isDaily = state.mode === "daily";
     const won = reason === "win";
 
     if (isEndless) {
@@ -145,6 +168,33 @@ function boot(view) {
       return;
     }
 
+    // 每日一盘：只更新 daily 字段，绝不碰 unlocked / levels / lastLevel。
+    if (isDaily) {
+      const before = dailyBest(progress, state.dateKey);
+      const outcome = recordDaily(progress, state.dateKey, state.score);
+      progress = outcome.progress;
+      saveProgress(progress);
+      const record = outcome.isNewBest && state.score > 0;
+      audio.play(record ? "record" : won ? "win" : "lose");
+      if (record) window.setTimeout(() => audio.play("record"), 420);
+      refreshStartProgress();
+      view.render(state, hudMeta(state));
+      view.showResult({
+        mode: "daily",
+        phase: state.phase,
+        score: state.score,
+        stars: state.stars,
+        clearedPairs: state.clearedPairs,
+        comboPeak: state.comboPeak,
+        shellsBroken: state.shellsBroken,
+        dailyBest: dailyBest(progress, state.dateKey),
+        best: before,
+        record: record,
+        failReason: state.failReason
+      });
+      return;
+    }
+
     const previousUnlocked = progress.unlocked;
     const previous = levelStat(progress, state.level);
     const timeBonus = won ? endBonus({ remainingMs: state.remainingMs }) : 0;
@@ -155,7 +205,6 @@ function boot(view) {
       progress = recordLevel(progress, state.level, { score: state.score, stars: state.stars });
       saveProgress(progress);
     }
-
     audio.play(won ? "win" : "lose");
     if (record) window.setTimeout(() => audio.play("record"), 420);
     if (progress.unlocked > previousUnlocked && progress.unlocked <= LEVEL_COUNT) {
@@ -165,7 +214,7 @@ function boot(view) {
       );
     }
 
-    view.setStartProgress(progress);
+    refreshStartProgress();
     view.render(state, hudMeta(state));
     view.showResult({
       mode: "level",
@@ -290,6 +339,12 @@ function boot(view) {
     game.dispatch({ type: "newGame", level: 1, mode: "endless" });
   });
 
+  on("btn-daily", () => {
+    audio.unlock();
+    view.closePanel();
+    game.dispatch({ type: "newGame", level: 1, mode: "daily" });
+  });
+
   on("btn-resume", () => game.dispatch({ type: "resume" }));
   on("btn-pause", () => {
     const state = game.getState();
@@ -309,7 +364,7 @@ function boot(view) {
   on("btn-next", () => {
     const state = game.getState();
     view.closePanel();
-    if (state.mode === "endless" || state.level >= LEVEL_COUNT) {
+    if (state.mode === "endless" || state.mode === "daily" || state.level >= LEVEL_COUNT) {
       openLevels();
       return;
     }

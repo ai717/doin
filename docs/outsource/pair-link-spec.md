@@ -103,10 +103,12 @@
 1. **成对不变量**：每种图案的总数恒为偶数。生成与洗牌都不得破坏此不变量 → 全盘在数量上必然可消尽。
 2. **可用性不变量（可判定、可测试）**：**开局**与**每一次成功消除之后**，立即调用 `hasAnyPair(board)`：
    - 结果为 false → **自动洗牌**（不消耗玩家主动洗牌次数），重复至 true 或达到 **50 次**上限；
-   - 达到 50 次仍 false → 本关失败（提示"重玩"）。
+   - 达到 50 次仍 false 且盘上**还有冰封壳**（见 1.3.15）→ **融壳兜底**：把全部冰封壳解冻成裸块，再继续洗牌至有解；
+   - 达到 50 次仍 false 且无壳可融 → 本关失败（提示"重玩"）。
    → 玩家**永远不会面对无棋可下的死盘**。
-3. **洗牌等价性**：洗牌只置换"剩余瓷片的位置"，**不改变任何图案的计数**（保持不变量 1），且**不移动外圈**（外圈恒空）。
-4. **生成期校验**：开局布盘后必须通过不变量 2 的同一检查；未通过则用**同一 PRNG 流**继续取样重排，最多 200 次。
+   ⚠️ `hasAnyPair` 必须**跳过带壳块**（带壳块不可点选，把壳当作可用配对是错的）。
+3. **洗牌等价性**：洗牌只置换"剩余瓷片的位置"，**不改变任何图案的计数**（保持不变量 1），且**不移动外圈**（外圈恒空）。**带壳状态随值一起被置换**，洗牌不得单独改变壳的数量。
+4. **生成期校验**：开局布盘（含套壳）后必须通过不变量 2 的同一检查；未通过则用**同一 PRNG 流**继续取样重排，最多 200 次。
 
 **诚实声明（必须写进代码注释）**：本作**不**对"存在完整消除序列"做全局回溯穷举 —— 80 格状态空间不可行。全局可解性由"不变量 1 + 2 + 3"共同保证：任何时刻都存在合法操作，且总量必然可消尽；若出现局部僵局，由不变量 2 的自动洗牌立即化解。这与经典 QQ 连连看的成熟口径一致。
 
@@ -146,11 +148,11 @@ levelSeed(L)  = hashSeed("pair-link:" + L)
 
 章节主题与递进：
 
-| 章 | 关 | 名称 | 图案种类 | 实心块数 | 每格基准秒 | 引入机制 |
-| --- | --- | --- | --- | --- | --- | --- |
-| 第 1 章 | 1–12 | 灯市初开 | 6 / 7 / 8 | 56 / 60 / 64 | 2.20 | 教学：直连与单折为主，盘面疏松 |
-| 第 2 章 | 13–24 | 长街深巷 | 8 / 9 / 10 | 64 / 68 / 72 | 2.02 | 时限收紧；出现"边角死锁型"布局（仍保证可解） |
-| 第 3 章 | 25–36 | 满城琉璃 | 10 / 11 / 12 | 72 / 76 / 80 | 1.87 | 近满盘开局，连击成为拿三星的关键 |
+| 章 | 关 | 名称 | 图案种类 | 实心块数 | 每格基准秒 | 冰封壳数 | 引入机制 |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| 第 1 章 | 1–12 | 灯市初开 | 6 / 7 / 8 | 56 / 60 / 64 | 2.20 | 0 | 教学：直连与单折为主，盘面疏松 |
+| 第 2 章 | 13–24 | 长街深巷 | 8 / 9 / 10 | 64 / 68 / 72 | 2.02 | 4 / 5 / 6 | 时限收紧；引入冰封壳（先震碎再连） |
+| 第 3 章 | 25–36 | 满城琉璃 | 10 / 11 / 12 | 72 / 76 / 80 | 1.87 | 8 / 10 / 12 | 近满盘开局，壳量最高，连击成为拿三星的关键 |
 
 **参数公式（必须在 engine 内确定性生成，禁止手写 36 行散落常量）**：
 
@@ -163,6 +165,8 @@ levelSeed(L)  = hashSeed("pair-link:" + L)
 时限 T(L) = ceil(N(L) × b(L))                                  // 秒
 提示次数 = 3（每关固定）
 主动洗牌次数 = 2（每关固定）
+冰封壳数 F(L) = [0, 4, 8][c-1] + [0, 1, 2][c-1] × floor((k - 1) / 4)
+                // 第 1 章恒 0；第 2 章 4/5/6；第 3 章 8/10/12
 ```
 
 **全 36 关派生结果（承接方必须用公式复现，不得手抄）**：
@@ -225,7 +229,7 @@ levelSeed(L)  = hashSeed("pair-link:" + L)
 - **洗牌 ×2**：打乱剩余瓷片位置（保持计数与可解性不变量）。次数 0 时按钮置灰且无效果。
 - 每次使用立即扣减并更新 HUD 上的印章计数。
 
-### 1.3.12 次模式：无尽冲分（拍板项，本任务书按 2A 落地）
+### 1.3.12 次模式 A：无尽冲分
 
 - **入口**：开始面板上的"无尽冲分"按钮。
 - **起始盘**：第 1 关参数（S=6, N=56, T=124s）。
@@ -234,6 +238,38 @@ levelSeed(L)  = hashSeed("pair-link:" + L)
 - **连击倍率跨盘继承**：`chainMult = min(4.0, 1 + 0.25 × clearedBoards)`，作用于**基础分与折线奖励**（连击奖励不乘）。连击计数本身**跨盘重置为 0**（跨盘瞬间窗口必然超时）。
 - **结算**：任一盘倒计时归零 → 结算总分，写入无尽最高分 `endlessBest`。
 - **不占用**主线关卡进度与 `current` 槽位。
+
+### 1.3.12b 次模式 B：每日一盘（拍板项，本任务书按 2B 落地）
+
+门户"今日挑战"型入口，**全服同题**。
+
+- **入口**：开始面板上的"今日一盘"按钮（`#btn-daily`）。
+- **题面派生（必须确定性，禁止用 `Math.random()`）**：
+  ```
+  dateKey = 本地时区 YYYY-MM-DD                       // 不能用 UTC，否则跨时区不同题
+  L       = hashSeed("pair-link:daily:" + dateKey) % 36 + 1   // 挑关卡参数
+  seed    = hashSeed("pair-link:daily-board:" + dateKey)      // 出盘面种子
+  ```
+- **确定性**：同一天、同一关卡参数 + 同一种子 → **逐格完全相同**的盘面。刷新页面、点"重玩"都必须给同一副盘面（公平重试）。
+- **只记录当日最佳**：结算写入 `daily: { dateKey, bestScore }`。跨天时 `dailyBest()` 因 `dateKey` 不符自然返回 0。
+- **与主线完全解耦（硬性红线）**：进入 / 游玩 / 结算每日盘，**一律不得**改动 `unlocked`、`levels`、`lastLevel`。
+- **无"下一关"**：结算面板按钮为"返回选关"。
+- **HUD 差异**：关卡匾额显示 `MM-DD`（`shortDateKey`）而不是关卡号；章名显示"今日灯市"。
+
+### 1.3.15 冰封壳（特殊块，拍板项 1B）
+
+第 2/3 章出现的特殊块（数量见 1.3.8 的 `F(L)`）。
+
+- **表现**：瓷片表面覆一层霜壳（`.tile::after` 画霜层 + 两道裂纹 + inset 冷光阴影），鼠标指针 `cursor: not-allowed`。
+- **规则**：**带壳瓷片不可点选、不参与配对**。点它 → `action.type === "frozen"`，抖动一下（冰蓝 `iceShake`）+ 提示"这块瓷片被冰封住了，先消掉它周围的瓷片。"
+- **震碎条件**：当**它周围 8 邻域（含斜向）**内的瓷片被消除时，壳立即震碎（霜层炸开 `iceShatter` 动效 + 播报），该瓷片恢复为可点选。
+  ⚠️ 邻域判定必须**含斜向**（`AROUND8`），且传入坐标要**去重**（同一格可能既是 first 又是 last）。
+- **值编码（强烈建议照此实现）**：棋盘值 `v ∈ [1,12]` 为裸块，`v + MOTIF_COUNT ∈ [13,24]` 表示带壳。
+  - 好处：「非 0 即有块」的判定零改动；`shuffleBoard` 置换值数组时壳自动跟随；无需平行 `frozen` 数组。
+  - 读母题一律走 `motifOf(v)`（`v > 12 ? v - 12 : v`），判壳走 `isFrozenValue(v)`。
+- **可解性联动**：`hasAnyPair` 必须跳过带壳块；死盘兜底在洗牌无果后**融壳**（`meltAll`），见 1.3.6。
+- **无障碍**：带壳格的 `aria-label` 追加"冰封"（如"第 2 行第 9 列，回纹，冰封"）。
+- **动效降级**：震碎 / 融壳动效必须受 `prefers-reduced-motion: reduce` 约束（压成瞬移）。
 
 ### 1.3.13 存档内容
 
@@ -248,18 +284,26 @@ levelSeed(L)  = hashSeed("pair-link:" + L)
     ...
   },
   endlessBest: 0,              // 无尽模式最高分
+  daily: {                     // 每日一盘：只存"最近一次玩的日期 + 当日最佳"
+    dateKey: "",               // "YYYY-MM-DD"；为空或非法时整条回退默认
+    bestScore: 0
+  },
   muted: false,                // 音效开关
   lastLevel: 1                 // 上次游玩的关卡，用于"继续"
 }
 ```
 
+⚠️ 新增 `daily` 是**追加字段**而非破坏性变更：`v` 保持 `1`，老存档读取时由 `normalizeProgress` 补默认值，**不得丢失主线进度**。必须有测试守护"老档不丢 `unlocked` / `levels` / `lastLevel`"。
+
 语言偏好**不**存在本 key 内，统一走全局 `localStorage["doin.lang"]`。
 
 ### 1.3.14 必含功能清单
 
-- [x] 开始游戏（开始面板：主线继续 / 选关 / 无尽冲分）
+- [x] 开始游戏（开始面板：主线继续 / 选关 / 无尽冲分 / 今日一盘）
+- [x] 冰封壳特殊块（第 2/3 章；8 邻域震碎；融壳兜底；无障碍文本）
+- [x] 每日一盘（确定性同题；当日最佳；与主线解耦）
 - [x] 暂停与继续（`P` / 按钮；暂停遮罩 + 倒计时冻结）
-- [x] 重玩本关 / 重新开始
+- [x] 重玩本关 / 重新开始（每日盘重玩给同一副盘面）
 - [x] 结算反馈（星级依次点亮 + 分数明细逐行浮现 + 新高分徽章 + 粒子）
 - [x] 当前关卡与进度显示（关卡匾额 + 星级槽 + 选关面板）
 - [x] 时间 / 分数 / 连击显示
@@ -333,6 +377,7 @@ levelSeed(L)  = hashSeed("pair-link:" + L)
 | 分数 | `#score-value`、`#best-value` |
 | 星级槽 | `#stars`（内含 3 个 `.star`） |
 | 道具 | `#btn-hint`、`#hint-count`、`#btn-shuffle`、`#shuffle-count` |
+| 每日一盘 | `#btn-daily`、`#daily-best`（今日最佳数值槽）、`.panel-daily`（开始面板内的霜蓝条块） |
 | 控制台 | `#btn-pause`、`#btn-restart`、`#btn-sound`、`#btn-lang`、`#btn-help` |
 | 面板 | `#overlay`、`#panel-start`、`#panel-pause`、`#panel-result`、`#panel-help`、`#panel-levels` |
 | 无障碍播报 | `#board-live`（`aria-live="polite"`）、`#toast` |
@@ -344,15 +389,35 @@ levelSeed(L)  = hashSeed("pair-link:" + L)
 export const ROWS, COLS, SOLID_ROWS, SOLID_COLS, LEVEL_COUNT, MOTIF_COUNT;
 export function hashSeed(str);            // -> uint32
 export function makeRng(seed);            // -> () => float in [0,1)
-export function levelParams(L);           // -> { level, chapter, kinds, tiles, timeMs, hints, shuffles }
+export function levelParams(L);           // -> { level, chapter, kinds, tiles, frozen, timeMs, hints, shuffles }
 export function createLevel(L, rng);      // -> { board, params, ... }
 export function findLinkPath(board, a, b); // -> { cells, folds } | null
-export function hasAnyPair(board);        // -> boolean
+export function hasAnyPair(board);        // -> boolean（必须跳过带壳块）
 export function findHint(board);          // -> [a, b] | null
-export function shuffleBoard(board, rng); // -> 新 board（保持计数与外圈）
+export function shuffleBoard(board, rng); // -> 新 board（保持计数与外圈；带壳状态随值一起置换）
 export function applyPick(state, cell);   // -> { action, state }
 export function tick(state, dtMs);        // -> state
 export function levelOutcome(state);      // -> 'playing' | 'won' | 'lost'
+
+// js/engine.mjs —— 冰封壳（值偏移编码，见 1.3.15）
+export const FROZEN_OFFSET;               // = MOTIF_COUNT
+export function isFrozenValue(v);         // -> boolean
+export function motifOf(v);               // -> 1..12（剥掉壳层）
+export function freezeValue(v);           // -> v + FROZEN_OFFSET
+export function meltValue(v);             // -> v - FROZEN_OFFSET
+export function hasFrozen(board);         // -> boolean
+export function frozenCells(board);       // -> [{ r, c, value }]
+export function meltAll(board);           // -> 全部融壳后的新 board
+export function breakShellsAround(board, cells); // -> { board, broken: [{r,c}] }
+
+// js/engine.mjs —— 每日一盘（见 1.3.12b）
+export function dateKey(d);               // -> "YYYY-MM-DD"（本地时区）
+export function todayKey();               // -> 今日 dateKey
+export function isDateKey(s);             // -> boolean
+export function shortDateKey(s);          // -> "MM-DD"（匾额显示用）
+export function dailyLevelIndex(key);     // -> 1..36
+export function dailySeed(key);           // -> uint32
+export function dailyParams(key);         // -> levelParams(dailyLevelIndex(key))
 
 // js/score.mjs
 export function clearScore({ folds, combo, chainMult });
@@ -365,6 +430,8 @@ export const DEFAULT_PROGRESS;
 export function normalizeProgress(raw);
 export function loadProgress();
 export function saveProgress(p);
+export function dailyBest(progress, dateKeyValue);        // 日期不符 → 0
+export function recordDaily(progress, dateKeyValue, score); // -> { progress, isNewBest }（不碰主线字段）
 
 // js/i18n.mjs
 export const LOCALES, LANG_KEY, DEFAULT_LOCALE;
@@ -377,7 +444,7 @@ export function createAudio();  // -> { unlock, setMuted, play(name) }
 export function createRenderer(canvas, boardEl); // -> { setState, playLink, playClear, playShuffle, resize, destroy }
 
 // js/ui.mjs
-export function createUi(refs);  // -> { render, toast, openPanel, closePanel }
+export function createUi(refs);  // -> { render, toast, openPanel, closePanel, flash, flashMelt, setStartProgress }
 
 // js/game.mjs
 export function createGame(initialState, handlers); // -> { state, dispatch, tick }
@@ -386,7 +453,7 @@ export function createGame(initialState, handlers); // -> { state, dispatch, tic
 export const MOTIFS;             // 12 个 { id, name, paths: [d…], accent }
 ```
 
-**事件命名**：`onStateChange`、`onClear({ cells, folds, combo })`、`onInvalid({ cell })`、`onCombo({ combo })`、`onLevelEnd({ outcome, score, stars })`、`onToast({ key, vars })`。
+**事件命名**：`onStateChange`、`onClear({ cells, folds, combo, broken, autoShuffles, melted })`、`onInvalid({ cell })`、`onFrozen({ cell })`、`onCombo({ combo })`、`onLevelEnd({ outcome, score, stars })`、`onToast({ key, vars })`。
 
 ### 渲染策略裁决
 

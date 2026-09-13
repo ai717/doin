@@ -12,8 +12,9 @@
 - **门户**：薄荷渐变首页（`index.html` + `css/`），640×640 WebP 封面（3D 风格统一），
   白色胶囊卡片标签 + hover 放大；品牌行「Doin.win 字标 ←→ 地球语言按钮」+ 二级主标题；
   中英双语（`doin.lang` 全站共享偏好）。CNAME `doin.win`。共 16 款游戏上架（新增 Pair-Link）。
-- **Pair-Link**（新增）：连连看，夜市灯牌 / 琉璃瓷片题材，36 关三章 + 无尽冲分。
+- **Pair-Link**（新增）：连连看，夜市灯牌 / 琉璃瓷片题材，36 关三章 + 无尽冲分 + 每日一盘。
   逻辑盘 12×10（10×8 实心 + 外圈通道），三线连通判定（0/1/2 折，禁斜线，可绕外圈虚空）。
+  第 2/3 章引入**冰封壳**（8 邻域震碎，死盘融壳兜底）；**每日一盘**同种子同题、与主线解耦。
   DOM/CSS Grid 棋盘 + Canvas 2D 特效覆盖层双轨渲染，桌面双栏沉浸 UI。稳定基线见本轮条目。
 - **Jigsaw**：拼图，50 关（3×3 → 4×4 → 5×5）+ 今日拼图，交换碎片复原图案。
   每关一张程序化生成的抽象艺术图（同 seed 同图，零图库零版权），Canvas 渲染 + 桌面双栏 UI。
@@ -52,9 +53,9 @@
 ### 验收（两级门禁 + 真浏览器）
 
 - `node scripts/check-game.mjs pair-link` → **19 pass / 0 fail / 0 warn / 0 waived**（T1 全过，零豁免）。
-- `npm run test:pair-link` → **76 pass / 0 fail**（含 1200 步随机游走 + 36 关各 60 步）。
-- `node x/pair-link/cdp-smoke.mjs` → **44 pass / 0 fail**（真鼠标点击消除、键盘、5 档视口、
-  降级对照组 `no-preference 0.14s` ↔ `reduce 1e-06s`）。
+- `npm run test:pair-link` → **77 pass / 0 fail**（含 1200 步随机游走 + 36 关各 60 步 + 全 36 关清盘）。
+- `node x/pair-link/cdp-smoke.mjs` → **47 pass / 0 fail**（真鼠标点击消除、键盘、5 档视口、
+  空格/外圈计算样式、降级对照组 `no-preference 0.14s` ↔ `reduce 1e-06s`）。
 - `npm run build` → 成功；`dist/pair-link/` 扁平化正确、`tests/` 已排除。
 - `node x/pair-link/cdp-dist.mjs` → **27 pass / 0 fail**（生产路径 + 门户卡片）。
 
@@ -112,13 +113,127 @@
 3. **颜色可辨性进单测**（`tests/engine.test.mjs` 母题表用例）：断言任意两母题的平均色
    曼哈顿距离 ≥ 30（实测最小 53）。只断言"tint 名字不同"是**数据**不同，不是**玩家看得出**不同。
 
-### 待办
+### 修复：消除后的空格残留"插座"轮廓（用户报障）
 
-- 三项待用户拍板：`pair-link` 与 `link-up` 两份同品类设计取舍（本次只做 pair-link，未触碰 link-up）；
-  特殊块（冰封块）是否首发；次模式是否加「每日一盘」。
-- 用户已选择**只本地提交、暂不推送**（提交 `c093d0c`），故生产域名尚未上线本游戏。
+**现象**：用户报「消除的格子 应该没有格子 就是背景」。清掉若干对之后，空格位置仍留着
+一圈淡淡的圆角轮廓，外圈通道还额外是虚线 —— 整片空棋盘看起来像一排排空插槽，
+玩家分不清"这格已经消掉了"和"这格还有东西"。
+
+**根因**：`css/style.css` 的 `.cell::after` 对**每一个**格子都画了轮廓
+（`inset: 6%; border-radius: 22%; border: 1px solid rgba(243,230,210,0.045)`），
+`.cell.is-void::after` 又把它改成 `dashed`。而任务书 1.4 只给**外圈通道**规定了
+「以极淡网格线（`rgba(243,230,210,0.07)`）暗示可绕行」，**对已消除格没有任何外观要求**。
+所以这是**实现偏离规格**，不是需求扩展。
+
+**修复**（`cf9fa27`）：
+- `.cell.is-empty::after { border-color: transparent; }` —— 空格就是纯背景；
+- `.cell.is-void::after { inset: 0; border: 0; border-radius: 0; border-right/bottom: 1px solid rgba(243,230,210,0.07); }`
+  —— 只画右 / 下两条边，避免相邻格叠成双线，同时去掉圆角与 inset，否则又退化成一格格插座。
+
+**新增 3 条真浏览器计算样式回归断言**（`x/pair-link/cdp-smoke.mjs`，读 `getComputedStyle(n,"::after")`）：
+① 空格可见边数 === 0；② 外圈不再有 `dashed` 且 `border-radius === 0`；
+③ 外圈所有**已绘制**的边 alpha ≤ 0.10。
+- **踩坑**：第 ③ 条初版写成"所有边 alpha ≤ 0.1"→ 恒假。因为 `border: 0` 只重置**宽度**，
+  颜色仍是默认的 `rgb(243,230,210)`（alpha 1），未绘制的边也被算进来了。
+  改为 `widths.every((w,i) => px(w) === 0 || alpha(colors[i]) <= 0.1)` 才对。
+- **捕获力已验证**：把 CSS 临时退回缺陷版 → 第 ① ② 条转红（`可见边数=4`、
+  `styles=["dashed",...] radius=22%`），第 ③ 条按设计仍绿。从 `x/pair-link/style.css.fixed`
+  还原后 47/47 全绿，md5 与注入前一致。
+
+### 待办（已随下一轮拍板全部关闭）
+
+- 三项拍板已由用户给出：**冰封壳首发（1B）**、**加「每日一盘」（2B）**、图案题材维持抽象琉璃几何（3B）。
+  落地见下一节。
+- 用户已选择**只本地提交、暂不推送**（本游戏相关提交 `c093d0c` → `7cff4a4` → `cf9fa27`），
+  故生产域名尚未上线本游戏。推送需用户明确指示。
 - 仅剩人工目视项：三线连通（0/1/2 折）的手动试玩手感。
   （12 母题可辨性已由 `x/pair-link/cdp-motifs.mjs` 程序化覆盖。）
+
+## 2026-09-13 · Pair-Link 首发增强：冰封壳 + 每日一盘 + 空格残留根治
+
+> 用户四条并行指令：①「pair-link 与 link-up 是两个并行的项目，你只管你的！」→ 只改 pair-link，
+> 绝不触碰 `games/link-up/`、`docs/plans/link-up-prd.md`、`docs/outsource/link-up-spec.md`；
+> ②「首发」= 冰封壳进首发；③「加「每日一盘」。」；④「空的格子就不要存在！」
+
+### 1 · 根治"消除后仍有空格残留"（用户第二次报障，这次才找到真根因）
+
+**上一轮为什么没治本**：只把 `.cell::after` 的轮廓改成透明，断言也只读 `::after` 的计算样式 →
+**全绿却依然看得见**。断言与缺陷不在同一层，看不见它。
+
+**真根因**：`.tile` 的 `background` 用的是 **`var(--tile-lt, #e8b768)` 带回退色**。
+`paintTile()` 消除时只 `removeAttribute("style")` —— 内联变量没了，**回退色还在**，
+于是每个已消除格继续渲染一枚**没有图案的纯金色方块**。
+
+**修复**：`.cell.is-empty .tile { display: none; }`；同时删掉整块棋盘的网格线
+（`.cell::after`、`.cell.is-void::after`、`.cell.is-breath::before` + `@keyframes breath`、
+`.cell:focus-visible::after`）——已消除格与外圈通道一律纯背景。
+
+**断言升级为"可见表面"三层 + 真像素等价性**（`x/pair-link/cdp-smoke.mjs`）：
+1. 已消除格的**瓷片本体** `display:none`（不再画无图案色块）；
+2. 已消除格的**格子自身**无背景/边框/伪元素；
+3. 已消除格的**母题 SVG** 无残留可见内容；
+4. **真像素等价性**：把全部空格 / 通道格 `visibility: hidden` 后截图，必须与之前**逐字节相同**。
+   这条与具体装饰无关，只要还画了东西就必然不等 —— 是决定性判据。
+   ⚠️ 比较前必须先冻结所有动画（背景有 26s `drift` 光晕 + 半透明棋盘底 `rgba(36,26,21,.86)`，
+   否则两次截图本就不同，断言恒假）。
+
+**捕获力已验证**：把 CSS 退回缺陷版 → 3 条转红，detail 正是那块金色瓷片
+`{"display":"flex","bg":"image","paints":true}`；从 `x/pair-link/style.css.fixed` 还原后 md5 一致。
+
+### 2 · 冰封壳（首发特殊块，拍板 1B）
+
+- **编码**：棋盘值 `v ∈ [1,12]` 为裸块，`v + MOTIF_COUNT ∈ [13,24]` 表示带壳。
+  好处：「非 0 即有块」判定零改动、`shuffleBoard` 置换值数组时壳自动跟随、无需平行 `frozen` 数组。
+  读母题走 `motifOf()`，判壳走 `isFrozenValue()`。
+- **数量**：`F(L) = [0,4,8][c-1] + [0,1,2][c-1] × floor((k-1)/4)` → 第 1 章 0，第 2 章 4/5/6，第 3 章 8/10/12。
+- **规则**：带壳块不可点选、不参与配对（点它 → `action.type === "frozen"`，冰蓝抖动 + 提示）；
+  其 **8 邻域（含斜向）** 内瓷片被消除时壳震碎（`iceShatter` 动效），恢复可点选。
+- **可解性联动**：`findAnyPair` / `hasAnyPair` 跳过带壳块；死盘兜底顺序
+  「洗牌 → 若仍无解且有壳则 `meltAll` 融壳 → 再洗牌」，`resolveDeadlock` 返回 `melted` 标记。
+  **绝不把死盘交给玩家。**
+- **无障碍**：带壳格 `aria-label` 追加「冰封」、`cursor: not-allowed`。
+
+### 3 · 每日一盘（拍板 2B）
+
+- `dateKey`（**本地时区** YYYY-MM-DD，不能用 UTC）→ `hashSeed("pair-link:daily:" + key) % 36 + 1` 挑关、
+  `hashSeed("pair-link:daily-board:" + key)` 出种子。
+- **同一天全服同一副盘面**：刷新、点「重玩」都逐格相同（有专门用例守护）。
+- **与主线完全解耦**：结算只写 `progress.daily`，`unlocked` / `levels` / `lastLevel` 一律不动。
+  存档 `v` 保持 `1`（追加字段而非破坏性变更），老档不丢主线进度（有专门用例守护）。
+- 匾额显示 `MM-DD`、章名「今日灯市」、结算按钮「返回选关」。
+
+### 新增 / 修改文件
+
+- `games/pair-link/css/style.css`（空格根治 + 冰封壳霜层/裂纹/抖动/碎裂 + 每日一盘条块样式）
+- `games/pair-link/js/engine.mjs`（779 → ~950 行：壳编码、8 邻域震碎、融壳兜底、每日一盘派生）
+- `games/pair-link/js/storage.mjs`（`daily` 字段 + `dailyBest` / `recordDaily`）
+- `games/pair-link/js/ui.mjs`、`js/main.mjs`、`js/i18n.mjs`（中英各 +12 键）、`index.html`
+- `games/pair-link/tests/engine.test.mjs`（77 → 94 条）、`tests/storage.test.mjs`（+7 条）
+- `x/pair-link/cdp-smoke.mjs`（47 → 50，弱断言换真像素等价性）
+- `x/pair-link/cdp-features.mjs`（新建，32 项：冰封壳 + 每日一盘）
+- `x/pair-link/cdp-dist.mjs`（27 → 34 项）、`x/pair-link/shot-clear.mjs`（新建，从画面反推棋盘求解）
+- `docs/plans/pair-link-prd.md`（新增 §6 拍板结果）、`docs/outsource/pair-link-spec.md`（同步规格）
+
+### 验证结果（全绿）
+
+- `npm run test:pair-link` **101 / 0**
+- `node scripts/check-game.mjs pair-link` **19 pass / 0 fail / 0 warn**
+- `x/pair-link/cdp-smoke.mjs` **50 / 0**（含两条真像素等价性、降级对照组）
+- `x/pair-link/cdp-motifs.mjs` **6 / 0**
+- `x/pair-link/cdp-features.mjs` **32 / 0**（含带壳第 13 关贪心打通清盘、每日盘确定性/解耦）
+- `x/pair-link/cdp-dist.mjs` **34 / 0**（生产路径 + 门户首页卡片）
+
+### 踩坑记录
+
+- **生产路径验收两条 FAIL 全是"测试写错"**：`#btn-daily` 在 `#panel-start` 内，
+  先点「暂停 → 选择关卡」会把 `#panel-levels` 打开并**盖住**开始面板 → 点了没反应，
+  被误读成产品缺陷（`open:true, plaque:"1"`）。改为 `Page.navigate` 回干净开始面板再点。
+  **一般规律：点被遮挡的按钮前先确认它所在面板是可见的。**
+- **`cdp-features.mjs` 崩溃**：`INSTALL` 模板里残留 `return true;` 把后续 `return {...}` 截断。
+- **`shot-clear.mjs` 参数解析**：`Number(process.argv[2] || 12)` 使传 `0` 变 12，
+  改为 `process.argv[2] === undefined ? 12 : Number(...) || 0`。
+- 单测里我自己写的坐标 `(1,1)`/`(2,2)` 是**斜向相邻**，本就在 8 邻域内 → 断言失败。
+  改用 `(1,4)`/`(6,6)`，并**补了一条"斜向必须震碎"的用例**（正是这次错误暴露的盲点）。
 
 ## 2026-09-11 · AGENTS.md 深度重构升级与双技能协同体系统合
 

@@ -9,6 +9,16 @@
 //        上限 50 次；玩家因此永远不会面对无棋可下的死盘；
 //     3. 洗牌等价性：洗牌只置换剩余块的位置，不改变图案计数，外圈恒空。
 //   这与经典 QQ 连连看的成熟口径一致。
+//
+// 冰封壳的编码（重要）：
+//   带壳的瓷片在 board 里的值 = 母题 id + FROZEN_OFFSET（即 13..24），不带壳就是 1..12。
+//   这样「非 0 即有块」这条被全模块依赖的判定**不需要任何改动**，
+//   shuffleBoard 置换值数组时壳也自动跟着瓷片走，不必再维护一张平行的 frozen 表。
+//   读母题 id 一律走 motifOf()，判是否有壳一律走 isFrozenValue()。
+//
+//   冰封壳的可解性：带壳的块不可被选，所以「可用性不变量」只看**未冰封**的块。
+//   若洗到上限仍无可用对，就一次性融掉全部剩余的壳（meltAll）退回经典情形再洗 ——
+//   这是结构性兜底，保证不会出现「全盘带壳、无一对可消」的锁死。
 
 import { MOTIF_COUNT } from "./motifs.mjs";
 import { clearScore, clampScore, endBonus, starsFor } from "./score.mjs";
@@ -31,10 +41,16 @@ export const COMBO_WINDOW_MS = 3000;
 export const AUTO_SHUFFLE_LIMIT = 50;
 /** 生成期重排次数上限 */
 export const GENERATE_ATTEMPTS = 200;
+/** 冰封壳的编码偏移：board 值 > MOTIF_COUNT 表示该块带壳 */
+export const FROZEN_OFFSET = MOTIF_COUNT;
 
 const CHAPTER_KINDS = [6, 8, 10];
 const CHAPTER_TILES = [56, 64, 72];
 const CHAPTER_SECONDS = [2.2, 2.02, 1.87];
+/** 每章冰封壳基数 */
+const CHAPTER_FROZEN = [0, 4, 8];
+/** 每章冰封壳的步进（同章内每 4 关递增一次） */
+const CHAPTER_FROZEN_STEP = [0, 1, 2];
 const CHAPTER_NAMES = [
   { zh: "灯市初开", en: "Lantern Market" },
   { zh: "长街深巷", en: "Deep Alleys" },
@@ -48,7 +64,90 @@ const DIRS = [
   [0, 1]
 ];
 
-/* ------------------------------------------------------------------ 随机 */
+/** 8 邻域（含斜向）—— 冰封壳被"周围一圈"的消除震碎。 */
+const AROUND8 = [
+  [-1, -1],
+  [-1, 0],
+  [-1, 1],
+  [0, -1],
+  [0, 1],
+  [1, -1],
+  [1, 0],
+  [1, 1]
+];
+
+/* ------------------------------------------------------------ 冰封壳编码 */
+
+/** 该棋盘值是否带冰封壳。 */
+export function isFrozenValue(value) {
+  return value > MOTIF_COUNT;
+}
+
+/** 从棋盘值取母题 id（带壳也能取到真身）。 */
+export function motifOf(value) {
+  return isFrozenValue(value) ? value - FROZEN_OFFSET : value;
+}
+
+/** 给一个母题 id 套上壳。 */
+export function freezeValue(value) {
+  return value > 0 && !isFrozenValue(value) ? value + FROZEN_OFFSET : value;
+}
+
+/** 把壳融掉（不带壳的原样返回）。 */
+export function meltValue(value) {
+  return isFrozenValue(value) ? value - FROZEN_OFFSET : value;
+}
+
+/** 盘上是否还有带壳的块。 */
+export function hasFrozen(board) {
+  for (let r = 0; r < ROWS; r += 1) {
+    for (let c = 0; c < COLS; c += 1) if (isFrozenValue(board[r][c])) return true;
+  }
+  return false;
+}
+
+/** 全部融壳（结构性兜底：退回经典无壳情形）。 */
+export function meltAll(board) {
+  return board.map((row) => row.map((v) => meltValue(v)));
+}
+
+/** 盘上带壳块的坐标列表。 */
+export function frozenCells(board) {
+  const out = [];
+  for (let r = 0; r < ROWS; r += 1) {
+    for (let c = 0; c < COLS; c += 1) if (isFrozenValue(board[r][c])) out.push({ r, c });
+  }
+  return out;
+}
+
+/**
+ * 震碎"周围一圈"（8 邻域，含斜向）的冰封壳。
+ * 返回 { board, broken }；broken 是本次被震碎的格子（供 UI 播碎裂动效）。
+ */
+export function breakShellsAround(board, cells) {
+  const next = cloneBoard(board);
+  const broken = [];
+  const seen = new Set();
+  const list = Array.isArray(cells) ? cells : [];
+  for (let i = 0; i < list.length; i += 1) {
+    const cell = list[i];
+    if (!cell) continue;
+    for (let d = 0; d < AROUND8.length; d += 1) {
+      const r = cell.r + AROUND8[d][0];
+      const c = cell.c + AROUND8[d][1];
+      if (r < 0 || r >= ROWS || c < 0 || c >= COLS) continue;
+      if (!isFrozenValue(next[r][c])) continue;
+      const key = r * COLS + c;
+      if (seen.has(key)) continue;
+      seen.add(key);
+      next[r][c] = meltValue(next[r][c]);
+      broken.push({ r, c });
+    }
+  }
+  return { board: next, broken };
+}
+
+/* ------------------------------------------------------------ 随机 */
 
 /** FNV-1a 32 位字符串散列。 */
 export function hashSeed(str) {
@@ -78,6 +177,63 @@ export function levelSeed(level) {
   return hashSeed("pair-link:" + clampLevel(level));
 }
 
+/* ------------------------------------------------------------ 每日一盘 */
+
+const DATE_PATTERN = /^\d{4}-\d{2}-\d{2}$/;
+
+/** YYYY-MM-DD（本地时区）—— 同一天全服同一盘，口径对齐 jigsaw 的「今日拼图」。 */
+export function dateKey(date) {
+  const value = date instanceof Date && !Number.isNaN(date.getTime()) ? date : new Date();
+  const y = value.getFullYear();
+  const m = String(value.getMonth() + 1).padStart(2, "0");
+  const d = String(value.getDate()).padStart(2, "0");
+  return y + "-" + m + "-" + d;
+}
+
+/** 今天的日期键。 */
+export function todayKey(date) {
+  return dateKey(date);
+}
+
+/** 日期键是否合法（存档清洗用）。 */
+export function isDateKey(value) {
+  return typeof value === "string" && DATE_PATTERN.test(value);
+}
+
+/**
+ * 每日一盘的关卡序号 = hash(dateKey) % 36 + 1。
+ * 用日期挑关卡而不是写死难度：每天的图案数 / 时限 / 冰封壳数都不同，
+ * 但**同一天所有人拿到的盘面完全相同**，且与主线进度无关。
+ */
+export function dailyLevelIndex(dateKeyValue) {
+  const key = isDateKey(dateKeyValue) ? dateKeyValue : todayKey();
+  return (hashSeed("pair-link:daily:" + key) % LEVEL_COUNT) + 1;
+}
+
+/** 每日一盘的盘面种子（与关卡序号分开取，避免两者耦合）。 */
+export function dailySeed(dateKeyValue) {
+  const key = isDateKey(dateKeyValue) ? dateKeyValue : todayKey();
+  return hashSeed("pair-link:daily-board:" + key);
+}
+
+/** 每日一盘的关卡参数：在 levelParams 之上标注 daily / dateKey / 专属章名。 */
+export function dailyParams(dateKeyValue) {
+  const key = isDateKey(dateKeyValue) ? dateKeyValue : todayKey();
+  const params = levelParams(dailyLevelIndex(key));
+  return {
+    ...params,
+    daily: true,
+    dateKey: key,
+    chapterName: { zh: "今日灯市", en: "Today's Market" }
+  };
+}
+
+/** 日期键的 MM-DD 简写（HUD 匾额展示用）。 */
+export function shortDateKey(dateKeyValue) {
+  const key = isDateKey(dateKeyValue) ? dateKeyValue : todayKey();
+  return key.slice(5);
+}
+
 /** Fisher-Yates 原地洗牌（依赖注入的 rng，保证可复现）。 */
 export function shuffleArray(list, rng) {
   for (let i = list.length - 1; i > 0; i -= 1) {
@@ -99,9 +255,11 @@ export function clampLevel(level) {
 /**
  * 关卡参数公式（唯一权威，禁止在别处手写 36 行常量）：
  *   chapter = ceil(L / 12)，k = L - 12·(chapter - 1)，step = floor((k - 1) / 4)
- *   kinds = [6, 8, 10][chapter - 1] + step
- *   tiles = 56 + 8·(chapter - 1) + 4·step          （恒为偶数，≤ 80）
+ *   kinds  = [6, 8, 10][chapter - 1] + step
+ *   tiles  = 56 + 8·(chapter - 1) + 4·step          （恒为偶数，≤ 80）
  *   timeMs = ceil(tiles × [2.20, 2.02, 1.87][chapter - 1]) × 1000
+ *   frozen = [0, 4, 8][chapter - 1] + [0, 1, 2][chapter - 1] · step
+ *            （第 1 章不引入冰封壳；第 2 章 4/5/6；第 3 章 8/10/12）
  */
 export function levelParams(level) {
   const L = clampLevel(level);
@@ -120,6 +278,7 @@ export function levelParams(level) {
     timeMs: Math.ceil(tiles * seconds) * 1000,
     hints: 3,
     shuffles: 2,
+    frozen: CHAPTER_FROZEN[chapter - 1] + CHAPTER_FROZEN_STEP[chapter - 1] * step,
     chapterName: CHAPTER_NAMES[chapter - 1]
   };
 }
@@ -169,13 +328,13 @@ function isFree(board, r, c) {
   return r >= 0 && r < ROWS && c >= 0 && c < COLS && board[r][c] === 0;
 }
 
-/** 每种图案的剩余计数（索引 1..12 有效）。 */
+/** 每种图案的剩余计数（索引 1..12 有效；带壳的块按母题 id 计数）。 */
 export function motifCounts(board) {
   const counts = new Array(MOTIF_COUNT + 1).fill(0);
   for (let r = 0; r < ROWS; r += 1) {
     for (let c = 0; c < COLS; c += 1) {
-      const v = board[r][c];
-      if (v > 0 && v <= MOTIF_COUNT) counts[v] += 1;
+      const id = motifOf(board[r][c]);
+      if (id > 0 && id <= MOTIF_COUNT) counts[id] += 1;
     }
   }
   return counts;
@@ -259,6 +418,8 @@ export function findLinkPath(board, a, b) {
   const va = board[a.r][a.c];
   const vb = board[b.r][b.c];
   if (va === 0 || vb === 0 || va !== vb) return null;
+  // 带壳的块不可被选，因此也不能作为折线端点（防御性：调用方本就不该传进来）。
+  if (isFrozenValue(va) || isFrozenValue(vb)) return null;
 
   const start = { r: a.r, c: a.c };
   const end = { r: b.r, c: b.c };
@@ -317,13 +478,17 @@ export function findLinkPath(board, a, b) {
   return null;
 }
 
-/** 扫描全盘，返回第一对可消的块（Map 插入序，确定性）。 */
+/**
+ * 扫描全盘，返回第一对**可消**的块（Map 插入序，确定性）。
+ * 带冰封壳的块不可选，因此不参与配对 —— 这同时是「可用性不变量」的判据：
+ * 它返回 null 就意味着当前无棋可走，需要洗牌（或融壳）。
+ */
 export function findAnyPair(board) {
   const groups = new Map();
   for (let r = 0; r < ROWS; r += 1) {
     for (let c = 0; c < COLS; c += 1) {
       const v = board[r][c];
-      if (v === 0) continue;
+      if (v === 0 || isFrozenValue(v)) continue;
       if (!groups.has(v)) groups.set(v, []);
       groups.get(v).push({ r, c });
     }
@@ -382,8 +547,15 @@ function orderCells(cells, rng, chapter) {
   return perimeter.concat(interior);
 }
 
-/** 生成一局盘面；未通过可解性校验时用同一 PRNG 流重排（最多 200 次）。 */
+/**
+ * 生成一局盘面；未通过可解性校验时用同一 PRNG 流重排（最多 200 次）。
+ *
+ * 冰封壳在落子之后从已落位的瓷片里随机挑选（同一 PRNG 流，保持确定性）。
+ * 校验用的是 hasAnyPair()，它只看**未冰封**的块 —— 所以"开局就无棋可走"会被挡在这里。
+ * 200 次仍不合格时兜底融壳 + 洗牌，绝不把死盘交给玩家。
+ */
 export function generateBoard(params, rng) {
+  const wanted = Math.max(0, Math.min(Number(params.frozen) || 0, params.tiles - 2));
   let board = emptyBoard();
   for (let attempt = 0; attempt < GENERATE_ATTEMPTS; attempt += 1) {
     const next = emptyBoard();
@@ -395,14 +567,22 @@ export function generateBoard(params, rng) {
     const cells = orderCells(solidCells(), rng, params.chapter);
     shuffleArray(pool, rng);
     const limit = Math.min(pool.length, cells.length);
+    const placed = [];
     for (let i = 0; i < limit; i += 1) {
       const cell = cells[i];
       next[cell.r][cell.c] = pool[i];
+      placed.push(cell);
+    }
+    if (wanted > 0) {
+      const picks = shuffleArray(placed.slice(), rng).slice(0, wanted);
+      for (let i = 0; i < picks.length; i += 1) {
+        next[picks[i].r][picks[i].c] = freezeValue(next[picks[i].r][picks[i].c]);
+      }
     }
     board = next;
     if (hasAnyPair(board)) return board;
   }
-  return board;
+  return resolveDeadlock(board, rng).board;
 }
 
 /** 生成一关：{ board, params, rng }。 */
@@ -434,23 +614,37 @@ export function shuffleBoard(board, rng) {
 
 /**
  * 死局化解：反复洗牌直到存在可消对或达到上限。
- * 返回 { board, shuffles, solvable }。
+ *
+ * 冰封壳的结构性兜底：壳不随洗牌消失，所以「所有剩余块都带壳」这类盘面
+ * 洗多少次都没用。此时一次性融掉全部壳（meltAll）退回经典情形再洗 ——
+ * 融壳只减不增，因此这一步必然收敛，不会出现"洗到上限仍是死盘"的锁死。
+ *
+ * 返回 { board, shuffles, melted, solvable }。
  */
 export function resolveDeadlock(board, rng, limit = AUTO_SHUFFLE_LIMIT) {
   let next = board;
   let shuffles = 0;
+  let melted = false;
   const cap = Number.isFinite(limit) ? Math.max(0, Math.floor(limit)) : AUTO_SHUFFLE_LIMIT;
   while (!hasAnyPair(next) && shuffles < cap) {
     next = shuffleBoard(next, rng);
     shuffles += 1;
   }
-  return { board: next, shuffles, solvable: hasAnyPair(next) };
+  if (!hasAnyPair(next) && hasFrozen(next)) {
+    next = meltAll(next);
+    melted = true;
+    while (!hasAnyPair(next) && shuffles < cap) {
+      next = shuffleBoard(next, rng);
+      shuffles += 1;
+    }
+  }
+  return { board: next, shuffles, melted, solvable: hasAnyPair(next) };
 }
 
 /* ------------------------------------------------------------ 状态机 */
 
-function baseState(level, mode, rng) {
-  const params = levelParams(level);
+function baseState(level, mode, rng, paramsOverride) {
+  const params = paramsOverride || levelParams(level);
   const { board } = createLevel(params.level, rng);
   return {
     mode,
@@ -458,6 +652,8 @@ function baseState(level, mode, rng) {
     level: params.level,
     params,
     board,
+    /** 每日一盘才有值（YYYY-MM-DD），其余模式恒为 null */
+    dateKey: null,
     selected: null,
     score: 0,
     combo: 0,
@@ -467,6 +663,10 @@ function baseState(level, mode, rng) {
     shufflesLeft: params.shuffles,
     activeShuffles: 0,
     autoShuffles: 0,
+    /** 累计被震碎的冰封壳数（结算展示用） */
+    shellsBroken: 0,
+    /** 是否触发过"全盘融壳"兜底（只减不增，用于统计与排障） */
+    meltedAll: false,
     remainingMs: params.timeMs,
     clearedPairs: 0,
     hintPair: null,
@@ -482,16 +682,34 @@ function baseState(level, mode, rng) {
   };
 }
 
-/** 新建一局。mode: "level" | "endless"。 */
+/** 新建一局。mode: "level" | "endless" | "daily"。 */
 export function createState(level = 1, options = {}) {
-  const mode = options.mode === "endless" ? "endless" : "level";
+  const mode =
+    options.mode === "endless" ? "endless" : options.mode === "daily" ? "daily" : "level";
+
+  if (mode === "daily") {
+    const key = isDateKey(options.dateKey) ? options.dateKey : todayKey();
+    const params = dailyParams(key);
+    const seed = Number.isFinite(options.seed) ? options.seed : dailySeed(key);
+    const next = baseState(params.level, "daily", makeRng(seed), params);
+    return { ...next, dateKey: key };
+  }
+
   const startLevel = mode === "endless" ? 1 : clampLevel(level);
   const seed = Number.isFinite(options.seed) ? options.seed : levelSeed(startLevel);
   return baseState(startLevel, mode, makeRng(seed));
 }
 
-/** 重玩当前关卡（换一副新盘面，进度与难度不变）。无尽模式则重开一轮。 */
+/**
+ * 重玩当前关卡（换一副新盘面，进度与难度不变）。无尽模式则重开一轮。
+ * 每日一盘例外：**同一天重玩给同一副盘面** —— 每日挑战的公平性要求
+ * 「今天所有人、每一次进来看到的都是同一盘」，换种子就失去意义了。
+ */
 export function restartLevel(state) {
+  if (state.mode === "daily") {
+    const next = createState(1, { mode: "daily", dateKey: state.dateKey });
+    return { ...next, replays: (state.replays || 0) + 1 };
+  }
   const replays = (state.replays || 0) + 1;
   const level = state.mode === "endless" ? 1 : state.level;
   const seed = hashSeed("pair-link:replay:" + level + ":" + replays);
@@ -543,6 +761,14 @@ export function applyPick(state, cell) {
     };
   }
 
+  // 带冰封壳的块不可被选：保留当前选中态，只回一个 frozen 事件让 UI 抖一下。
+  if (isFrozenValue(value)) {
+    return {
+      action: { type: "frozen", cell: picked },
+      state: { ...state, lastEvent: "frozen" }
+    };
+  }
+
   if (!state.selected) {
     return {
       action: { type: "select", cell: picked },
@@ -579,11 +805,16 @@ export function applyPick(state, cell) {
 }
 
 function commitClear(state, path) {
-  const board = cloneBoard(state.board);
+  const removed = cloneBoard(state.board);
   const first = path.cells[0];
   const last = path.cells[path.cells.length - 1];
-  board[first.r][first.c] = 0;
-  board[last.r][last.c] = 0;
+  removed[first.r][first.c] = 0;
+  removed[last.r][last.c] = 0;
+
+  // 消除的冲击震碎"周围一圈"（8 邻域，含斜向）的冰封壳。
+  const shattered = breakShellsAround(removed, [first, last]);
+  const board = shattered.board;
+  const broken = shattered.broken;
 
   const combo = state.comboTimerMs > 0 ? state.combo + 1 : 0;
   const gain = clearScore({ folds: path.folds, combo, chainMult: state.chainMult });
@@ -599,7 +830,17 @@ function commitClear(state, path) {
     comboPeak: Math.max(state.comboPeak, combo),
     comboTimerMs: COMBO_WINDOW_MS,
     clearedPairs: state.clearedPairs + 1,
+    shellsBroken: state.shellsBroken + broken.length,
     lastEvent: "clear"
+  };
+
+  const baseAction = {
+    type: "clear",
+    cells: path.cells,
+    folds: path.folds,
+    combo,
+    gain,
+    broken
   };
 
   if (!isBoardCleared(board)) {
@@ -607,7 +848,8 @@ function commitClear(state, path) {
     next = {
       ...next,
       board: resolved.board,
-      autoShuffles: state.autoShuffles + resolved.shuffles
+      autoShuffles: state.autoShuffles + resolved.shuffles,
+      meltedAll: state.meltedAll || resolved.melted
     };
     if (!resolved.solvable) {
       next = {
@@ -622,12 +864,9 @@ function commitClear(state, path) {
     }
     return {
       action: {
-        type: "clear",
-        cells: path.cells,
-        folds: path.folds,
-        combo,
-        gain,
-        autoShuffles: resolved.shuffles
+        ...baseAction,
+        autoShuffles: resolved.shuffles,
+        melted: resolved.melted
       },
       state: next
     };
@@ -636,7 +875,7 @@ function commitClear(state, path) {
   if (state.mode === "endless") {
     const advanced = advanceEndless(next);
     return {
-      action: { type: "clear", cells: path.cells, folds: path.folds, combo, gain, boardCleared: true },
+      action: { ...baseAction, boardCleared: true },
       state: advanced
     };
   }
@@ -655,7 +894,7 @@ function commitClear(state, path) {
   });
 
   return {
-    action: { type: "clear", cells: path.cells, folds: path.folds, combo, gain, boardCleared: true },
+    action: { ...baseAction, boardCleared: true },
     state: {
       ...next,
       phase: "won",
@@ -683,6 +922,8 @@ function advanceEndless(state) {
     chainMult,
     replays: state.replays,
     autoShuffles: state.autoShuffles,
+    shellsBroken: state.shellsBroken,
+    meltedAll: state.meltedAll,
     activeShuffles: 0,
     lastEvent: "boardCleared"
   };
@@ -720,26 +961,37 @@ export function useHint(state) {
 
   let board = state.board;
   let autoShuffles = 0;
+  let melted = false;
   let pair = findHint(board);
   if (!pair) {
     const resolved = resolveDeadlock(board, state.rng);
     board = resolved.board;
     autoShuffles = resolved.shuffles;
+    melted = resolved.melted;
     pair = findHint(board);
     if (!pair) {
       return {
         action: null,
-        state: { ...state, board, autoShuffles: state.autoShuffles + autoShuffles, phase: "lost", failReason: "deadlock", stars: 0 }
+        state: {
+          ...state,
+          board,
+          autoShuffles: state.autoShuffles + autoShuffles,
+          meltedAll: state.meltedAll || melted,
+          phase: "lost",
+          failReason: "deadlock",
+          stars: 0
+        }
       };
     }
   }
 
   return {
-    action: { type: "hint", pair },
+    action: { type: "hint", pair, autoShuffles, melted },
     state: {
       ...state,
       board,
       autoShuffles: state.autoShuffles + autoShuffles,
+      meltedAll: state.meltedAll || melted,
       hintsLeft: state.hintsLeft - 1,
       hintPair: pair,
       hintTimerMs: 1500,
@@ -758,13 +1010,14 @@ export function useShuffle(state) {
   const resolved = resolveDeadlock(shuffled, state.rng);
 
   return {
-    action: { type: "shuffle" },
+    action: { type: "shuffle", autoShuffles: resolved.shuffles, melted: resolved.melted },
     state: {
       ...state,
       board: resolved.board,
       shufflesLeft: state.shufflesLeft - 1,
       activeShuffles: state.activeShuffles + 1,
       autoShuffles: state.autoShuffles + resolved.shuffles,
+      meltedAll: state.meltedAll || resolved.melted,
       selected: null,
       hintPair: null,
       hintTimerMs: 0,

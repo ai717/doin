@@ -239,31 +239,16 @@ body::after {
   cursor: default;
 }
 
-.cell::after {
-  content: "";
-  position: absolute;
-  inset: 6%;
-  border-radius: 22%;
-  border: 1px solid rgba(243, 230, 210, 0.045);
-  pointer-events: none;
-}
-
-/* 已消除 / 起始即空的实心格：不画任何轮廓，就是纯背景。
-   任务书 1.4 只给"外圈通道"规定了极淡网格线，对已消除格没有任何外观要求；
-   残留的插座轮廓会让玩家误以为那格里还有东西（消除反馈只靠 420ms 通道呼吸）。 */
-.cell.is-empty::after {
-  border-color: transparent;
-}
-
-/* 外圈通道：任务书 1.4 —— 以极淡网格线（rgba(243,230,210,0.07)）暗示"可绕行"。
-   只画右 / 下两条边，避免相邻格叠成双线；不用圆角、不留 inset，
-   否则又退化成一格格的"插座"，整圈看起来全是空槽。 */
-.cell.is-void::after {
-  inset: 0;
-  border: 0;
-  border-radius: 0;
-  border-right: 1px solid rgba(243, 230, 210, 0.07);
-  border-bottom: 1px solid rgba(243, 230, 210, 0.07);
+/* ⚠️ 空格必须"不存在" —— 这条是本游戏最容易回归的地方，改动前先读：
+   1) 瓷片本体：.tile 的 background 用的是 var(--tile-lt, #e8b768) 带**回退色**。
+      paintTile() 消除时只 removeAttribute("style")，于是内联变量没了、
+      回退色还在 —— 每个消除格会继续画出一枚**没有图案的纯金色方块**，
+      整盘看起来永远没被消掉。必须显式把空格的 .tile 关掉。
+   2) 格子轮廓：整块棋盘不留任何网格线。已消除格与外圈通道一律纯背景。
+   任何"给空格加回一点装饰"的改动都会与 x/pair-link/cdp-smoke.mjs 里的
+   真像素等价性断言冲突（隐藏空格前后截图必须逐字节相同）。 */
+.cell.is-empty .tile {
+  display: none;
 }
 
 .cell:focus {
@@ -366,36 +351,84 @@ body::after {
   }
 }
 
-/* 通道呼吸：消除后原位微光残留 */
-.cell.is-breath::before {
+/* --------------------------------------------------------------- 冰封壳 */
+
+/* 带壳的瓷片：在母题之上盖一层霜（.tile::after），不动母题本身的形状与配色。
+   .is-melted 也要画出同一层霜 —— 它在壳被震碎的瞬间接管，把霜"炸开"淡出。 */
+.cell.is-frozen .tile::after,
+.cell.is-melted .tile::after {
   content: "";
   position: absolute;
-  inset: 7%;
-  border-radius: 22%;
-  background: radial-gradient(circle, rgba(255, 236, 198, 0.5), transparent 70%);
-  animation: breath 0.42s ease-out both;
+  inset: 0;
+  border-radius: inherit;
   pointer-events: none;
+  background:
+    /* 两道裂纹 */
+    linear-gradient(122deg, transparent 43%, rgba(255, 255, 255, 0.82) 45%, rgba(255, 255, 255, 0.82) 46.4%, transparent 48.4%),
+    linear-gradient(58deg, transparent 61%, rgba(255, 255, 255, 0.55) 62.8%, rgba(255, 255, 255, 0.55) 64%, transparent 65.6%),
+    /* 霜体 */
+    linear-gradient(160deg, rgba(226, 244, 255, 0.76), rgba(158, 205, 235, 0.42) 52%, rgba(238, 250, 255, 0.68));
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.72),
+    inset 0 0 16px rgba(150, 205, 240, 0.55),
+    0 0 10px rgba(160, 214, 245, 0.3);
 }
 
-@keyframes breath {
+.cell.is-frozen {
+  cursor: not-allowed;
+}
+
+/* 点不动：冰蓝短促抖动（与"非法配对"的朱红抖动区分开） */
+.cell.is-frozen-hit .tile {
+  animation: iceShake 0.42s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+  border-color: rgba(198, 232, 255, 0.95);
+  box-shadow: 0 0 0 2px rgba(170, 220, 250, 0.8), 0 0 20px rgba(150, 210, 245, 0.6),
+    var(--shadow-tile);
+}
+
+@keyframes iceShake {
+  10%,
+  90% {
+    transform: translateX(-2px);
+  }
+  20%,
+  80% {
+    transform: translateX(3px);
+  }
+  30%,
+  50%,
+  70% {
+    transform: translateX(-4px);
+  }
+  40%,
+  60% {
+    transform: translateX(4px);
+  }
+}
+
+/* 壳被震碎：霜层炸开淡出 */
+.cell.is-melted .tile::after {
+  animation: iceShatter 0.6s cubic-bezier(0.2, 0.8, 0.3, 1) both;
+}
+
+@keyframes iceShatter {
   from {
-    opacity: 0.9;
-    transform: scale(0.9);
+    opacity: 1;
+    transform: scale(1);
+  }
+  60% {
+    opacity: 0.72;
+    transform: scale(1.14);
   }
   to {
     opacity: 0;
-    transform: scale(1.18);
+    transform: scale(1.3);
   }
 }
 
-/* 焦点环 */
-.cell:focus-visible .tile,
-.cell:focus-visible::after {
+/* 焦点环：只对还有瓷片的格子生效（空格子不存在，自然也不该有焦点环）。 */
+.cell:focus-visible .tile {
   box-shadow: 0 0 0 2px rgba(243, 230, 210, 0.95), 0 0 16px rgba(243, 230, 210, 0.5);
-}
-
-.cell:focus-visible::after {
-  border-color: transparent;
 }
 
 #fx {
@@ -780,6 +813,42 @@ body::after {
 .panel-progress strong {
   color: var(--copper-lt);
   font-variant-numeric: tabular-nums;
+}
+
+/* 开始面板的「今日一盘」条目：霜蓝色调，与主线/无尽的暖铜色区分开。 */
+.panel-daily {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 12px;
+  padding: 10px 14px;
+  margin-bottom: 16px;
+  border-radius: 12px;
+  background: linear-gradient(140deg, rgba(160, 205, 240, 0.13), rgba(232, 183, 104, 0.07));
+  border: 1px solid rgba(170, 214, 245, 0.24);
+  font-size: 13px;
+  color: rgba(243, 230, 210, 0.72);
+}
+
+.panel-daily .daily-label {
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: rgba(203, 236, 255, 0.94);
+}
+
+.panel-daily .daily-sub {
+  flex: 1 1 auto;
+  font-size: 12px;
+  color: rgba(243, 230, 210, 0.5);
+}
+
+.panel-daily .daily-best {
+  font-variant-numeric: tabular-nums;
+  color: rgba(243, 230, 210, 0.6);
+}
+
+.panel-daily .daily-best strong {
+  color: var(--copper-lt);
 }
 
 .panel-actions {

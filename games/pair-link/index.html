@@ -108,10 +108,16 @@
         <h2 id="start-title" data-i18n="startTitle">琉璃灯市 · 连连看</h2>
         <p class="panel-sub" data-i18n="startSub">点两枚相同瓷片，用不超过两折的折线连上，清空整盘过关。</p>
         <div class="panel-progress"><span data-i18n="unlocked">已解锁</span> <strong id="start-progress">1 / 36</strong></div>
+        <div class="panel-daily">
+          <span class="daily-label" data-i18n="daily">今日一盘</span>
+          <span class="daily-sub" data-i18n="dailySub">每天一盘，全服同一副盘面</span>
+          <span class="daily-best"><span data-i18n="dailyBest">今日最佳</span> <strong id="daily-best">0</strong></span>
+        </div>
         <div class="panel-actions">
           <button id="btn-continue" class="btn btn-primary" type="button" data-i18n="continueGame">继续游戏</button>
           <button id="btn-open-levels" class="btn" type="button" data-i18n="selectLevel">选择关卡</button>
           <button id="btn-endless" class="btn" type="button" data-i18n="endless">无尽冲分</button>
+          <button id="btn-daily" class="btn" type="button" data-i18n="daily">今日一盘</button>
         </div>
       </section>
 
@@ -152,6 +158,7 @@
           <li data-i18n="help3">折线经过的格子必须是空的；棋盘四周留有一圈虚空通道，可以绕出盘外连通。</li>
           <li data-i18n="help4">连通成功即消除并得分；3 秒内连续消除可累积连击。</li>
           <li data-i18n="help5">限时清空整盘过关。若盘面无解会自动洗牌，不消耗你的洗牌次数。</li>
+          <li data-i18n="help6">带冰封壳的瓷片点不动：先消掉它周围一圈（含斜向）的瓷片，壳就会被震碎。</li>
         </ol>
         <table class="help-keys">
           <tbody>

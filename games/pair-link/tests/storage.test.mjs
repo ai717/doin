@@ -8,9 +8,11 @@ import {
   STORAGE_KEY,
   VERSION,
   clearProgress,
+  dailyBest,
   levelStat,
   loadProgress,
   normalizeProgress,
+  recordDaily,
   recordEndless,
   recordLevel,
   saveProgress
@@ -49,7 +51,15 @@ function fakeStorage(initial) {
 /* ------------------------------------------------------------ normalize */
 
 test("normalize：空 / 非对象 / 数组 / 字符串 一律回退默认值", () => {
-  const expected = { v: VERSION, unlocked: 1, levels: {}, endlessBest: 0, muted: false, lastLevel: 1 };
+  const expected = {
+    v: VERSION,
+    unlocked: 1,
+    levels: {},
+    endlessBest: 0,
+    daily: { dateKey: "", bestScore: 0 },
+    muted: false,
+    lastLevel: 1
+  };
   assert.deepEqual(normalizeProgress(null), expected);
   assert.deepEqual(normalizeProgress(undefined), expected);
   assert.deepEqual(normalizeProgress("nope"), expected);
@@ -65,10 +75,30 @@ test("normalize：版本不兼容（v !== 1）整体回退默认值", () => {
     unlocked: 1,
     levels: {},
     endlessBest: 0,
+    daily: { dateKey: "", bestScore: 0 },
     muted: false,
     lastLevel: 1
   });
   assert.deepEqual(normalizeProgress({ v: 2, unlocked: 12 }).unlocked, 1);
+});
+
+test("normalize：老存档（没有 daily 字段）必须原样保留主线进度", () => {
+  // 每日一盘是**追加字段**，不是破坏性变更：v 仍为 1，老档不能因此被清空。
+  const legacy = {
+    v: 1,
+    unlocked: 18,
+    levels: { "7": { score: 4200, stars: 3 } },
+    endlessBest: 9000,
+    muted: true,
+    lastLevel: 12
+  };
+  const out = normalizeProgress(legacy);
+  assert.equal(out.unlocked, 18, "老档的主线进度不得被重置");
+  assert.deepEqual(out.levels["7"], { score: 4200, stars: 3 });
+  assert.equal(out.endlessBest, 9000);
+  assert.equal(out.muted, true);
+  assert.equal(out.lastLevel, 12);
+  assert.deepEqual(out.daily, { dateKey: "", bestScore: 0 }, "缺失的 daily 应补默认值");
 });
 
 test("normalize：unlocked 越界 / 负数 / NaN / Infinity 全部钳制", () => {
@@ -266,4 +296,107 @@ test("存档 Key 与版本号符合契约", () => {
   assert.equal(STORAGE_KEY, "doin.pair-link.v1");
   assert.equal(VERSION, 1);
   assert.ok(!STORAGE_KEY.includes("<slug>"));
+});
+
+/* ------------------------------------------------------------ 每日一盘 */
+
+test("recordDaily：同一天取最高分，跨天重置", () => {
+  const day1 = "2026-09-13";
+  const day2 = "2026-09-14";
+  let progress = { v: 1, unlocked: 1, levels: {}, endlessBest: 0, muted: false, lastLevel: 1 };
+
+  let out = recordDaily(progress, day1, 1200);
+  assert.equal(out.isNewBest, true, "今天第一次记录就是新纪录");
+  progress = out.progress;
+  assert.deepEqual(progress.daily, { dateKey: day1, bestScore: 1200 });
+  assert.equal(dailyBest(progress, day1), 1200);
+
+  out = recordDaily(progress, day1, 800);
+  assert.equal(out.isNewBest, false, "更低分不算新纪录");
+  assert.equal(out.progress.daily.bestScore, 1200, "更低分不得覆盖");
+
+  out = recordDaily(progress, day1, 2600);
+  assert.equal(out.isNewBest, true);
+  progress = out.progress;
+  assert.equal(progress.daily.bestScore, 2600);
+
+  // 跨天：昨天的最佳分不该出现在今天
+  assert.equal(dailyBest(progress, day2), 0, "跨天后旧记录必须失效");
+  out = recordDaily(progress, day2, 300);
+  assert.equal(out.isNewBest, true);
+  assert.deepEqual(out.progress.daily, { dateKey: day2, bestScore: 300 }, "跨天应重置而不是取历史最高");
+  assert.equal(dailyBest(out.progress, day1), 0);
+});
+
+test("recordDaily：不触碰 unlocked / levels / lastLevel", () => {
+  const progress = {
+    v: 1,
+    unlocked: 5,
+    levels: { "3": { score: 900, stars: 2 } },
+    endlessBest: 700,
+    muted: false,
+    lastLevel: 4
+  };
+  const out = recordDaily(progress, "2026-09-13", 5000).progress;
+  assert.equal(out.unlocked, 5, "每日一盘不得解锁主线");
+  assert.deepEqual(out.levels, { "3": { score: 900, stars: 2 } }, "每日一盘不得写入主线关卡记录");
+  assert.equal(out.lastLevel, 4, "每日一盘不得改动 lastLevel");
+  assert.equal(out.endlessBest, 700);
+});
+
+test("recordDaily：非法日期 / 非法分数安全降级", () => {
+  const progress = { v: 1, unlocked: 1, levels: {}, endlessBest: 0, muted: false, lastLevel: 1 };
+  const bad = recordDaily(progress, "2026-9-3", 500);
+  assert.equal(bad.isNewBest, false);
+  assert.deepEqual(bad.progress.daily, { dateKey: "", bestScore: 0 }, "非法日期不得写进存档");
+  assert.equal(recordDaily(progress, null, 500).progress.daily.dateKey, "");
+  assert.equal(recordDaily(progress, 20260913, 500).progress.daily.dateKey, "");
+
+  const dirty = recordDaily(progress, "2026-09-13", NaN).progress;
+  assert.equal(dirty.daily.bestScore, 0, "NaN 必须钳制为 0");
+  assert.equal(recordDaily(progress, "2026-09-13", -50).progress.daily.bestScore, 0);
+  assert.equal(recordDaily(progress, "2026-09-13", MAX_SCORE + 1).progress.daily.bestScore, MAX_SCORE);
+});
+
+test("normalize：daily 字段被严格清洗（坏日期整条回退）", () => {
+  const ok = normalizeProgress({ v: 1, daily: { dateKey: "2026-09-13", bestScore: 800 } });
+  assert.deepEqual(ok.daily, { dateKey: "2026-09-13", bestScore: 800 });
+
+  assert.deepEqual(normalizeProgress({ v: 1, daily: { dateKey: "bad", bestScore: 800 } }).daily, {
+    dateKey: "",
+    bestScore: 0
+  });
+  assert.deepEqual(normalizeProgress({ v: 1, daily: "nope" }).daily, { dateKey: "", bestScore: 0 });
+  assert.deepEqual(normalizeProgress({ v: 1, daily: [] }).daily, { dateKey: "", bestScore: 0 });
+  assert.deepEqual(normalizeProgress({ v: 1, daily: null }).daily, { dateKey: "", bestScore: 0 });
+  assert.deepEqual(normalizeProgress({ v: 1, daily: { dateKey: "2026-09-13", bestScore: NaN } }).daily, {
+    dateKey: "2026-09-13",
+    bestScore: 0
+  });
+  assert.deepEqual(normalizeProgress({ v: 1, daily: { dateKey: "2026-09-13", bestScore: -9 } }).daily, {
+    dateKey: "2026-09-13",
+    bestScore: 0
+  });
+});
+
+test("dailyBest：日期不符 / 无记录一律返回 0", () => {
+  const progress = { v: 1, daily: { dateKey: "2026-09-13", bestScore: 1500 } };
+  assert.equal(dailyBest(progress, "2026-09-13"), 1500);
+  assert.equal(dailyBest(progress, "2026-09-14"), 0);
+  assert.equal(dailyBest(progress, "bad"), 0);
+  assert.equal(dailyBest(progress, null), 0);
+  assert.equal(dailyBest(null, "2026-09-13"), 0);
+  assert.equal(dailyBest({}, "2026-09-13"), 0);
+});
+
+test("每日一盘存档能真实落盘并读回", () => {
+  const store = fakeStorage();
+  withWindow({ localStorage: store }, () => {
+    let progress = loadProgress();
+    progress = recordDaily(progress, "2026-09-13", 3300).progress;
+    saveProgress(progress);
+    const reloaded = loadProgress();
+    assert.equal(dailyBest(reloaded, "2026-09-13"), 3300);
+    assert.equal(reloaded.unlocked, 1, "每日一盘不该影响主线解锁");
+  });
 });

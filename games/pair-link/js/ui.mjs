@@ -1,7 +1,7 @@
 // DOM HUD 层：棋盘格、徽章化 HUD、按钮台、面板、toast、i18n 应用、键盘焦点。
 // 只读 engine state；不修改任何规则状态。
 
-import { COLS, ROWS, SOLID_COLS, SOLID_ROWS } from "./engine.mjs";
+import { COLS, ROWS, SOLID_COLS, SOLID_ROWS, isFrozenValue, motifOf, shortDateKey } from "./engine.mjs";
 import { motifById, tileStops } from "./motifs.mjs";
 import { formatClock } from "./score.mjs";
 import { DEFAULT_LOCALE, isLocale, table, t } from "./i18n.mjs";
@@ -52,6 +52,7 @@ export function createUi(options = {}) {
     resultBestBadge: byId("result-best-badge"),
     resultBurst: byId("result-burst"),
     levelGrid: byId("level-grid"),
+    dailyBest: byId("daily-best"),
     boardLive: byId("board-live"),
     toast: byId("toast")
   };
@@ -118,13 +119,16 @@ export function createUi(options = {}) {
     if (value === 0) {
       entry.el.classList.add("is-empty");
       entry.el.classList.remove("has-tile");
+      entry.el.classList.remove("is-frozen");
       entry.tile.removeAttribute("style");
       return;
     }
     entry.el.classList.remove("is-empty");
     entry.el.classList.add("has-tile");
-    const motif = motifById(value);
-    const stops = tileStops(value);
+    // 带冰封壳的值 = 母题 id + FROZEN_OFFSET：取色必须走 motifOf，否则会退化成"圆环"的配色。
+    const motif = motifById(motifOf(value));
+    const stops = tileStops(motif.id);
+    entry.el.classList.toggle("is-frozen", isFrozenValue(value));
     entry.tile.style.setProperty("--tile-lt", stops.lt);
     entry.tile.style.setProperty("--tile-mid", stops.mid);
     entry.tile.style.setProperty("--tile-dk", stops.dk);
@@ -138,9 +142,10 @@ export function createUi(options = {}) {
 
   function cellLabel(r, c, value) {
     if (value === 0) return formatText(t(locale, "cellEmpty"), { r: r, c: c });
-    const motif = motifById(value);
+    const motif = motifById(motifOf(value));
     const name = locale === "en" ? motif.en : motif.zh;
-    return formatText(t(locale, "cellTile"), { r: r, c: c, name: name });
+    const key = isFrozenValue(value) ? "cellFrozen" : "cellTile";
+    return formatText(t(locale, key), { r: r, c: c, name: name });
   }
 
   function formatText(str, vars) {
@@ -235,7 +240,11 @@ export function createUi(options = {}) {
 
     ensureFocus(board);
 
-    if (el.levelPlaque) el.levelPlaque.textContent = String(state.level);
+    if (el.levelPlaque) {
+      // 每日一盘没有主线关卡号，匾额改显示日期（MM-DD）—— 那才是这一盘的标识。
+      el.levelPlaque.textContent =
+        state.mode === "daily" && state.dateKey ? shortDateKey(state.dateKey) : String(state.level);
+    }
     if (el.levelName) {
       const name = state.params.chapterName;
       el.levelName.textContent = locale === "en" ? name.en : name.zh;
@@ -306,15 +315,30 @@ export function createUi(options = {}) {
     scoreBumpTimer = setTimeout(() => node.classList.remove("bump"), 380);
   }
 
+  /** 短促反馈：invalid = 朱红抖动；frozen = 冰蓝抖动（这块点不动）。 */
   function flash(cell, kind) {
     if (!cell) return;
     const entry = grid[cell.r] && grid[cell.r][cell.c];
-    if (!entry) return;
-    const cls = kind === "invalid" ? "is-invalid" : "is-breath";
+    if (!entry || !entry.tile) return;
+    const isFrozen = kind === "frozen";
+    const cls = isFrozen ? "is-frozen-hit" : "is-invalid";
     entry.el.classList.remove(cls);
     void entry.el.offsetWidth;
     entry.el.classList.add(cls);
-    setTimeout(() => entry.el.classList.remove(cls), kind === "invalid" ? 300 : 480);
+    setTimeout(() => entry.el.classList.remove(cls), isFrozen ? 460 : 300);
+  }
+
+  /** 冰封壳被震碎：给这些格子播一次碎裂动效。 */
+  function flashMelt(cells) {
+    if (!Array.isArray(cells)) return;
+    cells.forEach((cell) => {
+      const entry = grid[cell.r] && grid[cell.r][cell.c];
+      if (!entry || !entry.tile) return;
+      entry.el.classList.remove("is-melted");
+      void entry.el.offsetWidth;
+      entry.el.classList.add("is-melted");
+      setTimeout(() => entry.el.classList.remove("is-melted"), 620);
+    });
   }
 
   function flashComboLamp() {
@@ -385,15 +409,20 @@ export function createUi(options = {}) {
 
   function showResult(payload) {
     const isEndless = payload.mode === "endless";
+    const isDaily = payload.mode === "daily";
     const won = payload.phase === "won";
     if (el.resultTitle) {
       el.resultTitle.textContent = isEndless
         ? t(locale, "endlessOver")
-        : won
-          ? t(locale, "levelClear")
-          : payload.failReason === "deadlock"
-            ? t(locale, "loseDeadlock")
-            : t(locale, "loseTimeUp");
+        : isDaily
+          ? won
+            ? t(locale, "dailyClear")
+            : t(locale, "dailyOver")
+          : won
+            ? t(locale, "levelClear")
+            : payload.failReason === "deadlock"
+              ? t(locale, "loseDeadlock")
+              : t(locale, "loseTimeUp");
     }
     fillStars(resultStarNodes, won ? payload.stars : 0, true);
 
@@ -405,12 +434,19 @@ export function createUi(options = {}) {
             [t(locale, "resComboPeak"), String(payload.comboPeak)],
             [t(locale, "endlessBest"), String(payload.best)]
           ]
-        : [
-            [t(locale, "resPairs"), String(payload.clearedPairs)],
-            [t(locale, "resComboPeak"), String(payload.comboPeak)],
-            [t(locale, "resTimeBonus"), "+" + String(payload.timeBonus)],
-            [t(locale, "resItemBonus"), "+" + String(payload.itemBonus)]
-          ];
+        : isDaily
+          ? [
+              [t(locale, "resPairs"), String(payload.clearedPairs)],
+              [t(locale, "resComboPeak"), String(payload.comboPeak)],
+              [t(locale, "resShells"), String(payload.shellsBroken)],
+              [t(locale, "dailyBest"), String(payload.dailyBest)]
+            ]
+          : [
+              [t(locale, "resPairs"), String(payload.clearedPairs)],
+              [t(locale, "resComboPeak"), String(payload.comboPeak)],
+              [t(locale, "resTimeBonus"), "+" + String(payload.timeBonus)],
+              [t(locale, "resItemBonus"), "+" + String(payload.itemBonus)]
+            ];
       rows.forEach((row, i) => {
         const dt = doc.createElement("dt");
         dt.textContent = row[0];
@@ -426,7 +462,9 @@ export function createUi(options = {}) {
     if (el.resultScore) el.resultScore.textContent = String(payload.score);
     if (el.resultBestBadge) el.resultBestBadge.hidden = !payload.record;
     const nextBtn = byId("btn-next");
-    if (nextBtn) nextBtn.textContent = t(locale, isEndless ? "selectLevel" : "nextLevel");
+    if (nextBtn) {
+      nextBtn.textContent = t(locale, isEndless || isDaily ? "backToLevels" : "nextLevel");
+    }
     if (el.resultBurst) buildBurst(el.resultBurst);
     openPanel("result");
   }
@@ -445,10 +483,14 @@ export function createUi(options = {}) {
     }
   }
 
-  function setStartProgress(progress) {
-    if (!el.startProgress) return;
-    const unlocked = progress && Number.isFinite(progress.unlocked) ? progress.unlocked : 1;
-    el.startProgress.textContent = unlocked + " / 36";
+  function setStartProgress(progress, dailyBestValue) {
+    if (el.startProgress) {
+      const unlocked = progress && Number.isFinite(progress.unlocked) ? progress.unlocked : 1;
+      el.startProgress.textContent = unlocked + " / 36";
+    }
+    if (el.dailyBest) {
+      el.dailyBest.textContent = String(Number.isFinite(dailyBestValue) ? dailyBestValue : 0);
+    }
   }
 
   function buildLevels(progress, currentLevel, onChoose) {
@@ -521,6 +563,7 @@ export function createUi(options = {}) {
     render,
     renderClocks,
     flash,
+    flashMelt,
     flashComboLamp,
     announce,
     toast,
