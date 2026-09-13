@@ -12,7 +12,7 @@
 - **门户**：薄荷渐变首页（`index.html` + `css/`），640×640 WebP 封面（3D 风格统一），
   白色胶囊卡片标签 + hover 放大；品牌行「Doin.win 字标 ←→ 地球语言按钮」+ 二级主标题；
   中英双语（`doin.lang` 全站共享偏好）。CNAME `doin.win`。共 17 款游戏登记（新增 Pair-Link、Link-Up）。
-- **Link-Up**（新增本地接入）：喜福连连看，暖木牌桌 / 民俗符号题材，50 关五章递进 + 异形棋盘 + 每日挑战；已完成规则、UI、可访问性与构建门禁，待用户确认稀疏棋盘是否升级为高密度牌组后再调整生成规则。
+- **Link-Up**（新增本地接入）：喜福连连看，暖木牌桌 / 民俗符号题材，50 关五章递进 + 异形棋盘 + 每日挑战；已完成高密度牌组、图形化牌面、路径特效、结算仪式 UI、可访问性与构建门禁。
 - **Pair-Link**（新增，已更名）：**琉璃灯市·连连看**，夜市灯牌 / 琉璃瓷片题材，36 关三章 + 无尽冲分 + 每日一盘。
   逻辑盘 12×10（10×8 实心 + 外圈通道），三线连通判定（0/1/2 折，禁斜线，可绕外圈虚空）。
   第 2/3 章引入**冰封壳**（8 邻域震碎，死盘融壳兜底）；**每日一盘**同种子同题、与主线解耦。
@@ -48,9 +48,13 @@
 - `node x/link-up/cdp-smoke.mjs` → **23 pass / 0 fail**：真实启动、选关、提示点击消除、暂停 / 恢复、帮助 Escape、选关滚动、1440 / 1280 / 900 / 390 视口、reduced motion、控制台与资源错误检查全绿。
 - `npm run test:home` → **5 pass / 0 fail**；`npm run build` → 成功，生成 `dist/link-up/`、封面与 sitemap。
 
-### 已知产品取舍
+### 本轮用户反馈后的自动优化（2026-09-13）
 
-当前第 1 关配置为 6×6 网格但仅 8 枚牌（4 种图案 × 2），其余格作为可绕行留白；这与 PRD 中「铺满全部格子」的文字描述存在歧义。为避免未经确认改变配对数量、难度和可解生成器，本轮保留现状，并把它记录为下一轮可独立拍板的密度调整项。
+- **提高难度与牌面密度**：章节牌组调整为 24 / 32 / 40 / 48 / 56 枚递进；每日挑战为 56 枚并启用四连变体。继续使用反向构建生成器，保证代表关卡与随机种子存在合法开局操作。
+- **牌面图形化**：移除汉字牌面，改为 16 个内联 SVG 民俗器物 / 吉祥纹样（灯笼、如意、锦鱼、祥云、元宝、莲花等），保留中英双语 aria-label，不引入外部图片、字体或网络依赖。
+- **桌面美学重排**：修复桌面棋盘下沉，棋盘与 HUD 顶部对齐；棋盘增加牌桌内框与环境光，HUD / 按钮统一为漆器与鎏金质感；移动端仍保持 390px 单列安全布局。
+- **连线与清盘反馈**：连线增加暗金 glow、渐变高光、移动能量珠、端点脉冲环与粒子；结算弹窗改为星级、主分数、步数 / 连击 / 用时、奖励条与分层按钮，并完成移动端边界检查。
+- **验证结果**：`npm run test:link-up` → **55 pass / 0 fail**；`node scripts/check-game.mjs link-up` → **19 pass / 0 fail / 0 warn**；`node x/link-up/cdp-smoke.mjs` → **32 pass / 0 fail**（包含图形牌面、桌面顶部对齐、清盘结算卡无溢出与 reduced-motion 回归）；代表关卡 1 / 11 / 21 / 31 / 41 / 50 的大规模种子检查无开局死局。
 
 ### 2026-09-13 · 接管后续真实浏览器复查
 
@@ -376,36 +380,52 @@ PROJECT_LOG.md                      [修改] 本轮记录
   删除等均未纳入（采用手工 patch `git apply --cached` 隔离同文件 hunk 合并陷阱）。
 - 保持本地，不推送。
 
+## 2026-09-13 · Pair-Link 改名收尾：真浏览器双语言验收 + 全量 CI 闭环
+
+### 改动（纯验收 / 验证层，无游戏逻辑变动）
+- `x/pair-link/cdp-dist.mjs`：新增 3 条 ZH HUD 标题断言（`#app-title`="琉璃灯市" / `#app-subtitle`="连连看" /
+  `#start-title`="琉璃灯市·连连看"）；修正 1 处过期断言（`home.title === "连连看"` →
+  `=== "琉璃灯市·连连看"`）；新增 3 条 EN locale 断言，隔离在 A 段尾部以
+  `localStorage + Page.navigate` 确定性切换。`x/pair-link/` 属 gitignored scratch，未纳入提交。
+- 其它 3 套 CDP 验收（smoke / features / motifs）参数未变，全部继续全绿。
+
+### 关键问题与修复（locale 切换测试范式）
+- 第一版 EN 测试踩坑：`#btn-lang` 的 handler 内部 `window.location.reload()`（`main.mjs:399-402`）。
+  若在 zh 玩法中途点两次按钮切 zh↔en↔zh，第二次 reload 在 sleep 180ms 内不会完成 → eval 读到过渡期 EN DOM；
+  且即便 reload 完成，start panel 会被重开，下游 hint/click/eliminate/score/aria/frozen 全部 zh 断言连环假红，
+  section B 门户首页还会按 en 渲染卡片。
+- **正确做法**：把 EN 断言挪到 A 段**尾部**（冰封壳截图之后、section B 之前），用
+  `localStorage.setItem("doin.lang","en") + Page.navigate /pair-link/` 隔离导航（确定性、无按钮 race、
+  不 reload 中途状态），末尾再 `localStorage.setItem("doin.lang","zh")` 让 section B 仍渲染 zh 卡片。
+
+### 验证（最终 256 项断言全绿）
+| 层 | 命令 | 结果 |
+|---|---|---|
+| 单元 | `npm run test:pair-link` | **101 / 0** |
+| 子游戏合规 | `node scripts/check-game.mjs pair-link` | **19 / 0** |
+| 门户级 | `npm run test:home` | **5 / 0** |
+| 构建 | `npm run build` | ✓ |
+| 真浏览器 zh + en | `cdp-dist.mjs` | **40 / 0** |
+| 真浏览器 布局 / 冰封+每日 / 母题 | smoke / features / motifs | **53 + 32 + 6 / 0** |
+
+可视证据：`x/pair-link/shots/dist-home-card.png`（门户卡片）+ `x/pair-link/shots/dist-pair-link.png`（游戏内 HUD）。
+
+### 提交（均本地，未推送）
+- `f760e37 chore(pair-link): rename to 琉璃灯市·连连看 (slug unchanged)`（5 文件 / 改名主体）
+- `3c496d6 docs(pair-link): align code comments with renamed title`（2 文件 / 注释对齐）
+
 ## 2026-09-11 · AGENTS.md 深度重构升级与双技能协同体系统合
 
 ### 做了什么
-1. **工作模式与平台定位重塑**：
-   - **解开僵化流水线**：确立三种开发协作模式，将【模式 A：本地主代理直接端到端开发】明确为最常用、最高效的默认工作流；【模式 B：策划立项先行】作为复杂机制/创新的把控手段；【模式 C：外包解耦发包】作为外发网页 AI 的协作工具；
-   - **面向不断增长的集合平台**：不再局限于存量 15 款游戏，将老游戏代码细节抽离，提炼为 5 种典型玩法架构范式（离散网格益智、程序化拼图解谜、经典对弈与纸牌、反应消除与下落、物理动作与时机），指导未来任意新游戏开发。
-2. **桌面端 UI 美学与游戏化设计标准（解决死板老套痛点）**：
-   - 彻底破除粗糙居中单列拉伸，在 `AGENTS.md`、`GAME-SPEC.md` 与两项技能中确立**桌面端（≥900px）双栏/宽屏沉浸游戏舞台标准**（主舞台 Canvas/Grid + 侧边关卡匾额/HUD/操作台）；
-   - 强调题材专属美学（环境光晕 drift、微质感纹理、深色微光或糖果质感，拒绝苍白无聊留白与原生按钮），以及游戏化 HUD 徽章、数字 bump 跳字、实体按键位移与通关成就仪式感。
-3. **算法健全性与成熟规则对标铁律（解决算法出错痛点）**：
-   - **严禁闭门造车凭空脑补规则**：开发前必须深入对标历史经典原型与成熟实践（状态机流转、输入缓冲、操作容错手感）；
-   - **数学可解性保证（严禁死局）**：生成、发牌、打乱等必须从数学上证明或通过求解器检验保证 100% 可解（BFS、欧拉路径、无不动点打乱、7-Bag、无猜逻辑）；
-   - **自动化健全性验证**：确定性 PRNG 种子支持与单元测试中至少 1000 步的随机游走门禁。
-4. **全套生态统合同步与过度说明精简**：
-   - 升级 `skill/doin外包小游戏开发`：任务书模板增加桌面双栏美学、经典算法对标与数学可解性硬约束；
-   - 彻底重塑 `skill/doin小游戏开发策划书`：从“技术规格把关”回归“产品策划部立项”本质；
-   - **全面精简 `doin-context.md`**：彻底剔除 80 行技术工程分层、代码实现与测试门禁等过度说明，将其精简为纯粹的《策划查重参考》（仅保留 15 款存量品类、品类空白建议与封面色相排重）；
-   - 升级 `docs/GAME-SPEC.md` 与 `docs/COVER-STYLE.md`：补全 15 款游戏封面登记与未饱和色相，固化桌面美学与算法红线。
+把 AGENTS.md 从按游戏分节重构为跨游戏通用规范（§1 平台架构 / §2 协作模式 / §3 算法健全性 /
+§4 桌面 UI 美学 / §5 工程规范 / §6 玩法范式 / §7 工作纪律）。确立三种开发协作模式
+（A 本主端到端 / B 策划立项 / C 外包发包）+ 桌面 ≥900px 双栏沉浸舞台标准 + 算法对标经典与
+数学可解性铁律（BFS / 欧拉路径 / 7-Bag / derangement）+ 同步升级 GAME-SPEC.md / COVER-STYLE.md /
+两项技能；`doin-context.md` 精简为策划查重参考（剔除 80 行过度技术说明）。
 
 ### 修改文件
-- `AGENTS.md`
-- `docs/GAME-SPEC.md`
-- `docs/COVER-STYLE.md`
-- `skill/doin外包小游戏开发/SKILL.md`
-- `skill/doin外包小游戏开发/references/outsource-spec-template.md`
-- `skill/doin小游戏开发策划书/SKILL.md`
-- `skill/doin小游戏开发策划书/references/prd-template.md`
-- `skill/doin小游戏开发策划书/references/doin-context.md`
-- `games/klotski/tests/markup.test.mjs`
-- `PROJECT_LOG.md`
+AGENTS.md、docs/GAME-SPEC.md、docs/COVER-STYLE.md、两 skill 下 5 文件、
+games/klotski/tests/markup.test.mjs、PROJECT_LOG.md。
 
 ## 2026-09-11 · Jigsaw 拼图上架（第 15 款）
 
