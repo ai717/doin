@@ -7,11 +7,16 @@
 
 ***
 
-## Current Baseline (2026-09-13)
+### Current Baseline (2026-09-14)
 
 - **门户**：薄荷渐变首页（`index.html` + `css/`），640×640 WebP 封面（3D 风格统一），
   白色胶囊卡片标签 + hover 放大；品牌行「Doin.win 字标 ←→ 地球语言按钮」+ 二级主标题；
-  中英双语（`doin.lang` 全站共享偏好）。CNAME `doin.win`。共 18 款游戏登记（新增 Pair-Link、Link-Up、Bubble-Merge）。
+  中英双语（`doin.lang` 全站共享偏好）。CNAME `doin.win`。共 20 款游戏登记（新增 Cloud-Merge）。
+- **Cloud-Merge**（新增）：**云朵合成**，晴空治愈天空气象台物理合成：十级云朵轻盈软弹物理链、
+  合出 L8 雷暴云自动下雨清场（清开正下方拥挤云朵并奖励积分）、合出 L10 彩虹云可点击收集放晴爆分（+100分腾出空间继续造云）、
+  堆叠超安全警戒线变暗预警后结算。无尽冲分 + 每日挑战双模式。
+  Canvas 2D 拟真蓬松云朵/天气粒子/彩虹拱门 + DOM 天空气象台 HUD 双轨架构，桌面双栏宽屏沉浸 UI。
+  纯明黄 3D 软胶封面、四类原生测试 24/24 pass、check-game 19 pass 0 fail 0 warn。
 - **Link-Up**（新增本地接入）：喜福连连看，暖木牌桌 / 民俗符号题材，50 关五章递进 + 异形棋盘 + 每日挑战；已完成高密度牌组、图形化牌面、路径特效、结算仪式 UI、可访问性与构建门禁。
 - **Pair-Link**（新增，已更名）：**琉璃灯市·连连看**，夜市灯牌 / 琉璃瓷片题材，36 关三章 + 无尽冲分 + 每日一盘。
   逻辑盘 12×10（10×8 实心 + 外圈通道），三线连通判定（0/1/2 折，禁斜线，可绕外圈虚空）。
@@ -34,6 +39,34 @@
 - **本地服务**：`node _dev-server.mjs`（零依赖，端口 46810 起）。
 - **Analytics & SEO**：GA4 `G-D67E3XTNSS` 已接入；集中式构建脚本 `scripts/build-site.mjs` 自动向 `dist/` 所有 HTML 注入统计代码；`sitemap.xml` 自动编译 17 页面；`robots.txt` 声明正常。
 - **git**：正常，main 推送成功，workflow 自动构建部署到 gh-pages。
+
+## 2026-09-14 · Cloud-Merge（云朵合成）端到端落地 + 门户交付
+
+- **玩法与机制**：根据 `docs/plans/cloud-merge-prd.md`，实现晴空治愈风格的物理合成游戏。
+  - 十级云朵升阶链（从 L1 小云朵到 L10 彩虹云）；
+  - 核心微创新：合出 L8 雷暴云自动触发雨幕清场，消散正下方拥挤云朵并奖励得分（+15分/朵）；
+  - 终极仪式：合出 L10 彩虹云支持点击收集放晴，奖励 +100 分并清空空间，允许连续培育下一道彩虹；
+  - 三角数计分 + 连锁加成（每次递增 50%）+ 超线 2 秒风暴预警结算；
+  - 无尽冲分 + 每日挑战（基于日期确定性种子，全球同题）。
+- **架构与模块**：
+  - `games/cloud-merge/index.html`：一体化气象机台（Arcade Console）骨架，消除屏幕四角散落浮动按钮，将返回、品牌徽章与系统键（音效/语言/说明）内嵌收纳至机顶控制托盘；左翼升阶天梯、中央高对比主视窗、右翼测控台；
+  - `games/cloud-merge/css/style.css`：沉浸式暮光深蓝星幕环境景深（`#040d1a` ~ `#0d233e`），消除全屏惨白刺眼；38px 等宽霓虹跳动计分、气象发射透明仓（Launch Pod）、带下沉打击感的立体机械软胶按键、`prefers-reduced-motion` 动效降级；
+  - `js/render.mjs`：Canvas 背景升级为深邃湛蓝高对比晴空（`#0C4A6E` → `#0284C7` → `#38BDF8`），纯白棉花云朵在其中立体凸起、边界清晰分明；带下沉柔和阴影与描边；
+  - `js/engine.mjs`：DOM-free 纯物理规则引擎、固定时间步长累加器、大步数确定性回归测试；
+  - `js/score.mjs`：三角数与连锁纯函数；
+  - `js/storage.mjs`：集中读写 `doin.cloud-merge.v1`，全量 try/catch 隔离降级内存；
+  - `js/i18n.mjs`：读写全站共享 `doin.lang` 键，中英双语严格对齐；
+  - `js/audio.mjs`：程序化 WebAudio 合成音效（下落、合并、下雨、雷鸣、彩虹和弦、风声终局）；
+  - `js/ui.mjs` & `js/game.mjs` & `js/main.mjs`：状态协调、手势/指针/键盘控制。
+- **测试与门禁**：
+  - 原生 `node --test` 4 套测试套件（24/24 全部通过），含 1000 步随机游走不变式测试；
+  - 修复双语动态绑定：`ui.mjs` 支持动态 `extra.t` 全链路重绘，实现中英文无刷新实时原地切换（通过 Chrome CDP 自动化验证）；
+  - `check-game.mjs cloud-merge`：19 项检查全部 PASS（0 FAIL, 0 WARN, 0 WAIVED）；
+  - `npm run test:home`：5/5 pass；
+  - `npm run build`：整站成功构建生成。
+- **门户组装**：
+  - 纯明黄系 640×640 3D 软胶质感彩虹云封面 `assets/covers/cloud-merge.webp`；
+  - 根 `games.json` 与 `package.json` 规范登记完成。
 
 ## 2026-09-13 · Bubble-Bloom（合成泡泡）三轮交付 + 门户组装（未提交推送）
 

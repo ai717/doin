@@ -321,6 +321,23 @@
         "title": "Bubble Bloom",
         "desc": "Merge matching bubbles inside a deep-sea alchemy jar to bloom higher tiers, chain pressure combos for score multipliers, with fair no-guess drops, daily challenge and a ten-tier codex."
       }
+    },
+    {
+      "title": "云朵合成",
+      "slug": "cloud-merge",
+      "desc": "把轻飘飘的云朵丢进天空，相同云朵一碰合体长大；合出雷暴云自动降雨清场，收集终极彩虹云放晴爆分！无尽冲分与每日挑战双模式，十级云图鉴本机保存。",
+      "icon": "☁️",
+      "cover": "/assets/covers/cloud-merge.webp",
+      "tags": [
+        "休闲",
+        "合成",
+        "物理"
+      ],
+      "url": "/cloud-merge/",
+      "en": {
+        "title": "Cloud Merge",
+        "desc": "Drop clouds into the sky to merge matching pairs into higher tiers. Thunderstorms auto-rain to clear crowded space, and collect the ultimate rainbow cloud for sunny celebration scores."
+      }
     }
   ]
 }

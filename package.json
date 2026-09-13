@@ -22,6 +22,7 @@
     "test:pair-link": "node --test games/pair-link/tests/engine.test.mjs games/pair-link/tests/storage.test.mjs games/pair-link/tests/i18n.test.mjs games/pair-link/tests/markup.test.mjs",
     "test:link-up": "node --test games/link-up/tests/*.test.mjs",
     "test:bubble-bloom": "node --test games/bubble-bloom/tests/engine.test.mjs games/bubble-bloom/tests/storage.test.mjs games/bubble-bloom/tests/i18n.test.mjs games/bubble-bloom/tests/markup.test.mjs",
-    "test:bubble-merge": "node --test games/bubble-merge/tests/engine.test.mjs games/bubble-merge/tests/storage.test.mjs games/bubble-merge/tests/i18n.test.mjs games/bubble-merge/tests/markup.test.mjs"
+    "test:bubble-merge": "node --test games/bubble-merge/tests/engine.test.mjs games/bubble-merge/tests/storage.test.mjs games/bubble-merge/tests/i18n.test.mjs games/bubble-merge/tests/markup.test.mjs",
+    "test:cloud-merge": "node --test games/cloud-merge/tests/engine.test.mjs games/cloud-merge/tests/storage.test.mjs games/cloud-merge/tests/i18n.test.mjs games/cloud-merge/tests/markup.test.mjs"
   }
 }

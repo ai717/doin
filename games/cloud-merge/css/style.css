@@ -1,0 +1,777 @@
+/* 云朵合成 cloud-merge · 沉浸式天空气象机台（Weather Arcade Console）美学 */
+
+:root {
+  --twilight-950: #040d1a;
+  --twilight-900: #071526;
+  --twilight-850: #0d233e;
+  --twilight-800: #122f52;
+  --twilight-700: #1a4270;
+
+  --neon-cyan: #38bdf8;
+  --neon-sky: #0284c7;
+  --neon-gold: #facc15;
+  --neon-pink: #f472b6;
+  --neon-emerald: #34d399;
+
+  --panel-bg: rgba(13, 35, 62, 0.76);
+  --panel-border: rgba(56, 189, 248, 0.22);
+  --panel-inner: inset 0 1px 0 rgba(255, 255, 255, 0.15);
+  --panel-shadow: 0 12px 32px rgba(2, 10, 20, 0.55);
+
+  --btn-primary-bg: linear-gradient(180deg, #38bdf8 0%, #0284c7 100%);
+  --btn-primary-shadow: 0 4px 0 #0369a1, 0 8px 20px rgba(2, 132, 199, 0.45);
+
+  --font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue",
+    Arial, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+  --r-xl: 24px;
+  --r-lg: 16px;
+  --r-md: 12px;
+  --r-sm: 8px;
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+}
+
+body {
+  font-family: var(--font);
+  color: #f8fafc;
+  background-color: var(--twilight-950);
+  min-height: 100dvh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* —— 外部环境背景：深邃暮光天穹与极光微尘（告别全屏惨白）—— */
+.ambient {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(55% 45% at 50% 12%, rgba(2, 132, 199, 0.35), transparent 70%),
+    radial-gradient(40% 40% at 85% 80%, rgba(244, 114, 182, 0.15), transparent 70%),
+    radial-gradient(45% 45% at 15% 85%, rgba(56, 189, 248, 0.15), transparent 70%),
+    linear-gradient(180deg, #07172b 0%, #0c2542 45%, #050f1c 100%);
+}
+.aurora-glow {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(60% 30% at 50% 0%, rgba(56, 189, 248, 0.22), transparent 75%);
+  animation: auroraBreath 18s ease-in-out infinite alternate;
+}
+.star-dust {
+  position: absolute;
+  inset: 0;
+  opacity: 0.18;
+  background-image:
+    radial-gradient(#ffffff 0.8px, transparent 0.9px),
+    radial-gradient(rgba(56, 189, 248, 0.8) 1px, transparent 1.2px);
+  background-size: 32px 32px, 78px 78px;
+}
+@keyframes auroraBreath {
+  0% { opacity: 0.5; transform: scale(1); }
+  100% { opacity: 0.85; transform: scale(1.05); }
+}
+
+/* —— 一体化气象机台机身（Arcade Chassis）—— */
+.console-chassis {
+  position: relative;
+  z-index: 2;
+  width: min(1320px, 98vw);
+  height: min(calc(100dvh - 20px), 880px);
+  background: rgba(8, 24, 44, 0.78);
+  backdrop-filter: blur(24px);
+  border: 2px solid rgba(56, 189, 248, 0.25);
+  border-radius: var(--r-xl);
+  box-shadow:
+    0 24px 60px rgba(0, 5, 15, 0.75),
+    0 0 0 1px rgba(255, 255, 255, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  display: flex;
+  flex-direction: column;
+  padding: 12px 18px 16px;
+  gap: 12px;
+}
+
+/* —— 机顶内嵌控制托盘（消除屏幕四角散落按钮）—— */
+.console-tray {
+  flex: 0 0 46px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 8px;
+  border-bottom: 1px solid rgba(56, 189, 248, 0.18);
+}
+
+.tray-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 700;
+  color: #e0f2fe;
+  text-decoration: none;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  box-shadow: 0 3px 0 rgba(0, 0, 0, 0.35);
+  transition: all 0.14s ease;
+}
+.tray-pill:hover {
+  transform: translateY(-2px);
+  background: rgba(255, 255, 255, 0.16);
+  color: #ffffff;
+  border-color: var(--neon-cyan);
+}
+.tray-pill:active {
+  transform: translateY(1px);
+  box-shadow: 0 1px 0 rgba(0, 0, 0, 0.35);
+}
+.back-icon {
+  width: 15px;
+  height: 15px;
+}
+
+.console-brand {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.brand-gem {
+  font-size: 20px;
+  filter: drop-shadow(0 0 8px rgba(56, 189, 248, 0.6));
+}
+.brand-title {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 900;
+  letter-spacing: 0.06em;
+  color: #ffffff;
+  text-shadow: 0 0 12px rgba(56, 189, 248, 0.5);
+}
+.brand-badge {
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  padding: 2px 7px;
+  border-radius: 6px;
+  background: rgba(56, 189, 248, 0.2);
+  color: var(--neon-cyan);
+  border: 1px solid rgba(56, 189, 248, 0.35);
+}
+
+.tray-tools {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.tray-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 6px 12px;
+  font-size: 12px;
+  font-weight: 700;
+  color: #e0f2fe;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 999px;
+  cursor: pointer;
+  box-shadow: 0 3px 0 rgba(0, 0, 0, 0.3);
+  transition: all 0.12s ease;
+}
+.tray-btn:hover {
+  transform: translateY(-2px);
+  background: rgba(255, 255, 255, 0.16);
+  color: #ffffff;
+  border-color: var(--neon-cyan);
+}
+.tray-btn:active {
+  transform: translateY(1px);
+}
+
+/* —— 机身主舞台：双翼环抱中央主视窗 —— */
+.console-main {
+  flex: 1 1 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  min-height: 0;
+  padding: 4px 6px;
+}
+
+/* 面板通用外壳 */
+.chassis-panel {
+  background: var(--panel-bg);
+  border: 1px solid var(--panel-border);
+  border-radius: var(--r-lg);
+  box-shadow: var(--panel-shadow), var(--panel-inner);
+  padding: 12px 14px;
+}
+.panel-header {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin-bottom: 10px;
+}
+.panel-led {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--neon-cyan);
+  box-shadow: 0 0 8px var(--neon-cyan);
+}
+.panel-tag {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  color: #e0f2fe;
+}
+
+/* —— 左翼：气象天梯刻度轨（Weather Codex Column）—— */
+.console-wing-left {
+  flex: 0 0 clamp(170px, 17vw, 210px);
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+.codex-panel {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+.codex {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex: 1;
+  overflow-y: auto;
+}
+.codex::-webkit-scrollbar { width: 3px; }
+.codex::-webkit-scrollbar-thumb { background: rgba(56, 189, 248, 0.3); border-radius: 2px; }
+
+.codex li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 8px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  color: #94a3b8;
+  opacity: 0.55;
+  transition: all 0.2s ease;
+}
+.codex li.is-reached {
+  opacity: 1;
+  color: #ffffff;
+  background: rgba(56, 189, 248, 0.12);
+  border-color: rgba(56, 189, 248, 0.35);
+  box-shadow: 0 2px 8px rgba(2, 132, 199, 0.2);
+}
+.codex li.is-target {
+  outline: 2px solid var(--neon-gold);
+  border-color: var(--neon-gold);
+}
+.codex-cloud {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--cloud-color, #ffffff);
+  box-shadow: 0 0 8px var(--cloud-glow, #ffffff);
+  border: 1.5px solid rgba(255, 255, 255, 0.9);
+  flex-shrink: 0;
+}
+.codex-name {
+  font-size: 12px;
+  font-weight: 700;
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.codex-num {
+  font-size: 11px;
+  font-weight: 900;
+  color: var(--neon-cyan);
+}
+
+/* —— 中央大主视窗（Canvas Sky Chamber）—— */
+.console-center {
+  position: relative;
+  height: min(calc(100dvh - 100px), 780px);
+  aspect-ratio: 440 / 680;
+  border-radius: 20px;
+  overflow: hidden;
+  background: #0284c7;
+  border: 4px solid #0369a1;
+  box-shadow:
+    0 16px 40px rgba(0, 10, 25, 0.8),
+    0 0 24px rgba(2, 132, 199, 0.4),
+    inset 0 0 20px rgba(0, 20, 50, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+#game-canvas {
+  width: 100%;
+  height: 100%;
+  display: block;
+  touch-action: none;
+  cursor: crosshair;
+}
+
+.danger-banner {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 140px;
+  background: linear-gradient(180deg, rgba(239, 68, 68, 0.45) 0%, transparent 100%);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.25s ease;
+}
+.danger-banner.is-on {
+  opacity: 1;
+  animation: dangerPulse 1s infinite alternate;
+}
+@keyframes dangerPulse {
+  0% { opacity: 0.45; }
+  100% { opacity: 0.9; }
+}
+
+/* —— 右翼：气象测控台（Scoreboard + Launch Pod + Controls）—— */
+.console-wing-right {
+  flex: 0 0 clamp(250px, 24vw, 300px);
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  overflow-y: auto;
+}
+.console-wing-right::-webkit-scrollbar { width: 3px; }
+.console-wing-right::-webkit-scrollbar-thumb { background: rgba(56, 189, 248, 0.3); border-radius: 2px; }
+
+/* 模式选择滑块开关 */
+.mode-tabs {
+  display: flex;
+  background: rgba(6, 20, 36, 0.7);
+  padding: 4px;
+  border-radius: 999px;
+  border: 1px solid rgba(56, 189, 248, 0.25);
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.4);
+}
+.mode-tab {
+  flex: 1;
+  padding: 7px 0;
+  border: none;
+  border-radius: 999px;
+  background: transparent;
+  color: #94a3b8;
+  font-size: 13px;
+  font-weight: 800;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.mode-tab.is-active {
+  background: var(--btn-primary-bg);
+  color: #ffffff;
+  box-shadow: 0 2px 8px rgba(2, 132, 199, 0.4);
+}
+
+/* 记分面板：等宽 38px 大字霓虹跳动 */
+.score-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.meter-score {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 8px 12px;
+  background: rgba(4, 16, 32, 0.65);
+  border: 1px solid rgba(56, 189, 248, 0.2);
+  border-radius: var(--r-md);
+  box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.4);
+}
+.meter-label {
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  color: #94a3b8;
+}
+.meter-digits {
+  font-size: 38px;
+  font-weight: 900;
+  color: #ffffff;
+  line-height: 1.15;
+  font-variant-numeric: tabular-nums;
+  text-shadow: 0 0 16px rgba(56, 189, 248, 0.6);
+}
+.meter-digits.bump {
+  animation: scoreBump 0.24s cubic-bezier(0.18, 0.89, 0.32, 1.28);
+}
+@keyframes scoreBump {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.22); color: var(--neon-gold); text-shadow: 0 0 20px var(--neon-gold); }
+  100% { transform: scale(1); }
+}
+
+.meter-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+}
+.meter-sub {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 6px 4px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: var(--r-sm);
+}
+.sub-label {
+  font-size: 11px;
+  font-weight: 700;
+  color: #94a3b8;
+  margin-bottom: 2px;
+}
+.sub-val {
+  font-size: 16px;
+  font-weight: 900;
+  color: var(--neon-cyan);
+}
+.record-badge {
+  text-align: center;
+  font-size: 12px;
+  font-weight: 800;
+  color: #cbd5e1;
+  padding: 4px;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.05);
+}
+
+/* 气象发射仓（Launch Pod） */
+.launch-pod {
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  padding: 8px 6px;
+  background: rgba(4, 16, 32, 0.65);
+  border: 1px solid rgba(56, 189, 248, 0.2);
+  border-radius: var(--r-md);
+  box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.4);
+}
+.pod-cell {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+}
+.preview-cloud {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: var(--cloud-color, #ffffff);
+  box-shadow: 0 0 14px var(--cloud-glow, #ffffff), 0 4px 10px rgba(0, 0, 0, 0.4);
+  border: 2px solid rgba(255, 255, 255, 0.95);
+  transition: transform 0.2s ease;
+}
+.preview-cloud.is-next {
+  width: 34px;
+  height: 34px;
+  opacity: 0.85;
+}
+.pod-label {
+  font-size: 11px;
+  font-weight: 700;
+  color: #94a3b8;
+}
+.pod-pipe {
+  font-size: 24px;
+  font-weight: 900;
+  color: rgba(56, 189, 248, 0.4);
+}
+.pod-hint {
+  margin: 6px 0 0;
+  text-align: center;
+  font-size: 12px;
+  font-weight: 700;
+  color: #cbd5e1;
+}
+
+/* 实体机械按键控制台 */
+.arcade-btn {
+  width: 100%;
+  padding: 11px 0;
+  font-size: 14px;
+  font-weight: 800;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  cursor: pointer;
+  background: rgba(255, 255, 255, 0.1);
+  color: #ffffff;
+  box-shadow: 0 4px 0 rgba(0, 0, 0, 0.4), 0 6px 14px rgba(0, 0, 0, 0.3);
+  transition: transform 0.1s ease, box-shadow 0.1s ease, background 0.15s ease;
+}
+.arcade-btn.primary-action {
+  background: var(--btn-primary-bg);
+  box-shadow: var(--btn-primary-shadow);
+  border: none;
+}
+.arcade-btn:hover {
+  transform: translateY(-2px);
+}
+.arcade-btn:active {
+  transform: translateY(2px);
+  box-shadow: 0 1px 0 rgba(0, 0, 0, 0.4);
+}
+.action-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+  margin-top: 8px;
+}
+#start-btn[hidden] + .action-grid {
+  margin-top: 0;
+}
+.control-hint {
+  margin: 8px 0 0;
+  text-align: center;
+  font-size: 11px;
+  color: #94a3b8;
+  line-height: 1.4;
+}
+
+/* —— 弹窗与浮层 —— */
+.overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(4, 15, 30, 0.65);
+  backdrop-filter: blur(10px);
+  padding: 20px;
+  animation: fadeIn 0.2s ease;
+}
+.overlay[hidden] {
+  display: none !important;
+}
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.overlay-card {
+  width: min(340px, 92%);
+  background: #0d2542;
+  border: 2px solid rgba(56, 189, 248, 0.35);
+  border-radius: var(--r-xl);
+  padding: 24px 20px;
+  box-shadow: 0 24px 50px rgba(0, 0, 0, 0.65);
+  text-align: center;
+}
+.overlay-kicker {
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.15em;
+  color: var(--neon-cyan);
+  margin-bottom: 4px;
+}
+.overlay-title {
+  margin: 0 0 10px;
+  font-size: 24px;
+  font-weight: 900;
+  color: #ffffff;
+}
+.overlay-desc {
+  font-size: 13px;
+  line-height: 1.6;
+  color: #cbd5e1;
+  margin: 0 0 18px;
+}
+.overlay-modes {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 18px;
+}
+.mode-chip {
+  padding: 6px 14px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 800;
+  background: rgba(56, 189, 248, 0.15);
+  color: var(--neon-cyan);
+  border: 1px solid rgba(56, 189, 248, 0.3);
+}
+
+.newbest {
+  display: inline-block;
+  padding: 4px 14px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 900;
+  color: #fbbf24;
+  background: rgba(250, 204, 21, 0.15);
+  border: 1px solid rgba(250, 204, 21, 0.35);
+  margin-bottom: 10px;
+}
+.newbest[hidden] {
+  display: none !important;
+}
+
+.result-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+  margin: 14px 0;
+}
+.result-cell {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 10px;
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+}
+.result-num {
+  font-size: 22px;
+  font-weight: 900;
+  color: var(--neon-cyan);
+}
+.result-cap {
+  font-size: 11px;
+  font-weight: 700;
+  color: #94a3b8;
+}
+.result-best {
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--neon-gold);
+  margin: 4px 0;
+}
+.result-tip {
+  font-size: 12px;
+  color: #94a3b8;
+  margin: 0 0 16px;
+}
+
+/* 玩法说明弹窗 */
+.help-card {
+  text-align: left;
+  max-width: 460px;
+}
+.help-body p {
+  font-size: 13px;
+  line-height: 1.65;
+  color: #e2e8f0;
+  margin: 0 0 10px;
+}
+
+/* Toast 浮条 */
+.toast {
+  position: fixed;
+  top: 72px;
+  left: 50%;
+  transform: translateX(-50%) translateY(-12px);
+  background: rgba(7, 24, 46, 0.94);
+  border: 1px solid var(--neon-cyan);
+  color: #ffffff;
+  padding: 9px 22px;
+  border-radius: 999px;
+  font-size: 14px;
+  font-weight: 800;
+  z-index: 30;
+  pointer-events: none;
+  opacity: 0;
+  transition: all 0.25s cubic-bezier(0.18, 0.89, 0.32, 1.28);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5), 0 0 12px rgba(56, 189, 248, 0.4);
+}
+.toast[hidden] {
+  display: none !important;
+}
+.toast.is-on {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+.noscript {
+  position: fixed;
+  bottom: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #fef2f2;
+  color: #b91c1c;
+  padding: 10px 16px;
+  border-radius: 8px;
+  font-size: 13px;
+  z-index: 100;
+}
+
+/* —— 屏幕较窄响应式自适应 (<= 960px) —— */
+@media (max-width: 960px) {
+  body {
+    overflow-y: auto;
+    align-items: flex-start;
+  }
+  .console-chassis {
+    height: auto;
+    min-height: 100dvh;
+    border-radius: 0;
+    border: none;
+    width: 100%;
+    padding: 8px;
+  }
+  .console-main {
+    flex-direction: column;
+    height: auto;
+  }
+  .console-center {
+    height: min(60dvh, 520px);
+    width: auto;
+  }
+  .console-wing-left,
+  .console-wing-right {
+    width: 100%;
+    max-width: 480px;
+    height: auto;
+  }
+  .codex {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 6px;
+  }
+  .codex-name {
+    display: none;
+  }
+}
+
+/* —— 动效降级约束 —— */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
