@@ -104,6 +104,32 @@ test("母题表：12 个母题，id / path / 强调色两两不同", () => {
     assert.ok(m.paths.length >= 1);
   });
   assert.equal(motifById(999).id, MOTIFS[0].id, "非法 id 必须安全回退");
+
+  // 颜色两两可辨：只断言"tint 名字不同"是不够的 —— 那是数据不同，不是玩家看得出不同。
+  // 取 tileStops 三档的均值 RGB，任意两母题的曼哈顿距离必须拉得开。
+  // 真浏览器下的像素级形状+颜色可辨性由 x/pair-link/cdp-motifs.mjs 覆盖。
+  const toRgb = (hex) => [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16));
+  const meanRgb = (id) => {
+    const stops = tileStops(id);
+    const parts = [toRgb(stops.lt), toRgb(stops.mid), toRgb(stops.dk)];
+    return [0, 1, 2].map((k) => Math.round(parts.reduce((sum, p) => sum + p[k], 0) / parts.length));
+  };
+  const rgbs = MOTIFS.map((m) => ({ zh: m.zh, v: meanRgb(m.id) }));
+  let minDist = Infinity;
+  let minPair = "";
+  for (let i = 0; i < rgbs.length; i += 1) {
+    for (let j = i + 1; j < rgbs.length; j += 1) {
+      const d =
+        Math.abs(rgbs[i].v[0] - rgbs[j].v[0]) +
+        Math.abs(rgbs[i].v[1] - rgbs[j].v[1]) +
+        Math.abs(rgbs[i].v[2] - rgbs[j].v[2]);
+      if (d < minDist) {
+        minDist = d;
+        minPair = rgbs[i].zh + "/" + rgbs[j].zh;
+      }
+    }
+  }
+  assert.ok(minDist >= 30, "任意两个母题的平均色曼哈顿距离必须 ≥ 30（最接近的一对：" + minPair + " = " + minDist + "）");
 });
 
 /* ------------------------------------------------------------ 关卡参数 */
@@ -667,5 +693,46 @@ test("合法操作绝不抛错：对 36 关各关前 60 步随机点选", () => 
       state = tick(state, 16);
     }
     assert.ok(["playing", "won", "lost", "ready"].includes(state.phase));
+  }
+});
+
+test("全 36 关均可清盘获胜：贪心求解每一关，全程不允许出现死局", () => {
+  // 前面的用例只证明「开局存在可消对」和「前 60 步不抛错」，
+  // 都**没有**证明一关真的能打通。这里用 findAnyPair 做贪心求解，
+  // 把每一关从头清到空，这是"无死局"在真实对局深度上的验证：
+  // 任何一次 findAnyPair 返回 null 都意味着自动洗牌没能化解死局。
+  for (let level = 1; level <= LEVEL_COUNT; level += 1) {
+    let state = startGame(createState(level, { seed: levelSeed(level) }));
+    const params = levelParams(level);
+    const totalPairs = params.tiles / 2;
+    let cleared = 0;
+
+    // 正常贪心恰好 totalPairs 步；多给的额度只用于兜底防死循环。
+    const guard = totalPairs * 3 + 100;
+    while (state.phase === "playing" && cleared < guard) {
+      const pair = findAnyPair(state.board);
+      assert.ok(
+        pair,
+        "第 " + level + " 关在还剩 " + tilesOf(state.board).length + " 块时找不到可消对（死局未被自动洗牌化解）"
+      );
+      state = applyPick(state, pair[0]).state;
+      const done = applyPick(state, pair[1]);
+      assert.equal(done.action.type, "clear", "第 " + level + " 关的 findAnyPair 结果必须真的可消");
+      state = done.state;
+      cleared += 1;
+      if (state.phase !== "playing") break;
+      state = tick(state, 16); // 推进一点时间，让连击窗口逻辑也真实参与
+    }
+
+    assert.equal(
+      state.phase,
+      "won",
+      "第 " + level + " 关未能清盘（消掉 " + cleared + "/" + totalPairs +
+        " 对，phase=" + state.phase + (state.failReason ? "，failReason=" + state.failReason : "") + "）"
+    );
+    assert.equal(levelOutcome(state), "won");
+    assert.equal(cleared, totalPairs, "第 " + level + " 关应恰好消掉 " + totalPairs + " 对");
+    assert.equal(tilesOf(state.board).length, 0, "第 " + level + " 关清盘后棋盘必须为空");
+    assert.ok(state.score > 0 && state.score <= MAX_SCORE);
   }
 });
