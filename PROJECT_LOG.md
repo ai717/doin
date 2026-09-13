@@ -13,7 +13,7 @@
   白色胶囊卡片标签 + hover 放大；品牌行「Doin.win 字标 ←→ 地球语言按钮」+ 二级主标题；
   中英双语（`doin.lang` 全站共享偏好）。CNAME `doin.win`。共 17 款游戏登记（新增 Pair-Link、Link-Up）。
 - **Link-Up**（新增本地接入）：喜福连连看，暖木牌桌 / 民俗符号题材，50 关五章递进 + 异形棋盘 + 每日挑战；已完成规则、UI、可访问性与构建门禁，待用户确认稀疏棋盘是否升级为高密度牌组后再调整生成规则。
-- **Pair-Link**（新增）：连连看，夜市灯牌 / 琉璃瓷片题材，36 关三章 + 无尽冲分 + 每日一盘。
+- **Pair-Link**（新增，已更名）：**琉璃灯市·连连看**，夜市灯牌 / 琉璃瓷片题材，36 关三章 + 无尽冲分 + 每日一盘。
   逻辑盘 12×10（10×8 实心 + 外圈通道），三线连通判定（0/1/2 折，禁斜线，可绕外圈虚空）。
   第 2/3 章引入**冰封壳**（8 邻域震碎，死盘融壳兜底）；**每日一盘**同种子同题、与主线解耦。
   DOM/CSS Grid 棋盘（含淡化方格线，画在容器上）+ Canvas 2D 特效覆盖层双轨渲染，桌面双栏沉浸 UI，
@@ -351,6 +351,30 @@ PROJECT_LOG.md                      [修改] 本轮记录
 ### 提交边界
 - 只动 `games/pair-link/js/engine.mjs`、`tests/engine.test.mjs`、`docs/outsource/pair-link-spec.md`、
   `x/pair-link/cdp-*.mjs`；`games.json`/`package.json` 改动属并行 `link-up` 项目，不纳入。保持本地，不推送。
+
+## 2026-09-13 · Pair-Link 更名「琉璃灯市·连连看」
+
+> 用户诉求：「鉴于以后可能有多种连连看小游戏，给出适合本游戏的新名称」。
+> 拍板：**琉璃灯市·连连看**（夜市灯牌 / 琉璃瓷片题材与「灯市」意象契合；slug 保持 `pair-link` 不变，
+> 不触碰并行 `link-up` 项目，以区分未来可能的多种连连看变体）。
+
+### 改动（纯展示层重命名，不涉及游戏逻辑 / 算法 / 关卡参数）
+- `games.json`：pair-link 条目 `title` 由 `"连连看"` → `"琉璃灯市·连连看"`（门户卡片标题、搜索/分享展示名）。
+- `games/pair-link/js/i18n.mjs`：
+  - `zh.appTitle` `"连连看"` → `"琉璃灯市"`、`zh.appSubtitle` `"琉璃灯市"` → `"连连看"`
+    （HUD 主匾「琉璃灯市」/ 副标「连连看」，原为半接线的占位状态）；
+  - `zh.startTitle` `"琉璃灯市 · 连连看"` → `"琉璃灯市·连连看"`（去掉中间点两侧空格）；
+  - `zh.boardAria` `"连连看棋盘…"` → `"琉璃灯市棋盘…"`。
+- `games/pair-link/index.html`（7 处）：meta description、`<title>`、`noscript` 提示、
+  `#app-title`/`#app-subtitle` span、`#board` aria-label、`#start-title` 全部对齐新名（中间点两侧无空格）。
+- `docs/outsource/pair-link-spec.md`：标题行 `# DOIN 小游戏外包任务书：琉璃灯市·连连看（pair-link）`。
+- `PROJECT_LOG.md` 第 16 行基线：`Pair-Link（新增）` → `（新增，已更名）：琉璃灯市·连连看`。
+
+### 验证边界
+- 仅文案/标题/i18n 资源改动，未触动 `engine.mjs` 规则层、关卡参数、生成算法与测试断言；上轮全绿门禁继续有效。
+- `games.json` 仅 stage 了 pair-link 标题那一处 hunk，并行 `link-up`、`package.json`、`docs/plans/jigsaw-prd.md`
+  删除等均未纳入（采用手工 patch `git apply --cached` 隔离同文件 hunk 合并陷阱）。
+- 保持本地，不推送。
 
 ## 2026-09-11 · AGENTS.md 深度重构升级与双技能协同体系统合
 

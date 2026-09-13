@@ -3,14 +3,14 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <meta name="description" content="连连看 (Pair Link) —— 点选两枚相同琉璃瓷片，用不超过两折的折线连上即消。36 关主线 + 无尽冲分，支持鼠标、触摸与键盘。">
-  <title>连连看 - DOIN.WIN</title>
+  <meta name="description" content="琉璃灯市·连连看 (Pair Link) —— 点选两枚相同琉璃瓷片，用不超过两折的折线连上即消。36 关主线 + 无尽冲分，支持鼠标、触摸与键盘。">
+  <title>琉璃灯市·连连看 - DOIN.WIN</title>
   <link rel="icon" href="favicon.svg?v=dev" type="image/svg+xml">
   <link rel="stylesheet" href="css/style.css?v=dev">
 </head>
 <body>
   <noscript>
-    <div class="noscript-tip">连连看需要启用 JavaScript 才能运行，请在浏览器设置中开启后刷新页面。</div>
+    <div class="noscript-tip">琉璃灯市需要启用 JavaScript 才能运行，请在浏览器设置中开启后刷新页面。</div>
   </noscript>
 
   <div id="app">
@@ -20,8 +20,8 @@
           <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/>
         </svg>
       </a>
-      <span id="app-title" data-i18n="appTitle">连连看</span>
-      <span id="app-subtitle" data-i18n="appSubtitle">琉璃灯市</span>
+      <span id="app-title" data-i18n="appTitle">琉璃灯市</span>
+      <span id="app-subtitle" data-i18n="appSubtitle">连连看</span>
       <div id="topbar-actions">
         <button id="btn-lang" class="icon-btn" type="button" data-i18n-label="switchLang" aria-label="切换语言">EN</button>
         <button id="btn-sound" class="icon-btn" type="button" data-i18n-label="toggleSound" aria-label="音效开关" aria-pressed="false">
@@ -36,7 +36,7 @@
     <main id="stage">
       <section id="board-col">
         <div id="board-wrap" aria-label="棋盘区">
-          <div id="board" role="grid" aria-label="连连看棋盘">
+          <div id="board" role="grid" aria-label="琉璃灯市棋盘">
             <canvas id="fx" aria-hidden="true"></canvas>
           </div>
         </div>
@@ -118,7 +118,7 @@
 
     <div id="overlay" hidden>
       <section id="panel-start" class="panel" role="dialog" aria-modal="true" aria-labelledby="start-title" hidden>
-        <h2 id="start-title" data-i18n="startTitle">琉璃灯市 · 连连看</h2>
+        <h2 id="start-title" data-i18n="startTitle">琉璃灯市·连连看</h2>
         <p class="panel-sub" data-i18n="startSub">点两枚相同瓷片，用不超过两折的折线连上，清空整盘过关。</p>
         <div class="panel-progress"><span data-i18n="unlocked">已解锁</span> <strong id="start-progress">1 / 36</strong></div>
         <div class="panel-daily">

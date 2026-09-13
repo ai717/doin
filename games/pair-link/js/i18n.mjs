@@ -8,8 +8,8 @@ export const DEFAULT_LOCALE = "zh";
 
 export const strings = {
   zh: {
-    appTitle: "连连看",
-    appSubtitle: "琉璃灯市",
+    appTitle: "琉璃灯市",
+    appSubtitle: "连连看",
     switchLang: "切换语言",
     toggleSound: "音效开关",
 
@@ -44,7 +44,7 @@ export const strings = {
     keyShuffleDesc: "主动洗牌",
     keyPauseDesc: "暂停 / 继续",
 
-    startTitle: "琉璃灯市 · 连连看",
+    startTitle: "琉璃灯市·连连看",
     startSub: "点两枚相同瓷片，用不超过两折的折线连上，清空整盘过关。",
     unlocked: "已解锁",
     continueGame: "继续游戏",
@@ -75,7 +75,7 @@ export const strings = {
     resShells: "震碎冰封壳",
     backToLevels: "返回选关",
 
-    boardAria: "连连看棋盘，{rows} 行 {cols} 列",
+    boardAria: "琉璃灯市棋盘，{rows} 行 {cols} 列",
     cellEmpty: "第 {r} 行第 {c} 列，空格",
     cellTile: "第 {r} 行第 {c} 列，{name}",
     cellFrozen: "第 {r} 行第 {c} 列，{name}，冰封",
