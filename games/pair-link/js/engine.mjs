@@ -44,9 +44,9 @@ export const GENERATE_ATTEMPTS = 200;
 /** 冰封壳的编码偏移：board 值 > MOTIF_COUNT 表示该块带壳 */
 export const FROZEN_OFFSET = MOTIF_COUNT;
 
-const CHAPTER_KINDS = [6, 8, 10];
-const CHAPTER_TILES = [56, 64, 72];
-const CHAPTER_SECONDS = [2.2, 2.02, 1.87];
+const CHAPTER_KINDS = [7, 9, 11];
+const CHAPTER_TILES = [60, 68, 76];
+const CHAPTER_SECONDS = [1.9, 1.8, 1.7];
 /** 每章冰封壳基数 */
 const CHAPTER_FROZEN = [0, 4, 8];
 /** 每章冰封壳的步进（同章内每 4 关递增一次） */
@@ -254,20 +254,21 @@ export function clampLevel(level) {
 
 /**
  * 关卡参数公式（唯一权威，禁止在别处手写 36 行常量）：
- *   chapter = ceil(L / 12)，k = L - 12·(chapter - 1)，step = floor((k - 1) / 4)
- *   kinds  = [6, 8, 10][chapter - 1] + step
- *   tiles  = 56 + 8·(chapter - 1) + 4·step          （恒为偶数，≤ 80）
- *   timeMs = ceil(tiles × [2.20, 2.02, 1.87][chapter - 1]) × 1000
+ *   chapter = ceil(L / 12)，k = L - 12·(chapter - 1)，step = floor((k - 1) / 2)
+ *   kinds  = min(12, [7, 9, 11][chapter - 1] + step)   （封顶 12，与母题总数一致）
+ *   tiles  = min(80, [60, 68, 76][chapter - 1] + 4·step)（封顶 80 = 实心格数）
+ *   timeMs = ceil(tiles × [1.90, 1.80, 1.70][chapter - 1]) × 1000
  *   frozen = [0, 4, 8][chapter - 1] + [0, 1, 2][chapter - 1] · step
- *            （第 1 章不引入冰封壳；第 2 章 4/5/6；第 3 章 8/10/12）
+ *            （第 1 章不引入冰封壳；第 2 章 4/5/6/7/8/9；第 3 章 8/10/12/14/16/18）
+ *   step 每 2 关进一档（比原 4 关更密），保证前几关就有可见坡度。
  */
 export function levelParams(level) {
   const L = clampLevel(level);
   const chapter = Math.ceil(L / 12);
   const k = L - 12 * (chapter - 1);
-  const step = Math.floor((k - 1) / 4);
-  const kinds = CHAPTER_KINDS[chapter - 1] + step;
-  const tiles = CHAPTER_TILES[chapter - 1] + 4 * step;
+  const step = Math.floor((k - 1) / 2);
+  const kinds = Math.min(12, CHAPTER_KINDS[chapter - 1] + step);
+  const tiles = Math.min(80, CHAPTER_TILES[chapter - 1] + 4 * step);
   const seconds = CHAPTER_SECONDS[chapter - 1];
   return {
     level: L,

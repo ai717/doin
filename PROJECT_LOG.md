@@ -11,7 +11,8 @@
 
 - **门户**：薄荷渐变首页（`index.html` + `css/`），640×640 WebP 封面（3D 风格统一），
   白色胶囊卡片标签 + hover 放大；品牌行「Doin.win 字标 ←→ 地球语言按钮」+ 二级主标题；
-  中英双语（`doin.lang` 全站共享偏好）。CNAME `doin.win`。共 16 款游戏上架（新增 Pair-Link）。
+  中英双语（`doin.lang` 全站共享偏好）。CNAME `doin.win`。共 17 款游戏登记（新增 Pair-Link、Link-Up）。
+- **Link-Up**（新增本地接入）：喜福连连看，暖木牌桌 / 民俗符号题材，50 关五章递进 + 异形棋盘 + 每日挑战；已完成规则、UI、可访问性与构建门禁，待用户确认稀疏棋盘是否升级为高密度牌组后再调整生成规则。
 - **Pair-Link**（新增）：连连看，夜市灯牌 / 琉璃瓷片题材，36 关三章 + 无尽冲分 + 每日一盘。
   逻辑盘 12×10（10×8 实心 + 外圈通道），三线连通判定（0/1/2 折，禁斜线，可绕外圈虚空）。
   第 2/3 章引入**冰封壳**（8 邻域震碎，死盘融壳兜底）；**每日一盘**同种子同题、与主线解耦。
@@ -30,6 +31,50 @@
 - **本地服务**：`node _dev-server.mjs`（零依赖，端口 46810 起）。
 - **Analytics & SEO**：GA4 `G-D67E3XTNSS` 已接入；集中式构建脚本 `scripts/build-site.mjs` 自动向 `dist/` 所有 HTML 注入统计代码；`sitemap.xml` 自动编译 17 页面；`robots.txt` 声明正常。
 - **git**：正常，main 推送成功，workflow 自动构建部署到 gh-pages。
+
+## 2026-09-13 · Link-Up（喜福连连看）接管审计、修复与门户接入
+
+### 做了什么
+
+1. **规则与状态稳定化**：保留确定性种子、反向构建可解生成器、50 关 / 每日挑战 / 异形棋盘 / 四连变体；洗牌只重排剩余牌、连续洗牌递增种子、不复活已消除牌；每日成绩同时保存 `date` / `dailyDate`；终局操作安全 no-op。
+2. **UI / 无障碍补齐**：中文 / 英文统一走 `doin.lang`；动态同步按钮 `aria-label` / `title`；选关、帮助、结算弹窗支持初始聚焦、Escape 关闭和 Tab 焦点循环；方向键跳过 hole / empty / removed 格；暂停遮罩、`aria-pressed`、移动端滚动弹窗和 `prefers-reduced-motion` 已覆盖。
+3. **真实浏览器 Bug 修复**：Chrome CDP 发现 `SYM_CLASS` 映射包含空字符串，直接 `classList.add("")` 会抛 `Failed to execute 'add' on 'DOMTokenList'`；改为仅在 class 非空时添加，并补静态装配测试。
+4. **视觉与门户组装**：新增暖绯红 / 金色 640×640 WebP 软胶封面；以「喜福连连看 / Fortune Link」统一游戏命名；登记 `games.json`，根 `package.json` 注册 `test:link-up`。
+
+### 验收
+
+- `npm run test:link-up` → **54 pass / 0 fail**。
+- `node scripts/check-game.mjs link-up` → **19 pass / 0 fail / 0 warn / 0 waived**。
+- `node x/link-up/cdp-smoke.mjs` → **23 pass / 0 fail**：真实启动、选关、提示点击消除、暂停 / 恢复、帮助 Escape、选关滚动、1440 / 1280 / 900 / 390 视口、reduced motion、控制台与资源错误检查全绿。
+- `npm run test:home` → **5 pass / 0 fail**；`npm run build` → 成功，生成 `dist/link-up/`、封面与 sitemap。
+
+### 已知产品取舍
+
+当前第 1 关配置为 6×6 网格但仅 8 枚牌（4 种图案 × 2），其余格作为可绕行留白；这与 PRD 中「铺满全部格子」的文字描述存在歧义。为避免未经确认改变配对数量、难度和可解生成器，本轮保留现状，并把它记录为下一轮可独立拍板的密度调整项。
+
+### 2026-09-13 · 接管后续真实浏览器复查
+
+- **修复异形棋盘布局错位**：`.cell.hole` 原先使用 `display:none`，Chrome CSS Grid 会移除该格并让后续牌面向前填充，导致第 3 章 / 每日挑战的四角缺口消失、坐标与规则状态不一致；改为 `visibility:hidden` 保留 grid track，并清除背景与指针事件。
+- **修复无障碍残留状态**：消除后的牌面按钮会移除旧 `aria-label` / `aria-pressed`，异形缺口与正常牌面之间同步清理 `aria-hidden`；填充牌面显式同步 `aria-pressed`。
+- **优化响应式字号**：监听 `window.resize` 与 `visualViewport.resize`，桌面 / 移动端切换或旋转后重新计算牌面字号，避免沿用大屏字号挤出小棋盘。
+- **新增真实回归断言**：CDP smoke 追加消除后读屏标签清理、每日异形棋盘四角缺口布局与 40 枚牌渲染检查。
+- **键盘与空白路径优化**：棋盘改为 roving tabindex，仅保留一个可 Tab 进入的当前牌面；进入关卡自动聚焦第一张牌；空白路径格设为禁用并从读屏与点击流中移除，但仍保留网格轨道供连线算法绕行。
+
+### 2026-09-13 · Link-Up 键盘可访问性与空白路径复查
+
+- `npm run test:link-up` → **54 pass / 0 fail**。
+- `node scripts/check-game.mjs link-up` → **19 pass / 0 fail / 0 warn / 0 waived**。
+- `node x/link-up/cdp-smoke.mjs` → **27 pass / 0 fail**：新增单焦点牌面、空白路径不进入读屏 / 点击流回归；桌面 / 移动端、异形棋盘、减少动效、控制台与同源资源检查继续全绿。
+
+### 修改 / 新增文件
+
+```
+games/link-up/                      [新增整目录：HTML / CSS / engine / game / UI / render / score / storage / audio / i18n / tests]
+assets/covers/link-up.webp          [新增] 640×640 WebP 封面
+games.json                          [修改] 登记 link-up 条目（含 en 翻译）
+package.json                        [修改] 注册 test:link-up
+PROJECT_LOG.md                      [修改] 本轮记录
+```
 
 ## 2026-09-13 · Pair-Link（连连看）外包任务书 + 亲自生产交付
 
@@ -274,6 +319,38 @@
 ### 修改文件
 - `games/pair-link/index.html`、`css/style.css`、`js/ui.mjs`、`js/i18n.mjs`
 - `x/pair-link/cdp-smoke.mjs`（方格线像素探针 + 时序修正）
+
+## 2026-09-13 · Pair-Link 关卡难度重调（方案 A：每 2 关一档 + 抬高章节基数）
+
+> 用户反馈：「梳理关卡难度，当前我试玩了前三关，感觉太简单」。
+> 诊断：原 `step = floor((k-1)/4)` 使 L1–4 完全同参（6 种类 / 56 块 / 124s / 0 冰封），
+> 且章节基数偏低（6/8/10、56/64/72、2.20/2.02/1.87），前三关几乎没有坡度。
+> 拍板：方案 A（推荐）——台阶缩到每 2 关进一档，并抬高章节基数。
+
+### 改动（`games/pair-link/js/engine.mjs`）
+- 章节常数：`CHAPTER_KINDS = [7, 9, 11]`、`CHAPTER_TILES = [60, 68, 76]`、`CHAPTER_SECONDS = [1.90, 1.80, 1.70]`。
+- `levelParams()`：`step = floor((k-1)/2)`，`kinds` 取 `min(12,…)`、`tiles` 取 `min(80,…)` 封顶。
+- 冰封壳 `[0,4,8] + [0,1,2]·step` → 第 2 章 4/5/6/7/8/9，第 3 章 8/10/12/14/16/18。
+
+### 派生表（全 36 关，S/种类 N/块 T/s）
+- 第 1 章：`7/60/114`(L1-2)、`8/64/122`(L3-4)、`9/68/130`(L5-6)、`10/72/137`(L7-8)、`11/76/145`(L9-10)、`12/80/152`(L11-12)
+- 第 2 章：`9/68/123`(L13-14)、`10/72/130`(L15-16)、`11/76/137`(L17-18)、`12/80/144`(L19-24)
+- 第 3 章：`11/76/130`(L25-26)、`12/80/136`(L27-36)
+
+### 同步更新
+- `games/pair-link/tests/engine.test.mjs`：36 关 `kinds/tiles/timeMs/frozen` 硬编码派生表按新公式改写。
+- `docs/outsource/pair-link-spec.md` §1.3.8：章节概览表、参数公式、`min(12/80)` 封顶、全 36 关派生表同步。
+- `x/pair-link/cdp-*.mjs`：L1 瓷片数 56→60、kinds 6→7；L13 瓷片数 64→68、消除后 64→66；
+  首页卡片数 16→17（games.json 已登记 17 款）。均为反映新参数的断言刷新，非游戏逻辑改动。
+
+### 验证（全绿）
+- `test:pair-link` **101/0**（含全 36 关贪心清盘无死局、带壳块数=参数）
+- `check-game` **19/0**、`npm run build` 成功
+- `cdp-smoke` 53/0、`cdp-dist` 34/0、`cdp-features` 32/0、`cdp-motifs` 6/0（参数变更未引入回归）
+
+### 提交边界
+- 只动 `games/pair-link/js/engine.mjs`、`tests/engine.test.mjs`、`docs/outsource/pair-link-spec.md`、
+  `x/pair-link/cdp-*.mjs`；`games.json`/`package.json` 改动属并行 `link-up` 项目，不纳入。保持本地，不推送。
 
 ## 2026-09-11 · AGENTS.md 深度重构升级与双技能协同体系统合
 
