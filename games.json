@@ -152,6 +152,16 @@
       "tags": ["益智", "视觉", "每日挑战"],
       "url": "/jigsaw/",
       "en": { "title": "Jigsaw", "desc": "Drag a piece onto another to swap them and rebuild the shuffled picture. 50 procedurally generated artworks, auto-lock on correct placement, plus a daily puzzle." }
+    },
+    {
+      "title": "连连看",
+      "slug": "pair-link",
+      "desc": "夜市灯牌主题连连看：找出两枚图案相同的琉璃瓷片，用不超过两个折角的通路把它们连起来。36 关三章递进，另有无尽冲分模式，进度与最高分本机保存。",
+      "icon": "🀄",
+      "cover": "/assets/covers/pair-link.webp",
+      "tags": ["益智", "消除", "经典"],
+      "url": "/pair-link/",
+      "en": { "title": "Pair Link", "desc": "Find two matching glazed tiles and join them with a path of at most two turns. 36 levels across three chapters plus an endless score chase, with local progress saved." }
     }
   ]
 }

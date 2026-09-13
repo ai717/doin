@@ -7,12 +7,15 @@
 
 ***
 
-## Current Baseline (2026-09-11)
+## Current Baseline (2026-09-13)
 
 - **门户**：薄荷渐变首页（`index.html` + `css/`），640×640 WebP 封面（3D 风格统一），
   白色胶囊卡片标签 + hover 放大；品牌行「Doin.win 字标 ←→ 地球语言按钮」+ 二级主标题；
-  中英双语（`doin.lang` 全站共享偏好）。CNAME `doin.win`。共 15 款游戏上架（新增 Jigsaw）。
-- **Jigsaw**（新增）：拼图，50 关（3×3 → 4×4 → 5×5）+ 今日拼图，交换碎片复原图案。
+  中英双语（`doin.lang` 全站共享偏好）。CNAME `doin.win`。共 16 款游戏上架（新增 Pair-Link）。
+- **Pair-Link**（新增）：连连看，夜市灯牌 / 琉璃瓷片题材，36 关三章 + 无尽冲分。
+  逻辑盘 12×10（10×8 实心 + 外圈通道），三线连通判定（0/1/2 折，禁斜线，可绕外圈虚空）。
+  DOM/CSS Grid 棋盘 + Canvas 2D 特效覆盖层双轨渲染，桌面双栏沉浸 UI。稳定基线见本轮条目。
+- **Jigsaw**：拼图，50 关（3×3 → 4×4 → 5×5）+ 今日拼图，交换碎片复原图案。
   每关一张程序化生成的抽象艺术图（同 seed 同图，零图库零版权），Canvas 渲染 + 桌面双栏 UI。
   已提交 `771009b` 并部署上线 `doin.win/jigsaw/`；线上 E2E 17/17。稳定基线见本轮条目。
 - **Klotski**：华容道滑块解谜，50 关递进，Canvas 渲染 + 桌面双栏游戏化 UI。
@@ -23,8 +26,72 @@
 - **i18n**：全站游戏均支持 `doin.lang` 共享偏好。
 - **交付契约**：`docs/GAME-SPEC.md` + `scripts/check-game.mjs`（T1 fail / T2 warn 两级）。
 - **本地服务**：`node _dev-server.mjs`（零依赖，端口 46810 起）。
-- **Analytics & SEO**：GA4 `G-D67E3XTNSS` 已接入；集中式构建脚本 `scripts/build-site.mjs` 自动向 `dist/` 所有 HTML 注入统计代码；`sitemap.xml` 自动编译 16 页面；`robots.txt` 声明正常。
+- **Analytics & SEO**：GA4 `G-D67E3XTNSS` 已接入；集中式构建脚本 `scripts/build-site.mjs` 自动向 `dist/` 所有 HTML 注入统计代码；`sitemap.xml` 自动编译 17 页面；`robots.txt` 声明正常。
 - **git**：正常，main 推送成功，workflow 自动构建部署到 gh-pages。
+
+## 2026-09-13 · Pair-Link（连连看）外包任务书 + 亲自生产交付
+
+### 做了什么
+
+1. **先出任务书再动工**：按 `doin-waibao` 技能，依据 `docs/plans/pair-link-prd.md` 产出
+   `docs/outsource/pair-link-spec.md`（857 行，八节生产级规格）。PRD 未给的量化规格在此补全：
+   - 关卡参数公式 `kinds = [6,8,10][c-1] + floor((k-1)/4)`、`tiles = 56 + 8(c-1) + 4·floor((k-1)/4)`、
+     `timeMs = ceil(tiles × [2.20,2.02,1.87][c-1]) × 1000`，并给出全 36 关派生表；
+   - 折线求解的**确定性返回序**（0 折 → 1 折 → 2 折，同折数按固定扫描序），避免"同局面时快时慢"；
+   - 可解性三层口径：① 成对不变量（每种图案计数偶数）② 每次消除后 `hasAnyPair` 校验，
+     失败自动洗牌（上限 50 次）③ 洗牌等价性（只置换位置、不改计数、外圈恒空）。
+     **诚实声明不做全局回溯穷举**（80 格状态空间不可行）。
+   - 1.6 节「接口预规划」：DOM id 表 + 模块导出契约 + 事件命名，防接口漂移。
+2. **三轮交付落地 `games/pair-link/`**：第 1 轮 `index.html` / `favicon.svg` / `css/style.css`；
+   第 2 轮 `js/` 10 模块（`motifs` `engine` `score` `storage` `i18n` `audio` `render` `ui` `game` `main`）；
+   第 3 轮 `tests/` 4 文件（`engine` `storage` `i18n` `markup`）。
+3. **门户组装**：`games.json` 追加第 16 条（`url: /pair-link/`）、根 `package.json` 加 `test:pair-link`、
+   新增 `assets/covers/pair-link.webp`（640×640，程序化生成）。根 `index.html` 零改动
+   —— 首页卡片网格由 `js/main.js` 运行时读 `games.json` 渲染。
+
+### 验收（两级门禁 + 真浏览器）
+
+- `node scripts/check-game.mjs pair-link` → **19 pass / 0 fail / 0 warn / 0 waived**（T1 全过，零豁免）。
+- `npm run test:pair-link` → **76 pass / 0 fail**（含 1200 步随机游走 + 36 关各 60 步）。
+- `node x/pair-link/cdp-smoke.mjs` → **44 pass / 0 fail**（真鼠标点击消除、键盘、5 档视口、
+  降级对照组 `no-preference 0.14s` ↔ `reduce 1e-06s`）。
+- `npm run build` → 成功；`dist/pair-link/` 扁平化正确、`tests/` 已排除。
+- `node x/pair-link/cdp-dist.mjs` → **27 pass / 0 fail**（生产路径 + 门户卡片）。
+
+### 本轮新增的验收范式（可复用）
+
+1. **「画面 = 状态」契约可以不用测试钩子做**：pair-link 没有暴露任何 `window.__xxx`，
+   但渲染层把母题写成 `path.setAttribute("d", motif.paths[i])`，且每格 `aria-label` 尾部带母题名。
+   于是可以在生产路径上 `await import("/pair-link/js/motifs.mjs")` 拿部署后的母题表，反查画面：
+   ① 每个母题名都命中母题表；② 每条 SVG `d` 都命中母题表；③ **种类数 === 该关 `kinds`**；
+   ④ **每种出现次数为偶数**（成对不变量在画面上成立）。
+   ③④ 才是真判据 —— 它们能区分"画面 = 状态"和"画面是张静态图"。
+2. **封面程序化生成要"算材质"而不是"填色块"**：直接复用 `x/jigsaw/make-cover.py` 的
+   镜面高光 / 环境光遮蔽 / 轮廓光 / 底部厚度 / 投影五件套，比平铺色块强一个量级。
+   踩到的两个坑：① 陪衬元素若靠"整层乘一个 dim 系数"压暗，暖白会退化成灰橄榄，看着像石头
+   —— 应改为**换一套釉色渐变**而不是压暗；② 装饰连线若终点落在主体包围盒内会被完全遮住，
+   必须在合成前先算一遍包围盒，把可见段留在主体之外。
+3. **固定 `sleep` 是脆弱断言**：`sleep(2200)` 等 10 个模块的依赖图会偶发不够，
+   必须改成轮询等待 + 超时时 dump 页面状态（`readyState` / `outerHTML` 头部 / 已加载脚本）。
+   这次的 dump 直接把问题从"疑似时序"定位到"服务端返回 404"。
+
+### 踩到的坑
+
+1. **`node:fs` 与 `node:fs/promises` 混用**：验收脚本里 `import { readFile, stat } from "node:fs"`
+   却按 promise 风格 `await readFile(p)` 调用 → 报 `The "cb" argument must be of type function`，
+   外层 catch 一律吞成 404，表现为"页面全白、连 `<title>` 都没有"。
+   **回调版与 promise 版必须分开 import。**
+2. **Windows 上 `chrome.kill()` 杀不掉真正的浏览器进程**：只杀启动器，无头 Chrome 会残留。
+   稳妥做法是在收尾时先发一次 CDP `Browser.close` 再 `kill()`。
+3. **源码内相对 import 不能带 `?v=dev`**：Node 原生测试无法解析查询串（`MODULE_NOT_FOUND`）。
+   只有 HTML 的 `<link>`/`<script src>` 带占位，由构建脚本 `replaceAll` 替换。
+4. **`node --test <目录>` 静默跑不出结果**：必须显式列出测试文件。
+
+### 待办
+
+- 三项待用户拍板：`pair-link` 与 `link-up` 两份同品类设计取舍（本次只做 pair-link，未触碰 link-up）；
+  特殊块（冰封块）是否首发；次模式是否加「每日一盘」。
+- 人工目视项：12 个琉璃母题两两形状/颜色可辨性、三线连通手动试玩手感。
 
 ## 2026-09-11 · AGENTS.md 深度重构升级与双技能协同体系统合
 
