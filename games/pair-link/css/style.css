@@ -17,7 +17,8 @@
   --crimson-dk: #a83a2c;
   --porcelain: #f3e6d2;
 
-  --grid-line: rgba(243, 230, 210, 0.07);
+  /* 棋盘方格线：极淡，只为便于心算折线路径，不参与任何"格子存在感" */
+  --grid-line: rgba(243, 230, 210, 0.14);
   --line-soft: rgba(243, 230, 210, 0.12);
 
   --radius-plaque: 14px;
@@ -176,9 +177,23 @@ body::after {
 #stage {
   flex: 1 1 auto;
   display: flex;
-  gap: 22px;
+  /* 让「棋盘列 + 侧栏」作为整体居中：否则宽屏下棋盘被高度公式限死后居中，
+     侧栏会被推到很远（1920 下曾出现 230px 空隙）。 */
+  justify-content: center;
+  gap: 18px;
   min-height: 0;
   padding: 0 22px 22px;
+}
+
+/* 棋盘列 = 棋盘 + 紧贴其下的操作台。
+   flex-basis 直接取棋盘宽度公式，于是操作台与棋盘同宽、只隔一个 gap。 */
+#board-col {
+  flex: 0 1 calc((100dvh - 150px) * 1.2);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 0;
+  min-height: 0;
 }
 
 #board-wrap {
@@ -195,11 +210,23 @@ body::after {
 #board-wrap::before {
   content: "";
   position: absolute;
-  inset: 6% 4%;
+  inset: 4% 0;
   border-radius: 26px;
   background: radial-gradient(60% 60% at 50% 45%, rgba(232, 183, 104, 0.13), transparent 72%);
   filter: blur(6px);
   pointer-events: none;
+}
+
+/* 操作台：横跨棋盘宽度、紧贴棋盘下缘。功能按钮与棋盘的距离就是上面的 12px gap。 */
+#console {
+  flex: 0 0 auto;
+  display: flex;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: var(--radius-plaque);
+  border: 1px solid rgba(201, 134, 63, 0.32);
+  background: linear-gradient(168deg, rgba(58, 40, 31, 0.92), rgba(32, 22, 18, 0.94));
+  box-shadow: var(--shadow-plaque);
 }
 
 /* --------------------------------------------------------------- 棋盘 */
@@ -209,13 +236,23 @@ body::after {
   display: grid;
   grid-template-columns: repeat(12, minmax(0, 1fr));
   grid-template-rows: repeat(10, minmax(0, 1fr));
-  width: min(100%, calc((100vh - 150px) * 1.2));
-  width: min(100%, calc((100dvh - 150px) * 1.2));
+  width: 100%;
   aspect-ratio: 12 / 10;
   padding: 0;
   border-radius: 20px;
-  background:
+  /* ⚠️ 方格线必须由**棋盘容器**统一绘制，不能交给每个格子。
+     1) 画在容器上 → 空格自身仍然"不存在"，`x/pair-link/cdp-smoke.mjs` 里
+        "隐藏全部空格后截图逐字节不变"的真像素等价性断言继续成立；
+     2) 若改成给 .cell 画边框，就又回到"每格一个插座轮廓"的老缺陷上去了。
+     两层 1px 渐变按 (100%/12, 100%/10) 平铺，正好落在格线上；
+     background-origin 默认 padding-box，而 #board 的 padding 为 0，故与格子严格对齐。 */
+  background-color: transparent;
+  background-image:
+    linear-gradient(to right, var(--grid-line) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--grid-line) 1px, transparent 1px),
     linear-gradient(180deg, rgba(36, 26, 21, 0.86), rgba(21, 15, 13, 0.92));
+  background-size: calc(100% / 12) calc(100% / 10), calc(100% / 12) calc(100% / 10), auto;
+  background-repeat: repeat, repeat, no-repeat;
   border: 1px solid rgba(201, 134, 63, 0.26);
   box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.5), 0 18px 44px rgba(0, 0, 0, 0.5);
   outline: none;
@@ -244,7 +281,8 @@ body::after {
       paintTile() 消除时只 removeAttribute("style")，于是内联变量没了、
       回退色还在 —— 每个消除格会继续画出一枚**没有图案的纯金色方块**，
       整盘看起来永远没被消掉。必须显式把空格的 .tile 关掉。
-   2) 格子轮廓：整块棋盘不留任何网格线。已消除格与外圈通道一律纯背景。
+   2) 格子自身：已消除格与外圈通道一律纯背景，不画边框、不画伪元素。
+      棋盘方格线是**容器背景**（见 #board 的注释），不属于格子。
    任何"给空格加回一点装饰"的改动都会与 x/pair-link/cdp-smoke.mjs 里的
    真像素等价性断言冲突（隐藏空格前后截图必须逐字节相同）。 */
 .cell.is-empty .tile {
@@ -447,7 +485,8 @@ body::after {
   width: 322px;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  justify-content: center;
+  gap: 12px;
   min-height: 0;
   overflow-y: auto;
   padding-right: 2px;
@@ -652,6 +691,43 @@ body::after {
 .ctrl-dock {
   display: flex;
   gap: 10px;
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+/* 工具盘 / 控制台之间的细分割线，让"道具"与"流程"两组按钮一眼可分 */
+.ctrl-dock {
+  border-left: 1px dashed rgba(201, 134, 63, 0.28);
+  padding-left: 10px;
+}
+
+/* 剩余对数：进度条 + 数值，配合方格线便于心算 */
+.progress-body {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.progress-track {
+  flex: 1 1 auto;
+  height: 6px;
+  border-radius: 999px;
+  background: rgba(243, 230, 210, 0.1);
+  overflow: hidden;
+}
+
+.progress-fill {
+  display: block;
+  width: 0;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #d99a45, #ffe6b0);
+  transition: width 0.24s ease;
+}
+
+.plaque-progress .plaque-value {
+  font-size: 20px;
+  min-width: 2ch;
 }
 
 .btn {
@@ -1070,10 +1146,14 @@ body::after {
 
 #toast {
   position: fixed;
-  left: 50%;
+  /* ⚠️ 不能再用"底部居中"：操作台（提示/洗牌/暂停/重玩）就贴在棋盘下缘、横跨棋盘宽度，
+     而它正好落在视口底部中央 —— 状态提示会盖住按钮、把点击吃掉（玩家用完提示立刻点暂停
+     会点不动）。改到右下角，那里是侧栏下方的空白区。
+     pointer-events: none 是第二道保险：状态提示永远不该拦截任何点击。 */
+  right: 24px;
   bottom: 26px;
-  transform: translateX(-50%);
   z-index: 60;
+  pointer-events: none;
   padding: 9px 18px;
   border-radius: 999px;
   font-size: 13px;
@@ -1091,11 +1171,11 @@ body::after {
 @keyframes toastIn {
   from {
     opacity: 0;
-    transform: translate(-50%, 10px);
+    transform: translateY(10px);
   }
   to {
     opacity: 1;
-    transform: translate(-50%, 0);
+    transform: none;
   }
 }
 
@@ -1146,18 +1226,40 @@ body::after {
 @media (max-width: 768px) {
   #stage {
     flex-direction: column;
+    justify-content: flex-start;
     gap: 10px;
     padding: 0 10px 12px;
   }
 
-  #board-wrap {
+  /* 移动端：棋盘 → 紧贴其下的操作台 → HUD 网格 */
+  #board-col {
     order: 1;
-    flex: 1 1 auto;
+    flex: 0 0 auto;
+    width: 100%;
+    gap: 8px;
+  }
+
+  #board-wrap {
+    flex: 0 0 auto;
   }
 
   #board {
-    width: min(100%, calc((100dvh - 300px) * 1.2));
+    width: min(100%, calc((100dvh - 340px) * 1.2));
     border-radius: 16px;
+  }
+
+  #console {
+    padding: 8px;
+    gap: 8px;
+  }
+
+  .tool-dock,
+  .ctrl-dock {
+    gap: 8px;
+  }
+
+  .ctrl-dock {
+    padding-left: 8px;
   }
 
   #hud {
@@ -1167,6 +1269,7 @@ body::after {
     overflow: visible;
     display: grid;
     grid-template-columns: repeat(4, minmax(0, 1fr));
+    justify-content: stretch;
     gap: 8px;
     padding: 0;
   }
@@ -1183,10 +1286,43 @@ body::after {
     display: none;
   }
 
-  .plaque-level,
-  .plaque-stars {
-    grid-column: span 1;
+  /* 显式排布，别依赖 DOM 顺序自动填充（否则「得分」跨 4 列会把「星级」挤成半行）：
+     第 1 行 关卡 / 时间 / 连击 / 星级；第 2 行 得分；第 3 行 剩余对数。 */
+  .plaque-level {
+    grid-area: 1 / 1 / 2 / 2;
     justify-content: center;
+  }
+
+  .plaque-timer {
+    grid-area: 1 / 2 / 2 / 3;
+    align-items: center;
+  }
+
+  .plaque-combo {
+    grid-area: 1 / 3 / 2 / 4;
+    align-items: center;
+  }
+
+  .plaque-stars {
+    grid-area: 1 / 4 / 2 / 5;
+    justify-content: center;
+  }
+
+  .plaque-score {
+    grid-area: 2 / 1 / 3 / 5;
+    flex-direction: row;
+    align-items: baseline;
+    justify-content: center;
+    gap: 10px;
+  }
+
+  /* 剩余对数整行铺开，进度条才有意义 */
+  .plaque-progress {
+    grid-area: 3 / 1 / 4 / 5;
+  }
+
+  .plaque-progress .plaque-value {
+    font-size: 17px;
   }
 
   .plaque-level .plaque-value {
@@ -1200,12 +1336,6 @@ body::after {
 
   .plaque-value.big {
     font-size: 22px;
-  }
-
-  .plaque-timer,
-  .plaque-combo {
-    grid-column: span 1;
-    align-items: center;
   }
 
   .timer-body,
@@ -1241,20 +1371,6 @@ body::after {
   .star {
     width: 18px;
     height: 18px;
-  }
-
-  .plaque-score {
-    grid-column: span 4;
-    flex-direction: row;
-    align-items: baseline;
-    justify-content: center;
-    gap: 10px;
-  }
-
-  .tool-dock,
-  .ctrl-dock {
-    grid-column: span 2;
-    gap: 8px;
   }
 
   .btn {

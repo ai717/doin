@@ -34,9 +34,29 @@
     </header>
 
     <main id="stage">
-      <section id="board-wrap" aria-label="棋盘区">
-        <div id="board" role="grid" aria-label="连连看棋盘">
-          <canvas id="fx" aria-hidden="true"></canvas>
+      <section id="board-col">
+        <div id="board-wrap" aria-label="棋盘区">
+          <div id="board" role="grid" aria-label="连连看棋盘">
+            <canvas id="fx" aria-hidden="true"></canvas>
+          </div>
+        </div>
+
+        <!-- 操作台紧贴棋盘下缘：功能按钮必须离棋盘近，不能塞到侧栏最底部 -->
+        <div id="console">
+          <div class="tool-dock">
+            <button id="btn-hint" class="btn btn-tool" type="button">
+              <span data-i18n="hint">提示</span>
+              <span class="seal" id="hint-count">3</span>
+            </button>
+            <button id="btn-shuffle" class="btn btn-tool" type="button">
+              <span data-i18n="shuffle">洗牌</span>
+              <span class="seal" id="shuffle-count">2</span>
+            </button>
+          </div>
+          <div class="ctrl-dock">
+            <button id="btn-pause" class="btn" type="button" data-i18n="pause">暂停</button>
+            <button id="btn-restart" class="btn" type="button" data-i18n="restart">重玩</button>
+          </div>
         </div>
       </section>
 
@@ -82,20 +102,13 @@
           </div>
         </div>
 
-        <div class="tool-dock">
-          <button id="btn-hint" class="btn btn-tool" type="button">
-            <span data-i18n="hint">提示</span>
-            <span class="seal" id="hint-count">3</span>
-          </button>
-          <button id="btn-shuffle" class="btn btn-tool" type="button">
-            <span data-i18n="shuffle">洗牌</span>
-            <span class="seal" id="shuffle-count">2</span>
-          </button>
-        </div>
-
-        <div class="ctrl-dock">
-          <button id="btn-pause" class="btn" type="button" data-i18n="pause">暂停</button>
-          <button id="btn-restart" class="btn" type="button" data-i18n="restart">重玩</button>
+        <!-- 剩余对数：配合棋盘方格线，方便玩家心算还剩多少可消 -->
+        <div class="plaque plaque-progress">
+          <span class="plaque-label" data-i18n="pairsLeft">剩余对数</span>
+          <div class="progress-body">
+            <span id="pairs-left" class="plaque-value">0</span>
+            <div class="progress-track"><span id="progress-fill" class="progress-fill"></span></div>
+          </div>
         </div>
       </aside>
     </main>

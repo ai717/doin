@@ -30,6 +30,8 @@ export function createUi(options = {}) {
     scoreValue: byId("score-value"),
     bestValue: byId("best-value"),
     stars: byId("stars"),
+    pairsLeft: byId("pairs-left"),
+    progressFill: byId("progress-fill"),
     hintCount: byId("hint-count"),
     shuffleCount: byId("shuffle-count"),
     btnHint: byId("btn-hint"),
@@ -272,6 +274,15 @@ export function createUi(options = {}) {
     if (el.btnHint) el.btnHint.disabled = state.hintsLeft <= 0 || state.phase !== "playing";
     if (el.btnShuffle) el.btnShuffle.disabled = state.shufflesLeft <= 0 || state.phase !== "playing";
     if (el.btnPause) el.btnPause.disabled = state.phase !== "playing" && state.phase !== "paused";
+
+    // 剩余对数：整关总对数 = 实心块数 / 2。给玩家一个可心算的进度锚点。
+    const totalPairs = state.params ? Math.floor(state.params.tiles / 2) : 0;
+    const leftPairs = Math.max(0, totalPairs - state.clearedPairs);
+    if (el.pairsLeft) el.pairsLeft.textContent = String(leftPairs);
+    if (el.progressFill) {
+      const ratio = totalPairs > 0 ? state.clearedPairs / totalPairs : 0;
+      el.progressFill.style.width = (Math.max(0, Math.min(1, ratio)) * 100).toFixed(1) + "%";
+    }
   }
 
   /** 高频部分（每帧调用）：倒计时、连击窗口、得分。只在数值变化时写 DOM。 */
