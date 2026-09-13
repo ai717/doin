@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="合成泡泡 Bubble Bloom：向深海玻璃合成舱投入炼金彩泡，同阶相碰即膨胀合成，堆出压力连锁与稀有的极光王泡。">
+<meta name="color-scheme" content="dark">
+<title>合成泡泡 · Bubble Bloom · DOIN</title>
+<link rel="icon" href="favicon.svg?v=dev" type="image/svg+xml">
+<link rel="stylesheet" href="css/style.css?v=dev">
+</head>
+<body>
+<div class="app">
+
+  <header class="topbar">
+    <a class="home-link" id="back-home" href="/" data-i18n="app.backHome">← DOIN</a>
+    <h1 class="brand">
+      <span class="brand-zh" data-i18n="app.nameZh">合成泡泡</span>
+      <span class="brand-en" data-i18n="app.nameEn">Bubble Bloom</span>
+    </h1>
+    <div class="topbar-tools">
+      <button class="icon-btn" id="btn-sound" type="button" aria-label="音效开关" aria-pressed="true">
+        <svg class="ico ico-on" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+          <path d="M4 9.5h3.2L12 5.5v13L7.2 14.5H4z"/>
+          <path d="M15.5 9a4 4 0 0 1 0 6" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+          <path d="M18 6.5a7.5 7.5 0 0 1 0 11" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+        </svg>
+        <svg class="ico ico-off" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+          <path d="M4 9.5h3.2L12 5.5v13L7.2 14.5H4z"/>
+          <path d="M16 9.5l5 5M21 9.5l-5 5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+        </svg>
+      </button>
+      <button class="lang-btn" id="btn-lang" type="button" aria-label="切换语言" data-i18n="app.langOther">EN</button>
+    </div>
+  </header>
+
+  <main class="stage" id="stage">
+
+    <section class="chamber-wrap" id="chamber-wrap">
+      <canvas id="board" role="img" aria-label="玻璃合成舱"></canvas>
+      <p class="chain-pop" id="chain-pop" aria-hidden="true"></p>
+      <div class="overlay" id="overlay">
+        <div class="overlay-card">
+          <h2 class="overlay-title" id="overlay-title" data-i18n="overlay.readyTitle">合成泡泡</h2>
+          <p class="overlay-text" id="overlay-text" data-i18n="overlay.readyText">把同阶彩泡投进玻璃舱，它们一碰就膨胀合成。</p>
+          <button class="primary-btn" id="overlay-btn" type="button" data-i18n="overlay.readyBtn">开始实验</button>
+        </div>
+      </div>
+    </section>
+
+    <aside class="console" id="console" aria-label="控制台">
+
+      <div class="mode-switch" role="group" aria-label="模式">
+        <button class="mode-btn is-active" id="btn-mode-standard" type="button" aria-pressed="true" data-i18n="mode.standard">标准舱</button>
+        <button class="mode-btn" id="btn-mode-daily" type="button" aria-pressed="false" data-i18n="mode.daily">每日试验</button>
+      </div>
+      <p class="daily-note" id="daily-note" hidden></p>
+
+      <div class="badges">
+        <div class="badge">
+          <span class="badge-label" data-i18n="stat.score">总分</span>
+          <span class="badge-value" id="stat-score">0</span>
+        </div>
+        <div class="badge">
+          <span class="badge-label" data-i18n="stat.best">纪录</span>
+          <span class="badge-value" id="stat-best">0</span>
+        </div>
+        <div class="badge">
+          <span class="badge-label" data-i18n="stat.tier">最高阶</span>
+          <span class="badge-value badge-value-text" id="stat-tier">—</span>
+        </div>
+        <div class="badge">
+          <span class="badge-label" data-i18n="stat.chain">最长连锁</span>
+          <span class="badge-value" id="stat-chain">0</span>
+        </div>
+      </div>
+
+      <div class="specimen">
+        <div class="specimen-cell is-current">
+          <span class="specimen-label" data-i18n="label.current">当前</span>
+          <canvas class="specimen-canvas" id="cv-current" aria-hidden="true"></canvas>
+          <span class="specimen-name" id="txt-current">—</span>
+        </div>
+        <div class="specimen-cell">
+          <span class="specimen-label" data-i18n="label.next">下一颗</span>
+          <canvas class="specimen-canvas" id="cv-next" aria-hidden="true"></canvas>
+          <span class="specimen-name" id="txt-next">—</span>
+        </div>
+      </div>
+
+      <div class="tools">
+        <button class="tool-btn" id="btn-pulse" type="button">
+          <span data-i18n="tool.pulse">潮汐脉冲</span>
+          <span class="tool-count" id="pulse-count">2</span>
+        </button>
+        <button class="tool-btn" id="btn-pause" type="button" data-i18n="tool.pause">暂停</button>
+        <button class="tool-btn" id="btn-restart" type="button" data-i18n="tool.restart">重开</button>
+        <button class="tool-btn" id="btn-help" type="button" data-i18n="tool.help">玩法</button>
+      </div>
+
+      <div class="codex">
+        <span class="codex-title" data-i18n="codex.title">图鉴</span>
+        <div class="codex-dots" id="codex" aria-hidden="true"></div>
+      </div>
+
+      <p class="hint" id="hint" data-i18n="hint.aim">移动选择落点，松手投放 · ←/→ 微调 · 空格投放 · T 脉冲 · P 暂停 · R 重开</p>
+
+    </aside>
+  </main>
+
+  <div class="modal" id="modal" hidden>
+    <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+      <h2 class="modal-title" id="modal-title"></h2>
+      <div class="modal-body" id="modal-body"></div>
+      <div class="modal-actions">
+        <button class="primary-btn" id="modal-primary" type="button"></button>
+        <button class="ghost-btn" id="modal-secondary" type="button"></button>
+      </div>
+    </div>
+  </div>
+
+  <p class="toast" id="toast" role="status" aria-live="polite"></p>
+
+  <noscript>
+    <div class="noscript">
+      <p>本游戏需要启用 JavaScript 才能运行。请开启后刷新页面。</p>
+      <p>This game requires JavaScript. Please enable it and reload.</p>
+    </div>
+  </noscript>
+
+</div>
+<script type="module" src="js/main.mjs?v=dev"></script>
+</body>
+</html>

@@ -20,6 +20,8 @@
     "test:klotski": "node --test games/klotski/tests/engine.test.mjs games/klotski/tests/storage.test.mjs games/klotski/tests/i18n.test.mjs games/klotski/tests/markup.test.mjs",
     "test:jigsaw": "node --test games/jigsaw/tests/engine.test.mjs games/jigsaw/tests/artwork.test.mjs games/jigsaw/tests/score.test.mjs games/jigsaw/tests/storage.test.mjs games/jigsaw/tests/i18n.test.mjs games/jigsaw/tests/markup.test.mjs games/jigsaw/tests/render.test.mjs",
     "test:pair-link": "node --test games/pair-link/tests/engine.test.mjs games/pair-link/tests/storage.test.mjs games/pair-link/tests/i18n.test.mjs games/pair-link/tests/markup.test.mjs",
-    "test:link-up": "node --test games/link-up/tests/*.test.mjs"
+    "test:link-up": "node --test games/link-up/tests/*.test.mjs",
+    "test:bubble-bloom": "node --test games/bubble-bloom/tests/engine.test.mjs games/bubble-bloom/tests/storage.test.mjs games/bubble-bloom/tests/i18n.test.mjs games/bubble-bloom/tests/markup.test.mjs",
+    "test:bubble-merge": "node --test games/bubble-merge/tests/engine.test.mjs games/bubble-merge/tests/storage.test.mjs games/bubble-merge/tests/i18n.test.mjs games/bubble-merge/tests/markup.test.mjs"
   }
 }

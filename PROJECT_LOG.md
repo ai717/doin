@@ -11,13 +11,16 @@
 
 - **门户**：薄荷渐变首页（`index.html` + `css/`），640×640 WebP 封面（3D 风格统一），
   白色胶囊卡片标签 + hover 放大；品牌行「Doin.win 字标 ←→ 地球语言按钮」+ 二级主标题；
-  中英双语（`doin.lang` 全站共享偏好）。CNAME `doin.win`。共 17 款游戏登记（新增 Pair-Link、Link-Up）。
+  中英双语（`doin.lang` 全站共享偏好）。CNAME `doin.win`。共 18 款游戏登记（新增 Pair-Link、Link-Up、Bubble-Merge）。
 - **Link-Up**（新增本地接入）：喜福连连看，暖木牌桌 / 民俗符号题材，50 关五章递进 + 异形棋盘 + 每日挑战；已完成高密度牌组、图形化牌面、路径特效、结算仪式 UI、可访问性与构建门禁。
 - **Pair-Link**（新增，已更名）：**琉璃灯市·连连看**，夜市灯牌 / 琉璃瓷片题材，36 关三章 + 无尽冲分 + 每日一盘。
   逻辑盘 12×10（10×8 实心 + 外圈通道），三线连通判定（0/1/2 折，禁斜线，可绕外圈虚空）。
   第 2/3 章引入**冰封壳**（8 邻域震碎，死盘融壳兜底）；**每日一盘**同种子同题、与主线解耦。
   DOM/CSS Grid 棋盘（含淡化方格线，画在容器上）+ Canvas 2D 特效覆盖层双轨渲染，桌面双栏沉浸 UI，
   棋盘下方归位控制台 + 剩余对数进度。稳定基线见本轮条目。
+- **Bubble-Merge**（新增）：**深海合珠**，深海水缸 Suika 式合成：同级相碰合成高一级、连锁 ×1.5 倍率、
+  终极泡泡 L10 可戳破（+100 清场）、堆过安全线预警后结算。无尽冲分 + 每日挑战（同种子同题）。
+  Canvas 2D 水缸/泡泡/特效 + DOM HUD 双轨，固定步长物理，桌面双栏沉浸 UI。49 用例门禁全过。
 - **Jigsaw**：拼图，50 关（3×3 → 4×4 → 5×5）+ 今日拼图，交换碎片复原图案。
   每关一张程序化生成的抽象艺术图（同 seed 同图，零图库零版权），Canvas 渲染 + 桌面双栏 UI。
   已提交 `771009b` 并部署上线 `doin.win/jigsaw/`；线上 E2E 17/17。稳定基线见本轮条目。
@@ -31,6 +34,15 @@
 - **本地服务**：`node _dev-server.mjs`（零依赖，端口 46810 起）。
 - **Analytics & SEO**：GA4 `G-D67E3XTNSS` 已接入；集中式构建脚本 `scripts/build-site.mjs` 自动向 `dist/` 所有 HTML 注入统计代码；`sitemap.xml` 自动编译 17 页面；`robots.txt` 声明正常。
 - **git**：正常，main 推送成功，workflow 自动构建部署到 gh-pages。
+
+## 2026-09-13 · Bubble-Bloom（合成泡泡）三轮交付 + 门户组装（未提交推送）
+
+- **玩法**：深海炼金玻璃合成舱，同阶泡相触晋级高阶（10 阶），Pressure Chain 连锁倍率 1/1.25/1.6/2.0，合成得分三角数 `t*(t+1)`，双王彩虹绽放 +1000 继续玩；候选袋 `[1,1,2,2,3,3,4,4]` 保证无孤儿等级，固定步长 1/120 圆体物理。依据 `docs/plans/bubble-bloom-prd.md`（A/A/A 组合），跳过外包任务书直接三轮生产。
+- **产物**：`games/bubble-bloom/`（index.html + favicon.svg + css/style.css + js 10 模块 + tests 4 文件）；存档 Key `doin.bubble-bloom.v1`。
+- **测试坑**：配对解算收尾必须再夹一次边界且**连 merging 泡一起夹**；`node --test tests\` 在 Windows 会被当模块路径，须用 glob。
+- **组装**：封面 `assets/covers/bubble-bloom.webp`（暖琥珀金渐变 + 虹彩泡，ImageGen 生成后固定 bbox 去水印）；`games.json` 登记第 19 款；根 `package.json` 注册 `test:bubble-bloom`。
+- **门禁**：48/48 子游戏测试、check-game 19 pass 0 fail 0 warn、test:home 5 pass、`npm run build` 成功（dist/sitemap 含新页面）。
+- **状态**：按用户指示**未提交未推送**，全部改动停留在工作区。
 
 ## 2026-09-13 · Link-Up（喜福连连看）接管审计、修复与门户接入
 
@@ -851,3 +863,30 @@ PROJECT_LOG.md                      [修改] 本轮记录
 - **2026-09-04 Orbit-sort 收尾审计**：满分钳制 / recomputeTotals / 100 关可解性。
 - **2026-09-03 Tic-Tac-Toe 上线**：77 测试 / 大师档不可战胜 = 特性。
 - **git push 凭据**：曾因 token 属 ai919≠ai717 导致 403，已解除。
+
+## 2026-09-13 · 合成泡泡立项策划案
+
+- 新增 `docs/plans/bubble-bloom-prd.md`：完成《合成泡泡 / Bubble Bloom》立项策划案。
+- 定位为“深海炼金玻璃舱”轻物理合成：同阶彩泡碰撞升级、自然连锁、双预览、每日固定种子、有限潮汐脉冲与顶阶彩虹绽放。
+- 已完成与 Suika / Puyo Puyo / 2048 的机制对标、DOIN 存量排重、桌面双栏沉浸舞台、移动端适配、封面方向及 3 个制作人拍板项。
+- 本轮仅产出策划文档，未修改游戏代码、门户登记或构建配置；工作区已有未跟踪的 `docs/plans/bubble-merge-prd.md` 草稿，保持原样未覆盖。
+
+## 2026-09-14 · 深海合珠（bubble-merge）三轮交付 + 门户组装
+
+- 按 `docs/plans/bubble-merge-prd.md` 与外包任务书 `docs/outsource/bubble-merge-spec.md` 完成三轮交付：
+  第 1 轮 `index.html`/`favicon.svg`/`css/style.css`；第 2 轮 `js/` 九模块（engine/game/score/storage/i18n/audio/render/ui/main）；
+  第 3 轮 `tests/` 四类原生测试（engine/storage/i18n/markup），共 49 用例全过。
+- 核心机制对标 Suika：同级相碰合成高一级（中点 + 动量平均）、三角数计分 + 连锁 ×1.5、终极泡泡 L10 可戳破（+100 清场）、
+  堆过安全线预警 ~2.2s 后结算；固定步长 `stepFrame`（1/120）+ main 累加器，帧率无关可复现；每日挑战 `dailySeed(date)` 同种子同题。
+- **关键缺陷修复**：碰撞求解器原先把同级泡泡当普通碰撞体弹开，导致 `passMerge` 扫描时已不重叠、合成永不触发；
+  改为求解器跳过「可合成的同级对」交由合并环节处理（`engine.mjs` solveCollisions）。
+- 新增引擎导出 `popTargetAt(state,x,y)`，供指针在「戳破 L10 / 丢弃」间分流，复用同一权威判定，避免 UI 自造规则。
+- 门户组装（已获用户授权、**不提交不推送**）：`games.json` 登记 bubble-merge（icon 🫧、封面 /assets/covers/bubble-merge.webp）；
+  根 `package.json` 增 `test:bubble-merge`；生成 640×640 靛蓝-亮青渐变 3D 软胶封面（ImageGen → cv2 去水印 → INTER_AREA → WebP q90）。
+- 门禁：`check-game.mjs bubble-merge` 19/19 全过（T1 零 fail）；`npm run test:bubble-merge` 49/49；`npm run test:home` 5/5；`npm run build` 通过。
+- 本地构建 buildId 为 "dev"（无 CI 时），故 dist 保留 `?v=dev` 属预期；CI 注入真 BUILD_ID 做缓存失效。
+- **残影缺陷修复**：`prefers-reduced-motion` 降级路径原先调用 `updateFx(0)`，涟漪/粒子寿命冻结致特效永久累积成「圈圈残影」；
+  改为降级时清空 `particles`/`ripples`、`shake=0` 并跳过 `drawFx()`（`render.mjs`）。
+- **中文标题更名**：因 `games/bubble-bloom/` 已占用「合成泡泡」，本游戏中文名改为「**深海合珠**」（深海水缸 + 虹彩珍珠题材）。
+  slug `bubble-merge`、存档 Key `doin.bubble-merge.v1`、英文名 "Bubble Merge" 均不变；
+  改动覆盖 `index.html`(title/meta/h1/canvas aria/ready-title/noscript)、`js/i18n.mjs` zh 键、`games.json` title、各模块头注释与本日志。
