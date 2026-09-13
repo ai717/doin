@@ -248,9 +248,22 @@ body::after {
   pointer-events: none;
 }
 
+/* 已消除 / 起始即空的实心格：不画任何轮廓，就是纯背景。
+   任务书 1.4 只给"外圈通道"规定了极淡网格线，对已消除格没有任何外观要求；
+   残留的插座轮廓会让玩家误以为那格里还有东西（消除反馈只靠 420ms 通道呼吸）。 */
+.cell.is-empty::after {
+  border-color: transparent;
+}
+
+/* 外圈通道：任务书 1.4 —— 以极淡网格线（rgba(243,230,210,0.07)）暗示"可绕行"。
+   只画右 / 下两条边，避免相邻格叠成双线；不用圆角、不留 inset，
+   否则又退化成一格格的"插座"，整圈看起来全是空槽。 */
 .cell.is-void::after {
-  border-style: dashed;
-  border-color: rgba(243, 230, 210, 0.055);
+  inset: 0;
+  border: 0;
+  border-radius: 0;
+  border-right: 1px solid rgba(243, 230, 210, 0.07);
+  border-bottom: 1px solid rgba(243, 230, 210, 0.07);
 }
 
 .cell:focus {
