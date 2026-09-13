@@ -6,6 +6,19 @@
 
 ---
 
+## 0 · 本地开发代理开工指令卡（可直接复制给 Codex / Antigravity / WorkBuddy / Grok Build）
+
+> **【开工指令】请将以下提示词发给任何打开了 doin 项目目录的本地 AI 代理**：
+>
+> “你正在 `doin` 仓库工作区。请根据 `docs/plans/{{slug}}-prd.md` 策划案，在 `games/{{slug}}/` 开发并上线该游戏：
+> 1. **阅读平台规范**：通读根目录 `AGENTS.md` 与 `docs/GAME-SPEC.md`，严格遵循纯静态模块分层、八大不可违背铁律、算法 100% 可解保证与桌面端双栏沉浸美学标准；
+> 2. **独立代码与测试**：在 `games/{{slug}}/` 产出完整语义标记、样式、纯逻辑模块与四类原生测试（`tests/*.test.mjs`），禁止伪代码与占位符；
+> 3. **机器质检门禁**：运行 `node scripts/check-game.mjs {{slug}}` 确保 T1 零 fail；
+> 4. **门户组装上架**：按 `docs/COVER-STYLE.md` 制作 640×640 软胶 WebP 封面放至 `assets/covers/{{slug}}.webp`，在 `games.json` 登记条目，在 `package.json` 注册 `test:{{slug}}`；
+> 5. **构建与本地预览**：运行 `npm run test:{{slug}}` 与 `npm run build`，启动本地服务给出预览。”
+
+---
+
 ## 1 · 创意概念与核心乐趣
 
 - **游戏名称**：中文名 / 英文名 / 建议 slug（kebab-case）
