@@ -126,14 +126,73 @@ function starPath(ctx, x, y, r, rot = 0) {
   ctx.closePath();
 }
 
+// 核心玩法元素（糖果 / 星星 / 糯糯 / 绳 / 气泡 / 气垫）在世界里的真实包围盒，
+// 由 x/candy-drop/analyze-bounds.mjs 遍历 40 关统计得出：
+//   X 90 → 866   Y 62 → 586   →   宽 776  高 524   比例 1.480
+// 再向外留 10 世界单位安全边（怪物半径与粒子），即下面这块。
+// 机关（尖刺 x→880 / 挡板 y→620）允许贴世界边缘，但它们是**可预知的固定地形**，
+// 不参与"视野是否合理"的判定；真正不能丢的是这盒核心元素。
+const CONTENT_BOX = { x0: 80, y0: 52, x1: 876, y1: 596 };
+const CONTENT = {
+  w: CONTENT_BOX.x1 - CONTENT_BOX.x0, // 796
+  h: CONTENT_BOX.y1 - CONTENT_BOX.y0, // 544
+};
+
 export function createRenderer({ canvas, reduceMotion = false }) {
   const ctx = canvas.getContext("2d");
   const particles = createParticles();
   let dpr = 1;
   let scale = 1;
+  let view = { x: 0, y: 0, w: WORLD.w, h: WORLD.h };
   let t0 = 0;
   let time = 0;
   let themeName = "tin";
+
+  /**
+   * 依据容器比例挑选视野（可见世界矩形）。
+   *
+   * 铁律：视野**必须完整覆盖 CONTENT_BOX**（核心玩法元素盒）。视野一旦
+   * 收窄到装不下它，玩家就会看不见糖果/星星/糯糯 —— 等价于
+   * "合法操作看不见"，违反 AGENTS.md §5.2 第 1 条。
+   *
+   * 三种情形：
+   *   1. 容器比世界更扁：用满世界，保持解谜所需的全局视野；
+   *   2. 容器比世界"高"但装不下内容盒（比例差 1.463）：
+   *      **不能收视野**（收窄必裁内容），退回满世界；
+   *   3. 容器落在 [内容盒比例, 世界比例) 之间：
+   *      收视野到刚好装下内容盒，画面真正变大，内容一个不落。
+   *
+   * 实测竖屏容器比例 0.66–0.73（远窄于 1.46），永远落在情形 2 → 走满世界。
+   * 也就是说**手机上的"画面变大"只能靠 CSS 给画布更多屏幕高度**，
+   * 收视野这条路在竖屏走不通（见 style.css 移动端断点）。
+   * 情形 3 只对平板 / 桌面分屏这类接近正方形的容器生效。
+   */
+  function pickView(cssW, cssH) {
+    const aspect = cssW / cssH;
+    const worldAspect = WORLD.w / WORLD.h;
+    const full = { x: 0, y: 0, w: WORLD.w, h: WORLD.h };
+    if (aspect >= worldAspect) return full;
+
+    // 以内容盒为锚，按容器比例"只放大不缩窄"地扩到刚好装下
+    let vw = CONTENT.w;
+    let vh = CONTENT.h;
+    if (vw / vh > aspect) {
+      // 容器比内容更"高"：保持内容宽，加高视野
+      vh = vw / aspect;
+    } else {
+      // 容器比内容更"宽"：保持内容高，加宽视野
+      vw = vh * aspect;
+    }
+
+    // 任一边超出世界 → 收视野已装不下内容，退回满世界（保底不裁内容）
+    if (vw > WORLD.w || vh > WORLD.h) return full;
+
+    const cx = (CONTENT_BOX.x0 + CONTENT_BOX.x1) / 2;
+    const cy = (CONTENT_BOX.y0 + CONTENT_BOX.y1) / 2;
+    const x = Math.max(0, Math.min(WORLD.w - vw, cx - vw / 2));
+    const y = Math.max(0, Math.min(WORLD.h - vh, cy - vh / 2));
+    return { x, y, w: vw, h: vh };
+  }
 
   function resize() {
     const rect = canvas.getBoundingClientRect();
@@ -142,7 +201,8 @@ export function createRenderer({ canvas, reduceMotion = false }) {
     dpr = Math.min(2, (typeof devicePixelRatio === "number" ? devicePixelRatio : 1) || 1);
     canvas.width = Math.round(cssW * dpr);
     canvas.height = Math.round(cssH * dpr);
-    scale = Math.min(cssW / WORLD.w, cssH / WORLD.h);
+    view = pickView(cssW, cssH);
+    scale = Math.min(cssW / view.w, cssH / view.h);
   }
 
   /** 屏幕坐标 → 世界坐标 */
@@ -150,11 +210,11 @@ export function createRenderer({ canvas, reduceMotion = false }) {
     const rect = canvas.getBoundingClientRect();
     const cssW = rect.width || 1;
     const cssH = rect.height || 1;
-    const offX = (cssW - WORLD.w * scale) / 2;
-    const offY = (cssH - WORLD.h * scale) / 2;
+    const offX = (cssW - view.w * scale) / 2;
+    const offY = (cssH - view.h * scale) / 2;
     return {
-      x: (clientX - rect.left - offX) / scale,
-      y: (clientY - rect.top - offY) / scale,
+      x: (clientX - rect.left - offX) / scale + view.x,
+      y: (clientY - rect.top - offY) / scale + view.y,
     };
   }
 
@@ -164,25 +224,28 @@ export function createRenderer({ canvas, reduceMotion = false }) {
 
   // ---- 背景与盒内空间 ----
   function drawBackdrop(th) {
+    // 先铺满整个世界（视野平移后不会露白）
     const g = ctx.createLinearGradient(0, 0, 0, WORLD.h);
     g.addColorStop(0, th.inner[0]);
     g.addColorStop(1, th.inner[1]);
     ctx.fillStyle = g;
     ctx.fillRect(0, 0, WORLD.w, WORLD.h);
 
-    // 顶部暖光晕
-    const glow = ctx.createRadialGradient(WORLD.w * 0.5, -40, 20, WORLD.w * 0.5, -40, WORLD.h * 1.05);
+    // 顶部暖光晕（按当前视野中心，保证收窄视野后光还是落在画面中间）
+    const cx = view.x + view.w / 2;
+    const glow = ctx.createRadialGradient(cx, view.y - 40, 20, cx, view.y - 40, view.h * 1.05);
     glow.addColorStop(0, th.glow);
     glow.addColorStop(1, "rgba(0,0,0,0)");
     ctx.fillStyle = glow;
     ctx.fillRect(0, 0, WORLD.w, WORLD.h);
 
-    // 绒布细纹
+    // 绒布细纹：间距与线宽随缩放走，避免画面缩小时细纹变密成"竖条纹噪声"
     ctx.save();
     ctx.globalAlpha = 0.05;
     ctx.strokeStyle = "#ffffff";
-    ctx.lineWidth = 1;
-    for (let x = 0; x <= WORLD.w; x += 26) {
+    ctx.lineWidth = 1 / Math.max(0.4, scale);
+    const step = Math.max(26, 34 / Math.max(0.4, scale));
+    for (let x = 0; x <= WORLD.w; x += step) {
       ctx.beginPath();
       ctx.moveTo(x, 0);
       ctx.lineTo(x, WORLD.h);
@@ -190,17 +253,21 @@ export function createRenderer({ canvas, reduceMotion = false }) {
     }
     ctx.restore();
 
-    // 暗角
+    // 暗角：厚度随缩放走。世界单位下 0.45 的暗角在 0.32 缩放时只占屏幕 1/3，
+    // 会把四角压黑、形成"中间一条亮带"的观感 —— 按缩放折算回屏幕厚度。
+    const vcx = view.x + view.w / 2;
+    const vcy = view.y + view.h / 2;
+    const k = Math.max(0.25, Math.min(1.8, scale));
     const vig = ctx.createRadialGradient(
-      WORLD.w / 2,
-      WORLD.h / 2,
-      WORLD.h * 0.35,
-      WORLD.w / 2,
-      WORLD.h / 2,
-      WORLD.h * 0.95
+      vcx,
+      vcy,
+      (view.h * 0.9) / k,
+      vcx,
+      vcy,
+      (view.h * 1.9) / k
     );
     vig.addColorStop(0, "rgba(0,0,0,0)");
-    vig.addColorStop(1, "rgba(0,0,0,0.45)");
+    vig.addColorStop(1, "rgba(0,0,0,0.28)");
     ctx.fillStyle = vig;
     ctx.fillRect(0, 0, WORLD.w, WORLD.h);
   }
@@ -713,9 +780,9 @@ export function createRenderer({ canvas, reduceMotion = false }) {
     ctx.setTransform(1, 0, 0, 1, 0, 0);
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    const offX = (canvas.width / dpr - WORLD.w * scale) / 2;
-    const offY = (canvas.height / dpr - WORLD.h * scale) / 2;
-    ctx.translate(offX, offY);
+    const offX = (canvas.width / dpr - view.w * scale) / 2;
+    const offY = (canvas.height / dpr - view.h * scale) / 2;
+    ctx.translate(offX - view.x * scale, offY - view.y * scale);
     ctx.scale(scale, scale);
 
     drawBackdrop(th);
@@ -747,5 +814,9 @@ export function createRenderer({ canvas, reduceMotion = false }) {
     fx,
     particles,
     clearFx: () => particles.clear(),
+    // 只读诊断出口：暴露当前"可见世界矩形"与缩放，供自动化验收读取**真实**值。
+    // 验收脚本若自己复刻一遍 pickView 算法去断言，注入缺陷时它仍会算出
+    // "正确"结果 → 断言恒真、抓不到 bug（已实测踩过）。必须读这里的真值。
+    getView: () => ({ ...view, scale, dpr }),
   };
 }

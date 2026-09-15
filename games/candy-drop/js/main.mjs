@@ -7,7 +7,7 @@ import * as i18n from "./i18n.mjs";
 import { LEVEL_COUNT, LEVELS_PER_BOX, BOXES, levelById, levelsOfBox } from "./levels.mjs";
 import { TOTAL_MAX, BOX_UNLOCK_STARS } from "./score.mjs";
 import { isBoxUnlocked, isLevelUnlocked } from "./storage.mjs";
-import { ropeAnchor } from "./engine.mjs";
+import { ropeAnchor, WORLD } from "./engine.mjs";
 
 const $ = (id) => document.getElementById(id);
 const reduceMotion = typeof matchMedia === "function" && matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -434,3 +434,9 @@ function boot() {
 }
 
 boot();
+
+// 只读诊断出口：自动化验收用它读**渲染层真实**的可见世界矩形。
+// 没有这个出口，验收脚本只能自己复刻 pickView 算法 —— 那样注入缺陷时
+// 脚本仍算出"正确"结果，断言恒真、抓不到 bug（已实测踩过这个坑）。
+// 只暴露一个只读快照函数，不暴露任何状态写入能力。
+window.__candyDebug = { getView: () => renderer.getView(), world: { ...WORLD } };

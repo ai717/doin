@@ -358,10 +358,17 @@ body::after {
 }
 
 @media (min-width: 900px) {
+  /* 桌面：画布保持 900:620 等比，且**宽度不超过由视口高度反推的上限**。
+     只用 max-width 约束（不写 height），让 aspect-ratio 自然定高：
+       可用高度 = 100dvh − 顶盖/两翼/操作台/内边距预留
+       可用宽度 = 可用高度 × 1.4516
+     再与容器宽度取小（min）→ 无论宽屏窄屏都不会溢出。
+     预留量写死会在两种场景翻车：写 190px 时 1920×1080 溢出（实测 .cabinet 1091>1080）；
+     写 240px 时 900×600 把画布压到 280px 宽。205px 是实测各视口的平衡点。 */
   .tin-inner {
-    max-height: calc(100dvh - 190px);
+    width: min(100%, calc((100dvh - 205px) * 1.4516));
+    aspect-ratio: 900 / 620;
     margin: 0 auto;
-    width: 100%;
   }
 }
 
@@ -681,15 +688,30 @@ body::after {
 }
 
 /* ---------- 移动端 ---------- */
+/* ==========================================================================
+   移动端 ≤899px —— 舞台优先
+   问题：四个牌匾全塞在铁盒上下，把 900:620 的宽舞台挤成 242px 高的薄条。
+   对策：舞台先拿到高度（竖屏另给比例），牌匾压缩成两行紧凑 HUD 条。
+   ========================================================================== */
 @media (max-width: 899px) {
   .cabinet {
-    padding: 10px 10px 16px;
+    min-height: 100dvh;
+    height: 100dvh; /* 一屏内解决，不再整页滚动 */
+    /* 左右内边距压到最小：画布宽度直接决定画面大小，横向每省 1px 都是净赚 */
+    padding: 6px 4px 6px;
+    gap: 6px;
+    overflow: hidden;
   }
+
   .lid {
     grid-template-columns: auto 1fr auto;
+    padding: 7px 10px;
   }
   .lid-brand {
     align-items: center;
+  }
+  .lid-brand-en {
+    display: none;
   }
   .rivet-label {
     display: none;
@@ -697,17 +719,269 @@ body::after {
   .rivet {
     padding: 7px 10px;
   }
-  .wing--left,
-  .wing--right {
+
+  /* 舞台吃满剩余高度，按列排布：标题匾 → 铁盒 → 操作台 → 计分匾
+     用 order 把"计分"沉到底部拇指区，让中段留白都被利用起来 */
+  .stage {
+    flex: 1 1 auto;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    align-items: stretch;
+  }
+
+  /* 铁盒：吃满 stage 的剩余高度（stage 是 flex 列，画布高度 = 剩余空间）。
+     视野由渲染层的 pickView 保证完整覆盖关卡内容，所以容器怎么变形都不裁机关。 */
+  .tin {
+    flex: 1 1 auto;
+    min-height: 0;
+    gap: 6px;
+    display: flex;
+    flex-direction: column;
+  }
+  .tin-shell {
+    flex: 1 1 auto;
+    min-height: 0;
+    display: flex;
+    /* 外壳描边在手机上收细：每边省 3px 宽，直接让画布变大 */
+    padding: 3px;
+    border-radius: 16px;
+  }
+  .tin-inner {
+    flex: 1 1 auto;
+    min-height: 0;
+    width: 100%;
+    /* 不锁死宽高比：画面按容器分配高度自适应，视野由 pickView 兜底不裁内容 */
+    aspect-ratio: auto;
+  }
+  /* 操作台不吃掉多余高度（会把按键拉成巨块），
+     多余高度留给两翼之间自然留白，按键固定在下缘拇指热区 */
+  .console {
+    flex: 0 0 auto;
+  }
+
+  /* ---- 两翼：拆成两行紧凑 HUD 条 ---- */
+  .wing {
+    flex: 0 0 auto;
     flex-direction: row;
     flex-wrap: wrap;
+    gap: 6px;
   }
-  .wing--left .plaque,
-  .wing--right .plaque {
-    flex: 1 1 150px;
+  .wing .plaque {
+    flex: 1 1 0;
+    min-width: 0;
+    padding: 7px 10px;
+    border-radius: 13px;
+    gap: 2px;
+    /* 关掉里面那圈内边框线：小尺寸下纯属噪点 */
+    --plaque-inner: none;
   }
+  .wing .plaque::before {
+    display: none;
+  }
+  .plaque-kicker {
+    font-size: 9.5px;
+    letter-spacing: 1px;
+  }
+  .plaque-title {
+    font-size: 14px;
+    letter-spacing: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .plaque-sub {
+    font-size: 10.5px;
+    line-height: 1.3;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .plaque-big {
+    font-size: 20px;
+  }
+  .star-dot {
+    font-size: 15px;
+  }
+  .wing .star-row {
+    gap: 3px;
+    margin-top: 1px;
+  }
+
+  /* 「已切绳」优先级最低，窄屏隐藏，宽一点的手机排在最后 */
+  .wing--right .plaque:nth-child(3) {
+    order: 9;
+    flex: 0 1 34%;
+  }
+
+  /* 关卡提示（左翼第 2 枚）是唯一的长文本，独占整行 */
   .plaque--level {
     flex-basis: 100%;
+    order: 5;
+  }
+  .plaque--level .plaque-sub {
+    /* 缩到两行以内，超出省略 */
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    white-space: normal;
+  }
+
+  /* 计分匾沉到最底：贴住拇指区，也让中段留白有个落点 */
+  .wing--right {
+    order: 8;
+  }
+
+  /* 操作台：钉在底部拇指热区，固定高度（避免被拉伸成长条），按键撑满整行。
+     宽度收到 78% 居中 —— 两翼的宽度是舞台总宽（画布按舞台宽渲染），
+     操作台收窄后铁盒能独享全宽，画面直接大一圈；按键仍 ≥48px 触摸目标。 */
+  .console {
+    flex: 0 0 auto;
+    flex-direction: column;
+    justify-content: center;
+    width: 78%;
+    max-width: 420px;
+    align-self: center;
+    padding: 7px 10px;
+    gap: 6px;
+    border-radius: 15px;
+  }
+  .console-hint {
+    font-size: 10.5px;
+    width: 100%;
+    text-align: center;
+    line-height: 1.25;
+  }
+  .console-keys {
+    width: 100%;
+    flex-wrap: nowrap;
+    gap: 5px;
+    align-items: stretch;
+  }
+  .console-keys .key {
+    flex: 1 1 0;
+    min-width: 0;
+    /* 触摸目标不低于 48px */
+    min-height: 48px;
+    padding: 8px 4px;
+    font-size: 13px;
+    white-space: nowrap;
+  }
+}
+
+/* 极窄屏（≤380px）：再缩一档，保证舞台不被再次挤扁 */
+@media (max-width: 380px) {
+  .wing--right .plaque:nth-child(3) {
+    display: none; /* 「已切绳」让位给舞台 */
+  }
+  .plaque--level {
+    display: none; /* 关卡提示在开始/选关幕布里已有 */
+  }
+  .console-hint {
+    display: none;
+  }
+  .console-keys .key {
+    padding: 11px 2px;
+    font-size: 12.5px;
+  }
+}
+
+/* 横屏手机（高度小、宽度大）：舞台改回左右两栏，HUD 收成单列窄条。
+   注意画布必须吃满网格给的剩余高度（不锁 aspect-ratio），否则格子内容会
+   撑破网格 → 溢出视口、整页滚动。视野由 pickView 保证完整覆盖关卡内容。 */
+@media (max-width: 899px) and (max-height: 520px) and (orientation: landscape) {
+  .cabinet {
+    height: 100dvh;
+    min-height: 0;
+    overflow: hidden;
+    gap: 5px;
+  }
+  .lid {
+    padding: 5px 10px;
+  }
+  .stage {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(112px, 152px);
+    grid-template-rows: minmax(0, 1fr) auto;
+    gap: 6px;
+    align-items: stretch;
+    min-height: 0;
+  }
+  .tin {
+    grid-column: 1;
+    grid-row: 1 / span 2;
+    min-height: 0;
+    min-width: 0;
+  }
+  .tin-shell {
+    min-height: 0;
+    padding: 3px;
+  }
+  .tin-inner {
+    min-height: 0;
+    aspect-ratio: auto;
+  }
+  /* 操作台在横屏下挪到铁盒右侧的窄行底部，按键单行铺满并保 ≥44px 触摸目标 */
+  .console {
+    grid-column: 2;
+    grid-row: 2;
+    width: 100%;
+    max-width: none;
+    align-self: stretch;
+    padding: 6px;
+    gap: 4px;
+  }
+  .console-hint {
+    display: none;
+  }
+  .console-keys {
+    flex-wrap: nowrap;
+    gap: 4px;
+    height: 100%;
+  }
+  .console-keys .key {
+    flex: 1 1 0;
+    min-width: 0;
+    min-height: 44px;
+    padding: 6px 2px;
+    font-size: 12px;
+  }
+  .wing {
+    min-width: 0;
+    gap: 4px;
+  }
+  .wing--left {
+    grid-column: 2;
+    grid-row: 1;
+    flex-direction: column;
+    align-content: start;
+  }
+  .wing--right {
+    display: none; /* 横屏留白紧张：计分明细在结算幕布里可见 */
+  }
+  .wing .plaque {
+    flex: 0 1 auto;
+    padding: 5px 8px;
+    border-radius: 11px;
+  }
+  .plaque--level {
+    display: none;
+  }
+  .plaque-kicker {
+    font-size: 9px;
+  }
+  .plaque-title {
+    font-size: 13px;
+  }
+  .plaque-sub {
+    font-size: 10px;
+  }
+  .plaque-big {
+    font-size: 17px;
+  }
+  .star-dot {
+    font-size: 13px;
   }
 }
 
