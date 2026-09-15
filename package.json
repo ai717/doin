@@ -28,6 +28,9 @@
     "test:piano-tiles": "node --test games/piano-tiles/tests/engine.test.mjs games/piano-tiles/tests/storage.test.mjs games/piano-tiles/tests/i18n.test.mjs games/piano-tiles/tests/markup.test.mjs",
     "test:jump-jump": "node --test games/jump-jump/tests/engine.test.mjs games/jump-jump/tests/storage.test.mjs games/jump-jump/tests/i18n.test.mjs games/jump-jump/tests/markup.test.mjs",
     "test:cut-the-rope": "node --test games/cut-the-rope/tests/*.test.mjs",
-    "test:candy-drop": "node --test games/candy-drop/tests/*.test.mjs"
+    "test:candy-drop": "node --test games/candy-drop/tests/*.test.mjs",
+    "test:road-bash": "node --test games/road-bash/tests/engine.test.mjs games/road-bash/tests/storage.test.mjs games/road-bash/tests/i18n.test.mjs games/road-bash/tests/markup.test.mjs games/road-bash/tests/render.test.mjs",
+    "test:deep-devour": "node --test games/deep-devour/tests/engine.test.mjs games/deep-devour/tests/flow.test.mjs games/deep-devour/tests/score.test.mjs games/deep-devour/tests/storage.test.mjs games/deep-devour/tests/i18n.test.mjs games/deep-devour/tests/markup.test.mjs",
+    "test:lantern-maze": "node --test games/lantern-maze/tests/*.test.mjs"
   }
 }

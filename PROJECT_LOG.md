@@ -9,6 +9,38 @@
 
 ### Current Baseline (2026-09-15)
 
+- **Lantern-Maze 灯笼巷**（新增）：**吃豆人换皮 + 工坊扎巷**，按 `docs/plans/lantern-maze-prd.md` 端到端落地。
+  - 主线**一夜五更 30 张手作巷**（每更 6 张，逐更解锁规则：1 影教学 → classic 四影 → hunt 直影冲刺 → fog 雾合 → night 双匣六影）+ 破晓冲刺（120 秒连清）+ 百鬼夜巷（arena 生存）+ **扎巷坊**（七把笔刷 / 镜像笔刷 / 40 档撤回栈 / 三张纸样模板 / 巷码分享）。19×21 瓦片、`mulberry32` 种子、上下两条传送带（row 8/12）、`u` 匣口禁上转。
+  - 14 个 `js/*.mjs` 模块严格按契约分层（`engine`/`game`/`bench` DOM-free，`render`/`ui` 独占绘制）；**工坊第五道验收**为影子玩家 8 局注入种子试跑，判据是**平均吃净率**（`js/bot.mjs` `BOT_GATE = { runs:8, failEatRate:.55, warnEatRate:.75 }`，`<55%` FAIL、`55–75%` WARN）——贪心一步前瞻在夜巡速度下**注定清不了场**（七张图全 `clear0% stuck100%` 而吃净率 76–92%），已回头把 PRD §3.8 的「清场率 ≥90%」改成实际口径；§3.8 巷码长度也由拍脑袋的「60–90 字符」校正为实测 480–620 字符（3 字符/游程 + 12 字符分段）。
+  - 验证：6 测试文件 **116/116 全绿**（`engine`/`storage`/`i18n`/`render`/`workshop`/`markup` 四类）、`check-game lantern-maze` **19 pass / 0 fail / 0 warn**、`npm run build` 通过、dist 冒烟全 200。640×640 靛蓝软胶灯笼封面（`cv2.inpaint` 固定 bbox 去水印）。两个开发期工具（`tools/build-mazes.mjs`、`tools/tune-bot.mjs`）均带「前提/命令/产物/坑」runbook 头注释。
+  - **本轮最大收益：markup 套件真跑 `main.mjs`+`ui.mjs`+`audio.mjs`（假 DOM + 假 ctx + 假 localStorage + 假剪贴板 + 手推 rAF 队列），逼出 5 个引擎与单测全绿照样成立的装配 bug**：① `createGame` 返回的是 **`api` 句柄而非内部 `g`**，`hudOf(api)` 读到的字段没在 api 上开 getter → 顶栏 `NaN / NaN`；② 引擎 `intent()` 在 `ready` 倒数里回绝 pause，但 UI 不看 `applied` 照样掀帘（违反「非法意图静默忽略」，帘子与引擎状态永久脱钩）；③ `restartRun()` 没重绘 HUD，重开后时钟停在 `0:01`；④ Esc 只绑了「开说明」，说明开着时按 Esc 关不掉；⑤ 切语言后祈使句文案（按钮/结算提示）不刷新，需缓存 `lastSettleView` 在 result/menu 阶段重投影。
+  - **值得记住的坑**：`main.AUDIO_FX` 事件名→音效名**故意不是 1:1**（`fright→frightStart`、`time→timeAdd`、`paused/resumed→curtain`），测试按「键集 == 值集」钉死必然假失败；Node 24 的 `navigator` 是 getter-only，测试装宿主全局必须 `Object.defineProperty`；`ui.buildLanes` 行内子节点是定序数组（名字/成绩/进巷/删除），按下标点删除要跟着列数走；`node --test games/x/tests/`（裸目录）会报一条合成失败，一律用引号 glob `"games/lantern-maze/tests/*.test.mjs"`。
+  - **⚠️ 用户实机报障「一直这个界面」（帘落·暂停死锁）—— 一条 CSS 层叠红线**：`.veil { display: grid }` 是 author 样式，**无条件压过 UA 的 `[hidden]{display:none}`**，于是六张幕布从页面加载起就全部渲染着、DOM 里最后一张 `veil-paused` 永久盖住机台；引擎并未暂停 → 点「继续」被 `intent` 回绝（`togglePause` 只 deny 不掀帘）→ 死锁。修复：全局 `[hidden]{display:none !important}` 放在 `*` 复位之后；并补静态红线测试（守卫必须带 `!important`，且 `.veil`/`.bench` 确实带 display 声明，防止红线盯错目标）。顺带把 `openHelp()` 的 `helpReturn` 由硬编码 `"paused"` 改为**从引擎真实状态派生**、且在 `togglePause` 之后计算——倒数/死亡动画中关说明不再假掀一张「继续」按不动的帘。**教训：假 DOM 测试能验行为但看不见 CSS 层叠，凡「靠 `hidden` + display 换装」的界面都得配一条 CSS 侧静态红线。**
+  - **同类隐患全站审计**（`.workbuddy/tmp/audit-hidden.mjs`，判据含逐类 `.X[hidden]` 守卫故 candy-drop 等已豁免）：另有 **9 款**存在「带 `hidden` 属性却无守卫、CSS 又给了非 none 的 display」的裸露节点——2048 `board-grid`；bubble-bloom `ico/ico-off/specimen-canvas/codex-dots`；bubble-merge `result`；candy-drop `veil-badge`；deep-devour `sea/dial-face/gauge/gauge-pressure/tube-marks`；jigsaw `win-flag`；jump-jump `gauge/next-icon/result-stars/result-badge`；klotski `stars`；road-bash `result-stars`。**待统一处置**（多为新纪录角标/量表类小元素，逐款核实后再决定是否统一加全局守卫）。
+
+- **Candy-Drop 移动端 UI 与交互优化**（用户反馈：「移动端主游戏区域太小，被固定在小方块了」）：
+  - **真凶**：四个牌匾上下夹击 900:620 的宽舞台，把它挤成 242px 薄条 + 整页滚动。改为「舞台优先」：`.cabinet` 左右内边距压到 4px、`height: 100dvh` + `overflow: hidden`（一屏内解决）；`.stage`/`.tin`/`.tin-shell`/`.tin-inner` 三级 `flex: 1 1 auto` + `min-height: 0` 让画布吃满剩余高度且**不锁 aspect-ratio**；两翼压成紧凑 HUD 条并 `order: 8` 把计分匾沉到底部拇指区；操作台**宽度收到 78% 居中**让铁盒独享全宽，按键 `min-height: 48px` 等宽撑满。新增 `≤380px` 极窄屏与横屏手机断点。
+  - **效果**（4 视口全部不再滚动）：390×844 主舞台占屏高 **28.7% → 62.2%**（画布 352×242 → 374×525）；375×667 **34.8% → 57.1%**；360×640 **34.7% → 55.3%**；412×915 **28.2% → 65.1%**。
+  - **关键认知**（先推不等式再动手）：统计 40 关得出核心玩法元素真实包围盒 **X 90→866 / Y 62→586，比例 1.480**，而竖屏容器只有 0.66–0.73 —— **数学上永远装不下**（收视野需容器比例 ≥ 850/620 ≈ 1.37）。故竖屏走满世界，「画面变大」唯一合规路径是**让画布吃到更多屏幕高度**；`render.mjs` 的 `view` 收窄只对平板/桌面分屏这类接近正方形的容器生效。
+  - **⚠️ 最值得记住的坑：验收脚本复刻被测逻辑 = 零捕获力**。我的移动端验收脚本照抄了一份 `pickView()` 算预期值，把裁内容的缺陷注入回去跑仍**4 视口全绿**。对策：`createRenderer` 新增只读诊断出口 `getView()`、`main.mjs` 挂 `window.__candyDebug`，验收脚本一律**读真值**、本地只做坐标投影，出口缺失按 FAIL 计。重新验证捕获力：注入缺陷 → 4 视口全转红 → 还原 → 全绿。
+  - **顺手修掉既有桌面缺陷**：`.tin-inner { max-height: calc(100dvh - 190px) }` 在 1920×1080 下算出 890px 导致 `.cabinet` 1091 > 视口 1080 → 溢出滚动（早于本次改动）。改为 `width: min(100%, calc((100dvh - 205px) * 1.4516))` + `aspect-ratio: 900/620` —— 只约束宽度、高度自然推出（`height`+`aspect-ratio` 同用会被单项撑破）。桌面 **9 视口（2560×1440 → 900×600）全通过、比例恒定 1.452、零滚动**。
+  - 视觉：背景绒布细纹与暗角改为**随 scale 折算**（固定世界单位在 0.32 缩放时会形成"中间一条亮带"）。
+  - 验收全绿：单测 **70/70**、check-game **19 pass/0 fail/0 warn**、CDP 冒烟 **16/16**（新增 3 条移动端断言：占屏高 ≥50% 且不滚动 / 按键 ≥44px / 视野覆盖内容）、移动端 4 视口 + 边缘断点 5 视口 + 逐关取证 6 关（含最宽的第 6 关宽 776）+ 桌面 9 视口 全通过。
+  - 验证脚本：`x/candy-drop/` 下 `analyze-bounds.mjs` / `pickview-cases.mjs` / `measure-mobile.mjs` / `measure-edge.mjs` / `verify-levels-mobile.mjs`。
+
+- **Deep-Devour 手感与视觉打磨**（用户反馈：「鱼身体周围不要有圆圈」「增加操作灵敏度」「增加特效」）：
+  - **去圈**：可食/危险标记、玩家高亮轮廓、随行鱼轮廓三处 `stroke(ellipse)` 全部撤掉，改成**无边界径向柔光**（`backGlow`）。满屏的鱼不再读成一堆救生圈；危险目标改用**呼吸式红光**（0.58~1.0 脉动）补回"颜色是唯一色相线索"的辨识损失。顺手把水母硬边圆盘光环也改成渐隐柔光（同一个毛病）。
+  - **灵敏度**（全是手感旋钮，注释里点明"低于 5 玩家会觉得鱼在冰上漂"）：巡航 306→**330**、受击硬直 0.35→**0.26s**、转向逼近率 `6.6-tier*0.45`→`9.2-tier*0.34`（下限 2.6→4.8）、高阶阻力 0.006→0.004、近掠食者减速 0.24→0.16、指针死区 26→**12px**。
+  - **特效**：游动气泡尾迹（速度越快越密、冲刺翻倍）、冲刺速度线（狂暴时转暖橙）、吃鱼**吸入**粒子（朝嘴里收，不再原地炸）、combo 火花、grow/frenzy 冲击环+粒子、压强满警示爆、擦身水痕、水面焦散光斑、深渊气泡 10→14。粒子生成统一看 `status === playing`，否则暂停时速度不为零会继续冒泡。
+  - 新增 4 条灵敏度回归测试钉死手感：0.35s 内达 88% 巡航速度、0.5s 内完成反向掉头、20px 偏移必须产生位移、硬直 ≤0.3s。
+  - 验证：测试 **160/160**、平衡门禁 **40/40 关全 ≥95%**（最低 3-6 海胆阵 96.3%，平均 99.5%）、check-game 19 pass / 0 fail / 0 warn、`npm run build` 通过。DOM 冒烟新增「冲刺时每帧 draw call 必须明显抬升」的特效生成探针（226 → 249/帧），把"特效代码没生成"这类静默失败也纳入自动验证。
+
+- **Deep-Devour**（新增）：**深海吞噬**，吞噬成长街机。40 关五大海域递进（珊瑚浅滩 → 海藻密林 → 水母迷阵 → 沉船海沟 → 深渊王座，珍珠门 0/12/30/54/78 逐层解锁）+ 深渊无尽下潜。四机制按海域分层教学：**狂暴连锁**（1.2s 不断链）、**鱼群同行**（三条同种小鱼随行挡一次掠食者）、**深渊压强**（深水成长 ×1.5/×2，压强满必须回浅层换气）、**咬尾降阶**（精英突进后卸力，绕尾咬三次降它一阶）。引擎层 DOM-free：延后布雷式 `MIN_EDIBLE=6` 防死局、确定性 `mulberry32` 种子、贪心 AI 门禁 `tools/balance.mjs --runs=1000` 跑出 **40/40 关通关率全 ≥95%**（最低 3-6 关 96.5%）。Canvas 2D 舷窗机台 + DOM 双翼 HUD，640×640 靛蓝软胶鲨鱼封面。测试 6 文件 **156/156 全绿**、check-game 19 pass / 0 fail / 0 warn。
+  - 本轮修掉两个只有"真跑一遍界面"才会暴露的装配 bug（引擎与单测全绿也照样成立）：
+    1. 顶栏「关卡」按钮只 `showPanel("levels")` 不 `openLevels()`，首次点开是**空壳关卡表**；
+    2. `buildState` 一律 `autoStart:false` → 引擎装载后必然停在 `ready`，而 main 只在「开始」按钮调 `begin()`，导致**重开 / 重试 / 下一关 / 选关 / 进深渊之后画面静止且无报错**。已收敛为唯一入口 `launchRun()`（5 个入口共用），并新增 `tests/flow.test.mjs` 把"装载 → 必须 begin → 才跑帧"钉死。
+  - 表现层无浏览器冒烟：`.workbuddy/tmp/dd-dom-smoke.mjs`（最小 DOM+Canvas 桩驱动 rAF，模拟点击/指针/键盘/选关/清档二次确认/深渊；体检运行时异常、非法颜色、几何是否落在视口内、每帧 draw call）+ `dd-flow.mjs`（进局闭环探针）。
+- **Road-Bash**（新增）：**暴力摩托 / Road Bash**，按 `docs/plans/road-bash-prd.md` 端到端落地（拍板 A/A/A）：伪 3D 车尾视角公路竞速 + 出拳/反手/踢腿/抢棍。地下联赛 20 场（5 公路 × 4 段位，保名次换奖金买四档车，入门车永不锁死）+ 公路群殴 8 场 + 亡命冲刺 5 场。固定步长 `stepFrame`，确定性种子交通，强制留空档、AI 贴身上限、摔车必可捡回。落日铜机街机双翼 HUD + Canvas 软胶摩托。640×640 橙红软胶封面、check-game 19 pass / 0 fail / 0 warn。透视已按 OutRun 口径校正：近处路面贴屏幕底部、远处收束地平线。随后补了一轮手感与绘制：后视 3/4 摩托、拳/踢/棍分体动画、火花扬尘与独立音效、点选关卡即发车、方向更灵敏、桌面/移动键帽标注。
 - **Cut-the-Rope**（新增）：**割绳子**，按 `docs/plans/cut-the-rope-prd.md` 端到端落地：32 关纸盒奇遇主线（4 大主题纸盒：新手纸箱、浮空气泡、气囊风暴、尖刺迷阵）+ 8 关一刀大师残局挑战（共 40 关确定性几何数值关卡）。Verlet 绳索质点链与张力约束、相交利刃划割检测、浮空气泡反重力上浮与戳破、气囊锥形冲量吹风、尖刺陷阱与三星收集判定。绿色软胶萌兽 Nommy 实时眼神注视糖果、靠近张口吞食、咀嚼欢呼与难过抱头动画。Canvas 2D 微缩立体瓦楞纸盒舞台 + DOM 双翼 HUD，WebAudio 程序化合成音效。640×640 3D 软胶 WebP 封面、16 项原生测试用例全绿、check-game 19 pass / 0 fail / 0 warn，已登记并在 package.json 注册。
 - **广告位安全避让区红线与存量游戏布局优化**：
   - 核心平台规范升级：在 `AGENTS.md` §4.2、`docs/GAME-SPEC.md` §3.4 以及外包规格模板中全面加入硬性红线——桌面端（≥900px）居中收拢舞台，四周（尤其是左右与底部边缘）禁放操作按钮与关键 HUD；移动端（≤768px）底部严禁贴底放置关键操作按钮，必须预留底部安全缓冲间距（至少 `60px ~ 80px` 留白，如 `padding-bottom: max(68px, calc(16px + env(safe-area-inset-bottom)))`），确保后续接入移动端底部横幅广告（Banner）时绝对不遮挡按键。
@@ -30,7 +62,7 @@
   - **国际化 SEO 基线升级（解决 Google 搜索默认中文问题）**：静态 HTML 默认标记升级为英文基准（`<html lang="en">`、英文 Title `DOIN · Free Online Mini Games - Play Instantly`、国际化高价值搜索词 Meta Description、`og:locale: en_US`），同时加入 Google 官方 `hreflang`（`x-default` / `en` / `zh-CN`）语言交替声明；中文用户访问时继续由前端 0 延迟秒切中文体验。
 - **门户**：薄荷渐变首页（`index.html` + `css/`），640×640 WebP 封面（3D 风格统一），
   白色胶囊卡片标签 + hover 放大；品牌行「Doin.win 字标 ←→ 搜索栏 ←→ 地球语言按钮」+ 二级主标题与游戏计数；
-  中英双语（`doin.lang` 全站共享偏好）。CNAME `doin.win`。共 24 款游戏登记。
+  中英双语（`doin.lang` 全站共享偏好）。CNAME `doin.win`。共 27 款游戏登记。
 - **Jump-Jump**（新增）：**跳一跳**，按 `docs/plans/jump-jump-prd.md` 三模式（A/A/A 默认）端到端：旅途关卡 25 关五章 + 经典无尽跳 + 靶心试炼。蓄力 — 距离严格线性（合法区间 [0.25s, 1.5s] 满蓄力 1.8s 提供 ~15% 冗余），25 关全部一次通过 isGapSolvable 校验，浮动岛振幅 26、跳床超远桥接 420–500。Canvas 2D 等轴测 2.5D，软胶棋子 Squash & Stretch + 360° 滞空旋转 + 蓄力音阶爬升。桌面 ≥900px 双栏沉浸舞台 + 移动 ≤768px 单列。test:jump-jump 44/44、check-game 19 pass / 0 fail / 0 warn、CDP 14/14 三档视口 + 起跳动作链路 + 真像素抽样。本地未推送。
 - **Cloud-Merge**（新增）：**云朵合成**，晴空治愈天空气象台物理合成：十级云朵轻盈软弹物理链、
   合出 L8 雷暴云自动下雨清场（清开正下方拥挤云朵并奖励积分）、合出 L10 彩虹云可点击收集放晴爆分（+100分腾出空间继续造云）、

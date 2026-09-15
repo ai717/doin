@@ -423,6 +423,63 @@
         "title": "Candy Drop",
         "desc": "Slice the ropes and let gravity do the rest: swing the honey candy into Nuan Nuo's mouth and scoop up all three stars on the way. 40 physics puzzles across five candy tins, from plain and elastic ropes to bubbles, air cushions, spikes and sliding rails. Progress saves locally."
       }
+    },
+    {
+      "title": "暴力摩托",
+      "slug": "road-bash",
+      "desc": "骑着软胶玩具摩托在落日公路上狂飙，一边超车一边挥拳把对手打下车。地下联赛 20 场换四档车、公路群殴打满击倒配额、亡命冲刺甩掉条子，摔了就跑去捡自己的车。",
+      "icon": "🏍️",
+      "cover": "/assets/covers/road-bash.webp",
+      "tags": [
+        "街机",
+        "竞速",
+        "动作"
+      ],
+      "url": "/road-bash/",
+      "en": {
+        "title": "Road Bash",
+        "desc": "Race a clay toy motorcycle down a sunset highway and punch rivals off their bikes. 20-race underground league with bike upgrades, road brawls and cop getaways. Crash, then run back to your bike."
+      }
+    },
+    {
+      "title": "深海吞噬",
+      "slug": "deep-devour",
+      "desc": "吃掉比你小的、躲开比你大的，一口一口从浮游小鱼长成深海霸主。5 片海域 40 关逐章解锁狂暴连锁、鱼群同行、深渊压强与咬尾降阶，另有无尽下潜模式。",
+      "icon": "🦈",
+      "cover": "/assets/covers/deep-devour.webp",
+      "tags": [
+        "街机",
+        "动作",
+        "成长"
+      ],
+      "url": "/deep-devour/",
+      "exclude": [
+        "tools"
+      ],
+      "en": {
+        "title": "Deep Devour",
+        "desc": "Eat what is smaller than you and dodge what is bigger, growing from a fry into the apex of the reef. 40 levels across five seas unlock frenzy chains, shoal companions, abyss pressure and tail bites, plus an endless dive."
+      }
+    },
+    {
+      "title": "灯笼巷",
+      "slug": "lantern-maze",
+      "desc": "提一盏将熄的灯笼走进夜巷，吞光尘续灯芯、找日曜珠反杀影魅。五更 30 巷逐更解锁贴角转弯、流明灯与猎杀节拍，另有破晓冲刺、百鬼夜巷和纸巷裁铺手作迷宫——画完影子试跑通关就能保存分享巷码。",
+      "icon": "🏮",
+      "cover": "/assets/covers/lantern-maze.webp",
+      "tags": [
+        "街机",
+        "迷宫",
+        "动作"
+      ],
+      "url": "/lantern-maze/",
+      "exclude": [
+        "tools"
+      ],
+      "en": {
+        "title": "Lantern Maze",
+        "desc": "Carry a guttering lantern into the night alleys: swallow light dust to keep the wick alive, hunt sun pearls to turn the tables on the shadow ghouls. 30 lanes across five watches unlock corner cutting, drifting lamps and hunt rhythms, plus a dawn sprint, a haunted parade and a paper-alley workshop where you cut your own maze, watch a shadow runner clear it, then save and share the lane code."
+      }
     }
   ]
 }
