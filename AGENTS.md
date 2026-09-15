@@ -11,7 +11,7 @@ DOIN（`doin.win`）是不断演进的**集合型独立网页小游戏门户**�
 
 - **源码与构建分离**：`main` 分支纯源码，**严禁提交 `dist/` 或任何子游戏构建产物**。
 - **自动部署**：`main` 推送触发 GitHub Actions（Node 22），全量构建至 `dist/` 并覆盖发布到 `gh-pages`。生产域名为 `doin.win`（Workflow 自动注入 `cname: ${{ vars.PAGES_CNAME }}`）。
-- **全局通用标签集中注入（硬性红线）**：统计代码（GA4 `G-D67E3XTNSS`）、Google AdSense、站点级 meta 统一由 `scripts/build-site.mjs` 在 `npm run build` 时向 `dist/` 所有 HTML 的 `<head>` 自动注入。**严禁在首页或任何子游戏源文件中硬编码全局统计/广告标签**。
+- **全局通用标签集中注入与总开关（硬性红线）**：统计代码（GA4 `G-D67E3XTNSS`）、Google AdSense 广告统一由 `scripts/build-site.mjs` 在 `npm run build` 时向 `dist/` 所有 HTML 的 `<head>` 自动注入。支持通过环境变量或 GitHub Repository Variables 控制（`ENABLE_ANALYTICS=true/false`、`GA_MEASUREMENT_ID`、`ENABLE_ADS=true/false`、`ADSENSE_CLIENT_ID`）。**严禁在首页或任何子游戏源文件中硬编码全局统计/广告标签**。
 - **路径与缓存隔离**：
   - 本地开发路径为 `/games/<slug>/`，生产发布扁平为 `/<slug>/`。
   - **游戏源码内部一律使用相对路径**，绝对禁止写 `/games/<slug>/` 或 `/<slug>/`（唯一绝对路径例外是返回门户首页 `<a href="/" id="back-home">`）。

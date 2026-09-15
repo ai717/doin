@@ -9,11 +9,14 @@
 
 ### Current Baseline (2026-09-15)
 
-- **移动端全站触控防拽与弹性锁死优化（全面完成）**：针对移动端浏览器滑屏操作导致整个网页拖拽、弹性回弹（rubber-banding / overscroll bounce）干扰游戏核心操作的问题，对全站 23 款游戏完成全面视口与触控锁定升级：
-  - 外层容器锁（`html, body`）：统一注入 `height: 100%; height: 100dvh; overflow: hidden; overscroll-behavior: none; -webkit-tap-highlight-color: transparent;`；
-  - 核心操作面（`canvas`, `#board`, 游戏主容器）：视操控模式注入 `touch-action: none;` 或 `touch-action: manipulation;`，杜绝边缘误触滑出浏览器回弹与双击缩放；
-  - 覆盖全部 23 款游戏：`2048`、`klotski`、`jigsaw`、`Tile-Matching`、`freecell`、`gold-miner`、`minesweeper`、`tic-tac-toe`、`tetris-neo`、`snake-orchard`、`one-line`、`zuma`、`pair-link`、`bubble-bloom`、`bubble-merge`、`cloud-merge`、`water-sort`、`piano-tiles`、`jump-jump`、`sudoku`、`link-up`、`orbit-sort`、`Gravity-Echoes`；
-  - 全套单元测试与全站构建门禁 100% 通过（`npm run build`、`test:home`、各子游戏单测）。
+- **Cut-the-Rope**（新增）：**割绳子**，按 `docs/plans/cut-the-rope-prd.md` 端到端落地：32 关纸盒奇遇主线（4 大主题纸盒：新手纸箱、浮空气泡、气囊风暴、尖刺迷阵）+ 8 关一刀大师残局挑战（共 40 关确定性几何数值关卡）。Verlet 绳索质点链与张力约束、相交利刃划割检测、浮空气泡反重力上浮与戳破、气囊锥形冲量吹风、尖刺陷阱与三星收集判定。绿色软胶萌兽 Nommy 实时眼神注视糖果、靠近张口吞食、咀嚼欢呼与难过抱头动画。Canvas 2D 微缩立体瓦楞纸盒舞台 + DOM 双翼 HUD，WebAudio 程序化合成音效。640×640 3D 软胶 WebP 封面、16 项原生测试用例全绿、check-game 19 pass / 0 fail / 0 warn，已登记并在 package.json 注册。
+- **全局统计与广告标签总开关（支持一键启闭与环境覆盖）**：
+  - 在 `scripts/build-site.mjs` 中升级全局标签注入器，支持通过环境变量控制：
+    - `ENABLE_ANALYTICS`（默认 `true`，设为 `"false"` 或 `"0"` 则彻底不注入 GA4 脚本）；
+    - `GA_MEASUREMENT_ID`（默认 `G-D67E3XTNSS`，可外部覆盖）；
+    - `ENABLE_ADS`（默认 `false`，设为 `"true"` 或 `"1"` 且配置 `ADSENSE_CLIENT_ID` 时注入 Google AdSense）；
+    - `ADSENSE_CLIENT_ID`（AdSense 客户端 ID 变量）。
+  - 在 `.github/workflows/deploy.yml` 构建步骤中注入对应 `${{ vars.* }}`，支持直接在 GitHub 仓库后台界面（Settings -> Variables）一键启闭或修改，无需更改代码。
 
 - **门户**：薄荷渐变首页（`index.html` + `css/`），640×640 WebP 封面（3D 风格统一），
   白色胶囊卡片标签 + hover 放大；品牌行「Doin.win 字标 ←→ 地球语言按钮」+ 二级主标题；

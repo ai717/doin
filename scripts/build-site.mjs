@@ -44,19 +44,43 @@ function runNpm(args, cwd) {
   }
 }
 
-const GLOBAL_SITE_TAGS = `
+// ==================== 全局统计与广告标签注入总开关 ====================
+// 优先级：环境变量显式指定 > 默认配置。设为 false 或 "0" 或 "false" 即停用。
+const enableAnalytics = process.env.ENABLE_ANALYTICS !== "false" && process.env.ENABLE_ANALYTICS !== "0";
+const gaMeasurementId = process.env.GA_MEASUREMENT_ID || "G-D67E3XTNSS";
+
+const enableAds = process.env.ENABLE_ADS === "true" || process.env.ENABLE_ADS === "1";
+const adClientId = process.env.ADSENSE_CLIENT_ID || "";
+
+function buildGlobalSiteTags() {
+  const tags = [];
+
+  if (enableAnalytics && gaMeasurementId) {
+    tags.push(`
   <!-- Google tag (gtag.js) -->
-  <script async src="https://www.googletagmanager.com/gtag/js?id=G-D67E3XTNSS"></script>
+  <script async src="https://www.googletagmanager.com/gtag/js?id=${gaMeasurementId}"></script>
   <script>
     window.dataLayer = window.dataLayer || [];
     function gtag(){dataLayer.push(arguments);}
     gtag('js', new Date());
+    gtag('config', '${gaMeasurementId}');
+  </script>`);
+  }
 
-    gtag('config', 'G-D67E3XTNSS');
-  </script>
-`;
+  if (enableAds && adClientId) {
+    tags.push(`
+  <!-- Google AdSense -->
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${adClientId}" crossorigin="anonymous"></script>`);
+  }
+
+  return tags.join("\n");
+}
+
+const GLOBAL_SITE_TAGS = buildGlobalSiteTags();
 
 function injectGlobalSiteTags(directory) {
+  if (!GLOBAL_SITE_TAGS.trim()) return;
+
   for (const entry of readdirSync(directory)) {
     const path = resolve(directory, entry);
     if (statSync(path).isDirectory()) {
@@ -65,7 +89,7 @@ function injectGlobalSiteTags(directory) {
     }
     if (!entry.endsWith(".html")) continue;
     let html = readFileSync(path, "utf8");
-    if (!html.includes("G-D67E3XTNSS") && html.includes("<head>")) {
+    if (html.includes("<head>") && !html.includes("googletagmanager.com") && !html.includes("pagead2.googlesyndication.com")) {
       html = html.replace("<head>", `<head>${GLOBAL_SITE_TAGS}`);
       writeFileSync(path, html);
     }

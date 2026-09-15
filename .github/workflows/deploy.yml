@@ -29,6 +29,11 @@ jobs:
 
       - name: Build static site
         run: npm run build
+        env:
+          ENABLE_ANALYTICS: ${{ vars.ENABLE_ANALYTICS }}
+          GA_MEASUREMENT_ID: ${{ vars.GA_MEASUREMENT_ID }}
+          ENABLE_ADS: ${{ vars.ENABLE_ADS }}
+          ADSENSE_CLIENT_ID: ${{ vars.ADSENSE_CLIENT_ID }}
 
       - name: Publish dist to gh-pages
         uses: peaceiris/actions-gh-pages@v4
