@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>割绳子 · DOIN 在线小游戏</title>
+    <meta
+      name="description"
+      content="割绳子：划断绳子，借重力与摆动把糖送进小怪兽糯糯嘴里，顺路捞起三颗星。普通绳、弹性绳、气泡、气垫、尖刺、自动绳与滑动锚轨轮番登场，5 盒共 40 关物理解谜。"
+    />
+    <meta name="theme-color" content="#3b1620" />
+    <link
+      rel="icon"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%233b1620'/%3E%3Ccircle cx='16' cy='12' r='6' fill='%23f2b445'/%3E%3Cpath d='M10 12q6-8 12 0' stroke='%23a8442a' stroke-width='2.4' fill='none'/%3E%3Cpath d='M8 27q8-9 16 0z' fill='%235fb45c'/%3E%3C/svg%3E"
+    />
+    <link rel="stylesheet" href="css/style.css?v=dev" />
+  </head>
+  <body data-theme="tin">
+    <noscript>
+      <div class="noscript">本游戏需要启用 JavaScript 才能运行。请开启后刷新页面。</div>
+    </noscript>
+
+    <div class="cabinet" id="cabinet">
+      <!-- 铁盒顶盖：铭牌内嵌系统控制项，绝不在四角散落浮动按钮 -->
+      <header class="lid">
+        <div class="lid-side">
+          <a class="rivet" id="back-home" href="/" title="返回门户">
+            <span class="rivet-icon" aria-hidden="true">‹</span>
+            <span class="rivet-label" data-i18n="back">返回门户</span>
+          </a>
+        </div>
+        <div class="lid-brand">
+          <span class="brand-zh" data-i18n="appTitle">割绳子</span>
+          <span class="brand-en" data-i18n="readyKicker">CANDY DROP</span>
+        </div>
+        <div class="lid-side lid-side--right">
+          <button class="rivet" id="btn-sound" type="button" aria-pressed="false" data-i18n-title="sound">
+            <span class="rivet-icon" id="sound-icon" aria-hidden="true">♪</span>
+            <span class="rivet-label" data-i18n="soundOn">音效已开</span>
+          </button>
+          <button class="rivet" id="btn-lang" type="button">
+            <span class="rivet-label" data-i18n="langSwitch">EN</span>
+          </button>
+          <button class="rivet" id="btn-help" type="button">
+            <span class="rivet-icon" aria-hidden="true">?</span>
+            <span class="rivet-label" data-i18n="help">玩法说明</span>
+          </button>
+        </div>
+      </header>
+
+      <main class="stage" id="stage">
+        <!-- 左翼：盒匾额 / 关卡匾额 / 提示卷轴 / 本关星 -->
+        <aside class="wing wing--left">
+          <div class="plaque plaque--box">
+            <span class="plaque-kicker" data-i18n="hudBox">第 1 盒</span>
+            <strong class="plaque-title" id="box-name">铁盒入门</strong>
+            <span class="plaque-sub" id="box-progress">本盒 0 / 24 星</span>
+          </div>
+
+          <div class="plaque plaque--level">
+            <span class="plaque-kicker" id="level-kicker" data-i18n="hudLevel">第 1 关</span>
+            <strong class="plaque-title" id="level-name">第一刀</strong>
+            <span class="plaque-sub" id="level-hint">在绳子上划一刀，糖就掉下去了</span>
+          </div>
+
+          <div class="plaque plaque--stars">
+            <span class="plaque-kicker" data-i18n="hudStars">本关星</span>
+            <div class="star-row" id="star-row">
+              <span class="star-dot" data-slot="0">★</span>
+              <span class="star-dot" data-slot="1">★</span>
+              <span class="star-dot" data-slot="2">★</span>
+            </div>
+            <span class="plaque-sub" id="star-count">0 / 3 星</span>
+          </div>
+        </aside>
+
+        <!-- 中央：糖锡铁盒（游戏舞台）+ 盒底操作台 -->
+        <section class="tin" aria-label="糖锡铁盒街机舞台">
+          <div class="tin-shell">
+            <div class="tin-inner">
+              <canvas
+                id="board"
+                width="900"
+                height="620"
+                role="img"
+                aria-label="铁盒内部：糖果吊在绳上，小怪兽糯糯在下方的绒布上张嘴等待"
+              ></canvas>
+
+              <!-- 开始 / 关卡选择 / 结算 / 说明 四层幕布 -->
+              <div class="veil" id="veil-ready">
+                <div class="veil-card">
+                  <span class="veil-kicker" data-i18n="readyKicker">CANDY DROP</span>
+                  <h1 class="veil-title" data-i18n="readyTitle">割绳子</h1>
+                  <p class="veil-desc" data-i18n="readyDesc"></p>
+                  <div class="veil-actions">
+                    <button class="key" id="btn-start" type="button" data-i18n="btnStart">开始投喂</button>
+                    <button class="key key--ghost" id="btn-resume" type="button" data-i18n="btnResume">继续本关</button>
+                    <button class="key key--ghost" id="btn-open-levels" type="button" data-i18n="btnLevels">选择关卡</button>
+                  </div>
+                </div>
+              </div>
+
+              <div class="veil veil--panel" id="veil-levels" hidden>
+                <div class="veil-card veil-card--wide">
+                  <h2 class="veil-subtitle" data-i18n="levelsTitle">选择关卡</h2>
+                  <div class="box-tabs" id="box-tabs"></div>
+                  <div class="level-grid" id="level-grid"></div>
+                  <p class="veil-note" id="levels-note"></p>
+                  <div class="veil-actions">
+                    <button class="key key--ghost" id="btn-close-levels" type="button" data-i18n="btnBackLevels">返回关卡</button>
+                  </div>
+                </div>
+              </div>
+
+              <div class="veil veil--panel" id="veil-result" hidden>
+                <div class="veil-card">
+                  <span class="veil-badge" id="result-badge" hidden data-i18n="newBest">🏆 新高分！</span>
+                  <h2 class="veil-subtitle" id="result-title">糯糯吃到啦！</h2>
+                  <div class="result-stars" id="result-stars">
+                    <span class="star-dot big" data-slot="0">★</span>
+                    <span class="star-dot big" data-slot="1">★</span>
+                    <span class="star-dot big" data-slot="2">★</span>
+                  </div>
+                  <dl class="result-stats">
+                    <div><dt data-i18n="resultScore">本关得分</dt><dd id="result-score">0</dd></div>
+                    <div><dt data-i18n="resultTotal">累计总分</dt><dd id="result-total">0</dd></div>
+                    <div><dt data-i18n="resultCuts">切绳次数</dt><dd id="result-cuts">0</dd></div>
+                    <div><dt data-i18n="resultTime">用时</dt><dd id="result-time">0.0s</dd></div>
+                  </dl>
+                  <p class="veil-note" id="result-note"></p>
+                  <div class="veil-actions">
+                    <button class="key" id="btn-next" type="button" data-i18n="btnNext">下一关</button>
+                    <button class="key key--ghost" id="btn-retry-2" type="button" data-i18n="btnRetry">再试一次</button>
+                    <button class="key key--ghost" id="btn-to-levels" type="button" data-i18n="btnBackLevels">返回关卡</button>
+                  </div>
+                </div>
+              </div>
+
+              <div class="veil veil--panel" id="veil-help" hidden>
+                <div class="veil-card veil-card--wide">
+                  <h2 class="veil-subtitle" data-i18n="helpTitle">玩法说明</h2>
+                  <ol class="help-list" id="help-list"></ol>
+                  <div class="veil-actions">
+                    <button class="key" id="btn-close-help" type="button" data-i18n="helpClose">我知道了</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 盒底操作台：实体道具键 -->
+          <div class="console">
+            <span class="console-hint" data-i18n="handHint">在绳上按住划一道，即可割断</span>
+            <div class="console-keys">
+              <button class="key key--brass" id="btn-puff" type="button" data-i18n="btnPuff">吹气</button>
+              <button class="key key--brass" id="btn-pop" type="button" data-i18n="btnPop">戳破</button>
+              <button class="key key--ghost" id="btn-retry" type="button" data-i18n="btnReset">重来</button>
+              <button class="key key--ghost" id="btn-levels" type="button" data-i18n="btnLevels">选择关卡</button>
+            </div>
+          </div>
+        </section>
+
+        <!-- 右翼：计分铭牌 / 机关说明 -->
+        <aside class="wing wing--right">
+          <div class="plaque plaque--score">
+            <span class="plaque-kicker" data-i18n="hudScore">总分</span>
+            <strong class="plaque-big" id="total-score">0</strong>
+            <span class="plaque-sub" id="total-max">/ 20000</span>
+          </div>
+
+          <div class="plaque">
+            <span class="plaque-kicker" data-i18n="hudBoxStars">本盒星</span>
+            <strong class="plaque-big" id="box-stars">0</strong>
+            <span class="plaque-sub" data-i18n="hudBoxProgress">本盒 0 / 24 星</span>
+          </div>
+
+          <div class="plaque">
+            <span class="plaque-kicker" data-i18n="hudCuts">已切绳</span>
+            <strong class="plaque-big" id="cut-count">0</strong>
+            <span class="plaque-sub" id="tool-note">—</span>
+          </div>
+        </aside>
+      </main>
+    </div>
+
+    <script type="module" src="js/main.mjs?v=dev"></script>
+  </body>
+</html>

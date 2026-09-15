@@ -389,6 +389,23 @@
         "title": "Jump Jump",
         "desc": "Hold to charge, release to leap along a parabola onto the next floating island. Bullseye the center for escalating combos, and master trampolines, vinyl decks, drifting isles and razor-thin blocks. 25 odyssey stages plus endless and sniper modes, with local progress saved."
       }
+    },
+    {
+      "title": "糖果坠落",
+      "slug": "candy-drop",
+      "desc": "划断绳索，借重力与摆锤把蜜糖送进小兽糯糯嘴里，顺路捞齐三颗星。5 只糖锡铁盒 × 8 关共 40 关物理谜题，普通绳、弹性绳、气泡、气垫、尖刺与滑轨逐盒解锁，进度本机保存。",
+      "icon": "🍭",
+      "cover": "/assets/covers/candy-drop.webp",
+      "tags": [
+        "益智",
+        "物理",
+        "解谜"
+      ],
+      "url": "/candy-drop/",
+      "en": {
+        "title": "Candy Drop",
+        "desc": "Slice the ropes and let gravity do the rest: swing the honey candy into Nuan Nuo's mouth and scoop up all three stars on the way. 40 physics puzzles across five candy tins, from plain and elastic ropes to bubbles, air cushions, spikes and sliding rails. Progress saves locally."
+      }
     }
   ]
 }

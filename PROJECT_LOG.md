@@ -1191,3 +1191,29 @@ PROJECT_LOG.md                      [修改] 本轮记录
 - 引擎新增 `replaySolution` / `isValidSolution`，关卡生成时不再只相信反向打乱返回的路径，而是逐步重放并确认每一步都是合法倒液，最终状态满足胜利条件；候选均无效时仅允许有限重试，禁止返回未经验证的关卡。
 - 新增第 2 关实际运行种子回归测试，以及第 1-50 关正式种子的合法解路径测试；同步覆盖同色顶端、空管接收、容量上限和终局判定。
 - 本轮未改变合法操作规则：选中有液体试管后，点击同色顶端或空管均放行；空管只能作为接收方，不能伪装成来源。
+
+## 2026-09-15 · 糖果坠落（candy-drop）上线：糖锡铁盒街机 × 40 关物理解谜
+
+- **玩法与模式编排**：按策划案 `docs/plans/candy-drop-prd.md` 定为**纯章节制** —— 5 只糖锡铁盒 × 8 关 = 40 关，
+  盒间按上一盒累计 12/24 星解锁，**不做无尽冲分 / 每日随机盘**；评价口径是「通关星级」而非得分，
+  操作台是「吹气 / 戳泡 / 重来 / 选关」四枚实体道具键，不是通用管理键。
+- **物理模型（`js/engine.mjs`，DOM-free）**：糖果是唯一自由质点，Verlet 积分 + 位置约束；
+  绳是「只拉不推」的距离约束（PBD 风格多轮迭代）。弹性绳由「重力下预期拉伸量」反解角频率
+  `ω = sqrt(g / stretch)`，且**每步只在 `iteration === 0` 修正一次**，否则刚度会被迭代次数放大成硬弹簧。
+  固定步长 `FIXED_DT = 1/120` + 纯函数 `stepFrame(state, dt)`，物理可重放、可单测。
+- **无死局保证（`tools/build-levels.mjs` + `tests/levels.test.mjs`）**：40 关全部由生成器产出，
+  坐标上升法调参 + 真实弹道吸附「嘴」与「三星」，固化后**每关重放 plan 断言 `won && starsTaken === 3`**。
+  - 踩坑：第 9 关「弹力初尝」在竖直往返弹道上，「离起点 / 离嘴 / 星间距」三约束互相挤死，只放得下 1 颗星。
+    修法是给星位搜索加**三档松弛**（sep 78/66/56、start 46/36/28、mouth 20/12/6、hazard 16/12/10）逐档重试，
+    重跑后 **40 ok / 0 fail**，再 `--write` 固化到 `js/levels.mjs`。
+- **分层**：engine（纯规则）/ game（DOM-free 控制器）/ render+main（唯一碰 DOM）/ score / storage / i18n / audio
+  八模块齐全；存档 `doin.candy-drop.v1`，语言走全站共享 `localStorage["doin.lang"]`，计分唯一口径
+  `scoreOf(stars, won) = 200 + stars × 100`（上限 500/关）。
+- **美术**：暖蜂蜜黄 + 铁锈红绳 + 深酒红绒布底；桌面 ≥900px 铁盒居中三栏（左翼牌匾 + 中央铁盒 + 右翼牌匾 + 底部操作台），
+  返回/音效/语言/说明全部收纳进顶盖黄铜铭牌，**没有四角浮动按钮、没有右侧卡片堆**；移动端 ≤768px 单列。
+  5 套主题随盒切换，动效受 `prefers-reduced-motion` 约束。
+- **验收**：`test:candy-drop` **70/70**；`check-game candy-drop` **19 pass / 0 fail(T1) / 0 warn**；`npm run build` 通过；
+  基于 dist 的无头 Chrome 冒烟 **13/13**（`x/candy-drop/cdp-smoke.mjs`：真划刀切绳 → 三星进嘴 → 计分 500 →
+  下一关推进 → 移动端单列不溢出 → 零 JS 异常）。
+- **上架登记**：`games.json` 追加条目、`package.json` 注册 `test:candy-drop`、封面 `assets/covers/candy-drop.webp`
+  （640×640 VP8，暖棕古铜软胶糖果 + 陪衬小兽糯糯，零文字）。
