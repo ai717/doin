@@ -56,11 +56,17 @@
   -webkit-tap-highlight-color: transparent;
 }
 
+html, body {
+  width: 100%;
+  height: 100%;
+  overscroll-behavior: none;
+}
+
 body {
   font-family: var(--font-stack);
   background-color: var(--bg-main);
   color: var(--text-main);
-  min-height: 100vh;
+  min-height: 100dvh;
   display: flex;
   flex-direction: column;
   transition: background-color 0.2s ease, color 0.2s ease;
@@ -225,6 +231,7 @@ body {
   height: 100%;
   display: block;
   object-fit: contain;
+  touch-action: none;
 }
 
 /* 侧边仪表盘 */

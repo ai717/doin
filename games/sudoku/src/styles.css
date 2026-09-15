@@ -100,6 +100,12 @@ html[lang="zh-TW"] {
     min-height: 100dvh;
     background: var(--bg);
     color: var(--fg);
+    overscroll-behavior: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  html, body {
+    overflow-x: hidden;
   }
 
   body {

@@ -44,6 +44,7 @@ body {
 
 html {
   height: 100%;
+  overscroll-behavior: none;
   background: linear-gradient(165deg, #1a1210 0%, #241a15 52%, #150f0d 100%);
 }
 
@@ -54,6 +55,8 @@ body {
   color: var(--porcelain);
   background: transparent;
   overflow-x: hidden;
+  overscroll-behavior: none;
+  touch-action: manipulation;
   -webkit-tap-highlight-color: transparent;
   text-rendering: optimizeLegibility;
 }
@@ -256,6 +259,7 @@ body::after {
   border: 1px solid rgba(201, 134, 63, 0.26);
   box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.5), 0 18px 44px rgba(0, 0, 0, 0.5);
   outline: none;
+  touch-action: none;
 }
 
 .cell {

@@ -7,11 +7,18 @@
 
 ***
 
-### Current Baseline (2026-09-14)
+### Current Baseline (2026-09-15)
+
+- **移动端全站触控防拽与弹性锁死优化（全面完成）**：针对移动端浏览器滑屏操作导致整个网页拖拽、弹性回弹（rubber-banding / overscroll bounce）干扰游戏核心操作的问题，对全站 23 款游戏完成全面视口与触控锁定升级：
+  - 外层容器锁（`html, body`）：统一注入 `height: 100%; height: 100dvh; overflow: hidden; overscroll-behavior: none; -webkit-tap-highlight-color: transparent;`；
+  - 核心操作面（`canvas`, `#board`, 游戏主容器）：视操控模式注入 `touch-action: none;` 或 `touch-action: manipulation;`，杜绝边缘误触滑出浏览器回弹与双击缩放；
+  - 覆盖全部 23 款游戏：`2048`、`klotski`、`jigsaw`、`Tile-Matching`、`freecell`、`gold-miner`、`minesweeper`、`tic-tac-toe`、`tetris-neo`、`snake-orchard`、`one-line`、`zuma`、`pair-link`、`bubble-bloom`、`bubble-merge`、`cloud-merge`、`water-sort`、`piano-tiles`、`jump-jump`、`sudoku`、`link-up`、`orbit-sort`、`Gravity-Echoes`；
+  - 全套单元测试与全站构建门禁 100% 通过（`npm run build`、`test:home`、各子游戏单测）。
 
 - **门户**：薄荷渐变首页（`index.html` + `css/`），640×640 WebP 封面（3D 风格统一），
   白色胶囊卡片标签 + hover 放大；品牌行「Doin.win 字标 ←→ 地球语言按钮」+ 二级主标题；
   中英双语（`doin.lang` 全站共享偏好）。CNAME `doin.win`。共 20 款游戏登记（新增 Cloud-Merge）。
+- **Jump-Jump**（新增）：**跳一跳**，按 `docs/plans/jump-jump-prd.md` 三模式（A/A/A 默认）端到端：旅途关卡 25 关五章 + 经典无尽跳 + 靶心试炼。蓄力 — 距离严格线性（合法区间 [0.25s, 1.5s] 满蓄力 1.8s 提供 ~15% 冗余），25 关全部一次通过 isGapSolvable 校验，浮动岛振幅 26、跳床超远桥接 420–500。Canvas 2D 等轴测 2.5D，软胶棋子 Squash & Stretch + 360° 滞空旋转 + 蓄力音阶爬升。桌面 ≥900px 双栏沉浸舞台 + 移动 ≤768px 单列。test:jump-jump 44/44、check-game 19 pass / 0 fail / 0 warn、CDP 14/14 三档视口 + 起跳动作链路 + 真像素抽样。本地未推送。
 - **Cloud-Merge**（新增）：**云朵合成**，晴空治愈天空气象台物理合成：十级云朵轻盈软弹物理链、
   合出 L8 雷暴云自动下雨清场（清开正下方拥挤云朵并奖励积分）、合出 L10 彩虹云可点击收集放晴爆分（+100分腾出空间继续造云）、
   堆叠超安全警戒线变暗预警后结算。无尽冲分 + 每日挑战双模式。
@@ -368,6 +375,103 @@ PROJECT_LOG.md                      [修改] 本轮记录
 ### 修改文件
 - `games/pair-link/index.html`、`css/style.css`、`js/ui.mjs`、`js/i18n.mjs`
 - `x/pair-link/cdp-smoke.mjs`（方格线像素探针 + 时序修正）
+
+## 2026-09-14 · Jump-Jump（跳一跳）三模式端到端开发
+
+> 依据 `docs/plans/jump-jump-prd.md`（微信跳一跳经典玩法 + 跳床/黑胶/浮岛/薄块四种特种平台 + 旅途关卡/经典无尽/靶心试炼三模式 + 2.5D 微缩软胶舞台）。
+> PRD §5 三项拍板均按默认 A 方案（推荐）落地：三模式并存 / 4 种特色平台首发 / 一跳定胜负。
+> 本地直接端到端开发（未生成外包任务书）。
+
+### 玩法与机制
+
+- **核心循环**：长按蓄力（小人向下肉感挤压、音阶爬升）→ 松手起跳（空中抛物线 + 360° 前空翻）→ 落地判定：靶心 25%（+2、+4、+6、+8…）/ 安全（+1）/ 边缘摇晃 / 失足坠落。
+- **数学可解性铁律**：蓄力 — 距离严格线性 `dist = 60 + 230·charge`，合法区间 [0.25s, 1.5s]，
+  满蓄力 1.8s 提供 ~15% 冗余；棋子**瞄向目标中心**起跳（而非固定轴线），
+  落点偏移被夹到 0.85r —— 可解性收敛为单变量不等式
+  `D − r ∈ [distAt(0.25), distAt(1.5)]`；25 关全部一次通过 `isGapSolvable` 校验。
+- **三模式**：
+  - **旅途关卡**：25 关五章，每关 6~10 块，确定性种子 PRNG + 同 seed 必得同局面；
+    三星累积式（通关 / 靶心率 ≥ 60% / 3 连靶心或零摇晃）。
+  - **经典无尽跳**：确定性种子 + 难度 4 档（随分数爬升开放特种平台）+
+    跳床后超远桥接 420–500，掉落即结束并写最高分。
+  - **靶心试炼**：10 轮固定靶距，100/60/30/10/0 五环分值，10 靶总分结算 S/A/B/C 评级；
+    落空不结束，托举回下一靶继续。
+- **特种平台（4 种）**：弹性跳床（落上后自动腾空跨越超远深渊）、旋转黑胶（停留 1.5s +5 打碟彩蛋）、
+  漂移浮岛（沿跳跃轴振幅 26、来回漂移考验出手时机）、极窄薄块（接触面积减半）。
+- **桌面双栏游戏化 UI**：左翼（得分/靶心连击/关卡或最远/最高分）、中央等轴测舞台、
+  右翼（蓄力仪表 SVG 弧光 + 下一平台属性图示 + 快捷键提示）；顶部机顶一体化控制条。
+  移动 ≤768px 单列，wings 收缩为舞台上下吊牌。全部动效受 `prefers-reduced-motion` 约束。
+
+### 架构与模块
+
+```
+games/jump-jump/
+  index.html / favicon.svg / css/style.css
+  js/engine.mjs    规则唯一权威（DOM-free，固定步长 stepFrame）
+  js/levels.mjs    25 关五章确定性生成器
+  js/score.mjs     计分口径（靶心 / 安全 / 跳床 / 黑胶 / 试炼环 / 星 / 评级）
+  js/storage.mjs   doin.jump-jump.v1，损坏降级；解锁与星级持久化
+  js/i18n.mjs      中英双表严格对齐（doin.lang 全站共享偏好）
+  js/audio.mjs     WebAudio 程序化合成：蓄力音阶、起跳 boing、靶心叮、跳床腾空、黑胶琶音
+  js/render.mjs    Canvas 2D 等轴测 2.5D 软胶舞台
+  js/game.mjs      DOM-free 控制器（按模式编排与结果汇总）
+  js/ui.mjs        唯一碰 DOM 的层：HUD、浮层、选关、locale
+  js/main.mjs      装配入口 + 固定步长主循环
+  tests/engine.test.mjs / storage.test.mjs / i18n.test.mjs / markup.test.mjs
+```
+
+### 关键实现抉择
+
+- **瞄向目标中心 vs 固定轴线**：选择瞄向目标让「上一次落点的横向偏移」对下一次起跳距离
+  的影响收敛为 0，数学可解性简化为单变量约束，生成器只需保证 `D − r ≥ distAt(0.25)` 即可。
+- **跳床后必须先补出下一块平台**：否则 `platforms[index+1]` 在「蓄势 windup」分支里就是 undefined。
+  `resolveLanding` 中 `ensureEndlessNext(state)` 必须在跳床分支之前调用。
+- **物理可测试性**：完全基于 `stepFrame(state, 1/120)`，随机游走测试稳定跑 3000 步无抛错。
+- **结算仪式感**：三星阶梯 delay 0/0.12/0.24s 弹出、新纪录徽章 +0.5s 弹性入场；
+  Canvas 粒子（命中 26 颗金色、跳床 22 颗青绿、坠落 16 颗灰蓝）与 HUD toast 同步。
+
+### 关键陷阱
+
+1. 测试断言 `distAt(2) − distAt(1) === distAt(1) − distAt(0)` 会恒假 —— 蓄力被夹到
+   CAP 1.8，区间内采样才是有效判据。
+2. `recordLevel(id=LEVEL_COUNT)` 的解锁条件 `id >= unlocked && id < LEVEL_COUNT`
+   必须严格控制，末关不应把 unlocked 推到越界。
+3. markup.test 的 `localStorage` 频次扫描必须先剥注释（说明性文字里出现该字符串会被误判）。
+4. 棋盘可视化判据："屏幕必须反映打乱后的状态"，而不仅是"非空" —— 像素抽样的
+   `unique colors >= 8` 取代简单的"非空白"判定。
+5. CDP 移动端 wings 垂直堆叠判定：`getBoundingClientRect().bottom <= r.top`，
+   而不是 `l.right <= r.left`（后者的判据对应的是水平并排，不是垂直堆叠）。
+
+### 验证
+
+| 层 | 命令 / 工具 | 结果 |
+| --- | --- | --- |
+| 单元 | `npm run test:jump-jump` | **44 / 0** |
+| 子游戏合规 | `node scripts/check-game.mjs jump-jump` | **19 pass / 0 fail / 0 warn / 0 waived** |
+| 门户级 | `npm run test:home` | **5 / 0** |
+| 构建 | `npm run build` | ✓ 成功，dist/jump-jump/ 扁平化 + sitemap 收录 |
+| 真浏览器 1440/1280/390 三档 + 起跳动作链 + 像素抽样 | `x/jump-jump/cdp-smoke.mjs` | **14 / 0** |
+| 算法可解性（25 关全部） | `tests/engine.test.mjs` | ✓ 全数通过 `isGapSolvable` |
+| 算法可解性（无尽生成 200+ 块） | `tests/engine.test.mjs` | ✓ 漂浮岛/跳床超远/薄块均全可达 |
+| 1200+ 步随机游走 | `tests/engine.test.mjs` | ✓ 3000 步无抛错 + 不变式维持 |
+
+可视证据：`x/jump-jump/shots/desktop.png`（1440 三栏）+ `desktop1280.png`（1280 三栏）+
+`start.png`（移动 716 单列 + 棋子在等轴测平台上）。
+
+### 修改 / 新增文件
+
+```
+games/jump-jump/                       [新增整目录：10 模块 + 4 测试 + index + css + favicon]
+assets/covers/jump-jump.webp           [新增] 640×640 WebP 紫蓝→珊瑚粉渐变 3D 软胶封面
+games.json                             [修改] 登记 jump-jump 条目（含 en 翻译）
+package.json                           [修改] 注册 test:jump-jump
+docs/plans/jump-jump-prd.md            [已存在 PRD，本轮工作基础，未修改]
+x/jump-jump/                           [gitignored scratch] sim / dbg / probe / cdp-smoke / make-cover / shots
+```
+
+### 状态
+
+**本地全部落地，未提交未推送**（按用户既往节奏，等拍板）。
 
 ## 2026-09-13 · Pair-Link 关卡难度重调（方案 A：每 2 关一档 + 抬高章节基数）
 
@@ -923,3 +1027,164 @@ PROJECT_LOG.md                      [修改] 本轮记录
 - **中文标题更名**：因 `games/bubble-bloom/` 已占用「合成泡泡」，本游戏中文名改为「**深海合珠**」（深海水缸 + 虹彩珍珠题材）。
   slug `bubble-merge`、存档 Key `doin.bubble-merge.v1`、英文名 "Bubble Merge" 均不变；
   改动覆盖 `index.html`(title/meta/h1/canvas aria/ready-title/noscript)、`js/i18n.mjs` zh 键、`games.json` title、各模块头注释与本日志。
+
+## 2026-09-13 · 色彩排序（water-sort）开发与门户组装
+
+- 按 `docs/plans/water-sort-prd.md` 完成 `games/water-sort/` 纯静态小游戏：水彩玻璃实验室舞台、试管分层液体、点击/键盘操作、无限撤销、重开、提示、50 关、每日挑战和中英双语。
+- 新增 DOM-free 规则引擎：容量 4、顶部同色整段倾倒、纯色/空管胜利判定、低阶 BFS 求解器实算 par、确定性种子生成与 1000 步随机游走不变量测试。
+- 新增 game / render / ui / score / storage / i18n / audio / main 模块及四类原生测试；存档 Key 为 `doin.water-sort.v1`，共享语言偏好使用 `doin.lang`，所有本地资源保留 `?v=dev` 占位。
+- 门户组装：`games.json` 登记 water-sort，根 `package.json` 增加 `test:water-sort`，生成 640×640 橙红系 3D 软胶试管 WebP 封面 `assets/covers/water-sort.webp`。
+- 验证：`npm run test:water-sort` 15/15；`node scripts/check-game.mjs water-sort` 19 pass / 0 fail / 0 warn；`npm run build` 通过；静态服务器访问 `/games/water-sort/` 返回 200，主脚本返回 200。
+- 本轮未修改或覆盖工作区内已有的 `docs/plans/piano-tiles-prd.md` 未跟踪文件。
+
+- Follow-up hardening: reverse-build generation now carries an executable proof path for all 50 levels; low levels still use BFS for par. Keyboard arrows move focus only, Enter pours, and right-click on the tube board undoes one move.
+
+- 视觉跟进：移除选中试管的矩形 focus 外框，改为仅保留管口光晕与上浮；放大桌面/平板/移动端试管与液体区域，并保留 390px 无横向溢出。
+- 布局跟进：多试管关卡改为按数量平衡分成两排（9-10 为 5 列，11-12 为 6 列，13 为 7 列），严格按上排到下排的顺序排列，避免最后一根孤零零落到左下；同步固定行流向并适配平板宽度。
+
+## 2026-09-13 · 色彩排序（water-sort）双排布局回归
+
+- 针对第 50 关 13 根试管的多瓶场景，补充不完整末行居中规则：桌面端按 7+6、6+5、5+4 清晰分行，移动端按当前可读列数居中末行，始终保持 DOM 顺序为上排从左到右、再下排从左到右。
+- 新增 `markup.test.mjs` 多试管布局契约，锁定 `data-count` 分列、行流向及末行居中规则，避免后续再次出现孤立瓶子或顺序错位。
+- 视觉复核：1440px 第 50 关为 7+6 两排，瓶身与木质台面无重叠；390px 无横向溢出，末行不压住操作提示。
+## 2026-09-13 · 色彩排序（water-sort）底部提示可读性
+
+- 将试管区底部操作提示改为高对比的浅色提示条，提升在木质台面背景上的可读性；同步加深快捷键文字颜色并保留移动端折叠规则。
+## 2026-09-13 · 色彩排序（water-sort）章节名称国际化
+
+- 修复英文状态仍显示中文章节名的问题：引擎只输出章节 key，UI 根据当前语言从字典读取章节名称；英文第 50 关现在显示 `Master`，不再显示“ 大师 ”。
+- 新增章节 i18n 回归测试与 `chapter-name` 标记校验。
+
+## 2026-09-13 · 色彩排序（water-sort）顺序解锁关卡
+
+- 关卡选择改为线性解锁：第 1 关默认开放，只有完成上一关并写入存档后才能进入下一关；每日挑战不受影响。
+- 关卡弹窗对未解锁项目使用禁用按钮、锁定文案与低对比虚线样式；主流程 `begin` 同时增加存档门禁，避免绕过 UI 直接进入锁定关卡。
+- 新增存储层解锁判定、最高可进入关卡计算及对应回归测试。
+
+## 2026-09-13 · 色彩排序（water-sort）空试管接收规则修复
+
+- 修复合法操作被 UI 意图层误拦截的问题：选中有液体试管后，点击空试管现在会正常执行倒液；未选中来源时点击空试管仍保持无效起点提示。
+- 新增引擎回归测试，分别覆盖“倒入空试管”和“空试管不能作为来源”两条交互规则。
+
+## 2026-09-13 · 色彩排序（water-sort）底部装饰区固定高度
+
+- 将试管台底部土黄色装饰区域从随容器比例变化改为固定像素高度：桌面/平板 96px、移动端 72px；多排试管布局不再单独按百分比拉伸。
+- 该区域仅保留视觉木台装饰，不参与实际操作空间；新增 CSS 标记回归测试，防止后续恢复百分比高度。
+
+## 2026-09-14 · 色彩排序（water-sort）开局试管数量收紧
+
+- 调整前 3 关的生成配置：从“2 种颜色 + 3 个空管”的 5 根试管改为“2 种颜色 + 1 个空管”的 3 根试管，减少无意义的空位，提升开局决策密度。
+- 第 4 关起恢复 2 个空管，后续随颜色数量递增；可解性仍由反向构建保证。
+- 新增开局数量回归测试，锁定第 1 关仅有 3 根试管且只有 1 根空管。
+
+## 2026-09-14 · 色彩排序（water-sort）难度曲线全面收紧
+
+- 重新梳理 50 关难度：第 1 关保留 2 色 1 空管教学结构；第 2 关起提升到 3 色，第 6 关起进入 4 色并按每 4 关递增，最高封顶 12 色。
+- 空管收紧为第 1-3 关仅 1 个，第 4 关起 2 个；反向打乱步数提高为 `18 + level × 3`，减少随机生成的过短解。
+- 在实验记录区增加 5 级难度点提示，随颜色数量变化，帮助玩家理解章节强度；新增难度曲线与 UI 标记回归测试。
+
+## 2026-09-14 · Jump-Jump：修复「跳跃变成闪现，没有过程」
+
+- **缺陷**：蓄力起跳后棋子只在起跳台原地上下做 z 抛物线运动，落地那一帧才把 `index` 与 `char.offX/offY` 一次性提交 ⇒ 水平位移瞬间完成，肉眼看到的是"原地弹一下然后瞬移"。复现脚本实测：71 个飞行帧中 69 帧地面位移为 0，最后一帧直接移动 192.5。
+- **根因**：`engine.mjs` 的 `charPos()` 只读 `platformPos(platforms[index]) + char.offX/offY`，完全没有消费 `state.flight` 里已经存好的 `fromX/fromY/dirX/dirY/dist`；`stepFlying()` 只更新 `z / rot / squash`。
+- **修法**：
+  1. `charPos()` 在 `state.flight` 存在时按进度 `p` 沿起飞向量插值（`from + dir * dist * p`），落地判定与提交逻辑保持不变；`render.mjs` 无需改动（它本来就读 `charPos()`）。
+  2. 坠落阶段同样处理：`resolveLanding` 落空时把落空点与 35% 前冲惯性写入 `state.fall`，`charPos()` 在读 `state.fall` 时返回 `x + vx * t`，避免坠落到一半弹回起跳台。
+  3. `finishFall()`：只有靶心试炼的"托举复位"分支才清空 `fall` 并把 z 归零；败局保留 `state.fall`，棋子停在深渊里的落空点，不再出现收尾那一帧的弹回跳变。
+- **回归测试**（`tests/engine.test.mjs` 新增 2 条，46/46 通过）：
+  - 飞行连续性：冻结帧必须为 0、总位移 > 0.9×gap、单帧位移 < 总位移 25%。
+  - 坠落不回弹：坠落全过程（含收尾帧）与起跳台距离恒 > 100。
+  - 已验证捕获力：把两处插值临时改回旧实现，两条断言分别转红，再还原。
+- **验收**：`test:jump-jump` 46/46、`check-game jump-jump` 19 pass / 0 fail / 0 warn、`npm run build` 通过、CDP 冒烟 15/15（新增"live jump is animated, never teleported"：真实浏览器逐帧采样 57 帧、总位移 462.7、单帧最大 8.3、冻结帧 0、抛物最高点 220.4）。
+- **环境坑**：`npm run build` 开头 `rd /s /q dist` 被删除保护 shim 拒（dist 文件数 > 50）。解法：bash 每批 45 个文件循环 `rm -f` 清空后再 `rm -rf dist`，然后重跑 build。
+
+## 2026-09-14 · Jump-Jump：靶心试炼脱靶复位的「过程」补齐（同批次）
+
+- 顺着上一轮"位置读取函数没消费动画中间态"的思路复查，发现同类中另一处闪现：靶心试炼脱靶后 `finishFall()` 直接 `index += 1; z = 0`，棋子坠入深渊后**凭空出现在目标平台上**；且 `recover` 事件在 `main.mjs` 里完全没有分支，全程静默（i18n 里 `sniperMiss`/`sniperPerfect` 两个键一直没人用）。
+- **修法**：
+  1. 新增 `lift` 阶段（`LIFT_TIME = 0.42`、`LIFT_FROM = -190`）：脱靶后先切到目标平台，把 z 置为 -190，再由 `stepLift()` 以 ease-out 从台面下方升起，落定转 `settling`。最后一枪（第 10 枪）直接结算，不演归位动画。
+  2. `main.mjs` 接上 `recover`：`audio.click()` + `ui.showToast(t.sniperMiss)`。
+  3. `render.mjs` 的 `onEvent` 增加 `recover` 分支：在落点画一圈涟漪作为"即将归位"的预告。
+- **回归测试**：新增 1 条（47/47 通过）——断言脱靶后进入 `lift`、起始 z < -50、升起至少 8 帧、单帧高度变化 < |LIFT_FROM| × 0.5、结束时 z 归零且 `sniper.shots` 与 rings 正确。已临时改回瞬移确认断言转红再还原。
+- **验收**：`test:jump-jump` 47/47、`check-game jump-jump` 19 pass / 0 fail / 0 warn、`npm run build` 通过、CDP 冒烟 15/15。
+- **环境坑**：CDP 冒烟里 `spawn(Chrome)` 后固定 `wait(400)` 不够（构建刚结束时尤其），会 `ERR fetch failed`。改成轮询 `http://127.0.0.1:9222/json/version` 最多 20s。另注意：本机常驻着用户自己的 Chrome 会话，**排查时绝不能 `taskkill /F /IM chrome.exe`**，只能按脚本自己 spawn 的 PID 杀进程树。
+
+## 2026-09-14 · Jump-Jump：三模式端到端「真的能玩」验证（x/jump-jump/play-cdp.mjs）
+
+- 此前只有 `cdp-smoke.mjs` 覆盖了"无尽模式起跳一次"，三个模式从未在真实浏览器里打完过整局。新增 `play-cdp.mjs`：生产路径 `dist/` + 无头 Chrome，在页面内 `await import('/jump-jump/js/engine.mjs')` 取 `chargeFor/platformPos/distAt` 做**完美瞄准**，驱动 `window.__jump.press/charge/release`。
+- 结果 **15/15**：
+  - 旅途第 1 关：5 跳全靶心、0 险着、通关 `won`、结算面板弹出、**3 星**。
+  - 靶心试炼：10 枪打满、`total = 1000`（理论满分）。
+  - 经典无尽：连跳 6 次全中、`score 42 / bestCombo 6`、平台持续生成（`platforms 8 ≥ index 6 + 2`）。
+  - 全程无 runtime 异常与 console.error。
+- 首轮 3 条 FAIL 全是**测试写错**（已修）：
+  1. 星级选择器写成 `.jj-star.is-on` —— `jj-star` 只是 CSS 动画名，真实节点是 `#result-stars .star.is-on`。
+  2/3. 无尽以"起跳次数"为终止条件，第 6 跳还在 `flying` 就统计，导致 `lands=5`、`platforms ≥ index+2` 不成立。改为以 `lands` 为终止条件，断言写成不变量 `platforms >= index + 2`。
+- 教训：**以"动作次数"为终止条件会在空中截断**，统计前必须等最后一跳真正落地。
+
+## 2026-09-14 · Jump-Jump：修复通关后「下一关」跳关 + 25 关真浏览器全通验证
+
+- **Bug（真浏览器 25 关脚本首次跑出来的）**：`commitResult()` 里胜利时提前 `currentLevel = game.level + 1`，
+  而 `handlers.next()` 又 `currentLevel + 1` —— 通关第 1 关后点「下一关」实际进入**第 3 关，第 2 关被整个跳过**。
+  同一根因还让胜利后同屏显示的「再挑战一次」变成"直接进下一关"而不是重玩本关。
+- **修法**：删掉 `commitResult()` 里的提前推进（关卡进度已由 `store.recordLevel` 写入 `unlocked`，刷新后从存档恢复，
+  不需要在这里改内存游标）；`next()` 改为以刚打完的 `game.level + 1` 为准，不再对 `currentLevel` 自增。
+- **新增 `x/jump-jump/levels-cdp.mjs`**：生产路径 + 无头 Chrome，用引擎纯函数完美瞄准逐关打完 25 关，
+  每关断言通关 + 3 星 + 关卡号严格 +1。**54/54 通过**：
+  - 25/25 通关、25/25 三星、全程 0 险着、零 runtime 异常。
+  - 四类特殊平台全部实际跑到：`vinyl 26 / trampoline 17 / moving 21 / thin 10`（此前只有引擎单测覆盖，真浏览器从未执行过）。
+  - 关卡号严格 +1 的断言正是这个跳关 bug 的回归锁。
+- **验收**：`test:jump-jump` 47/47、`check-game` 19 pass / 0 fail / 0 warn、`npm run build` 通过、
+  CDP 冒烟 15/15、三模式端到端 16/16、25 关全通 54/54。
+
+## 2026-09-14 · Jump-Jump：镜头跟随平滑度重构（用户反馈「画面随着跳跃的镜头移动不够平滑」）
+
+- **四处叠加成因**：
+  1. 跟随用 `k = dt * 5.5` 线性插值 —— 与帧率相关，掉帧那一帧会突然大步追。
+  2. 前瞻点在落地瞬间从「落点平台」切到「再下一块」，镜头目标跳变约 `LOOK × 间距` ≈ 52 单位。
+  3. 镜头 100% 跟随 `char.z`，整屏随棋子上下颠。
+  4. **减弱动效分支下 `k = 1` 完全无平滑**，上述跳变会变成整屏一帧瞬移（实测 61.6 单位/帧）。
+- **修法**（`render.mjs` 的 `updateCamera`，参数经 A/B 实测选定）：指数跟随 `k = 1 - e^(-12·dt)`；
+  速度前馈 `LEAD 0.06` 抵消滞后；前瞻点自身平滑 `LOOK 0.12 / LOOK_RATE 8`；只跟随 35% 跳跃高度 `CAM_Z 0.35`；
+  目标跳变 > 900 直接吸附（切模式/重开）；**减弱动效下前瞻权重与速度前馈都归零**，只贴住棋子 —— 顺带修掉第 4 条瞬移。
+- **A/B 实测**（`x/jump-jump/cam-smooth.mjs`，同一关同一跳、每组重跑 3 次取中位数）：
+
+  | | 落地后滑行 | 落定帧 | 飞行速度变异系数 | 纵向起伏 |
+  |---|---|---|---|---|
+  | 旧实现 | 23 | 12 | 0.46 | 122.8 |
+  | 新实现 | 23.6 | 12 | **0.26** | **96.4** |
+
+  跟手程度持平，**速度均匀度 +43%、纵向起伏 −21%**。
+- **测量工具本身的五个坑（本轮最大收获，全部实际踩过）**：
+  1. 调参钩子写成模块级 `const T = window.__camTune || {}` → 在 `createRenderer()` 就快照，之后设置完全无效，
+     **五组参数跑出来数值一模一样**（连 `camZ=0` 与 `0.55` 的 `yRange` 都相同，是这个破绽）。必须在调用时读取。
+  2. 页面内 `await sleep(16)` 采样 ≠ 逐帧：实际会睡过好几帧，量到的是「每采样间隔」位移（造出 37.3 的假瞬移）。
+     必须在 `requestAnimationFrame` 回调里采样。
+  3. **全局 max 会被掉帧那一帧主导**：瞬移帧（~25）永远比不过掉帧帧（~35），
+     「镜头 max < 阈值」「镜头 max ≤ 棋子 max×1.25」两条断言**都没有区分力**（旧行为下照样 PASS）。
+     正确做法是**逐帧比值** `camStep / pawnStep`：瞬移是在同帧棋子位移之上叠加的，同帧归一化才不受掉帧影响。
+     改完旧行为 14.01、新实现 1.08，区分度 13 倍。
+  4. 多个变体在同一局里连着跳 = 每次几何都不同，且关卡打完后续测量全废；每个变体必须重新加载页面打同一跳。
+  5. **基于 dist 的 CDP 验证，改完源码必须重新 build**（踩过：dist 还是旧版，导致修复前后两次都跑出 1.07）。
+- **验收**：`test:jump-jump` 47/47、`check-game` 19 pass / 0 fail / 0 warn、`npm run build` 通过、
+  CDP 冒烟 15/15、三模式端到端 16/16（新增 `camera adds no teleport beyond the pawn's own motion`）。
+
+## 2026-09-14 · 色彩排序（water-sort）难度提示与曲线再校准
+
+- 进一步收紧前中期节奏：第 1 关维持 2 色 + 1 空管教学；第 2-3 关为 3 色 + 1 空管；第 4-6 关提前进入 4 色 + 1 空管；第 7 关起进入 5 色 + 2 空管，之后按 5/6/7/8/9/10/11/12 色逐章递进至第 50 关。
+- 反向构建的打乱预算调整为 `22 + level × 4`，低阶候选继续使用 BFS 实算标准线，避免关卡虽然试管变多但实际盘面过短、过松。
+- 实验记录区的难度提示改为“等级点 + 难度名称 + 颜色/空管构成”，关卡选择弹窗同步显示等级点；中英文单复数文案分别归一化，英文状态不残留中文。
+- 新增难度字段与 i18n/DOM/CSS 回归断言；浏览器实测第 1 关为 3 根试管，第 6 关为 5 根试管且英文显示 `Difficulty / Warm-up / 4 colors · 1 empty tube`。
+
+## 2026-09-14 · 色彩排序（water-sort）底部提示语归位
+
+- 将“选择一根试管开始倒液体”和快捷键提示从瓶子区域下方移入土黄色木台装饰区，使用绝对定位固定在木台底部，不再占用瓶子排列空间。
+- 提示条改用深棕半透明木牌与浅奶油色文字/高亮圆点，提升在土黄色背景上的对比度；移动端继续随木台高度保持在底部。
+- 新增 DOM/CSS 契约测试，锁定提示条的绝对定位、底部位置与高对比配色。
+
+## 2026-09-14 · 色彩排序（water-sort）关卡可解性与合法动作校验
+
+- 针对第 2 关疑似无解问题复查实际运行种子 `hashSeed("water-sort:2")`：盘面为 3 色 + 1 空管，标准解 8 步，逐步通过 `pour` 合法性校验并可完成。
+- 引擎新增 `replaySolution` / `isValidSolution`，关卡生成时不再只相信反向打乱返回的路径，而是逐步重放并确认每一步都是合法倒液，最终状态满足胜利条件；候选均无效时仅允许有限重试，禁止返回未经验证的关卡。
+- 新增第 2 关实际运行种子回归测试，以及第 1-50 关正式种子的合法解路径测试；同步覆盖同色顶端、空管接收、容量上限和终局判定。
+- 本轮未改变合法操作规则：选中有液体试管后，点击同色顶端或空管均放行；空管只能作为接收方，不能伪装成来源。

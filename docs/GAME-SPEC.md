@@ -98,9 +98,19 @@ games/<slug>/
    - 横屏/宽屏类核心：主舞台居中，两侧翅膀对称分布徽章与得分，整体包裹在协调的主题光晕与场景中。
 4. **游戏化实体控件质感**：按钮具备实体微浮雕与按下物理下沉位移（`translateY(2px)`），数字跳动附带弹性冲击动画（bump），通关具备星级点亮或粒子爆发的仪式感。
 
+## 3.3 · 移动端触控与防误触规范（硬性红线）
+
+1. **严禁划屏拖动整个网页**：
+   - 核心操作画布或棋盘区域**必须声明 `touch-action: none;`**，明确拦截浏览器默认滚动；
+   - 游戏页面容器设置 `overscroll-behavior: none;`，彻底禁用浏览器的下拉刷新与橡皮筋弹跳。
+2. **专属移动端控制器（避免盲目全屏滑）**：
+   - 方向/高频操作类游戏（如贪吃蛇、俄罗斯方块、推箱子）：在移动端（≤768px）视口下方必须配备舒展的**实体触控按钮台（十字方向键、旋转键、硬降键，高度≥44px）**，避免手指滑屏遮挡视线或连续转向失败；
+   - 滑动手势游戏（如 2048、滑块）：必须设置最小划动阈值（如 ≥30px），并在下方提供小方向键作为点按兜底；
+   - 点选类游戏（如连连看、水排序）：触控热区必须 ≥ 44×44px，支持“点击即选、再点即放”，严禁长按或微小目标误触。
+
 ## 4 · 骨架照抄
 
-`index.html` 最小骨架：
+`index.html` 推荐结构骨架（杜绝四角散落，一体化舞台收纳）：
 
 ```html
 <!DOCTYPE html>
@@ -114,8 +124,23 @@ games/<slug>/
   <link rel="stylesheet" href="css/style.css?v=dev">
 </head>
 <body>
-  <nav class="back"><a href="/" id="back-home">返回首页</a></nav>
-  <!-- 游戏标记 -->
+  <div id="game-app">
+    <!-- 顶边一体化紧凑控制栏（拒绝四角散落） -->
+    <header id="stage-bar">
+      <a href="/" id="back-home" class="bar-btn">← 门户</a>
+      <h1 id="stage-title">游戏名</h1>
+      <div class="stage-actions">
+        <button id="btn-sound" class="bar-btn" aria-label="音效">🔊</button>
+        <button id="btn-lang" class="bar-btn" aria-label="语言">EN</button>
+        <button id="btn-help" class="bar-btn" aria-label="玩法说明">?</button>
+      </div>
+    </header>
+
+    <!-- 游戏机台/主舞台核心 -->
+    <main id="stage-core">
+      <!-- 游戏主舞台与专属实体控制台，严禁堆叠 SaaS 卡片集群 -->
+    </main>
+  </div>
   <noscript><p>需要启用 JavaScript 才能游玩。</p></noscript>
   <script type="module" src="js/main.mjs?v=dev"></script>
 </body>

@@ -10,8 +10,8 @@
     "test:home": "node --test tests/home-i18n.test.mjs",
     "test:minesweeper": "node --test games/minesweeper/tests/engine.test.mjs games/minesweeper/tests/game.test.mjs games/minesweeper/tests/solver.test.mjs games/minesweeper/tests/score.test.mjs games/minesweeper/tests/storage.test.mjs games/minesweeper/tests/i18n.test.mjs",
     "test:gold-miner": "node --test games/gold-miner/tests/engine.test.mjs games/gold-miner/tests/score.test.mjs games/gold-miner/tests/storage.test.mjs games/gold-miner/tests/i18n.test.mjs games/gold-miner/tests/markup.test.mjs",
-    "test:tetris-neo": "node --test games/tetris-neo/tests/engine.test.mjs games/tetris-neo/tests/storage.test.mjs games/tetris-neo/tests/i18n.test.mjs games/tetris-neo/tests/markup.test.mjs"
-    ,"test:freecell": "node --test games/freecell/tests/engine.test.mjs games/freecell/tests/storage.test.mjs games/freecell/tests/i18n.test.mjs games/freecell/tests/markup.test.mjs",
+    "test:tetris-neo": "node --test games/tetris-neo/tests/engine.test.mjs games/tetris-neo/tests/storage.test.mjs games/tetris-neo/tests/i18n.test.mjs games/tetris-neo/tests/markup.test.mjs",
+    "test:freecell": "node --test games/freecell/tests/engine.test.mjs games/freecell/tests/storage.test.mjs games/freecell/tests/i18n.test.mjs games/freecell/tests/markup.test.mjs",
     "test:zuma": "node --test games/zuma/tests/engine.test.mjs",
     "test:Gravity-Echoes": "node --test games/Gravity-Echoes/tests/engine.test.mjs games/Gravity-Echoes/tests/storage.test.mjs games/Gravity-Echoes/tests/i18n.test.mjs games/Gravity-Echoes/tests/markup.test.mjs",
     "test:Tile-Matching": "node --test games/Tile-Matching/tests/core.test.mjs games/Tile-Matching/tests/i18n.test.mjs games/Tile-Matching/tests/storage.test.mjs",
@@ -23,6 +23,9 @@
     "test:link-up": "node --test games/link-up/tests/*.test.mjs",
     "test:bubble-bloom": "node --test games/bubble-bloom/tests/engine.test.mjs games/bubble-bloom/tests/storage.test.mjs games/bubble-bloom/tests/i18n.test.mjs games/bubble-bloom/tests/markup.test.mjs",
     "test:bubble-merge": "node --test games/bubble-merge/tests/engine.test.mjs games/bubble-merge/tests/storage.test.mjs games/bubble-merge/tests/i18n.test.mjs games/bubble-merge/tests/markup.test.mjs",
-    "test:cloud-merge": "node --test games/cloud-merge/tests/engine.test.mjs games/cloud-merge/tests/storage.test.mjs games/cloud-merge/tests/i18n.test.mjs games/cloud-merge/tests/markup.test.mjs"
+    "test:cloud-merge": "node --test games/cloud-merge/tests/engine.test.mjs games/cloud-merge/tests/storage.test.mjs games/cloud-merge/tests/i18n.test.mjs games/cloud-merge/tests/markup.test.mjs",
+    "test:water-sort": "node --test games/water-sort/tests/engine.test.mjs games/water-sort/tests/storage.test.mjs games/water-sort/tests/i18n.test.mjs games/water-sort/tests/markup.test.mjs",
+    "test:piano-tiles": "node --test games/piano-tiles/tests/engine.test.mjs games/piano-tiles/tests/storage.test.mjs games/piano-tiles/tests/i18n.test.mjs games/piano-tiles/tests/markup.test.mjs",
+    "test:jump-jump": "node --test games/jump-jump/tests/engine.test.mjs games/jump-jump/tests/storage.test.mjs games/jump-jump/tests/i18n.test.mjs games/jump-jump/tests/markup.test.mjs"
   }
 }

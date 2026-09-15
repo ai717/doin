@@ -338,6 +338,57 @@
         "title": "Cloud Merge",
         "desc": "Drop clouds into the sky to merge matching pairs into higher tiers. Thunderstorms auto-rain to clear crowded space, and collect the ultimate rainbow cloud for sunny celebration scores."
       }
+    },
+    {
+      "title": "色彩排序",
+      "slug": "water-sort",
+      "desc": "把层层彩色液体倒入同色试管，直到每根试管只剩一种颜色。50 关递进、无限撤销、每日挑战与安静治愈的水彩实验室舞台。",
+      "icon": "🧪",
+      "cover": "/assets/covers/water-sort.webp",
+      "tags": [
+        "益智",
+        "排序",
+        "经典"
+      ],
+      "url": "/water-sort/",
+      "en": {
+        "title": "Water Sort",
+        "desc": "Pour layered colors into matching tubes until every tube is pure. 50 levels, unlimited undo, a daily challenge and a calm watercolor lab atmosphere."
+      }
+    },
+    {
+      "title": "别踩白块儿",
+      "slug": "piano-tiles",
+      "desc": "四列黑白琴键从屏幕上方滚落，只准点黑色格，点白或漏黑就掉血。三段容错、速度爬升、键盘 1-4 / D-F-J-K 同支持，挑战你的手速极限！",
+      "icon": "🎹",
+      "cover": "/assets/covers/piano-tiles.webp",
+      "tags": [
+        "街机",
+        "反应",
+        "音乐"
+      ],
+      "url": "/piano-tiles/",
+      "en": {
+        "title": "Piano Tiles",
+        "desc": "Four columns of black and white tiles scroll down. Tap only black tiles, avoid white ones. 3 lives, ramping speed, keyboard 1-4 / D-F-J-K support — test your finger speed!"
+      }
+    },
+    {
+      "title": "跳一跳",
+      "slug": "jump-jump",
+      "desc": "按住蓄力、松手起跳，划出抛物线落向下一座浮岛。正中靶心触发连击暴击，跳床腾空、黑胶打碟、漂移浮岛与极窄薄块轮番登场。旅途关卡 25 关 + 经典无尽跳 + 靶心试炼三模式，进度本机保存。",
+      "icon": "🕹️",
+      "cover": "/assets/covers/jump-jump.webp",
+      "tags": [
+        "街机",
+        "时机",
+        "休闲"
+      ],
+      "url": "/jump-jump/",
+      "en": {
+        "title": "Jump Jump",
+        "desc": "Hold to charge, release to leap along a parabola onto the next floating island. Bullseye the center for escalating combos, and master trampolines, vinyl decks, drifting isles and razor-thin blocks. 25 odyssey stages plus endless and sniper modes, with local progress saved."
+      }
     }
   ]
 }

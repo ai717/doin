@@ -5,6 +5,14 @@
   user-select: none;
   -webkit-touch-callout: none;
 }
+html, body {
+  width: 100%;
+  height: 100%;
+  height: 100dvh;
+  overflow: hidden;
+  overscroll-behavior: none;
+  touch-action: none;
+}
 body {
   background: #0b1120;
   color: #f8fafc;
@@ -13,8 +21,6 @@ body {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  min-height: 100vh;
-  overflow: hidden;
 }
 #game-header {
   width: 800px;

@@ -1,0 +1,5 @@
+// filepath: games/water-sort/tests/storage.test.mjs
+import test from "node:test";import assert from "node:assert/strict";import { defaults,normalize,record,isLevelUnlocked,highestUnlocked } from "../js/storage.mjs";
+test("损坏存档静默回默认并钳制数值",()=>{const d=normalize({sound:"yes",levels:{"1":{bestScore:9999,bestMoves:-2}},daily:{date:"bad"}});assert.equal(d.sound,true);assert.equal(d.levels["1"].bestScore,800);assert.equal(d.levels["1"].bestMoves,0);assert.equal(d.daily.date,null);});
+test("关卡纪录只增不减",()=>{const a=defaults();const r=record(a,{level:2,score:650,moves:12});assert.equal(r.isNewBest,true);const r2=record(r.data,{level:2,score:500,moves:10});assert.equal(r2.isNewBest,false);assert.equal(r2.data.levels["2"].bestScore,650);assert.equal(r2.data.levels["2"].bestMoves,10);});
+test("关卡按完成顺序解锁",()=>{const a=defaults();assert.equal(isLevelUnlocked(a,1),true);assert.equal(isLevelUnlocked(a,2),false);assert.equal(highestUnlocked(a),1);const r=record(a,{level:1,score:600,moves:8});assert.equal(isLevelUnlocked(r.data,2),true);assert.equal(isLevelUnlocked(r.data,3),false);assert.equal(highestUnlocked(r.data),2);});
