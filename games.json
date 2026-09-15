@@ -391,6 +391,23 @@
       }
     },
     {
+      "title": "割绳子",
+      "slug": "cut-the-rope",
+      "desc": "滑动割断悬挂绳索，利用向心重力摆动、浮空气泡与吹气皮囊，收集三星并喂饱呆萌软胶小怪兽！40 关物理谜题包含新手纸箱、浮空气泡、气囊风暴、尖刺迷阵与一刀大师挑战，进度本机保存。",
+      "icon": "🍬",
+      "cover": "/assets/covers/cut-the-rope.webp",
+      "tags": [
+        "益智",
+        "物理",
+        "经典"
+      ],
+      "url": "/cut-the-rope/",
+      "en": {
+        "title": "Cut the Rope",
+        "desc": "Swipe to cut ropes and guide swinging candy through floating bubbles and air gusts to feed hungry little monster Nommy! 40 stages with full 3-star physics puzzles."
+      }
+    },
+    {
       "title": "糖果坠落",
       "slug": "candy-drop",
       "desc": "划断绳索，借重力与摆锤把蜜糖送进小兽糯糯嘴里，顺路捞齐三颗星。5 只糖锡铁盒 × 8 关共 40 关物理谜题，普通绳、弹性绳、气泡、气垫、尖刺与滑轨逐盒解锁，进度本机保存。",

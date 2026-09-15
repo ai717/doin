@@ -1,4 +1,4 @@
-// i18n.mjs: 割绳子全站共享语言偏好 doin.lang（zh/en 键值严格对齐、非空）
+// i18n.mjs: 糖果坠落全站共享语言偏好 doin.lang（zh/en 键值严格对齐、非空）
 
 export const LANG_KEY = "doin.lang";
 export const DEFAULT_LOCALE = "zh";
@@ -6,10 +6,10 @@ export const LOCALES = ["zh", "en"];
 
 const DICT = {
   zh: {
-    docTitle: "割绳子 · DOIN 在线小游戏",
+    docTitle: "糖果坠落 · DOIN 在线小游戏",
     metaDesc:
-      "割绳子：划断绳子，借重力与摆动把糖送进小怪兽糯糯嘴里，顺路捞起三颗星。普通绳、弹性绳、气泡、气垫、尖刺、自动绳与滑动锚轨轮番登场，5 盒共 40 关物理解谜，每关三星可解、绝无死局。",
-    appTitle: "割绳子",
+      "糖果坠落：划断绳子，借重力与摆动把糖送进小怪兽糯糯嘴里，顺路捞起三颗星。普通绳、弹性绳、气泡、气垫、尖刺、自动绳与滑动锚轨轮番登场，5 盒共 40 关物理解谜，每关三星可解、绝无死局。",
+    appTitle: "糖果坠落",
     appSubtitle: "糖锡铁盒街机",
     back: "返回门户",
     sound: "音效开关",
@@ -48,7 +48,7 @@ const DICT = {
     starCount: "{n} / 3 星",
 
     readyKicker: "CANDY DROP",
-    readyTitle: "割绳子",
+    readyTitle: "糖果坠落",
     readyDesc:
       "糖吊在绳上，糯糯在下面张着嘴。在绳子上划一刀，让糖借重力与摆动荡过去 —— 顺路把三颗星都吃掉，再稳稳落进嘴里。切得早一点、晚一点，弧线完全不同。",
     btnStart: "开始投喂",

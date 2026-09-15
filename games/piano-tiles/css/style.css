@@ -52,7 +52,7 @@ html, body {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 12px;
+  padding: 12px clamp(16px, 4vw, 40px) clamp(16px, 3vh, 32px);
   gap: 8px;
   overscroll-behavior: none;
   background:
@@ -435,6 +435,9 @@ html, body {
 
 /* ===== 响应式：窄屏（≤768px）===== */
 @media (max-width: 768px) {
+  #game-app {
+    padding-bottom: clamp(64px, 12vh, 88px);
+  }
   .cabinet-body {
     grid-template-columns: 80px 1fr 80px;
   }

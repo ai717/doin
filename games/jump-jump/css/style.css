@@ -593,7 +593,7 @@ body::after {
 }
 
 @media (max-width: 560px) {
-  #game-app { padding: 8px 8px 12px; gap: 7px; }
+  #game-app { padding: 8px 8px max(72px, calc(12px + env(safe-area-inset-bottom))); gap: 7px; }
   #app-subtitle { display: none; }
   .bar-text { display: none; }
   .bar-btn { padding: 0 9px; }

@@ -27,6 +27,7 @@
     "test:water-sort": "node --test games/water-sort/tests/engine.test.mjs games/water-sort/tests/storage.test.mjs games/water-sort/tests/i18n.test.mjs games/water-sort/tests/markup.test.mjs",
     "test:piano-tiles": "node --test games/piano-tiles/tests/engine.test.mjs games/piano-tiles/tests/storage.test.mjs games/piano-tiles/tests/i18n.test.mjs games/piano-tiles/tests/markup.test.mjs",
     "test:jump-jump": "node --test games/jump-jump/tests/engine.test.mjs games/jump-jump/tests/storage.test.mjs games/jump-jump/tests/i18n.test.mjs games/jump-jump/tests/markup.test.mjs",
+    "test:cut-the-rope": "node --test games/cut-the-rope/tests/*.test.mjs",
     "test:candy-drop": "node --test games/candy-drop/tests/*.test.mjs"
   }
 }

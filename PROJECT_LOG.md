@@ -10,6 +10,10 @@
 ### Current Baseline (2026-09-15)
 
 - **Cut-the-Rope**（新增）：**割绳子**，按 `docs/plans/cut-the-rope-prd.md` 端到端落地：32 关纸盒奇遇主线（4 大主题纸盒：新手纸箱、浮空气泡、气囊风暴、尖刺迷阵）+ 8 关一刀大师残局挑战（共 40 关确定性几何数值关卡）。Verlet 绳索质点链与张力约束、相交利刃划割检测、浮空气泡反重力上浮与戳破、气囊锥形冲量吹风、尖刺陷阱与三星收集判定。绿色软胶萌兽 Nommy 实时眼神注视糖果、靠近张口吞食、咀嚼欢呼与难过抱头动画。Canvas 2D 微缩立体瓦楞纸盒舞台 + DOM 双翼 HUD，WebAudio 程序化合成音效。640×640 3D 软胶 WebP 封面、16 项原生测试用例全绿、check-game 19 pass / 0 fail / 0 warn，已登记并在 package.json 注册。
+- **广告位安全避让区红线与存量游戏布局优化**：
+  - 核心平台规范升级：在 `AGENTS.md` §4.2、`docs/GAME-SPEC.md` §3.4 以及外包规格模板中全面加入硬性红线——桌面端（≥900px）居中收拢舞台，四周（尤其是左右与底部边缘）禁放操作按钮与关键 HUD；移动端（≤768px）底部严禁贴底放置关键操作按钮，必须预留底部安全缓冲间距（至少 `60px ~ 80px` 留白，如 `padding-bottom: max(68px, calc(16px + env(safe-area-inset-bottom)))`），确保后续接入移动端底部横幅广告（Banner）时绝对不遮挡按键。
+  - 明确原则：目前全平台广告总开关处于关闭状态（`ENABLE_ADS=false`），不展示任何广告；但各游戏布局必须提前物理留白到位。
+  - 存量游戏优化完成：优化 `piano-tiles`、`klotski`、`water-sort`、`jump-jump`、`2048` 等在移动端底部悬浮或贴底按钮的外层缓冲，测试与构建全绿。
 - **全局统计与广告标签总开关（支持一键启闭与环境覆盖）**：
   - 在 `scripts/build-site.mjs` 中升级全局标签注入器，支持通过环境变量控制：
     - `ENABLE_ANALYTICS`（默认 `true`，设为 `"false"` 或 `"0"` 则彻底不注入 GA4 脚本）；
@@ -18,9 +22,15 @@
     - `ADSENSE_CLIENT_ID`（AdSense 客户端 ID 变量）。
   - 在 `.github/workflows/deploy.yml` 构建步骤中注入对应 `${{ vars.* }}`，支持直接在 GitHub 仓库后台界面（Settings -> Variables）一键启闭或修改，无需更改代码。
 
+- **门户首页排版升级（面对游戏量扩充的高效浏览体验）**：
+  - **即时搜索（Search Bar）**：顶部新增胶囊形搜索框，支持中英双语标题、拼音、slug、描述与标签实时输入过滤，Esc 快捷清空，内嵌空状态温馨提示；
+  - **品类药丸栏（Category Tabs）**：智能梳理全站标签，提炼 `全部 (All)`、`益智 (Puzzle)`、`休闲 (Casual)`、`消除 (Match)`、`物理合成 (Physics & Merge)`、`街机反应 (Arcade & Action)` 6 大高频主题胶囊导航，支持横向平滑滑动；
+  - **Bento 便当盒重点大卡**：在“全部”分类下将平台力推力作（如《割绳子》、《跳一跳》）自适应以 2×2 焦点大卡渲染，辅以炫彩渐变“精选推荐 (Featured)”与“最新 (NEW)”质感角标；
+  - **现代自适应布局**：大屏上限由 1024px 扩至 1280px，支持 4~6 列自然流式网格，移动端保持 2 列舒适触控卡片；双语 `doin.lang` 严格对齐，`test:home` 与站点构建全绿。
+  - **国际化 SEO 基线升级（解决 Google 搜索默认中文问题）**：静态 HTML 默认标记升级为英文基准（`<html lang="en">`、英文 Title `DOIN · Free Online Mini Games - Play Instantly`、国际化高价值搜索词 Meta Description、`og:locale: en_US`），同时加入 Google 官方 `hreflang`（`x-default` / `en` / `zh-CN`）语言交替声明；中文用户访问时继续由前端 0 延迟秒切中文体验。
 - **门户**：薄荷渐变首页（`index.html` + `css/`），640×640 WebP 封面（3D 风格统一），
-  白色胶囊卡片标签 + hover 放大；品牌行「Doin.win 字标 ←→ 地球语言按钮」+ 二级主标题；
-  中英双语（`doin.lang` 全站共享偏好）。CNAME `doin.win`。共 20 款游戏登记（新增 Cloud-Merge）。
+  白色胶囊卡片标签 + hover 放大；品牌行「Doin.win 字标 ←→ 搜索栏 ←→ 地球语言按钮」+ 二级主标题与游戏计数；
+  中英双语（`doin.lang` 全站共享偏好）。CNAME `doin.win`。共 24 款游戏登记。
 - **Jump-Jump**（新增）：**跳一跳**，按 `docs/plans/jump-jump-prd.md` 三模式（A/A/A 默认）端到端：旅途关卡 25 关五章 + 经典无尽跳 + 靶心试炼。蓄力 — 距离严格线性（合法区间 [0.25s, 1.5s] 满蓄力 1.8s 提供 ~15% 冗余），25 关全部一次通过 isGapSolvable 校验，浮动岛振幅 26、跳床超远桥接 420–500。Canvas 2D 等轴测 2.5D，软胶棋子 Squash & Stretch + 360° 滞空旋转 + 蓄力音阶爬升。桌面 ≥900px 双栏沉浸舞台 + 移动 ≤768px 单列。test:jump-jump 44/44、check-game 19 pass / 0 fail / 0 warn、CDP 14/14 三档视口 + 起跳动作链路 + 真像素抽样。本地未推送。
 - **Cloud-Merge**（新增）：**云朵合成**，晴空治愈天空气象台物理合成：十级云朵轻盈软弹物理链、
   合出 L8 雷暴云自动下雨清场（清开正下方拥挤云朵并奖励积分）、合出 L10 彩虹云可点击收集放晴爆分（+100分腾出空间继续造云）、
@@ -1191,29 +1201,3 @@ PROJECT_LOG.md                      [修改] 本轮记录
 - 引擎新增 `replaySolution` / `isValidSolution`，关卡生成时不再只相信反向打乱返回的路径，而是逐步重放并确认每一步都是合法倒液，最终状态满足胜利条件；候选均无效时仅允许有限重试，禁止返回未经验证的关卡。
 - 新增第 2 关实际运行种子回归测试，以及第 1-50 关正式种子的合法解路径测试；同步覆盖同色顶端、空管接收、容量上限和终局判定。
 - 本轮未改变合法操作规则：选中有液体试管后，点击同色顶端或空管均放行；空管只能作为接收方，不能伪装成来源。
-
-## 2026-09-15 · 糖果坠落（candy-drop）上线：糖锡铁盒街机 × 40 关物理解谜
-
-- **玩法与模式编排**：按策划案 `docs/plans/candy-drop-prd.md` 定为**纯章节制** —— 5 只糖锡铁盒 × 8 关 = 40 关，
-  盒间按上一盒累计 12/24 星解锁，**不做无尽冲分 / 每日随机盘**；评价口径是「通关星级」而非得分，
-  操作台是「吹气 / 戳泡 / 重来 / 选关」四枚实体道具键，不是通用管理键。
-- **物理模型（`js/engine.mjs`，DOM-free）**：糖果是唯一自由质点，Verlet 积分 + 位置约束；
-  绳是「只拉不推」的距离约束（PBD 风格多轮迭代）。弹性绳由「重力下预期拉伸量」反解角频率
-  `ω = sqrt(g / stretch)`，且**每步只在 `iteration === 0` 修正一次**，否则刚度会被迭代次数放大成硬弹簧。
-  固定步长 `FIXED_DT = 1/120` + 纯函数 `stepFrame(state, dt)`，物理可重放、可单测。
-- **无死局保证（`tools/build-levels.mjs` + `tests/levels.test.mjs`）**：40 关全部由生成器产出，
-  坐标上升法调参 + 真实弹道吸附「嘴」与「三星」，固化后**每关重放 plan 断言 `won && starsTaken === 3`**。
-  - 踩坑：第 9 关「弹力初尝」在竖直往返弹道上，「离起点 / 离嘴 / 星间距」三约束互相挤死，只放得下 1 颗星。
-    修法是给星位搜索加**三档松弛**（sep 78/66/56、start 46/36/28、mouth 20/12/6、hazard 16/12/10）逐档重试，
-    重跑后 **40 ok / 0 fail**，再 `--write` 固化到 `js/levels.mjs`。
-- **分层**：engine（纯规则）/ game（DOM-free 控制器）/ render+main（唯一碰 DOM）/ score / storage / i18n / audio
-  八模块齐全；存档 `doin.candy-drop.v1`，语言走全站共享 `localStorage["doin.lang"]`，计分唯一口径
-  `scoreOf(stars, won) = 200 + stars × 100`（上限 500/关）。
-- **美术**：暖蜂蜜黄 + 铁锈红绳 + 深酒红绒布底；桌面 ≥900px 铁盒居中三栏（左翼牌匾 + 中央铁盒 + 右翼牌匾 + 底部操作台），
-  返回/音效/语言/说明全部收纳进顶盖黄铜铭牌，**没有四角浮动按钮、没有右侧卡片堆**；移动端 ≤768px 单列。
-  5 套主题随盒切换，动效受 `prefers-reduced-motion` 约束。
-- **验收**：`test:candy-drop` **70/70**；`check-game candy-drop` **19 pass / 0 fail(T1) / 0 warn**；`npm run build` 通过；
-  基于 dist 的无头 Chrome 冒烟 **13/13**（`x/candy-drop/cdp-smoke.mjs`：真划刀切绳 → 三星进嘴 → 计分 500 →
-  下一关推进 → 移动端单列不溢出 → 零 JS 异常）。
-- **上架登记**：`games.json` 追加条目、`package.json` 注册 `test:candy-drop`、封面 `assets/covers/candy-drop.webp`
-  （640×640 VP8，暖棕古铜软胶糖果 + 陪衬小兽糯糯，零文字）。

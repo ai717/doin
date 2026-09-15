@@ -632,6 +632,9 @@ button:not(:disabled) {
 }
 
 @media (max-width: 639px) {
+  .page {
+    padding-bottom: max(4.5rem, calc(1rem + env(safe-area-inset-bottom)));
+  }
   .lede {
     display: none;
   }
