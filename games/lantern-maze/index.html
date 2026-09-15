@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>灯笼巷 · DOIN 在线小游戏</title>
+    <meta
+      name="description"
+      content="灯笼巷：经典迷宫吞影玩法。纸巷里提一盏灯吞光尘，四只各有脾性的影魅会算你的下一步；吞下日曜珠整条街轰然天亮，轮到你追它们。一夜五更 30 张手作巷，另有破晓冲刺、百鬼夜巷与带五道硬验收的自定义迷宫扎巷坊。"
+    />
+    <meta name="theme-color" content="#0b1026" />
+    <link
+      rel="icon"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%230b1026'/%3E%3Cpath d='M5 15h6l3-3h6l3 3h4v2h-4l-3 3h-6l-3-3H5z' fill='%232b3a72'/%3E%3Ccircle cx='16' cy='16' r='5.4' fill='%23ffcf6b'/%3E%3Cpath d='M16 16l4.4-3.1a5.4 5.4 0 0 1 0 6.2z' fill='%230b1026'/%3E%3Ccircle cx='14.4' cy='12.6' r='1.1' fill='%23fff4d2'/%3E%3C/svg%3E"
+    />
+    <link rel="stylesheet" href="css/style.css?v=dev" />
+  </head>
+  <body data-theme="shed">
+    <noscript>
+      <div class="noscript">本游戏需要启用 JavaScript 才能运行。请开启后刷新页面。</div>
+    </noscript>
+
+    <div class="shed" id="shed">
+      <!-- 门匾：系统控制项全部内嵌在这条横匾里，屏幕四角不挂任何浮钮 -->
+      <header class="eave">
+        <div class="eave-side">
+          <a class="tag" id="back-home" href="/" data-i18n-title="back">
+            <span class="tag-icon" aria-hidden="true">‹</span>
+            <span class="tag-text" data-i18n="back">返回门户</span>
+          </a>
+        </div>
+        <div class="eave-brand">
+          <span class="brand-cn" data-i18n="appTitle">灯笼巷</span>
+          <span class="brand-en" data-i18n="appKicker">LANTERN LANE</span>
+          <span class="brand-now" id="eave-now" aria-live="polite">一夜五更</span>
+        </div>
+        <div class="eave-side eave-side--right">
+          <button class="tag" id="btn-sound" type="button" aria-pressed="false" data-i18n-title="sound">
+            <span class="tag-icon" id="sound-icon" aria-hidden="true">♪</span>
+            <span class="tag-text" id="sound-text" data-i18n="soundOn">音效已开</span>
+          </button>
+          <button class="tag" id="btn-lang" type="button" data-i18n-title="langSwitch">
+            <span class="tag-text" data-i18n="langSwitch">EN</span>
+          </button>
+          <button class="tag" id="btn-help" type="button" data-i18n-title="help">
+            <span class="tag-icon" aria-hidden="true">?</span>
+            <span class="tag-text" data-i18n="help">玩法说明</span>
+          </button>
+        </div>
+      </header>
+
+      <main class="stage" id="stage">
+        <!-- 左翼：更漏 / 三星更签架 / 灯芯条 / 光尘进度 -->
+        <aside class="wing wing--left" aria-label="更漏与灯芯">
+          <div class="plaque plaque--clock" data-group="play">
+            <span class="plaque-kicker" data-i18n="hudTime">更漏</span>
+            <strong class="plaque-big" id="clock-main">0:00</strong>
+            <span class="plaque-sub" id="clock-note">—</span>
+          </div>
+
+          <div class="plaque plaque--tally" data-group="play">
+            <span class="plaque-kicker" data-i18n="hudTally">更签</span>
+            <div class="stick-rack" id="stick-rack">
+              <span class="stick" data-k="clear" data-i18n-title="tallyClear">｜</span>
+              <span class="stick" data-k="noDeath" data-i18n-title="tallyNoDeath">｜</span>
+              <span class="stick" data-k="fast" data-i18n-title="tallyFast">｜</span>
+            </div>
+            <span class="plaque-sub" id="tally-total">0 / 90 枚</span>
+          </div>
+
+          <div class="plaque plaque--wick" data-group="play">
+            <span class="plaque-kicker" data-i18n="hudWick">灯芯</span>
+            <div class="wick-bar"><span class="wick-fill" id="wick-fill"></span></div>
+            <span class="plaque-sub" id="wick-note">26</span>
+            <div class="lamp-row" id="lamp-row" aria-label="余灯"></div>
+          </div>
+
+          <div class="plaque plaque--dust" data-group="play">
+            <span class="plaque-kicker" data-i18n="hudDots">光尘</span>
+            <div class="dust-bar"><span class="dust-fill" id="dust-fill"></span></div>
+            <span class="plaque-sub" id="dust-note">0 / 0</span>
+          </div>
+
+          <!-- 工坊左翼：笔刷架 + 起手纸样 -->
+          <div class="plaque plaque--brush" data-group="work" hidden>
+            <span class="plaque-kicker" data-i18n="workshopTitle">扎巷坊</span>
+            <div class="chip-rack chip-rack--brush" id="brush-rack"></div>
+          </div>
+
+          <div class="plaque plaque--sheet" data-group="work" hidden>
+            <span class="plaque-kicker" data-i18n="toolTemplate">纸样</span>
+            <div class="chip-rack" id="sheet-rack"></div>
+          </div>
+        </aside>
+
+        <!-- 中央：会发光的纸巷 + 纸巷裁铺台 + 棚底窄木操作台 -->
+        <section class="lantern" aria-label="灯笼棚舞台">
+          <div class="lantern-shell" id="shell">
+            <div class="lantern-inner">
+              <canvas
+                id="board"
+                width="532"
+                height="588"
+                role="img"
+                aria-label="夜巷迷宫：光尘铺满巷子，四只影魅在匣中待出，灯灯在巷口"
+                data-i18n-aria="readyTitle"
+              ></canvas>
+
+              <div class="veil" id="veil-ready">
+                <div class="veil-card">
+                  <span class="veil-kicker" data-i18n="readyKicker">一夜五更</span>
+                  <h1 class="veil-title" data-i18n="readyTitle">灯笼巷</h1>
+                  <p class="veil-desc" data-i18n="readyDesc"></p>
+                  <p class="veil-note" data-i18n="tourHead">老更夫的三句话</p>
+                  <ul class="tour" id="tour">
+                    <li data-i18n="tour1"></li>
+                    <li data-i18n="tour2"></li>
+                    <li data-i18n="tour3"></li>
+                  </ul>
+                  <div class="veil-actions">
+                    <button class="knob knob--lit" id="btn-start" type="button" data-i18n="btnStart">上灯开局</button>
+                    <button class="knob" id="btn-modes" type="button" data-i18n="btnModes">选择玩法</button>
+                    <button class="knob knob--ghost" id="btn-levels" type="button" data-i18n="btnLevels">选择更次</button>
+                  </div>
+                </div>
+              </div>
+
+              <div class="veil veil--panel" id="veil-modes" hidden>
+                <div class="veil-card veil-card--wide">
+                  <h2 class="veil-subtitle" data-i18n="btnModes">选择玩法</h2>
+                  <div class="mode-rack" id="mode-rack"></div>
+                  <div class="veil-actions">
+                    <button class="knob knob--ghost" id="btn-close-modes" type="button" data-i18n="btnBackStage">返回灯棚</button>
+                  </div>
+                </div>
+              </div>
+
+              <div class="veil veil--panel" id="veil-levels" hidden>
+                <div class="veil-card veil-card--wide">
+                  <h2 class="veil-subtitle" data-i18n="levelsTitle">选择更次</h2>
+                  <div class="watch-tabs" id="watch-tabs"></div>
+                  <div class="level-grid" id="level-grid"></div>
+                  <p class="veil-note" id="watch-progress"></p>
+                  <p class="veil-note" data-i18n="levelsNote">更签逐关累计。</p>
+                  <div class="veil-actions">
+                    <button class="knob knob--ghost" id="btn-close-levels" type="button" data-i18n="btnBackStage">返回灯棚</button>
+                  </div>
+                </div>
+              </div>
+
+              <div class="veil veil--panel" id="veil-result" hidden>
+                <div class="veil-card">
+                  <span class="veil-badge" id="result-badge" hidden data-i18n="newBest">新纪录</span>
+                  <h2 class="veil-subtitle" id="result-title">此更清透</h2>
+                  <div class="stick-rack stick-rack--big" id="result-sticks">
+                    <span class="stick" data-k="clear">｜</span>
+                    <span class="stick" data-k="noDeath">｜</span>
+                    <span class="stick" data-k="fast">｜</span>
+                  </div>
+                  <dl class="result-stats" id="result-stats"></dl>
+                  <p class="veil-note" id="result-note"></p>
+                  <div class="veil-actions" id="result-actions"></div>
+                </div>
+              </div>
+
+              <div class="veil veil--panel" id="veil-help" hidden>
+                <div class="veil-card veil-card--wide">
+                  <h2 class="veil-subtitle" data-i18n="helpTitle">玩法说明</h2>
+                  <ol class="help-list">
+                    <li data-i18n="help1"></li>
+                    <li data-i18n="help2"></li>
+                    <li data-i18n="help3"></li>
+                    <li data-i18n="help4"></li>
+                    <li data-i18n="help5"></li>
+                    <li data-i18n="help6"></li>
+                    <li data-i18n="help7"></li>
+                  </ol>
+                  <p class="veil-note" data-i18n="tallyHint"></p>
+                  <div class="veil-actions">
+                    <button class="knob knob--lit" id="btn-close-help" type="button" data-i18n="helpClose">我知道了</button>
+                  </div>
+                </div>
+              </div>
+
+              <div class="veil veil--curtain" id="veil-paused" hidden>
+                <div class="veil-card">
+                  <h2 class="veil-subtitle" data-i18n="statusPaused">帘落 · 暂停</h2>
+                  <div class="veil-actions">
+                    <button class="knob knob--lit" id="btn-veil-resume" type="button" data-i18n="btnResume">继续</button>
+                    <button class="knob knob--ghost" id="btn-veil-restart" type="button" data-i18n="btnRetry">再走一遍</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 工坊纸巷裁铺台：与迷宫同一个舞台位，切换显示 -->
+          <div class="bench" id="bench" hidden>
+            <div class="bench-head">
+              <span class="bench-title" data-i18n="workshopTitle">扎巷坊</span>
+              <span class="bench-note" id="bench-note"></span>
+            </div>
+            <div class="bench-body">
+              <canvas id="bench-canvas" width="460" height="510" role="img" aria-label="纸巷裁铺台"></canvas>
+            </div>
+          </div>
+
+          <!-- 棚底窄木操作台：分玩法与工坊两组实体键 -->
+          <div class="console">
+            <div class="console-inner" data-group="play">
+              <span class="console-hint" id="console-hint" data-i18n="handHint">四向滑动走巷</span>
+              <div class="console-keys">
+                <button class="knob knob--brass" id="btn-dash" type="button">
+                  <span class="knob-label" data-i18n="btnDash">提灯</span>
+                  <span class="knob-sub" id="dash-sub">可提灯</span>
+                </button>
+                <button class="knob" id="btn-pause" type="button" data-i18n="btnPause">暂停</button>
+                <button class="knob knob--ghost" id="btn-restart" type="button" data-i18n="btnRetry">再走一遍</button>
+                <button class="knob knob--ghost" id="btn-open-levels" type="button" data-i18n="btnLevels">选择更次</button>
+              </div>
+            </div>
+            <div class="console-inner" data-group="work" hidden>
+              <span class="console-hint" data-i18n="workshopDesc">纸巷裁铺。</span>
+              <div class="console-keys">
+                <button class="knob" id="btn-undo" type="button" data-i18n="toolUndo">撤回</button>
+                <button class="knob" id="btn-redo" type="button" data-i18n="toolRedo">重做</button>
+                <button class="knob" id="btn-mirror" type="button" data-i18n="toolMirror">一键镜像</button>
+                <button class="knob" id="btn-grid" type="button" data-i18n="toolGrid">网格辅助线</button>
+                <button class="knob knob--ghost" id="btn-clear-sheet" type="button" data-i18n="toolClear">清空纸样</button>
+                <button class="knob knob--ghost" id="btn-leave-bench" type="button" data-i18n="btnBackStage">返回灯棚</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- 移动端竹笛摇杆：嵌在棚底，不浮在屏上 -->
+          <nav class="dpad" id="dpad" aria-label="竹笛摇杆" data-i18n-aria="swipePad">
+            <button class="flute flute--up" type="button" data-dir="up" aria-label="↑">▲</button>
+            <button class="flute flute--left" type="button" data-dir="left" aria-label="←">◀</button>
+            <button class="flute flute--down" type="button" data-dir="down" aria-label="↓">▼</button>
+            <button class="flute flute--right" type="button" data-dir="right" aria-label="→">▶</button>
+          </nav>
+        </section>
+
+        <!-- 右翼：灯分 / 影谱牌 / 天亮环 / 提灯与影列 -->
+        <aside class="wing wing--right" aria-label="影谱与天亮">
+          <div class="plaque plaque--score" data-group="play">
+            <span class="plaque-kicker" data-i18n="hudScore">灯分</span>
+            <strong class="plaque-big plaque-num" id="score-main">000000</strong>
+            <span class="plaque-sub" id="score-best">—</span>
+          </div>
+
+          <div class="plaque plaque--ghosts" data-group="play">
+            <span class="plaque-kicker" data-i18n="hudGhosts">影谱</span>
+            <div class="ghost-deck" id="ghost-deck"></div>
+          </div>
+
+          <div class="plaque plaque--day" data-group="play">
+            <span class="plaque-kicker" data-i18n="hudDaylight">天亮</span>
+            <div class="day-ring" id="day-ring"><span class="day-face" id="day-face">—</span></div>
+            <span class="plaque-sub" id="day-note">—</span>
+          </div>
+
+          <div class="plaque plaque--train" data-group="play">
+            <span class="plaque-kicker" data-i18n="hudTrain">影列</span>
+            <strong class="plaque-big" id="train-main">—</strong>
+            <span class="plaque-sub" id="train-note">—</span>
+          </div>
+
+          <!-- 工坊右翼：五道验收 + 巷码 + 擂台簿 -->
+          <div class="plaque plaque--checks" data-group="work" hidden>
+            <span class="plaque-kicker" data-i18n="toolValidate">五道验收</span>
+            <ul class="check-list" id="check-list"></ul>
+            <div class="chip-rack">
+              <button class="knob knob--lit" id="btn-rehearse" type="button" data-i18n="btnRehearse">影子试跑</button>
+            </div>
+          </div>
+
+          <div class="plaque plaque--code" data-group="work" hidden>
+            <span class="plaque-kicker" data-i18n="toolShare">复制巷码</span>
+            <code class="code-box" id="lane-code">—</code>
+            <label class="field">
+              <span class="field-label" data-i18n="toolRename">巷子题名</span>
+              <input class="field-input" id="lane-name" type="text" maxlength="24" autocomplete="off" />
+            </label>
+            <label class="field">
+              <span class="field-label" data-i18n="toolPaste">粘贴巷码</span>
+              <input class="field-input" id="code-input" type="text" spellcheck="false" autocomplete="off" placeholder="LM1-…" />
+            </label>
+            <div class="chip-rack">
+              <button class="knob" id="btn-copy-code" type="button" data-i18n="toolShare">复制巷码</button>
+              <button class="knob" id="btn-load-code" type="button" data-i18n="toolPaste">粘贴巷码</button>
+              <button class="knob knob--lit" id="btn-save-lane" type="button" data-i18n="toolSave">保存入巷</button>
+              <button class="knob knob--lit" id="btn-play-lane" type="button" data-i18n="toolPlay">进这条巷子</button>
+            </div>
+          </div>
+
+          <div class="plaque plaque--lanes" data-group="work" hidden>
+            <span class="plaque-kicker" data-i18n="arenaTitle">擂台簿</span>
+            <p class="plaque-sub" data-i18n="arenaDesc">本机记录。</p>
+            <ul class="lane-list" id="lane-list"></ul>
+          </div>
+        </aside>
+      </main>
+    </div>
+
+    <script type="module" src="js/main.mjs?v=dev"></script>
+  </body>
+</html>
