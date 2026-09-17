@@ -31,6 +31,8 @@
     "test:candy-drop": "node --test games/candy-drop/tests/*.test.mjs",
     "test:road-bash": "node --test games/road-bash/tests/engine.test.mjs games/road-bash/tests/storage.test.mjs games/road-bash/tests/i18n.test.mjs games/road-bash/tests/markup.test.mjs games/road-bash/tests/render.test.mjs",
     "test:deep-devour": "node --test games/deep-devour/tests/engine.test.mjs games/deep-devour/tests/flow.test.mjs games/deep-devour/tests/score.test.mjs games/deep-devour/tests/storage.test.mjs games/deep-devour/tests/i18n.test.mjs games/deep-devour/tests/markup.test.mjs",
-    "test:lantern-maze": "node --test games/lantern-maze/tests/*.test.mjs"
+    "test:lantern-maze": "node --test games/lantern-maze/tests/*.test.mjs",
+    "test:number-klotski": "node --test games/number-klotski/tests/*.test.mjs",
+    "test:pong": "node --test games/pong/tests/*.test.mjs"
   }
 }

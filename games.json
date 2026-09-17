@@ -480,6 +480,41 @@
         "title": "Lantern Maze",
         "desc": "Carry a guttering lantern into the night alleys: swallow light dust to keep the wick alive, hunt sun pearls to turn the tables on the shadow ghouls. 30 lanes across five watches unlock corner cutting, drifting lamps and hunt rhythms, plus a dawn sprint, a haunted parade and a paper-alley workshop where you cut your own maze, watch a shadow runner clear it, then save and share the lane code."
       }
+    },
+    {
+      "title": "数字华容道",
+      "slug": "number-klotski",
+      "desc": "经典数字华容道与15-Puzzle推盘：支持跨格丝滑连推、键盘触控全适配，段位修行、闪电竞速与每日挑战，100%数学可解无死局。",
+      "icon": "🧩",
+      "cover": "/assets/covers/number-klotski.webp",
+      "tags": [
+        "益智",
+        "经典",
+        "数字"
+      ],
+      "url": "/number-klotski/",
+      "en": {
+        "title": "Number Klotski",
+        "desc": "Classic 15-Puzzle sliding numbers: multi-tile train sliding, full keyboard & touch support, mastery ladder, speedrun and daily challenges with 100% mathematical solvability."
+      }
+    },
+    {
+      "title": "街机乒乓",
+      "slug": "pong",
+      "desc": "上下挡板极速对攻：丝滑多段切角与侧削加塞、球速逐拍递增，阶梯AI、同屏双人与极限击墙，重燃1972街机原初快感！",
+      "icon": "🏓",
+      "cover": "/assets/covers/pong.webp",
+      "tags": [
+        "街机",
+        "经典",
+        "对战",
+        "双人"
+      ],
+      "url": "/pong/",
+      "en": {
+        "title": "Pong Neo",
+        "desc": "Top-down arcade table clash: slick angle slicing, spin cuts, escalating rally speed, tiered AI, local 2P and solo wall challenge!"
+      }
     }
   ]
 }

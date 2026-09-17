@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>数字华容道 · DOIN 在线小游戏</title>
+  <meta name="description" content="经典数字华容道与15-Puzzle推盘小游戏，支持整行跨格丝滑连推、键盘触控全适配、段位竞速与每日挑战，100%数学可解无死局。">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="css/style.css?v=dev">
+</head>
+<body>
+  <div id="game-app">
+    <!-- 顶边一体化紧凑控制栏（拒绝四角散落） -->
+    <header id="stage-bar">
+      <div class="bar-brand">
+        <a href="/" id="back-home" class="bar-btn" title="返回门户首页">← 门户</a>
+        <h1 id="stage-title">数字华容道</h1>
+      </div>
+      <div class="stage-actions">
+        <button id="btn-sound" class="bar-btn" aria-label="音效" title="音效开关">🔊</button>
+        <button id="btn-lang" class="bar-btn" aria-label="语言" title="切换语言">EN</button>
+        <button id="btn-help" class="bar-btn" aria-label="玩法说明" title="玩法帮助">?</button>
+      </div>
+    </header>
+
+    <!-- 主机台核心区域（双栏舒展布局） -->
+    <main id="stage-core">
+      <!-- 左翼挂牌：模式与阶位 -->
+      <aside id="left-panel" class="cabinet-wing">
+        <div class="panel-card">
+          <div class="card-header" id="label-modes-title">玩法模式</div>
+          <div class="mode-tabs">
+            <button id="btn-mode-speedrun" class="tab-btn active" data-mode="speedrun">闪电竞速</button>
+            <button id="btn-mode-ladder" class="tab-btn" data-mode="ladder">段位修行</button>
+            <button id="btn-mode-daily" class="tab-btn" data-mode="daily">每日棋谱</button>
+          </div>
+        </div>
+
+        <div class="panel-card" id="card-size-selector">
+          <div class="card-header" id="label-sizes-title">棋盘规格</div>
+          <div class="size-tabs">
+            <button id="btn-size-3" class="tab-btn" data-size="3">3×3 启蒙</button>
+            <button id="btn-size-4" class="tab-btn active" data-size="4">4×4 标杆</button>
+            <button id="btn-size-5" class="tab-btn" data-size="5">5×5 大师</button>
+          </div>
+        </div>
+
+        <div class="panel-card record-card">
+          <div class="card-header" id="label-records-title">最佳纪录</div>
+          <div class="record-row">
+            <span class="record-lbl" id="lbl-best-time">最快用时</span>
+            <span class="record-val" id="val-best-time">--:--.-</span>
+          </div>
+          <div class="record-row">
+            <span class="record-lbl" id="lbl-best-moves">最少步数</span>
+            <span class="record-val" id="val-best-moves">--</span>
+          </div>
+        </div>
+      </aside>
+
+      <!-- 中央主舞台：实木推盘核心 -->
+      <section id="center-stage">
+        <!-- 移动端顶部状态整合条 -->
+        <div id="mobile-hud" class="mobile-only">
+          <div class="mhud-item"><span id="mhud-moves-lbl">步数:</span> <strong id="mhud-moves-val">0</strong></div>
+          <div class="mhud-item"><span id="mhud-time-lbl">用时:</span> <strong id="mhud-time-val">00:00.0</strong></div>
+          <div class="mhud-item"><span id="mhud-tps-lbl">TPS:</span> <strong id="mhud-tps-val">0.0</strong></div>
+        </div>
+
+        <!-- 黑胡桃实木棋盒 -->
+        <div id="wood-casing">
+          <div id="brass-rim">
+            <div id="puzzle-board" class="board-grid size-4" aria-label="数字华容道棋盘">
+              <!-- 由 JS 动态渲染滑块 -->
+            </div>
+          </div>
+        </div>
+
+        <!-- 触控方向键兜底面板 (移动端舒适推入) -->
+        <div id="mobile-dpad" class="mobile-only" aria-label="移动端辅助推盘">
+          <button id="dpad-up" class="dpad-btn" aria-label="向上滑">▲</button>
+          <div class="dpad-mid">
+            <button id="dpad-left" class="dpad-btn" aria-label="向左滑">◀</button>
+            <button id="dpad-down" class="dpad-btn" aria-label="向下滑">▼</button>
+            <button id="dpad-right" class="dpad-btn" aria-label="向右滑">▶</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- 右翼仪器：机械仪表与实体操作键 -->
+      <aside id="right-panel" class="cabinet-wing">
+        <div class="panel-card meter-card">
+          <div class="meter-item">
+            <div class="meter-title" id="meter-title-moves">步数</div>
+            <div class="meter-digit" id="val-moves">0</div>
+          </div>
+          <div class="meter-item">
+            <div class="meter-title" id="meter-title-time">耗时</div>
+            <div class="meter-digit clock-font" id="val-time">00:00.0</div>
+          </div>
+          <div class="meter-item">
+            <div class="meter-title" id="meter-title-tps">推速 (TPS)</div>
+            <div class="meter-digit tps-font" id="val-tps">0.0</div>
+          </div>
+        </div>
+
+        <div class="panel-card actions-card">
+          <button id="btn-undo" class="act-btn brass-btn" title="按 Z 键撤销一步">撤销 (Z)</button>
+          <button id="btn-reset" class="act-btn wood-btn" title="按 R 键重置当局局面">重摆 (R)</button>
+          <button id="btn-new" class="act-btn gold-btn" title="重新随机打乱开局">打乱开局</button>
+        </div>
+      </aside>
+    </main>
+  </div>
+
+  <!-- 胜利结算弹窗 -->
+  <dialog id="modal-win" class="game-modal">
+    <div class="modal-box">
+      <div class="modal-crown">🏆</div>
+      <h2 id="win-title">棋谱告捷！</h2>
+      <p id="win-desc">数字悉数按序归位！用时 00:00.0，共推移 0 步，推速达 0.0 TPS。</p>
+      <div class="win-stars" id="win-stars">★★★</div>
+      <div class="win-rank-row">
+        <span id="win-rank-label">评价等级：</span>
+        <strong id="win-rank-badge" class="rank-badge">大师</strong>
+      </div>
+      <div class="modal-actions">
+        <button id="btn-play-again" class="modal-btn gold-btn">再来一局</button>
+        <button id="btn-next-stage" class="modal-btn brass-btn" style="display: none;">下一关</button>
+      </div>
+    </div>
+  </dialog>
+
+  <!-- 玩法与设置弹窗 -->
+  <dialog id="modal-help" class="game-modal">
+    <div class="modal-box help-box">
+      <h2 id="help-title">数字华容道 · 规则与指引</h2>
+      <div class="help-content">
+        <p id="help-rule-1">【连推手感】点击或划动与空格处于同一行或同一列的任意方块，整段方块将一推齐动，大幅提高解题速度。</p>
+        <p id="help-rule-2">【全通键盘】支持方向键与 WASD 控制邻块滑入空格；按 Z 键随时撤销，按 R 键重置当局局面。</p>
+        <p id="help-rule-3">【胜利目标】将数字按 1 ~ N²-1 由左至右、由上至下依序排列整齐，留右下角为空格即获胜。</p>
+        <p id="help-rule-4">【解题诀窍】逐层归位——先完成第 1 行与第 2 行，攻克最后两行时将边缘角块倒车入库组合就位。</p>
+        <hr class="help-divider">
+        <div class="keymode-setting">
+          <label id="keymode-label" for="select-keymode">键盘操控直觉：</label>
+          <select id="select-keymode">
+            <option value="push-tile" id="opt-keymode-push">推动邻块（按↓上方方块落入空格）</option>
+            <option value="move-blank" id="opt-keymode-blank">移动空格（按↓空格自身向下移动）</option>
+          </select>
+        </div>
+      </div>
+      <div class="modal-actions">
+        <button id="btn-close-help" class="modal-btn brass-btn">知道了</button>
+      </div>
+    </div>
+  </dialog>
+
+  <noscript><p>需要启用 JavaScript 才能游玩。</p></noscript>
+  <script type="module" src="js/main.mjs?v=dev"></script>
+</body>
+</html>
