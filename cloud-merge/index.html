@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-D67E3XTNSS"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-D67E3XTNSS');
+  </script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>云朵合成 · DOIN 在线小游戏</title>
+  <meta name="description" content="云朵合成 Cloud Merge：把云朵丢进天空，同级相碰合体长大，合出雷暴云自动降雨清场，收集终极彩虹云放晴爆分！">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="css/style.css?v=35ad794d8cf9">
+</head>
+<body>
+  <!-- 沉浸式暮光深蓝星幕背景 -->
+  <div class="ambient" aria-hidden="true">
+    <div class="aurora-glow"></div>
+    <div class="star-dust"></div>
+  </div>
+
+  <div class="console-chassis">
+    <!-- 机顶精密状态托盘：一体化内嵌控制栏，视线不分散 -->
+    <header class="console-tray">
+      <a href="/" id="back-home" class="tray-pill back-home" title="返回首页">
+        <svg class="back-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <span id="back-label">返回</span>
+      </a>
+
+      <div class="console-brand">
+        <span class="brand-gem" aria-hidden="true">☁️</span>
+        <h1 class="brand-title" id="title-text">云朵合成</h1>
+        <span class="brand-badge">ARCADE</span>
+      </div>
+
+      <div class="tray-tools">
+        <button type="button" id="sound-btn" class="tray-btn" aria-pressed="true">
+          <span class="tool-ico" id="sound-ico" aria-hidden="true">🔊</span>
+          <span class="tool-label" id="sound-label">音效</span>
+        </button>
+        <button type="button" id="lang-btn" class="tray-btn">
+          <span class="tool-ico" aria-hidden="true">🌐</span>
+          <span class="tool-label" id="lang-label">EN</span>
+        </button>
+        <button type="button" id="help-btn" class="tray-btn">
+          <span class="tool-ico" aria-hidden="true">?</span>
+          <span class="tool-label" id="help-label">说明</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- 机身主舞台：双翼环抱中央高对比晴空视窗 -->
+    <main class="console-main">
+      <!-- 左翼：气象天梯升阶刻度轨 -->
+      <aside class="console-wing console-wing-left" aria-label="云层升阶天梯">
+        <div class="chassis-panel codex-panel">
+          <div class="panel-header">
+            <span class="panel-led" aria-hidden="true"></span>
+            <h2 class="panel-tag" id="codex-title">云层图鉴</h2>
+          </div>
+          <ol class="codex" id="codex" aria-label="十级云朵升阶链"></ol>
+        </div>
+      </aside>
+
+      <!-- 中央主视窗：大屏通透高对比蔚蓝天空容器 -->
+      <section class="console-center" id="stage-container">
+        <canvas id="game-canvas" role="img" aria-label="天空容器"></canvas>
+        <div class="danger-banner" id="danger-banner" aria-hidden="true"></div>
+
+        <!-- 准备开始弹窗 -->
+        <div class="overlay ready" id="ready-modal" role="dialog" aria-modal="true" aria-labelledby="ready-title">
+          <div class="overlay-card">
+            <div class="overlay-kicker" id="ready-kicker">CLOUD MERGE</div>
+            <h2 class="overlay-title" id="ready-title">云朵合成</h2>
+            <p class="overlay-desc" id="ready-desc">把轻飘飘的云朵丢进天空，相同云朵一碰合体长大；合出雷暴云自动下雨清场，合出彩虹云点它收集放晴爆分！</p>
+            <div class="overlay-modes" id="ready-modes">
+              <span class="mode-chip" id="ready-mode-endless">无尽冲分</span>
+              <span class="mode-chip" id="ready-mode-daily">每日挑战</span>
+            </div>
+            <button type="button" class="arcade-btn primary-action" id="ready-start-btn">开始游戏</button>
+          </div>
+        </div>
+
+        <!-- 暂停弹窗 -->
+        <div class="overlay pause" id="pause-modal" role="dialog" aria-modal="true" aria-labelledby="pause-title" hidden>
+          <div class="overlay-card">
+            <h2 class="overlay-title" id="pause-title">已暂停</h2>
+            <p class="overlay-desc" id="pause-desc">点击“继续”回到天空。</p>
+            <button type="button" class="arcade-btn primary-action" id="resume-btn">继续</button>
+          </div>
+        </div>
+
+        <!-- 结算弹窗 -->
+        <div class="overlay result" id="result-modal" role="dialog" aria-modal="true" aria-labelledby="result-title" hidden>
+          <div class="overlay-card">
+            <div class="newbest" id="result-newbest" hidden>🏆 新纪录！</div>
+            <h2 class="overlay-title" id="result-title">天空放晴 · 本局结算</h2>
+            <div class="result-grid">
+              <div class="result-cell"><span class="result-num" id="result-score">0</span><span class="result-cap" id="result-score-cap">最终得分</span></div>
+              <div class="result-cell"><span class="result-num" id="result-level">1</span><span class="result-cap" id="result-level-cap">最高云级</span></div>
+              <div class="result-cell"><span class="result-num" id="result-chain">0</span><span class="result-cap" id="result-chain-cap">最长连锁</span></div>
+              <div class="result-cell"><span class="result-num" id="result-rainbows">0</span><span class="result-cap" id="result-rainbows-cap">收集彩虹数</span></div>
+            </div>
+            <p class="result-best" id="result-best">最高分 0</p>
+            <p class="result-tip" id="result-mode-tip"></p>
+            <button type="button" class="arcade-btn primary-action" id="result-restart-btn">再来一局</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- 右翼：气象测控台（记分板 + 发射仓 + 操作台） -->
+      <aside class="console-wing console-wing-right" aria-label="游戏测控台">
+        <!-- 模式切换实体滑键 -->
+        <div class="mode-tabs" role="tablist" aria-label="选择模式">
+          <button type="button" role="tab" id="mode-endless" class="mode-tab is-active" aria-selected="true">无尽冲分</button>
+          <button type="button" role="tab" id="mode-daily" class="mode-tab" aria-selected="false">每日挑战</button>
+        </div>
+
+        <!-- 气象记分霓虹牌匾 -->
+        <div class="chassis-panel score-panel">
+          <div class="meter-score">
+            <span class="meter-label" id="score-cap">得分</span>
+            <span class="meter-digits" id="hud-score" aria-live="polite">0</span>
+          </div>
+          <div class="meter-grid">
+            <div class="meter-sub">
+              <span class="sub-label" id="chain-cap">最长连锁</span>
+              <span class="sub-val" id="hud-chain" aria-live="polite">0</span>
+            </div>
+            <div class="meter-sub">
+              <span class="sub-label" id="level-cap">最大云级</span>
+              <span class="sub-val" id="hud-level" aria-live="polite">1</span>
+            </div>
+            <div class="meter-sub">
+              <span class="sub-label" id="rainbows-cap">彩虹数</span>
+              <span class="sub-val" id="hud-rainbows" aria-live="polite">0</span>
+            </div>
+          </div>
+          <div class="record-badge" id="hud-best">最高分 0</div>
+        </div>
+
+        <!-- 气象发射透明仓（Launch Pod） -->
+        <div class="chassis-panel launch-panel">
+          <div class="panel-header">
+            <span class="panel-led" aria-hidden="true"></span>
+            <h2 class="panel-tag" id="preview-title">气象发射台</h2>
+          </div>
+          <div class="launch-pod">
+            <div class="pod-cell pod-active">
+              <span class="preview-cloud" id="preview-current" aria-hidden="true"></span>
+              <span class="pod-label" id="preview-current-cap">待丢云朵</span>
+            </div>
+            <div class="pod-pipe" aria-hidden="true">›</div>
+            <div class="pod-cell pod-queue">
+              <span class="preview-cloud is-next" id="preview-next" aria-hidden="true"></span>
+              <span class="pod-label" id="preview-next-cap">下一朵</span>
+            </div>
+          </div>
+          <p class="pod-hint" id="preview-hint">当前 L1 · 下一朵 L1</p>
+        </div>
+
+        <!-- 实体机械按键控制台 -->
+        <div class="chassis-panel action-panel">
+          <button type="button" class="arcade-btn primary-action" id="start-btn">开始游戏</button>
+          <div class="action-grid">
+            <button type="button" class="arcade-btn" id="pause-btn">
+              <span id="pause-label">暂停</span>
+            </button>
+            <button type="button" class="arcade-btn" id="restart-btn">
+              <span id="restart-label">重玩</span>
+            </button>
+          </div>
+          <p class="control-hint" id="control-hint">← → 移动 · 空格释放 · 点击 L10 彩虹云收集</p>
+        </div>
+      </aside>
+    </main>
+  </div>
+
+  <!-- 玩法说明弹窗 -->
+  <div class="overlay help" id="help-modal" role="dialog" aria-modal="true" aria-labelledby="help-title" hidden>
+    <div class="overlay-card help-card">
+      <h2 class="overlay-title" id="help-title">天气小剧场玩法说明</h2>
+      <div class="help-body" id="help-body">
+        <p>1. 移动鼠标或手指拖动瞄准，松手释放当前云朵；键盘方向键微调，空格键释放。</p>
+        <p>2. 两朵同级云碰撞即合体升阶，连续合体触发连锁倍率加成（每次递增 50%）。</p>
+        <p>3. 【核心机制 · 降雨清场】：合成出 L8 雷暴云时，会自动降下暴雨，清开正下方的拥挤云朵，化作水汽消散并奖励积分！</p>
+        <p>4. 【终极仪式 · 收集彩虹】：合成出 L10 彩虹云后，点击它即可收集！放晴金光满天，奖励 100 分并清空空间，可继续培育下一道彩虹。</p>
+        <p>5. 云朵堆叠超过顶部安全虚线会触发变暗预警，持续超线约 2 秒本局结算。</p>
+      </div>
+      <button type="button" class="arcade-btn primary-action" id="help-close-btn">我知道了</button>
+    </div>
+  </div>
+
+  <!-- Toast 通知条 -->
+  <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+
+  <noscript><p class="noscript">需要启用 JavaScript 才能游玩《云朵合成》。</p></noscript>
+
+  <script type="module" src="js/main.mjs?v=35ad794d8cf9"></script>
+</body>
+</html>

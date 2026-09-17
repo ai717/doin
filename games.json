@@ -1,0 +1,520 @@
+{
+  "games": [
+    {
+      "title": "数独",
+      "slug": "sudoku",
+      "desc": "经典 9x9 逻辑填数，从入门到骨灰级的烧脑修行。",
+      "icon": "🔢",
+      "cover": "/assets/covers/sudoku.webp",
+      "tags": [
+        "益智",
+        "经典"
+      ],
+      "url": "/sudoku/",
+      "spa": true,
+      "en": {
+        "title": "Sudoku"
+      }
+    },
+    {
+      "title": "2048",
+      "slug": "2048",
+      "desc": "数字合并益智：滑动方块，相同数字合二为一，目标是合出 2048。键盘、触屏滑动与方向键都能玩，进度本机保存，可离线运行。",
+      "icon": "🧮",
+      "cover": "/assets/covers/2048.webp",
+      "tags": [
+        "益智",
+        "经典",
+        "数字"
+      ],
+      "url": "/2048/",
+      "en": {
+        "title": "2048"
+      }
+    },
+    {
+      "title": "井字棋",
+      "slug": "tic-tac-toe",
+      "desc": "三子连一线。3×3 与 4×4 两种棋盘，轻松 / 普通 / 大师三档 AI，支持连胜爬塔与本地双人对战。",
+      "icon": "⭕",
+      "cover": "/assets/covers/tic-tac-toe.webp",
+      "tags": [
+        "益智",
+        "对战",
+        "经典"
+      ],
+      "url": "/tic-tac-toe/",
+      "en": {
+        "title": "Tic-Tac-Toe"
+      }
+    },
+    {
+      "title": "空当接龙",
+      "slug": "freecell",
+      "desc": "经典空当接龙：利用四个中转空当整理八列牌叠，将全部纸牌按花色收回本位。",
+      "icon": "🃏",
+      "cover": "/assets/covers/freecell.webp",
+      "tags": [
+        "益智",
+        "纸牌",
+        "经典"
+      ],
+      "url": "/freecell/",
+      "en": {
+        "title": "FreeCell",
+        "desc": "Classic FreeCell solitaire: use four open cells to build down in alternating colors and send every card home."
+      }
+    },
+    {
+      "title": "扫雷",
+      "slug": "minesweeper",
+      "desc": "经典扫雷 + 无猜保证：首击安全、全程逻辑可解，死局自动免费透视，永不用运气定胜负。",
+      "icon": "💣",
+      "cover": "/assets/covers/minesweeper.webp",
+      "tags": [
+        "益智",
+        "经典",
+        "无猜"
+      ],
+      "url": "/minesweeper/",
+      "exclude": [
+        "scripts"
+      ],
+      "en": {
+        "title": "Minesweeper"
+      }
+    },
+    {
+      "title": "星轨调度大师",
+      "slug": "orbit-sort",
+      "desc": "调度彩色星体穿过中央星核，在有限中转空间中恢复每一条纯色星轨。",
+      "icon": "🪐",
+      "cover": "/assets/covers/orbit-sort.webp",
+      "tags": [
+        "益智",
+        "排序",
+        "每日挑战"
+      ],
+      "url": "/orbit-sort/",
+      "en": {
+        "title": "Orbit Sort"
+      }
+    },
+    {
+      "title": "黄金矿工",
+      "slug": "gold-miner",
+      "desc": "摆动钢爪抓金块、钻石与神秘袋，60 秒内凑够目标金额；炸药碎石、生力水加速、钻石亮油升值，关卡逐层加深。",
+      "icon": "⛏️",
+      "cover": "/assets/covers/gold-miner.webp",
+      "tags": [
+        "休闲",
+        "经典",
+        "时机"
+      ],
+      "url": "/gold-miner/",
+      "en": {
+        "title": "Gold Miner"
+      }
+    },
+    {
+      "title": "俄罗斯方块",
+      "slug": "tetris-neo",
+      "desc": "赛博霓虹俄罗斯方块：7-Bag 国际随机算法，三种棋盘尺寸与三档速度，硬降、墙踢、幽灵落点手感齐全，进度与最高分本机保存。",
+      "icon": "🧱",
+      "cover": "/assets/covers/tetris-neo.webp",
+      "tags": [
+        "益智",
+        "经典",
+        "街机"
+      ],
+      "url": "/tetris-neo/",
+      "exclude": [
+        "scripts"
+      ],
+      "en": {
+        "title": "Tetris Neo"
+      }
+    },
+    {
+      "title": "祖玛传奇",
+      "slug": "zuma",
+      "desc": "操控吐珠石蛙，阻止符文滚石坠入神庙深渊，体验经典连锁消除。",
+      "icon": "🐸",
+      "cover": "/assets/covers/zuma.webp",
+      "tags": [
+        "休闲",
+        "消除",
+        "经典"
+      ],
+      "url": "/zuma/",
+      "en": {
+        "title": "Zuma Legend",
+        "desc": "Control the stone frog and clear chains of runic marbles before they reach the temple abyss."
+      }
+    },
+    {
+      "title": "重力回响",
+      "slug": "Gravity-Echoes",
+      "desc": "在扭曲弹道的微型奇点间击碎星环：甜点反弹积攒共振，选取遗物构筑，穿越五层重力试炼。",
+      "icon": "🌀",
+      "cover": "/assets/covers/Gravity-Echoes.webp",
+      "tags": [
+        "街机",
+        "物理",
+        "肉鸽"
+      ],
+      "url": "/Gravity-Echoes/",
+      "en": {
+        "title": "Gravity Echoes",
+        "desc": "Bend trajectories around micro-singularities, build resonance with precise rebounds, and draft relics across five orbital rings."
+      }
+    },
+    {
+      "title": "开心消消乐",
+      "slug": "Tile-Matching",
+      "desc": "滑动交换缤纷方块，凑齐三连触发连锁消除；收集关卡目标、解锁更多挑战，享受爽快的三消节奏。",
+      "icon": "🍬",
+      "cover": "/assets/covers/Tile-Matching.webp",
+      "tags": [
+        "休闲",
+        "消除",
+        "益智"
+      ],
+      "url": "/Tile-Matching/",
+      "en": {
+        "title": "Happy Tile Match",
+        "desc": "Swap colorful tiles, chain satisfying three-in-a-row clears, and complete each level's collection goals."
+      }
+    },
+    {
+      "title": "果园贪吃蛇",
+      "slug": "snake-orchard",
+      "desc": "在鲜果飘香的果园中操控小蛇成长：吃下红苹果冲分，争夺限时金色星果，连击不断加速挑战。",
+      "icon": "🐍",
+      "cover": "/assets/covers/snake-orchard.webp",
+      "tags": [
+        "休闲",
+        "经典",
+        "反应"
+      ],
+      "url": "/snake-orchard/",
+      "en": {
+        "title": "Snake Orchard",
+        "desc": "Guide a growing snake through a lush orchard, collect apples and timed golden star fruit, and build high-score combos."
+      }
+    },
+    {
+      "title": "一笔连线",
+      "slug": "one-line",
+      "desc": "一笔画连线：用一条不重复的线穿过所有格子。5 种盘面尺寸 + 随机无尽模式，进度本机保存，可离线运行。",
+      "icon": "🖊️",
+      "cover": "/assets/covers/one-line.webp",
+      "tags": [
+        "益智",
+        "连线",
+        "一笔画"
+      ],
+      "url": "/one-line/",
+      "en": {
+        "title": "One Line",
+        "desc": "Connect every cell with a single unbroken line. Five board sizes plus a randomized endless mode, with local progress saved."
+      }
+    },
+    {
+      "title": "华容道",
+      "slug": "klotski",
+      "desc": "挪动方块，把曹操从下方出口送出。50 关由浅入深，收官是经典「横刀立马」；拖拽与键盘双操作，支持撤销、重玩与本地进度保存。",
+      "icon": "🧩",
+      "cover": "/assets/covers/klotski.webp",
+      "tags": [
+        "益智",
+        "经典",
+        "策略"
+      ],
+      "url": "/klotski/",
+      "en": {
+        "title": "Klotski",
+        "desc": "Slide the blocks and walk Cao Cao out through the bottom exit. 50 levels ramp up to the classic Heng Dao Li Ma endgame, with drag and keyboard controls, undo, replay and local progress."
+      }
+    },
+    {
+      "title": "拼图",
+      "slug": "jigsaw",
+      "desc": "拖动碎片交换位置，把被打乱的图案拼回完整。50 关程序化生成的抽象艺术图，拼到正确位置自动锁定，3 次重排与今日拼图，中英双语。",
+      "icon": "🎨",
+      "cover": "/assets/covers/jigsaw.webp",
+      "tags": [
+        "益智",
+        "视觉",
+        "每日挑战"
+      ],
+      "url": "/jigsaw/",
+      "en": {
+        "title": "Jigsaw",
+        "desc": "Drag a piece onto another to swap them and rebuild the shuffled picture. 50 procedurally generated artworks, auto-lock on correct placement, plus a daily puzzle."
+      }
+    },
+    {
+      "title": "喜福连连看",
+      "slug": "link-up",
+      "desc": "暖木牌桌主题连连看：连接相同民俗图案，通路最多拐两个弯；50 关、异形棋盘、每日挑战与提示洗牌，进度本机保存。",
+      "icon": "🧧",
+      "cover": "/assets/covers/link-up.webp",
+      "tags": [
+        "益智",
+        "消除",
+        "经典"
+      ],
+      "url": "/link-up/",
+      "en": {
+        "title": "Fortune Link",
+        "desc": "Connect matching folk symbols with paths of up to two turns across 50 levels, shaped boards and a daily challenge."
+      }
+    },
+    {
+      "title": "琉璃灯市·连连看",
+      "slug": "pair-link",
+      "desc": "夜市灯牌主题连连看：找出两枚图案相同的琉璃瓷片，用不超过两个折角的通路把它们连起来。36 关三章递进，另有无尽冲分模式，进度与最高分本机保存。",
+      "icon": "🀄",
+      "cover": "/assets/covers/pair-link.webp",
+      "tags": [
+        "益智",
+        "消除",
+        "经典"
+      ],
+      "url": "/pair-link/",
+      "en": {
+        "title": "Pair Link",
+        "desc": "Find two matching glazed tiles and join them with a path of at most two turns. 36 levels across three chapters plus an endless score chase, with local progress saved."
+      }
+    },
+    {
+      "title": "深海合珠",
+      "slug": "bubble-merge",
+      "desc": "把泡泡丢进深海水缸，同级一碰即合成更大一号，连锁越多倍率越高；合出终极泡泡点它“啪”地戳破爆分清场，别让泡泡堆过安全线。无尽冲分与每日挑战两种模式，最高分本机保存。",
+      "icon": "🫧",
+      "cover": "/assets/covers/bubble-merge.webp",
+      "tags": [
+        "休闲",
+        "合成",
+        "物理"
+      ],
+      "url": "/bubble-merge/",
+      "en": {
+        "title": "Bubble Merge",
+        "desc": "Drop bubbles into a deep-sea tank; matching pairs merge into bigger ones with growing chain multipliers. Pop the ultimate bubble to clear space and don't stack past the safety line. Endless and daily modes, best score saved locally."
+      }
+    },
+    {
+      "title": "合成泡泡",
+      "slug": "bubble-bloom",
+      "desc": "深海炼金舱合成泡泡：同阶相触晋级高阶，连锁引爆倍率；首击公平候选袋无猜可解，极限模式与每日挑战，十阶图鉴与最高分本机保存。",
+      "icon": "🫧",
+      "cover": "/assets/covers/bubble-bloom.webp",
+      "tags": [
+        "益智",
+        "物理",
+        "合成"
+      ],
+      "url": "/bubble-bloom/",
+      "en": {
+        "title": "Bubble Bloom",
+        "desc": "Merge matching bubbles inside a deep-sea alchemy jar to bloom higher tiers, chain pressure combos for score multipliers, with fair no-guess drops, daily challenge and a ten-tier codex."
+      }
+    },
+    {
+      "title": "云朵合成",
+      "slug": "cloud-merge",
+      "desc": "把轻飘飘的云朵丢进天空，相同云朵一碰合体长大；合出雷暴云自动降雨清场，收集终极彩虹云放晴爆分！无尽冲分与每日挑战双模式，十级云图鉴本机保存。",
+      "icon": "☁️",
+      "cover": "/assets/covers/cloud-merge.webp",
+      "tags": [
+        "休闲",
+        "合成",
+        "物理"
+      ],
+      "url": "/cloud-merge/",
+      "en": {
+        "title": "Cloud Merge",
+        "desc": "Drop clouds into the sky to merge matching pairs into higher tiers. Thunderstorms auto-rain to clear crowded space, and collect the ultimate rainbow cloud for sunny celebration scores."
+      }
+    },
+    {
+      "title": "色彩排序",
+      "slug": "water-sort",
+      "desc": "把层层彩色液体倒入同色试管，直到每根试管只剩一种颜色。50 关递进、无限撤销、每日挑战与安静治愈的水彩实验室舞台。",
+      "icon": "🧪",
+      "cover": "/assets/covers/water-sort.webp",
+      "tags": [
+        "益智",
+        "排序",
+        "经典"
+      ],
+      "url": "/water-sort/",
+      "en": {
+        "title": "Water Sort",
+        "desc": "Pour layered colors into matching tubes until every tube is pure. 50 levels, unlimited undo, a daily challenge and a calm watercolor lab atmosphere."
+      }
+    },
+    {
+      "title": "别踩白块儿",
+      "slug": "piano-tiles",
+      "desc": "四列黑白琴键从屏幕上方滚落，只准点黑色格，点白或漏黑就掉血。三段容错、速度爬升、键盘 1-4 / D-F-J-K 同支持，挑战你的手速极限！",
+      "icon": "🎹",
+      "cover": "/assets/covers/piano-tiles.webp",
+      "tags": [
+        "街机",
+        "反应",
+        "音乐"
+      ],
+      "url": "/piano-tiles/",
+      "en": {
+        "title": "Piano Tiles",
+        "desc": "Four columns of black and white tiles scroll down. Tap only black tiles, avoid white ones. 3 lives, ramping speed, keyboard 1-4 / D-F-J-K support — test your finger speed!"
+      }
+    },
+    {
+      "title": "跳一跳",
+      "slug": "jump-jump",
+      "desc": "按住蓄力、松手起跳，划出抛物线落向下一座浮岛。正中靶心触发连击暴击，跳床腾空、黑胶打碟、漂移浮岛与极窄薄块轮番登场。旅途关卡 25 关 + 经典无尽跳 + 靶心试炼三模式，进度本机保存。",
+      "icon": "🕹️",
+      "cover": "/assets/covers/jump-jump.webp",
+      "tags": [
+        "街机",
+        "时机",
+        "休闲"
+      ],
+      "url": "/jump-jump/",
+      "en": {
+        "title": "Jump Jump",
+        "desc": "Hold to charge, release to leap along a parabola onto the next floating island. Bullseye the center for escalating combos, and master trampolines, vinyl decks, drifting isles and razor-thin blocks. 25 odyssey stages plus endless and sniper modes, with local progress saved."
+      }
+    },
+    {
+      "title": "割绳子",
+      "slug": "cut-the-rope",
+      "desc": "滑动割断悬挂绳索，利用向心重力摆动、浮空气泡与吹气皮囊，收集三星并喂饱呆萌软胶小怪兽！40 关物理谜题包含新手纸箱、浮空气泡、气囊风暴、尖刺迷阵与一刀大师挑战，进度本机保存。",
+      "icon": "🍬",
+      "cover": "/assets/covers/cut-the-rope.webp",
+      "tags": [
+        "益智",
+        "物理",
+        "经典"
+      ],
+      "url": "/cut-the-rope/",
+      "en": {
+        "title": "Cut the Rope",
+        "desc": "Swipe to cut ropes and guide swinging candy through floating bubbles and air gusts to feed hungry little monster Nommy! 40 stages with full 3-star physics puzzles."
+      }
+    },
+    {
+      "title": "糖果坠落",
+      "slug": "candy-drop",
+      "desc": "划断绳索，借重力与摆锤把蜜糖送进小兽糯糯嘴里，顺路捞齐三颗星。5 只糖锡铁盒 × 8 关共 40 关物理谜题，普通绳、弹性绳、气泡、气垫、尖刺与滑轨逐盒解锁，进度本机保存。",
+      "icon": "🍭",
+      "cover": "/assets/covers/candy-drop.webp",
+      "tags": [
+        "益智",
+        "物理",
+        "解谜"
+      ],
+      "url": "/candy-drop/",
+      "en": {
+        "title": "Candy Drop",
+        "desc": "Slice the ropes and let gravity do the rest: swing the honey candy into Nuan Nuo's mouth and scoop up all three stars on the way. 40 physics puzzles across five candy tins, from plain and elastic ropes to bubbles, air cushions, spikes and sliding rails. Progress saves locally."
+      }
+    },
+    {
+      "title": "暴力摩托",
+      "slug": "road-bash",
+      "desc": "骑着软胶玩具摩托在落日公路上狂飙，一边超车一边挥拳把对手打下车。地下联赛 20 场换四档车、公路群殴打满击倒配额、亡命冲刺甩掉条子，摔了就跑去捡自己的车。",
+      "icon": "🏍️",
+      "cover": "/assets/covers/road-bash.webp",
+      "tags": [
+        "街机",
+        "竞速",
+        "动作"
+      ],
+      "url": "/road-bash/",
+      "en": {
+        "title": "Road Bash",
+        "desc": "Race a clay toy motorcycle down a sunset highway and punch rivals off their bikes. 20-race underground league with bike upgrades, road brawls and cop getaways. Crash, then run back to your bike."
+      }
+    },
+    {
+      "title": "深海吞噬",
+      "slug": "deep-devour",
+      "desc": "吃掉比你小的、躲开比你大的，一口一口从浮游小鱼长成深海霸主。5 片海域 40 关逐章解锁狂暴连锁、鱼群同行、深渊压强与咬尾降阶，另有无尽下潜模式。",
+      "icon": "🦈",
+      "cover": "/assets/covers/deep-devour.webp",
+      "tags": [
+        "街机",
+        "动作",
+        "成长"
+      ],
+      "url": "/deep-devour/",
+      "exclude": [
+        "tools"
+      ],
+      "en": {
+        "title": "Deep Devour",
+        "desc": "Eat what is smaller than you and dodge what is bigger, growing from a fry into the apex of the reef. 40 levels across five seas unlock frenzy chains, shoal companions, abyss pressure and tail bites, plus an endless dive."
+      }
+    },
+    {
+      "title": "灯笼巷",
+      "slug": "lantern-maze",
+      "desc": "提一盏将熄的灯笼走进夜巷，吞光尘续灯芯、找日曜珠反杀影魅。五更 30 巷逐更解锁贴角转弯、流明灯与猎杀节拍，另有破晓冲刺、百鬼夜巷和纸巷裁铺手作迷宫——画完影子试跑通关就能保存分享巷码。",
+      "icon": "🏮",
+      "cover": "/assets/covers/lantern-maze.webp",
+      "tags": [
+        "街机",
+        "迷宫",
+        "动作"
+      ],
+      "url": "/lantern-maze/",
+      "exclude": [
+        "tools"
+      ],
+      "en": {
+        "title": "Lantern Maze",
+        "desc": "Carry a guttering lantern into the night alleys: swallow light dust to keep the wick alive, hunt sun pearls to turn the tables on the shadow ghouls. 30 lanes across five watches unlock corner cutting, drifting lamps and hunt rhythms, plus a dawn sprint, a haunted parade and a paper-alley workshop where you cut your own maze, watch a shadow runner clear it, then save and share the lane code."
+      }
+    },
+    {
+      "title": "数字华容道",
+      "slug": "number-klotski",
+      "desc": "经典数字华容道与15-Puzzle推盘：支持跨格丝滑连推、键盘触控全适配，段位修行、闪电竞速与每日挑战，100%数学可解无死局。",
+      "icon": "🧩",
+      "cover": "/assets/covers/number-klotski.webp",
+      "tags": [
+        "益智",
+        "经典",
+        "数字"
+      ],
+      "url": "/number-klotski/",
+      "en": {
+        "title": "Number Klotski",
+        "desc": "Classic 15-Puzzle sliding numbers: multi-tile train sliding, full keyboard & touch support, mastery ladder, speedrun and daily challenges with 100% mathematical solvability."
+      }
+    },
+    {
+      "title": "街机乒乓",
+      "slug": "pong",
+      "desc": "上下挡板极速对攻：丝滑多段切角与侧削加塞、球速逐拍递增，阶梯AI、同屏双人与极限击墙，重燃1972街机原初快感！",
+      "icon": "🏓",
+      "cover": "/assets/covers/pong.webp",
+      "tags": [
+        "街机",
+        "经典",
+        "对战",
+        "双人"
+      ],
+      "url": "/pong/",
+      "en": {
+        "title": "Pong Neo",
+        "desc": "Top-down arcade table clash: slick angle slicing, spin cuts, escalating rally speed, tiered AI, local 2P and solo wall challenge!"
+      }
+    }
+  ]
+}

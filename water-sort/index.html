@@ -1,0 +1,53 @@
+<!-- filepath: games/water-sort/index.html -->
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-D67E3XTNSS"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-D67E3XTNSS');
+  </script>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="色彩排序 Water Sort：把层层彩色液体倒入同色试管，50 关关卡、每日挑战、无限撤销，安静而上头的逻辑解谜。">
+<meta name="theme-color" content="#d66b4f">
+<meta name="color-scheme" content="light">
+<title>色彩排序 · Water Sort · DOIN</title>
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="css/style.css?v=35ad794d8cf9">
+</head>
+<body>
+<div class="ambient ambient-a"></div><div class="ambient ambient-b"></div>
+<div id="app">
+  <header class="topbar">
+    <a href="/" id="back-home" class="home-link"><span aria-hidden="true">←</span><span data-i18n="back">返回门户</span></a>
+    <div class="brand"><span class="brand-mark">◌</span><div><h1 data-i18n="title">色彩排序</h1><p data-i18n="subtitle">WATER SORT · 清透实验室</p></div></div>
+    <div class="top-actions">
+      <button id="sound-btn" class="icon-btn" type="button" data-i18n-aria="sound" aria-label="音效开关" aria-pressed="true">◖</button>
+      <button id="lang-btn" class="icon-btn lang-btn" type="button" data-i18n-aria="language" aria-label="切换语言">EN</button><button id="help-btn" class="icon-btn" type="button" data-i18n-aria="help" aria-label="玩法说明">?</button>
+    </div>
+  </header>
+  <main class="lab-shell">
+    <section class="bench" aria-label="游戏舞台">
+      <div class="bench-header"><div><span class="eyebrow" data-i18n="benchKicker">SOFT-LIGHT LAB</span><h2 data-i18n="benchTitle">把混乱理成秩序</h2></div><div class="level-chip"><span data-i18n="level">关卡</span><strong id="level-value">1</strong><span>/50</span></div></div>
+      <div id="tube-grid" class="tube-grid" role="grid" data-i18n-aria="board" aria-label="试管阵列"></div>
+      <div class="bench-foot"><span class="hint-dot"></span><span id="status-text" data-i18n="statusReady">选择一根试管开始倒液体</span><span class="shortcut" data-i18n="shortcut">← → 选管 · Enter 倾倒 · Z 撤销</span></div>
+    </section>
+    <aside class="record-panel" aria-label="实验记录">
+      <div class="record-card level-card"><div class="card-label" data-i18n="chapterLabel">实验记录</div><div id="chapter-name" class="chapter-name" data-i18n="chapter1">入门</div><p id="chapter-desc" data-i18n="chapterDesc">先学会借道，再让颜色各归其位。</p><p id="difficulty-note" class="difficulty-note"><span data-i18n="difficulty">难度</span><strong id="difficulty-pips" aria-hidden="true">●○○○○</strong><em id="difficulty-name" data-i18n="difficulty1">入门</em></p><p id="difficulty-detail" class="difficulty-detail">2 色 · 1 个空管</p><div class="progress-track"><i id="progress-fill"></i></div></div>
+      <div class="score-card"><div class="score-row"><span data-i18n="moves">步数</span><strong id="moves-value">0</strong></div><div class="score-row"><span data-i18n="par">标准线</span><strong id="par-value">—</strong></div><div class="score-row"><span data-i18n="undo">撤销</span><strong id="undo-value">0</strong></div><div class="score-row"><span data-i18n="best">最高分</span><strong id="best-value">0</strong></div></div>
+      <div class="console-card"><div class="card-label" data-i18n="console">操作台</div><div class="console-buttons"><button id="undo-btn" class="tool-btn" type="button"><span>↶</span><b data-i18n="btnUndo">撤销</b></button><button id="restart-btn" class="tool-btn" type="button"><span>↻</span><b data-i18n="btnRestart">重开</b></button><button id="hint-btn" class="tool-btn" type="button"><span>✦</span><b data-i18n="btnHint">提示</b></button></div><button id="levels-btn" class="text-btn" type="button" data-i18n="selectLevel">选择关卡</button></div>
+      <div class="daily-card"><span class="daily-seal">✦</span><div><b data-i18n="dailyTitle">每日挑战</b><p id="daily-copy">同日同题 · 争取更少步数</p></div><button id="daily-btn" type="button" data-i18n="play">进入</button></div>
+    </aside>
+  </main>
+</div>
+<div id="levels-modal" class="modal" hidden><div class="modal-inner"><button class="modal-close" data-close="levels" type="button">×</button><span class="eyebrow" data-i18n="levelSelectKicker">CHAPTERS</span><h2 data-i18n="levelSelect">选择关卡</h2><div id="level-list" class="level-list"></div></div></div>
+<div id="help-modal" class="modal" hidden><div class="modal-inner help-inner"><button class="modal-close" data-close="help" type="button">×</button><span class="eyebrow" data-i18n="helpKicker">THE POURING RITUAL</span><h2 data-i18n="helpTitle">怎么玩</h2><ol><li data-i18n="help1">点击试管选中，再点击同色顶端或空试管。</li><li data-i18n="help2">一次会倒出顶部整段同色液体；再点已选试管可取消。</li><li data-i18n="help3">没有计时和惩罚，卡住就撤销或重开。</li><li data-i18n="help4">所有试管纯色或为空时过关，提示会帮你找到下一步。</li></ol><button class="primary-btn" data-close="help" type="button" data-i18n="gotIt">知道了</button></div></div>
+<div id="result-modal" class="modal" hidden><div class="modal-inner result-inner"><span class="eyebrow" data-i18n="completeKicker">BOTTLE COMPLETE</span><h2 data-i18n="completeTitle">这一关，完成。</h2><div class="result-score"><strong id="result-score">0</strong><span>/ 800</span></div><div class="result-stats"><span><b id="result-moves">0</b><small data-i18n="moves">步数</small></span><span><b id="result-par">0</b><small data-i18n="par">标准线</small></span><span><b id="result-undo">0</b><small data-i18n="undo">撤销</small></span></div><p id="result-note"></p><div class="result-actions"><button id="next-btn" class="primary-btn" type="button" data-i18n="nextLevel">下一关</button><button id="result-restart" class="text-btn" type="button" data-i18n="playAgain">再来一次</button></div></div></div>
+<noscript><div class="no-script">色彩排序需要启用 JavaScript 才能运行。</div></noscript>
+<script type="module" src="js/main.mjs?v=35ad794d8cf9"></script>
+</body></html>
+

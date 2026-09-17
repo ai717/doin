@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-D67E3XTNSS"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-D67E3XTNSS');
+  </script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>割绳子 · DOIN 在线小游戏</title>
+  <meta name="description" content="割绳子 (Cut the Rope)：指尖或鼠标划断绳索，利用重力摆动、浮空气泡与吹气皮囊，收集三星喂饱呆萌小怪兽！40 关确定性精美关卡。">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="css/style.css?v=35ad794d8cf9">
+</head>
+<body>
+  <div id="game-app">
+    <!-- 机顶一体化控制条：返回 / 品牌 / 声音 / 语言 / 帮助 全部内嵌，拒绝四角散落 -->
+    <header id="stage-bar">
+      <a href="/" id="back-home" class="bar-btn" title="返回门户">
+        <span class="bar-glyph">←</span><span class="bar-text" id="back-text">返回门户</span>
+      </a>
+      <h1 id="app-title">
+        <span id="app-title-main">割绳子</span>
+        <span id="app-subtitle">微缩纸盒玩具工坊</span>
+      </h1>
+      <div class="stage-actions">
+        <button id="btn-sound" class="bar-btn" type="button" aria-pressed="true" title="声音开关">
+          <span class="bar-glyph">🔊</span>
+        </button>
+        <button id="btn-lang" class="bar-btn" type="button" title="切换语言">EN</button>
+        <button id="btn-levels" class="bar-btn" type="button" title="关卡列表">
+          <span class="bar-glyph">☰</span>
+        </button>
+        <button id="btn-restart" class="bar-btn" type="button" title="重试本关">
+          <span class="bar-glyph">↺</span>
+        </button>
+        <button id="btn-help" class="bar-btn" type="button" title="玩法规则">
+          <span class="bar-glyph">?</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- 模式切换：机顶吊牌式滑道 -->
+    <nav id="mode-bar" role="tablist" aria-label="玩法模式">
+      <button class="mode-chip is-active" id="tab-odyssey" type="button" role="tab" aria-selected="true">纸盒奇遇</button>
+      <button class="mode-chip" id="tab-master" type="button" role="tab" aria-selected="false">一刀大师</button>
+    </nav>
+
+    <main id="stage-core">
+      <!-- 左侧数据翼栏 -->
+      <aside id="wing-left" class="wing" aria-label="关卡与星级数据">
+        <div class="plaque">
+          <span class="plaque-label" id="label-chapter">当前章节</span>
+          <strong class="plaque-value plaque-value-sm" id="val-chapter">新手纸箱</strong>
+        </div>
+        <div class="plaque">
+          <span class="plaque-label" id="label-level">关卡</span>
+          <strong class="plaque-value" id="val-level">#1</strong>
+        </div>
+        <div class="plaque">
+          <span class="plaque-label" id="label-stars">本关收集</span>
+          <div class="star-icons-bar" id="val-stars">
+            <span class="star-icon is-empty">★</span>
+            <span class="star-icon is-empty">★</span>
+            <span class="star-icon is-empty">★</span>
+          </div>
+        </div>
+        <div class="plaque">
+          <span class="plaque-label" id="label-total-stars">总星数</span>
+          <strong class="plaque-value plaque-value-sm" id="val-total-stars">★ 0/120</strong>
+        </div>
+      </aside>
+
+      <!-- 中央微缩纸盒主舞台 -->
+      <section id="arena" aria-label="微缩瓦楞纸盒：划断绳索喂饱小怪兽">
+        <canvas id="stage-canvas" width="640" height="800" role="img" aria-label="割绳子游戏画布"></canvas>
+        <div id="toast" role="status" aria-live="polite"></div>
+        <!-- 失败覆盖浮层：带有直观重玩按钮与即时重置提示 -->
+        <div id="fail-overlay" class="fail-overlay" aria-hidden="true">
+          <div class="fail-card">
+            <span class="fail-icon" aria-hidden="true">💔</span>
+            <strong id="fail-title" class="fail-title">挑战失败</strong>
+            <p id="fail-msg" class="fail-msg">小心尖刺！糖果碎裂了！</p>
+            <button id="btn-fail-retry" class="btn-cta fail-retry-btn" type="button">↺ 重试本关</button>
+            <span id="fail-hint" class="fail-hint">点击任意处或按 [R] 立即重试</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- 右侧物理雷达与辅助翼栏 -->
+      <aside id="wing-right" class="wing" aria-label="机关与提示">
+        <div class="plaque">
+          <span class="plaque-label" id="label-cuts">剩余刀数</span>
+          <strong class="plaque-value" id="val-cuts">∞</strong>
+        </div>
+        <div class="plaque">
+          <span class="plaque-label" id="label-hint">关卡秘诀</span>
+          <p class="plaque-hint-text" id="val-hint">滑动切断绳索，让糖果落入小怪兽口中</p>
+        </div>
+        <div class="plaque">
+          <span class="plaque-label" id="label-shortcuts">快捷键指引</span>
+          <p class="plaque-hint-text" id="val-shortcuts">[R] 秒速重开<br>[Space] 选关抽屉</p>
+        </div>
+      </aside>
+    </main>
+
+    <!-- 选关模态框抽屉 -->
+    <div id="modal-levels" class="modal-overlay" role="dialog" aria-modal="true" aria-label="关卡选择">
+      <div class="modal-dialog modal-levels-box">
+        <h2 id="modal-levels-title">关卡选择</h2>
+        <div class="chapter-nav" id="chapter-nav"></div>
+        <div class="levels-grid" id="levels-grid"></div>
+        <div class="modal-actions" style="margin-top: 16px;">
+          <button class="btn-sec" id="btn-close-levels" type="button">关闭</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 胜利结算模态框 -->
+    <div id="modal-win" class="modal-overlay" role="dialog" aria-modal="true" aria-label="关卡通关">
+      <div class="modal-dialog">
+        <div class="win-monster-icon">🍬🦖</div>
+        <h2 id="win-title">喂饱萌宠！</h2>
+        <p id="win-sub">Nommy 幸福地吧唧嘴，糖果太甜啦！</p>
+        <div class="win-stars-display" id="win-stars"></div>
+        <div class="modal-actions">
+          <button class="btn-sec" id="btn-win-replay" type="button">再玩一次</button>
+          <button class="btn-cta" id="btn-win-next" type="button">下一关</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 帮助规则说明模态框 -->
+    <div id="modal-help" class="modal-overlay" role="dialog" aria-modal="true" aria-label="玩法说明">
+      <div class="modal-dialog">
+        <h2 id="rule-title">《割绳子》怎么玩？</h2>
+        <ul class="rules-list">
+          <li id="rule-1">【利刃割绳】：用鼠标或手指划过绳索，精准切断张力，让糖果摆动飞出。</li>
+          <li id="rule-2">【浮空气泡】：糖果落入气泡会反重力上升，轻点气泡即可戳破恢复下落。</li>
+          <li id="rule-3">【吹气皮囊】：点击皮囊向喷口喷射强风，推动晃动中的糖果或气泡偏转航向。</li>
+          <li id="rule-4">【避开尖刺】：绝对不能让糖果触碰尖刺，否则糖果会瞬间碎裂！</li>
+          <li id="rule-5">【一刀大师】：特殊残局挑战中，你只能划出一刀，靠精密物理连锁三星喂食！</li>
+          <li class="rules-shortcuts" id="rule-shortcuts">【快捷键】：按【R】秒速重开，按【Space】打开选关抽屉。</li>
+        </ul>
+        <div class="modal-actions">
+          <button class="btn-cta" id="btn-close-help" type="button">我知道了</button>
+        </div>
+      </div>
+    </div>
+
+    <noscript>
+      <div style="padding: 20px; text-align: center; color: #FFF; background: #600;">
+        《割绳子》需要开启 JavaScript 才能运行物理引擎与游戏画面。
+      </div>
+    </noscript>
+  </div>
+
+  <script type="module" src="js/main.mjs?v=35ad794d8cf9"></script>
+</body>
+</html>

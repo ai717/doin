@@ -1,0 +1,219 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-D67E3XTNSS"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-D67E3XTNSS');
+  </script>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <title>深海吞噬 · DOIN 在线小游戏</title>
+    <meta name="description" content="深海吞噬在线玩：吃掉比你小的、躲开比你大的，一口一口长成海里的霸主。5 片海域 40 关逐章解锁新规则，狂暴连锁、鱼群同行、深渊压强、咬尾降阶，另有无尽下潜模式。">
+    <link rel="canonical" href="https://doin.win/deep-devour/">
+    <meta name="theme-color" content="#83ffe7">
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="DOIN">
+    <meta property="og:title" content="深海吞噬 · DOIN 在线小游戏">
+    <meta property="og:description" content="吃掉比你小的，躲开比你大的。5 片海域 40 关，狂暴连锁 + 鱼群同行 + 深渊压强 + 咬尾降阶。">
+    <meta property="og:url" content="https://doin.win/deep-devour/">
+    <meta property="og:locale" content="zh_CN">
+    <meta property="og:image" content="https://doin.win/assets/og-image.png">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="深海吞噬 · DOIN 在线小游戏">
+    <meta name="twitter:description" content="吃掉比你小的，躲开比你大的。5 片海域 40 关。">
+    <meta name="twitter:image" content="https://doin.win/assets/og-image.png">
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <link rel="stylesheet" href="css/style.css?v=35ad794d8cf9">
+  </head>
+  <body>
+    <!-- 舷窗外的海：光柱 / 气泡 / 浮游生物，纯 CSS，为整屏提供景深 -->
+    <div class="sea" aria-hidden="true">
+      <span class="shaft shaft-a"></span>
+      <span class="shaft shaft-b"></span>
+      <span class="shaft shaft-c"></span>
+      <div class="bubbles">
+        <i style="--x:8%;--d:0s;--s:9px;--t:15s"></i>
+        <i style="--x:17%;--d:2.4s;--s:6px;--t:19s"></i>
+        <i style="--x:29%;--d:5.1s;--s:12px;--t:13s"></i>
+        <i style="--x:38%;--d:1.2s;--s:7px;--t:21s"></i>
+        <i style="--x:47%;--d:7.4s;--s:10px;--t:16s"></i>
+        <i style="--x:58%;--d:3.3s;--s:5px;--t:23s"></i>
+        <i style="--x:66%;--d:9.1s;--s:13px;--t:14s"></i>
+        <i style="--x:75%;--d:4.6s;--s:8px;--t:18s"></i>
+        <i style="--x:86%;--d:6.2s;--s:11px;--t:17s"></i>
+        <i style="--x:94%;--d:0.8s;--s:6px;--t:22s"></i>
+      </div>
+    </div>
+
+    <main class="cabinet">
+      <!-- 一扇巨大的黄铜潜水舷窗：铜框就是舞台边框，所有 HUD 都焊在框上 -->
+      <section class="porthole" id="porthole">
+        <!-- 舷窗顶部一条窄黄铜状态条：返回 / 海域关号 / 系统控制全部收在这里 -->
+        <header class="brass-bar">
+          <a class="brass-link" id="back-home" href="/">返回门户</a>
+          <p class="brass-plate">
+            <span class="plate-zone" id="hud-zone">珊瑚浅滩</span>
+            <span class="plate-dot" aria-hidden="true"></span>
+            <b class="plate-level" id="hud-level-no">1-1</b>
+            <span class="plate-name" id="hud-level-name">第一口</span>
+          </p>
+          <div class="brass-tools">
+            <button type="button" class="knob" id="help-btn" aria-label="玩法" title="玩法">?</button>
+            <button type="button" class="knob" id="sound-btn" aria-pressed="true" aria-label="音效" title="音效"><span id="sound-glyph">♪</span></button>
+            <button type="button" class="knob knob-wide" id="lang-btn" aria-label="切换语言" title="切换语言"><span id="lang-glyph">EN</span></button>
+            <button type="button" class="knob" id="pause-btn" aria-label="暂停或继续" title="暂停或继续"><span id="pause-glyph">❙❙</span></button>
+            <button type="button" class="knob" id="restart-btn" aria-label="重开本关" title="重开本关">↻</button>
+          </div>
+        </header>
+
+        <!-- 舷窗内的海域：游戏本体 + 焊在框上的仪表 -->
+        <div class="viewport" id="viewport">
+          <canvas id="sea" class="sea-canvas" role="img" aria-label="珊瑚礁海域：操控小鱼吞食更小的猎物，并躲开更大的鱼"></canvas>
+
+          <!-- 框左上方：黄铜深度计（海域 / 关号 / 阶级刻度） -->
+          <div class="gauge gauge-dial" id="dial">
+            <svg class="dial-face" viewBox="0 0 100 100" aria-hidden="true" focusable="false">
+              <circle class="dial-rim" cx="50" cy="50" r="45"></circle>
+              <circle class="dial-inner" cx="50" cy="50" r="34"></circle>
+              <path class="dial-track" d="M50 50 L20 74 A38 38 0 0 0 80 74 Z"></path>
+              <g class="dial-ticks">
+                <line x1="50" y1="12" x2="50" y2="18"></line>
+                <line x1="50" y1="82" x2="50" y2="88"></line>
+                <line x1="12" y1="50" x2="18" y2="50"></line>
+                <line x1="82" y1="50" x2="88" y2="50"></line>
+              </g>
+              <line class="dial-needle" id="dial-needle" x1="50" y1="50" x2="50" y2="22"></line>
+              <circle class="dial-pin" cx="50" cy="50" r="4"></circle>
+            </svg>
+            <p class="dial-read"><b id="dial-stage">1 / 8</b><span id="dial-zone">浅滩</span></p>
+          </div>
+
+          <!-- 框右上方：贝壳心数仪表 -->
+          <div class="gauge gauge-hearts" id="hearts" aria-label="心数">
+            <i class="shell" data-heart="1"></i>
+            <i class="shell" data-heart="2"></i>
+            <i class="shell" data-heart="3"></i>
+          </div>
+
+          <!-- 第 4 海域专属：框右侧的压强玻璃管 -->
+          <div class="gauge gauge-pressure" id="pressure" hidden aria-label="水深压强">
+            <span class="pressure-label" id="pressure-label">压强</span>
+            <div class="pressure-tube"><i class="pressure-fill" id="pressure-fill"></i></div>
+          </div>
+
+          <!-- 框底部正中：铜制罗盘（狂暴倍率 / 连击）+ 发光玻璃成长管 -->
+          <div class="gauge gauge-desk">
+            <div class="compass" id="compass" data-level="0">
+              <svg class="compass-face" viewBox="0 0 100 100" aria-hidden="true" focusable="false">
+                <circle class="compass-rim" cx="50" cy="50" r="46"></circle>
+                <circle class="compass-inner" cx="50" cy="50" r="33"></circle>
+                <path class="compass-star" d="M50 16 L58 42 L84 50 L58 58 L50 84 L42 58 L16 50 L42 42 Z"></path>
+              </svg>
+              <b class="compass-mult" id="compass-mult">×1</b>
+              <span class="compass-combo" id="compass-combo">静默</span>
+            </div>
+
+            <div class="glass-tube">
+              <div class="tube-head">
+                <b class="tube-tier" id="tube-tier">第 2 阶 · 幼鳞鱼</b>
+                <span class="tube-quota" id="tube-quota"></span>
+              </div>
+              <div class="tube-rail">
+                <i class="tube-fill" id="tube-fill"></i>
+                <i class="tube-shine" aria-hidden="true"></i>
+              </div>
+              <div class="tube-marks" aria-hidden="true">
+                <span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- 吞噬狂热横幅 / 提示气泡 -->
+          <p class="frenzy-banner" id="frenzy-banner" aria-hidden="true"></p>
+          <div class="toasts" id="toasts" aria-live="polite"></div>
+          <p class="hint" id="hint" aria-hidden="true"></p>
+        </div>
+      </section>
+    </main>
+
+    <!-- ---------- 覆盖面板 ---------- -->
+    <div class="overlay" id="overlay" hidden>
+      <!-- 开场 -->
+      <section class="panel panel-ready" id="panel-ready" role="dialog" aria-modal="true" aria-labelledby="ready-title">
+        <p class="panel-kicker" id="ready-kicker">DEEP DEVOUR</p>
+        <h1 class="panel-title" id="ready-title">深海吞噬</h1>
+        <p class="panel-lede" id="ready-desc"></p>
+        <div class="panel-actions">
+          <button type="button" class="key key-primary" id="btn-start">开始吞噬</button>
+          <button type="button" class="key" id="btn-levels">海域与关卡</button>
+          <button type="button" class="key" id="btn-abyss">深渊无尽</button>
+        </div>
+        <p class="panel-hint" id="ready-hint"></p>
+      </section>
+
+      <!-- 关卡表 -->
+      <section class="panel panel-levels" id="panel-levels" role="dialog" aria-modal="true" aria-labelledby="levels-title" hidden>
+        <h2 class="panel-title" id="levels-title">海域与关卡</h2>
+        <p class="panel-meta" id="levels-total"></p>
+        <div class="zones" id="zones"></div>
+        <div class="panel-actions">
+          <button type="button" class="key key-primary" id="levels-close">返回</button>
+          <button type="button" class="key key-quiet" id="reset-save">清空存档</button>
+        </div>
+      </section>
+
+      <!-- 结算 -->
+      <section class="panel panel-result" id="panel-result" role="dialog" aria-modal="true" aria-labelledby="result-title" hidden>
+        <p class="panel-kicker" id="result-badge"></p>
+        <h2 class="panel-title" id="result-title">海域通关！</h2>
+        <p class="panel-lede" id="result-sub"></p>
+        <div class="pearl-tray" id="pearl-tray" aria-label="本关珍珠"></div>
+        <dl class="tally" id="tally"></dl>
+        <div class="panel-actions">
+          <button type="button" class="key key-primary" id="result-next">下一关</button>
+          <button type="button" class="key" id="result-retry">再试一次</button>
+          <button type="button" class="key" id="result-home">回到关卡表</button>
+        </div>
+      </section>
+
+      <!-- 玩法说明 -->
+      <section class="panel panel-help" id="panel-help" role="dialog" aria-modal="true" aria-labelledby="help-title" hidden>
+        <h2 class="panel-title" id="help-title">玩法说明</h2>
+        <ul class="help-list" id="help-list"></ul>
+        <div class="panel-actions">
+          <button type="button" class="key key-primary" id="help-close">看懂了</button>
+        </div>
+      </section>
+
+      <!-- 暂停 -->
+      <section class="panel panel-paused" id="panel-paused" role="dialog" aria-modal="true" aria-labelledby="paused-title" hidden>
+        <h2 class="panel-title" id="paused-title">已暂停</h2>
+        <p class="panel-lede" id="paused-desc"></p>
+        <div class="panel-actions">
+          <button type="button" class="key key-primary" id="paused-resume">继续</button>
+          <button type="button" class="key" id="paused-restart">重开</button>
+          <button type="button" class="key" id="paused-home">回到关卡表</button>
+        </div>
+      </section>
+
+      <!-- 深渊结算 -->
+      <section class="panel panel-abyss" id="panel-abyss" role="dialog" aria-modal="true" aria-labelledby="abyss-end-title" hidden>
+        <p class="panel-kicker" id="abyss-badge"></p>
+        <h2 class="panel-title" id="abyss-end-title">下潜结束</h2>
+        <p class="panel-lede" id="abyss-end-desc"></p>
+        <p class="abyss-best" id="abyss-best"></p>
+        <div class="panel-actions">
+          <button type="button" class="key key-primary" id="abyss-retry">再下一次</button>
+          <button type="button" class="key" id="abyss-exit">离开深渊</button>
+        </div>
+      </section>
+    </div>
+
+    <noscript><p class="noscript">需要启用 JavaScript 才能游玩深海吞噬。</p></noscript>
+    <script type="module" src="js/main.mjs?v=35ad794d8cf9"></script>
+  </body>
+</html>

@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16">
+  <!-- 深底（与站点背景一致） -->
+  <rect width="16" height="16" fill="#0b0b1a"/>
+
+  <!-- 粉色硬阴影（品牌色，偏移 +1,+1） -->
+  <g fill="#ff5db1">
+    <rect x="6" y="5" width="5" height="1"/>
+    <rect x="5" y="6" width="2" height="4"/>
+    <rect x="10" y="6" width="2" height="4"/>
+    <rect x="6" y="10" width="5" height="1"/>
+  </g>
+
+  <!-- 白色像素字母 D -->
+  <g fill="#e8e6f0">
+    <rect x="5" y="4" width="5" height="1"/>
+    <rect x="4" y="5" width="2" height="5"/>
+    <rect x="9" y="5" width="2" height="5"/>
+    <rect x="5" y="10" width="5" height="1"/>
+  </g>
+
+  <!-- 琥珀色圆点（呼应 Logo 的 "."） -->
+  <rect x="12" y="12" width="2" height="2" fill="#ffc94d"/>
+</svg>

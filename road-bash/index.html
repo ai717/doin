@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-D67E3XTNSS"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-D67E3XTNSS');
+  </script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>暴力摩托 · DOIN 在线小游戏</title>
+  <meta name="description" content="暴力摩托：骑着软胶玩具摩托在落日公路上狂飙，一边超车一边挥拳把对手打下车。地下联赛 20 场换车、公路群殴与亡命冲刺，进度本机保存。">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="css/style.css?v=35ad794d8cf9">
+</head>
+<body>
+  <div id="game-app">
+    <header id="stage-bar">
+      <a href="/" id="back-home" class="bar-btn">
+        <span class="bar-glyph">←</span><span class="bar-text" id="back-text">返回门户</span>
+      </a>
+      <h1 id="app-title">
+        <span id="app-title-main">暴力摩托</span>
+        <span id="app-subtitle">落日公路街机</span>
+      </h1>
+      <div class="stage-actions">
+        <button id="btn-sound" class="bar-btn" type="button" aria-pressed="true">
+          <span class="bar-glyph">🔊</span>
+        </button>
+        <button id="btn-lang" class="bar-btn" type="button">EN</button>
+        <button id="btn-help" class="bar-btn" type="button">
+          <span class="bar-glyph">?</span>
+        </button>
+      </div>
+    </header>
+
+    <nav id="mode-bar" role="tablist" aria-label="选择玩法模式">
+      <button class="mode-chip is-active" id="mode-league" type="button" role="tab" data-mode="league" aria-selected="true">地下联赛</button>
+      <button class="mode-chip" id="mode-brawl" type="button" role="tab" data-mode="brawl" aria-selected="false">公路群殴</button>
+      <button class="mode-chip" id="mode-getaway" type="button" role="tab" data-mode="getaway" aria-selected="false">亡命冲刺</button>
+    </nav>
+
+    <main id="stage-core">
+      <aside id="wing-left" class="wing" aria-label="机车仪表">
+        <div class="gauge-dial" id="dial-speed">
+          <span class="plaque-label" id="label-speed">时速</span>
+          <strong class="plaque-value" id="val-speed">0</strong>
+        </div>
+        <div class="gauge-dial" id="dial-place">
+          <span class="plaque-label" id="label-place">名次</span>
+          <strong class="plaque-value" id="val-place">P1</strong>
+        </div>
+        <div class="meter">
+          <span class="plaque-label" id="label-stamina">体力</span>
+          <div class="meter-track"><i id="bar-stamina"></i></div>
+        </div>
+        <div class="meter meter-heat">
+          <span class="plaque-label" id="label-bike">车况</span>
+          <div class="meter-track"><i id="bar-bike"></i></div>
+        </div>
+        <div class="gauge-dial gauge-small">
+          <span class="plaque-label" id="label-cash">奖金</span>
+          <strong class="plaque-value plaque-value-sm" id="val-cash">$0</strong>
+        </div>
+        <div class="gauge-dial gauge-small">
+          <span class="plaque-label" id="label-ko">击倒</span>
+          <strong class="plaque-value plaque-value-sm" id="val-ko">0</strong>
+        </div>
+      </aside>
+
+      <section id="arena" aria-label="落日公路机车街机舞台">
+        <div id="crt-bezel">
+          <canvas id="stage-canvas" role="img" aria-label="伪三维公路：摩托竞速并贴身挥拳"></canvas>
+        </div>
+        <div id="toast" role="status" aria-live="polite"></div>
+      </section>
+
+      <aside id="wing-right" class="wing" aria-label="后视镜">
+        <div class="mirror" id="mirror">
+          <span class="plaque-label" id="label-rival">近身对手</span>
+          <div class="meter-track"><i id="bar-rival"></i></div>
+          <strong class="mirror-name" id="val-rival">空镜</strong>
+        </div>
+        <div class="gauge-dial gauge-small">
+          <span class="plaque-label" id="label-weapon">兵器</span>
+          <strong class="plaque-value plaque-value-sm" id="val-weapon">拳头</strong>
+        </div>
+        <div class="gauge-dial gauge-small" id="dial-alert">
+          <span class="plaque-label" id="label-alert">警灯</span>
+          <strong class="plaque-value plaque-value-sm" id="val-alert">平静</strong>
+        </div>
+        <div class="gauge-dial gauge-small" id="dial-quota">
+          <span class="plaque-label" id="label-quota">配额</span>
+          <strong class="plaque-value plaque-value-sm" id="val-quota">—</strong>
+        </div>
+        <p class="hint-text" id="key-hint">W 加油 · S 刹车 · A D 转向 · 空格/J 出拳 · K 踢腿 · P 暂停</p>
+        <label class="cruise-toggle" id="cruise-wrap">
+          <input type="checkbox" id="chk-cruise" checked>
+          <span id="label-cruise">巡航油门</span>
+        </label>
+      </aside>
+    </main>
+
+    <div id="control-deck">
+      <div class="pad pad-move">
+        <button type="button" class="pad-btn" id="pad-accel" data-hold="accel">
+          <span class="pad-label" id="pad-accel-label">油门</span><kbd>W</kbd>
+        </button>
+        <div class="pad-row">
+          <button type="button" class="pad-btn" id="pad-left" data-hold="left">
+            <span class="pad-label" id="pad-left-label">左</span><kbd>A</kbd>
+          </button>
+          <button type="button" class="pad-btn" id="pad-brake" data-hold="brake">
+            <span class="pad-label" id="pad-brake-label">刹车</span><kbd>S</kbd>
+          </button>
+          <button type="button" class="pad-btn" id="pad-right" data-hold="right">
+            <span class="pad-label" id="pad-right-label">右</span><kbd>D</kbd>
+          </button>
+        </div>
+      </div>
+      <div class="pad pad-fight">
+        <button type="button" class="pad-btn pad-punch" id="pad-punch">
+          <span class="pad-label" id="pad-punch-label">出拳</span><kbd>J / 空格</kbd>
+        </button>
+        <button type="button" class="pad-btn pad-kick" id="pad-kick">
+          <span class="pad-label" id="pad-kick-label">踢腿</span><kbd>K</kbd>
+        </button>
+        <button type="button" class="pad-btn pad-pause" id="pad-pause">
+          <span class="pad-label" id="pad-pause-label">暂停</span><kbd>P</kbd>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div id="panel-garage" class="overlay is-open">
+    <div class="panel panel-garage">
+      <span class="panel-kicker" id="garage-kicker">ROAD BASH</span>
+      <h2 class="panel-title" id="garage-title">车库</h2>
+      <p class="panel-desc" id="garage-desc">先点一辆摩托，再点一场比赛立刻发车。</p>
+      <div class="garage-block">
+        <h3 class="garage-h" id="garage-bikes-title">车库摩托</h3>
+        <div id="bike-shelf" class="bike-shelf"></div>
+      </div>
+      <div class="garage-block">
+        <h3 class="garage-h" id="garage-races-title">公路赛程</h3>
+        <div id="race-grid" class="race-grid"></div>
+      </div>
+      <p class="trophy-line" id="trophy-line"></p>
+    </div>
+  </div>
+
+  <div id="panel-pause" class="overlay">
+    <div class="panel">
+      <h2 class="panel-title" id="pause-title">暂停</h2>
+      <p class="panel-desc" id="pause-desc">公路还在，拳头也还在。</p>
+      <div class="panel-actions">
+        <button id="btn-resume" class="btn btn-primary" type="button">继续骑</button>
+        <button id="btn-retry-pause" class="btn" type="button">重开本场</button>
+        <button id="btn-garage-pause" class="btn" type="button">返回车库</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="panel-result" class="overlay">
+    <div class="panel panel-result">
+      <h2 class="panel-title" id="result-title">冲线！</h2>
+      <div class="result-stars" id="result-stars" aria-hidden="true">
+        <span class="star">★</span><span class="star">★</span><span class="star">★</span>
+      </div>
+      <div class="result-rows">
+        <div class="result-row"><span id="label-res-place">名次</span><strong id="res-place">P1</strong></div>
+        <div class="result-row"><span id="label-res-ko">击倒</span><strong id="res-ko">0</strong></div>
+        <div class="result-row"><span id="label-res-cash">奖金</span><strong id="res-cash">$0</strong></div>
+        <div class="result-row"><span id="label-res-time">用时</span><strong id="res-time">0.0</strong></div>
+        <div class="result-row"><span id="label-res-crashes">摔车</span><strong id="res-crashes">0</strong></div>
+        <div class="result-row"><span id="label-res-fly">最远抛飞</span><strong id="res-fly">0</strong></div>
+      </div>
+      <p class="result-hint" id="result-hint"></p>
+      <div class="panel-actions">
+        <button id="btn-retry" class="btn btn-primary" type="button">再来一次</button>
+        <button id="btn-next" class="btn" type="button">下一场</button>
+        <button id="btn-garage" class="btn" type="button">返回车库</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="panel-help" class="overlay">
+    <div class="panel panel-help">
+      <h2 class="panel-title" id="help-title">玩法说明</h2>
+      <ol class="help-list">
+        <li id="help1"></li>
+        <li id="help2"></li>
+        <li id="help3"></li>
+        <li id="help4"></li>
+        <li id="help5"></li>
+        <li id="help6"></li>
+      </ol>
+      <div class="panel-actions">
+        <button id="btn-help-close" class="btn btn-primary" type="button">我知道了</button>
+      </div>
+    </div>
+  </div>
+
+  <noscript><p>需要启用 JavaScript 才能游玩暴力摩托。</p></noscript>
+  <script type="module" src="js/main.mjs?v=35ad794d8cf9"></script>
+</body>
+</html>
