@@ -346,6 +346,13 @@ body {
   height: 100%;
   min-height: 340px;
   touch-action: none;
+  image-rendering: -webkit-optimize-contrast;
+  image-rendering: crisp-edges;
+}
+
+[hidden],
+.stage-overlay[hidden] {
+  display: none !important;
 }
 
 .stage-overlay {
@@ -353,8 +360,7 @@ body {
   inset: 0;
   display: grid;
   place-items: center;
-  background: rgba(8, 10, 24, 0.52);
-  backdrop-filter: blur(2px);
+  background: rgba(8, 10, 24, 0.72);
   pointer-events: none;
 }
 
@@ -687,37 +693,120 @@ body {
 /* ---------------------------------------------------------------- 响应式 */
 
 @media (max-width: 768px) {
+  .cabinet {
+    gap: 8px;
+    padding-top: max(8px, env(safe-area-inset-top));
+    padding-left: 10px;
+    padding-right: 10px;
+  }
+
   .machine {
     grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto auto auto;
     grid-template-areas:
       "stage"
-      "wings";
+      "wings-left"
+      "wings-right";
+    gap: 8px;
   }
 
   .stage-wrap { grid-area: stage; }
-  #stage { min-height: 300px; }
-
-  /* 移动端把两翼合并为一行紧凑挂牌，环绕在舞台下方 */
-  .wing {
-    flex-direction: row;
-    flex-wrap: wrap;
-    gap: 8px;
+  #stage {
+    min-height: 200px;
+    height: auto;
+    aspect-ratio: 20 / 12;
   }
-  .wing-left { grid-area: wings; }
-  .wing-right { grid-area: wings; }
 
-  .wing .plaque { flex: 1 1 128px; }
-  .tab-btn { margin-top: 0; flex: 1 1 100%; }
+  /* 移动端两翼：独立行流式排列，避免重叠与横向溢出 */
+  .wing {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    gap: 6px;
+    align-items: stretch;
+    width: 100%;
+  }
+  .wing-left { grid-area: wings-left; }
+  .wing-right { grid-area: wings-right; }
 
-  .marquee { padding: 8px 11px; }
-  .marquee-right { width: 100%; justify-content: space-between; }
-  .readout { flex: 1 1 0; min-width: 0; }
-  .game-title { font-size: 16px; }
+  .wing .plaque {
+    flex: 1 1 0;
+    min-width: 0;
+    padding: 6px 6px;
+    border-radius: 10px;
+    overflow: hidden;
+  }
+  .plaque-title {
+    font-size: 10px;
+    margin-bottom: 3px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .seal-node-id { font-size: 15px; }
+  .seal-node-count b { font-size: 15px; }
+  .seal-bar { margin-top: 3px; height: 3px; }
+  .plaque-sub { display: none; }
 
-  .deck { justify-content: center; }
-  .deck-controls { order: 1; }
-  .deck-tools { order: 2; justify-content: center; width: 100%; }
-  .pad-btn { min-width: 74px; padding: 15px 18px; }
+  .tab-btn {
+    margin-top: 0;
+    flex: 0 0 54px;
+    min-width: 0;
+    padding: 6px 6px;
+    font-size: 13px;
+    border-radius: 10px;
+    display: grid;
+    place-items: center;
+    white-space: nowrap;
+  }
+
+  .candle-slot,
+  .gravity-slot {
+    gap: 5px;
+    min-width: 0;
+  }
+  .candle-ico { font-size: 15px; flex-shrink: 0; }
+  .candle-state {
+    font-size: 11px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .readout.big { padding: 4px 6px; }
+  .readout.big .readout-val { font-size: 15px; }
+  .gravity-glyph { font-size: 18px; }
+
+  .marquee { padding: 6px 10px; gap: 8px; }
+  .marquee-right { width: 100%; justify-content: space-between; gap: 4px; }
+  .readout { flex: 1 1 0; min-width: 0; padding: 4px 6px; }
+  .game-title { font-size: 15px; }
+
+  .deck {
+    gap: 8px;
+    padding: 8px 10px;
+    justify-content: center;
+  }
+  .deck-controls {
+    order: 1;
+    width: 100%;
+    justify-content: center;
+    gap: 12px;
+  }
+  .deck-tools {
+    order: 2;
+    justify-content: center;
+    width: 100%;
+    gap: 6px;
+  }
+  .pad-btn {
+    min-width: 68px;
+    padding: 12px 16px;
+    font-size: 18px;
+  }
+  .tool-btn {
+    padding: 7px 10px;
+    font-size: 12px;
+  }
 }
 
 @media (max-width: 420px) {

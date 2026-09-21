@@ -1,6 +1,23 @@
 {
   "games": [
     {
+      "title": "五子连珠",
+      "slug": "gomoku",
+      "desc": "15×15 经典五子棋：黑方 Renju 禁手规则、四档阶梯 Minimax AI、30 道残局死活题，从启蒙到大师的渐进式修行。",
+      "icon": "⚫",
+      "cover": "/assets/covers/gomoku.webp",
+      "tags": [
+        "益智",
+        "对战",
+        "经典"
+      ],
+      "url": "/gomoku/",
+      "en": {
+        "title": "Gomoku Master",
+        "desc": "Classic 15×15 Gomoku with Renju forbidden moves, four-tier Minimax AI and 30 hand-crafted tsumego puzzles."
+      }
+    },
+    {
       "title": "数独",
       "slug": "sudoku",
       "desc": "经典 9x9 逻辑填数，从入门到骨灰级的烧脑修行。",
@@ -568,6 +585,23 @@
       "en": {
         "title": "Devil Run",
         "desc": "Run and jump a tiny cube to the exit door, but the floor tiles, the ceiling and even gravity will troll you. 50 micro levels, zero-punishment respawn, fully deterministic traps!"
+      }
+    },
+    {
+      "title": "太空防御者",
+      "slug": "space-defender",
+      "desc": "驾驶复古战机在几何弹幕里横向穿梭，擦弹充能引爆过载，击落牵引你的皇蜂夺回僚机双机合体。五个星区三十波、母舰突袭与生存狂潮，进度本机保存。",
+      "icon": "🛸",
+      "cover": "/assets/covers/space-defender.webp",
+      "tags": [
+        "动作",
+        "街机",
+        "射击"
+      ],
+      "url": "/space-defender/",
+      "en": {
+        "title": "Space Defender",
+        "desc": "Pilot a retro fighter through geometric bullet patterns, graze bullets to charge OVERLOAD, and shoot down the Queen that beams you up to rescue your wingman for a dual-fighter fusion. 30 waves across 5 sectors plus Mothership Rush and Survival Onslaught."
       }
     }
   ]

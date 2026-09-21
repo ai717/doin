@@ -27,6 +27,7 @@ const STRINGS = {
     deathLabel: "死亡",
     candleLabel: "蜡烛",
     sealLabel: "印章",
+    gravityLabel: "重力",
 
     // 左翼印章台
     sealsTitle: "恶魔印章",
@@ -109,6 +110,7 @@ const STRINGS = {
     deathLabel: "Deaths",
     candleLabel: "Candle",
     sealLabel: "Seals",
+    gravityLabel: "Gravity",
 
     // Left plaque
     sealsTitle: "Devil Seals",

@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="description" content="森林冰火人（Ember &amp; Tide）：同屏双人协作解谜，火人冰人分控双键盘，穿越元素相克与联动机关，双出口同步抵达通关，即点即玩！" />
+  <meta name="theme-color" content="#0d2530" />
+  <title>森林冰火人 · DOIN 在线小游戏</title>
+  <link rel="icon" href="favicon.svg?v=dev" />
+  <link rel="stylesheet" href="css/style.css?v=dev" />
+</head>
+<body>
+  <!-- 机顶一体化状态条 -->
+  <header class="arcade-topbar">
+    <div class="topbar-brand">
+      <a href="/" id="back-home" class="topbar-home" data-i18n="backHome">返回首页</a>
+    </div>
+    <div class="topbar-title">
+      <h1 data-i18n="title">森林冰火人</h1>
+      <span class="topbar-sub" data-i18n="tagline">双人协作 · 元素相克 · 双出口同步抵达</span>
+    </div>
+    <div class="topbar-actions">
+      <button id="btn-sound" class="chip-btn" type="button">🔊 音效</button>
+      <button id="btn-lang" class="chip-btn" type="button" aria-label="切换语言">EN</button>
+      <button id="btn-rules" class="chip-btn" type="button" data-i18n="rules">规则说明</button>
+    </div>
+  </header>
+
+  <!-- 双翼牌匾 + 中央神庙舞台 -->
+  <div class="arcade-container">
+    <!-- 火人牌匾（左翼） -->
+    <aside class="side-plaque plaque-fire">
+      <div class="plaque-head">
+        <span class="plaque-gem gem-dot fire"></span>
+        <span data-i18n="fireBadge">火人 · Ember</span>
+      </div>
+      <div class="plaque-desc" data-i18n="fireDesc">免疫岩浆 · 可点燃藤桥</div>
+      <div class="plaque-keys">
+        <span class="key">W</span><span class="key">A</span><span class="key">D</span>
+        <span class="key-label" data-i18n="fireKeys">W 跳 / A D 左右</span>
+      </div>
+      <div class="plaque-collect">
+        <div class="collect-row"><span data-i18n="gemsRed">红宝石</span><span id="fire-gems">0 / 2</span></div>
+        <div class="collect-row"><span data-i18n="gemsGold">中立宝石</span><span id="gold-gems">0 / 1</span></div>
+      </div>
+      <div class="plaque-stats">
+        <div class="stat-row"><span data-i18n="timeLabel">用时</span><span id="val-time">0:00</span></div>
+        <div class="stat-row"><span data-i18n="deathsLabel">死亡</span><span id="val-deaths">0</span></div>
+        <div class="stat-row"><span data-i18n="syncLabel">同步踩板</span><span id="val-sync">0</span></div>
+      </div>
+      <div class="plaque-total">
+        <span data-i18n="chapterStarTotal">总星数</span>
+        <span id="star-total" class="star-total">0</span>
+      </div>
+    </aside>
+
+    <!-- 中央舞台 -->
+    <main class="stage-shell">
+      <div class="stage-status">
+        <span id="level-badge" class="level-badge">关卡 1</span>
+        <span id="level-name" class="level-name">1-1 · 初次同行</span>
+        <span id="focus-badge" class="focus-badge focus-fire">火人</span>
+      </div>
+      <div class="stage-wrap">
+        <canvas id="stage-canvas" width="768" height="448" aria-label="森林冰火人双人协作关卡舞台"></canvas>
+      </div>
+      <div id="status-banner" class="status-banner" data-i18n="statusPlaying">双人协作闯关中！</div>
+      <div class="stage-controls">
+        <button id="btn-levels" class="stone-btn" type="button" data-i18n="selectLevel">选关</button>
+        <button id="btn-retry" class="stone-btn" type="button" data-i18n="retry">重玩本关</button>
+        <button id="btn-pause" class="stone-btn" type="button" data-i18n="pause">暂停</button>
+        <button id="btn-next" class="stone-btn" type="button" data-i18n="nextLevel">下一关</button>
+        <button id="btn-mode" class="stone-btn mode-btn" type="button" data-i18n="dualTip">双人模式：WASD 控火人 · 方向键控冰人</button>
+      </div>
+      <!-- 移动端掌机操作台 -->
+      <div class="touch-pad">
+        <div class="touch-group touch-fire">
+          <button id="btn-fire-left" class="touch-btn" type="button" aria-label="火人向左">◀</button>
+          <button id="btn-fire-right" class="touch-btn" type="button" aria-label="火人向右">▶</button>
+          <button id="btn-fire-jump" class="touch-btn touch-jump" type="button" aria-label="火人跳跃">▲</button>
+        </div>
+        <div class="touch-hint">火人</div>
+        <div class="touch-hint">冰人</div>
+        <div class="touch-group touch-ice">
+          <button id="btn-ice-left" class="touch-btn" type="button" aria-label="冰人向左">◀</button>
+          <button id="btn-ice-right" class="touch-btn" type="button" aria-label="冰人向右">▶</button>
+          <button id="btn-ice-jump" class="touch-btn touch-jump" type="button" aria-label="冰人跳跃">▲</button>
+        </div>
+      </div>
+    </main>
+
+    <!-- 冰人牌匾（右翼） -->
+    <aside class="side-plaque plaque-ice">
+      <div class="plaque-head">
+        <span class="plaque-gem gem-dot ice"></span>
+        <span data-i18n="iceBadge">冰人 · Tide</span>
+      </div>
+      <div class="plaque-desc" data-i18n="iceDesc">免疫寒水 · 可冻结水面岩浆</div>
+      <div class="plaque-keys">
+        <span class="key">↑</span><span class="key">←</span><span class="key">→</span>
+        <span class="key-label" data-i18n="iceKeys">↑ 跳 / ← → 左右</span>
+      </div>
+      <div class="plaque-collect">
+        <div class="collect-row"><span data-i18n="gemsBlue">蓝宝石</span><span id="ice-gems">0 / 2</span></div>
+        <div class="collect-row"><span data-i18n="freezeKey">K 冻结（冰人）</span></div>
+      </div>
+      <div class="plaque-solo">
+        <span data-i18n="focusLabel">当前控制</span>
+        <span id="focus-badge-dup" class="focus-badge focus-fire">火人</span>
+      </div>
+      <div class="plaque-advice" data-i18n="soloTip">单人模式：Tab 切换当前角色</div>
+    </aside>
+  </div>
+
+  <!-- 选关弹窗（章节页签 + 关卡网格，不占舞台） -->
+  <div id="modal-levels" class="modal hidden">
+    <div class="modal-card level-card">
+      <div class="level-head">
+        <h2 data-i18n="levelsTitle">选择关卡</h2>
+        <button id="btn-levels-close" class="modal-x" type="button" aria-label="关闭">✕</button>
+      </div>
+      <div id="level-select" class="level-select" aria-label="章节选关"></div>
+    </div>
+  </div>
+
+  <!-- 规则弹窗 -->
+  <div id="modal-rules" class="modal hidden">
+    <div class="modal-card">
+      <h2 data-i18n="ruleTitle">游戏玩法与操作指南</h2>
+      <p data-i18n="ruleGoal">【目标】同时操控火人（Ember）与冰人（Tide），两人必须同时站到各自颜色的出口门前才能通关。</p>
+      <p data-i18n="ruleElement">【元素相克】火人免疫岩浆、遇水即亡；冰人免疫寒水、遇岩浆即亡；墨绿毒液对两人均致命。</p>
+      <p data-i18n="ruleMechanic">【机关联动】站上压力板开门；双色门只放行对应角色；同步压力板需两人同时踩下；传送门成对互传；冰人可在冻结点按 K 冻结水面/岩浆 3 秒，火人可点燃藤墙开路。</p>
+      <p data-i18n="ruleControlsDual">【双人操作】火人：W 跳 / A D 左右；冰人：↑ 跳 / ← → 左右。</p>
+      <p data-i18n="ruleControlsSolo">【单人操作】Tab 切换当前控制角色（被切换角色原地待命）；方向键移动 + ↑/空格 跳跃 + K 冻结。</p>
+      <p data-i18n="ruleTolerant">【宽容容错】任何角色死亡会原地回到本关起点重生，已收集宝石保留，只影响三星评价。</p>
+      <p data-i18n="ruleStars">【星级评价】每关 5 颗宝石（2 红 + 2 蓝 + 1 中立）：全收集且零死亡 = 三星；全收集 = 二星；通关 = 一星。</p>
+      <button id="btn-rules-close" class="stone-btn" type="button" data-i18n="ruleClose">我知道了</button>
+    </div>
+  </div>
+
+  <!-- 结算弹窗 -->
+  <div id="modal-result" class="modal hidden">
+    <div class="modal-card result-card">
+      <h2 id="result-title" data-i18n="resultTitle">通关成功！</h2>
+      <div id="result-stars" class="result-stars">★★★</div>
+      <div class="result-grid">
+        <div class="result-row"><span data-i18n="resultTime">用时</span><span id="result-time">0:00</span></div>
+        <div class="result-row"><span data-i18n="resultGems">宝石收集</span><span id="result-gems">0/5</span></div>
+        <div class="result-row"><span data-i18n="resultDeaths">死亡次数</span><span id="result-deaths">0</span></div>
+        <div class="result-row"><span data-i18n="resultSync">同步踩板</span><span id="result-sync">0</span></div>
+      </div>
+      <div id="result-record" class="result-record"></div>
+      <div class="result-actions">
+        <button id="btn-result-menu" class="stone-btn" type="button" data-i18n="resultMenu">选关</button>
+        <button id="btn-result-retry" class="stone-btn" type="button" data-i18n="resultRetry">重玩本关</button>
+        <button id="btn-result-next" class="stone-btn primary" type="button" data-i18n="resultNext">下一关</button>
+      </div>
+    </div>
+  </div>
+
+  <noscript>需要启用 JavaScript 才能游玩森林冰火人。</noscript>
+
+  <script type="module" src="js/main.mjs?v=dev"></script>
+</body>
+</html>

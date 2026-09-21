@@ -4,6 +4,7 @@
   "type": "module",
   "scripts": {
     "build": "node scripts/build-site.mjs",
+    "test:gomoku": "node --test games/gomoku/tests/engine.test.mjs games/gomoku/tests/ai.test.mjs games/gomoku/tests/score.test.mjs games/gomoku/tests/storage.test.mjs games/gomoku/tests/i18n.test.mjs games/gomoku/tests/markup.test.mjs games/gomoku/tests/audio.test.mjs games/gomoku/tests/game.test.mjs games/gomoku/tests/tsumego.test.mjs games/gomoku/tests/review.test.mjs",
     "test:2048": "node --test games/2048/tests/engine.test.mjs games/2048/tests/storage.test.mjs games/2048/tests/i18n.test.mjs games/2048/tests/markup.test.mjs",
     "test:orbit-sort": "node --test games/orbit-sort/tests/engine.test.mjs games/orbit-sort/tests/solver.test.mjs games/orbit-sort/tests/levels.test.mjs games/orbit-sort/tests/daily.test.mjs games/orbit-sort/tests/storage.test.mjs games/orbit-sort/tests/markup.test.mjs games/orbit-sort/tests/generator.test.mjs games/orbit-sort/tests/rules-property.test.mjs games/orbit-sort/tests/game.test.mjs games/orbit-sort/tests/score.test.mjs games/orbit-sort/tests/i18n.test.mjs",
     "test:tic-tac-toe": "node --test games/tic-tac-toe/tests/engine.test.mjs games/tic-tac-toe/tests/ai.test.mjs games/tic-tac-toe/tests/score.test.mjs games/tic-tac-toe/tests/storage.test.mjs games/tic-tac-toe/tests/game.test.mjs games/tic-tac-toe/tests/audio.test.mjs games/tic-tac-toe/tests/markup.test.mjs games/tic-tac-toe/tests/i18n.test.mjs",
@@ -37,6 +38,7 @@
     "test:fire-ice": "node --test games/fire-ice/tests/*.test.mjs",
     "test:rune-tower": "node --test games/rune-tower/tests/*.test.mjs",
     "test:devil-run": "node --test games/devil-run/tests/engine.test.mjs games/devil-run/tests/golden.test.mjs games/devil-run/tests/game.test.mjs games/devil-run/tests/score.test.mjs games/devil-run/tests/storage.test.mjs games/devil-run/tests/i18n.test.mjs games/devil-run/tests/markup.test.mjs",
+    "test:space-defender": "node --test games/space-defender/tests/*.test.mjs",
     "smoke:devil-run": "node games/devil-run/tests/smoke.mjs"
   }
 }

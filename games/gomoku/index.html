@@ -1,0 +1,162 @@
+<!doctype html>
+<html lang="zh-CN" data-theme="light">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <title>五子连珠 · DOIN 在线小游戏</title>
+    <meta name="description" content="五子连珠在线对弈：15×15 经典黑白落子，四档阶梯 AI（启蒙/进阶/高手/大师），30 道传世残局死活题，标准 Renju 黑方禁手判定，无需下载即点即玩。">
+    <link rel="canonical" href="https://doin.win/gomoku/">
+    <meta name="theme-color" content="#8a5a2a">
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="DOIN">
+    <meta property="og:title" content="五子连珠 · DOIN 在线小游戏">
+    <meta property="og:description" content="15×15 经典黑白落子对弈，四档 AI 与 30 道残局死活题。">
+    <meta property="og:url" content="https://doin.win/gomoku/">
+    <meta property="og:locale" content="zh_CN">
+    <meta property="og:image" content="https://doin.win/assets/og-image.png">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="五子连珠 · DOIN 在线小游戏">
+    <meta name="twitter:description" content="15×15 经典黑白落子，四档 AI 与 30 道残局死活题。">
+    <meta name="twitter:image" content="https://doin.win/assets/og-image.png">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><circle cx='16' cy='16' r='14' fill='%232a1810'/><circle cx='16' cy='16' r='12' fill='%231a1a1a'/><circle cx='12' cy='11' r='4' fill='%23555555'/></svg>">
+    <link rel="stylesheet" href="css/style.css?v=dev">
+    <script>
+      try {
+        var stored = JSON.parse(localStorage.getItem("doin.gomoku.v1") || "{}");
+        if (stored && stored.prefs && stored.prefs.theme === "dark") {
+          document.documentElement.dataset.theme = "dark";
+        }
+      } catch (error) {
+        // 首次访问或存储被禁用，保持浅色主题。
+      }
+    </script>
+  </head>
+  <body>
+    <main class="stage">
+      <header class="topbar">
+        <a href="/" id="back-home" class="back-home" aria-label="返回门户首页">⟵ DOIN</a>
+        <h1 class="title" id="title" data-i18n="title">五子连珠</h1>
+        <div class="topbar-tools">
+          <button type="button" class="icon-btn" id="sound-btn" aria-pressed="true" aria-label="音效" title="音效">♪</button>
+          <button type="button" class="icon-btn" id="lang-btn" aria-label="切换语言" title="切换语言">EN</button>
+          <button type="button" class="icon-btn" id="rules-btn" aria-label="规则说明" title="规则">?</button>
+        </div>
+      </header>
+
+      <div class="machine">
+        <aside class="plaque plaque-left" id="plaque-left" aria-label="执子方信息">
+          <div class="plaque-section">
+            <span class="plaque-label" id="left-label" data-i18n="turnLabel">当前回合</span>
+            <div class="stone-indicator" id="stone-indicator">
+              <span class="stone stone-black" id="current-stone"></span>
+              <span class="stone-meta" id="current-meta" data-i18n="black">黑方</span>
+            </div>
+          </div>
+          <div class="plaque-section thinking-zone" id="thinking-zone" hidden>
+            <span class="plaque-label" id="thinking-label" data-i18n="thinkingLabel">AI 思考中</span>
+            <div class="thinking-dots" id="thinking-dots"></div>
+          </div>
+          <div class="plaque-section tsumego-info" id="tsumego-info" hidden>
+            <span class="plaque-label" data-i18n="targetLabel">残局目标</span>
+            <p class="tsumego-target" id="tsumego-target">黑先 X 手胜</p>
+            <p class="tsumego-hint" id="tsumego-hint"></p>
+            <p class="tsumego-stars" id="tsumego-stars" aria-label="星级">★★★</p>
+          </div>
+          <div class="plaque-section stats" id="stats-zone">
+            <span class="plaque-label" data-i18n="statsLabel">战绩</span>
+            <div class="stats-row">
+              <span class="stat"><b id="stat-wins">0</b><i id="stat-wins-lbl" data-i18n="statWin">胜</i></span>
+              <span class="stat"><b id="stat-draws">0</b><i id="stat-draws-lbl" data-i18n="statDraw">和</i></span>
+              <span class="stat"><b id="stat-losses">0</b><i id="stat-losses-lbl" data-i18n="statLoss">负</i></span>
+            </div>
+          </div>
+        </aside>
+
+        <section class="board-stage" aria-label="棋盘">
+          <canvas id="board" class="board" width="640" height="640" role="grid" aria-label="15×15 五子棋棋盘"></canvas>
+          <p class="status" id="status" role="status" aria-live="polite">轮到你 · 黑方</p>
+        </section>
+
+        <aside class="plaque plaque-right" id="plaque-right" aria-label="棋谱与操作">
+          <div class="plaque-section moves-zone">
+            <span class="plaque-label" data-i18n="movesLabel">棋谱</span>
+            <ol class="moves-list" id="moves-list" aria-label="本局棋谱"></ol>
+          </div>
+          <div class="plaque-section controls-zone">
+            <div class="control-group">
+              <span class="control-label" id="mode-label" data-i18n="modeLabel">模式</span>
+              <div class="segmented" id="mode-group" role="group">
+                <button type="button" class="seg" data-mode="pve" aria-pressed="true" id="mode-pve" data-i18n="modePvE">对弈 AI</button>
+                <button type="button" class="seg" data-mode="pvp" aria-pressed="false" id="mode-pvp" data-i18n="modePvP">双人</button>
+                <button type="button" class="seg" data-mode="tsumego" aria-pressed="false" id="mode-tsumego" data-i18n="modeTsumego">残局</button>
+              </div>
+            </div>
+            <div class="control-group" id="difficulty-group-wrap">
+              <span class="control-label" id="difficulty-label" data-i18n="difficultyLabel">档位</span>
+              <div class="segmented" id="difficulty-group" role="group">
+                <button type="button" class="seg" data-difficulty="beginner" aria-pressed="false" id="diff-beginner" data-i18n="diffBeginner">启蒙</button>
+                <button type="button" class="seg" data-difficulty="intermediate" aria-pressed="true" id="diff-intermediate" data-i18n="diffIntermediate">进阶</button>
+                <button type="button" class="seg" data-difficulty="advanced" aria-pressed="false" id="diff-advanced" data-i18n="diffAdvanced">高手</button>
+                <button type="button" class="seg" data-difficulty="master" aria-pressed="false" id="diff-master" data-i18n="diffMaster">大师</button>
+              </div>
+            </div>
+            <div class="control-group" id="side-group-wrap">
+              <span class="control-label" id="side-label" data-i18n="sideLabel">执子</span>
+              <div class="segmented" id="side-group" role="group">
+                <button type="button" class="seg" data-side="1" aria-pressed="true" id="side-black" data-i18n="sideBlack">执黑</button>
+                <button type="button" class="seg" data-side="2" aria-pressed="false" id="side-white" data-i18n="sideWhite">执白</button>
+              </div>
+            </div>
+          </div>
+          <div class="plaque-section action-zone">
+            <button type="button" class="btn" id="undo-btn" data-i18n="undoBtn" disabled>悔棋</button>
+            <button type="button" class="btn" id="resign-btn" data-i18n="resignBtn">认输</button>
+            <button type="button" class="btn btn-primary" id="restart-btn" data-i18n="restartBtn">重开</button>
+            <button type="button" class="btn" id="level-btn" data-i18n="levelBtn" hidden>选关</button>
+          </div>
+        </aside>
+      </div>
+
+      <div class="lanterns" aria-hidden="true">
+        <div class="lantern lantern-left"></div>
+        <div class="lantern lantern-right"></div>
+      </div>
+    </main>
+
+    <div class="result-layer" id="result-layer" role="dialog" aria-modal="true" aria-labelledby="result-title" hidden>
+      <div class="result-panel">
+        <p class="result-badge" id="result-badge"></p>
+        <h2 class="result-title" id="result-title" data-i18n="resultTitleWon">胜负已分</h2>
+        <p class="result-sub" id="result-sub"></p>
+        <div class="result-breakdown" id="result-breakdown" aria-label="对局详情"></div>
+        <div class="result-actions">
+          <button type="button" class="btn btn-primary" id="result-again" data-i18n="againBtn">再来一局</button>
+          <button type="button" class="btn" id="result-next" data-i18n="nextBtn" hidden>下一题</button>
+          <button type="button" class="btn" id="result-solution" data-i18n="viewSolution" hidden>查看正解</button>
+          <button type="button" class="btn" id="result-close" data-i18n="closeBoard">看看棋盘</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="rules-layer" id="rules-layer" role="dialog" aria-modal="true" hidden>
+      <div class="rules-panel">
+        <h2 id="rules-title" data-i18n="rulesTitle">规则</h2>
+        <pre class="rules-text" id="rules-text"></pre>
+        <button type="button" class="btn" id="rules-close" data-i18n="rulesClose">明白</button>
+      </div>
+    </div>
+
+    <div class="level-layer" id="level-layer" role="dialog" aria-modal="true" hidden>
+      <div class="level-panel">
+        <h2 id="level-title" data-i18n="levelTitle">残局选关</h2>
+        <div class="level-grid" id="level-grid"></div>
+        <button type="button" class="btn" id="level-close" data-i18n="levelClose">关闭</button>
+      </div>
+    </div>
+
+    <div class="wrong-toast" id="wrong-toast" role="status" aria-live="polite" data-i18n="wrongToast" hidden>此手不利，可重选</div>
+
+    <noscript><p class="noscript">需要启用 JavaScript 才能游玩五子连珠。</p></noscript>
+    <script type="module" src="js/main.mjs?v=dev"></script>
+  </body>
+</html>

@@ -107,173 +107,143 @@ export function createRenderer(canvas, options = {}) {
     }
   }
 
-  // 关卡尺寸变化时重算缩放，让舞台完整居中且留出桌面广告安全白边
+  // 关卡尺寸变化时重算缩放，整数对齐确保绝对锐利不发虚
   function layout(cols, rows) {
-    // 桌面端主舞台不超过 1100px 已由 CSS 保证；这里只做等比适配
-    const padX = 26;
-    const padY = 26;
+    const padX = 24;
+    const padY = 24;
     const availW = Math.max(120, vw - padX * 2);
     const availH = Math.max(120, vh - padY * 2);
-    cell = Math.min(availW / cols, availH / rows);
+    // 强制整数像素格长，杜绝浮点数子像素插值模糊
+    cell = Math.max(16, Math.floor(Math.min(availW / cols, availH / rows)));
     const stageW = cell * cols;
     const stageH = cell * rows;
-    originX = (vw - stageW) / 2;
-    originY = (vh - stageH) / 2;
+    originX = Math.round((vw - stageW) / 2);
+    originY = Math.round((vh - stageH) / 2);
   }
 
   function resize() {
     const rect = canvas.getBoundingClientRect();
     const w = Math.max(240, Math.round(rect.width || canvas.clientWidth || 800));
     const h = Math.max(200, Math.round(rect.height || canvas.clientHeight || 520));
-    dpr = Math.min(2, Math.max(1, (globalThis.devicePixelRatio || 1)));
+    dpr = Math.min(3, Math.max(1, (globalThis.devicePixelRatio || 1)));
     vw = w;
     vh = h;
     canvas.width = Math.round(w * dpr);
     canvas.height = Math.round(h * dpr);
+    canvas.style.width = `${w}px`;
+    canvas.style.height = `${h}px`;
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx.imageSmoothingEnabled = false; // 锐利几何微立体，杜绝模糊插值
     seedDust();
   }
 
-  // ---- 背景：动态环境渐变 + 景深光晕 + 浮动粒子（禁止死白/死黑大平铺）----
+  // ---- 背景：深邃纯净的赛博午夜舞台 ----
   function drawBackground() {
     const g = ctx.createLinearGradient(0, 0, 0, vh);
-    g.addColorStop(0, C.bgTop);
-    g.addColorStop(0.55, "#141631");
-    g.addColorStop(1, C.bgBot);
+    g.addColorStop(0, "#090b1c");
+    g.addColorStop(0.6, "#11142e");
+    g.addColorStop(1, "#181a38");
     ctx.fillStyle = g;
     ctx.fillRect(0, 0, vw, vh);
 
-    // 两团缓慢漂移的景深光晕，给舞台空间感
-    const t = reduced ? 0 : time;
-    const warmX = vw * (0.24 + Math.sin(t * 0.17) * 0.05);
-    const warmY = vh * (0.72 + Math.cos(t * 0.13) * 0.05);
-    glow(ctx, warmX, warmY, Math.max(vw, vh) * 0.55, C.glowWarm, 0.10);
+    // 舞台中央清澈微聚光
+    const stageCx = originX + (cell * 10);
+    const stageCy = originY + (cell * 6.5);
+    glow(ctx, stageCx, stageCy, Math.max(vw, vh) * 0.45, "rgba(80,105,210,", 0.09);
 
-    const coolX = vw * (0.78 + Math.cos(t * 0.11) * 0.05);
-    const coolY = vh * (0.2 + Math.sin(t * 0.19) * 0.05);
-    glow(ctx, coolX, coolY, Math.max(vw, vh) * 0.5, C.glowCool, 0.11);
-
-    // 浮动粒子
+    // 纯白清晰微小尘埃
     for (const d of dust) {
       const y = reduced ? d.y : (d.y - time * d.sp * 3) % vh;
       const yy = y < 0 ? y + vh : y;
-      ctx.globalAlpha = d.a;
-      ctx.fillStyle = "#cfd6ff";
+      ctx.globalAlpha = d.a * 0.8;
+      ctx.fillStyle = "#c8d4ff";
       ctx.beginPath();
       ctx.arc(d.x, yy, d.r, 0, TAU);
       ctx.fill();
     }
     ctx.globalAlpha = 1;
-
-    // 暗角
-    const vg = ctx.createRadialGradient(
-      vw / 2, vh / 2, Math.min(vw, vh) * 0.35,
-      vw / 2, vh / 2, Math.max(vw, vh) * 0.78
-    );
-    vg.addColorStop(0, "rgba(0,0,0,0)");
-    vg.addColorStop(1, "rgba(0,0,0,0.42)");
-    ctx.fillStyle = vg;
-    ctx.fillRect(0, 0, vw, vh);
   }
 
-  // ---- 地砖：平涂亮面 + 上下倒角（渐变，不用描边）+ 深投影 ----
+  // ---- 地砖：极高对比度、绝对锐利硬朗的街机微立体方块 ----
   function drawSolid(row, col, x, y, s, alpha) {
-    const tint = tileTint(col, row);
-    const top = C.solid;
-    const side = C.solidSide;
-    const deep = C.solidDeep;
-
     ctx.globalAlpha = alpha;
+    const rx = Math.round(x);
+    const ry = Math.round(y);
+    const sz = Math.round(s);
 
-    // 投影（向下偏移，让方块"浮"起来）
-    ctx.fillStyle = "rgba(0,0,0,0.34)";
-    roundRect(ctx, x + s * 0.05, y + s * 0.14, s * 0.94, s * 0.92, s * 0.2);
-    ctx.fill();
+    // 砖块间 1px 黑色微缝（在暗背景下清晰切分每块地砖）
+    const bx = rx + 1;
+    const by = ry + 1;
+    const bw = sz - 2;
+    const bh = sz - 2;
+    const th = Math.max(3, Math.round(sz * 0.16)); // 立体侧面厚度
 
-    // 主体平涂面
-    ctx.fillStyle = top;
-    roundRect(ctx, x + s * 0.04, y + s * 0.04, s * 0.92, s * 0.9, s * 0.18);
-    ctx.fill();
+    // 1) 深邃立体阴影底座（#1b2238）
+    ctx.fillStyle = "#1b2238";
+    ctx.fillRect(bx, by, bw, bh);
 
-    // 顶部倒角：竖向渐变由亮到透明，形成柔和明暗晕（无硬边）
-    const gTop = ctx.createLinearGradient(0, y + s * 0.04, 0, y + s * 0.34);
-    gTop.addColorStop(0, "rgba(255,255,255,0.52)");
-    gTop.addColorStop(0.42, "rgba(255,255,255,0.20)");
-    gTop.addColorStop(1, "rgba(255,255,255,0)");
-    ctx.fillStyle = gTop;
-    roundRect(ctx, x + s * 0.04, y + s * 0.04, s * 0.92, s * 0.3, s * 0.18);
-    ctx.fill();
+    // 2) 纯净亮白微蓝高对比切面（#f0f4ff，无论多远都极度清晰可见！）
+    ctx.fillStyle = "#f0f4ff";
+    ctx.fillRect(bx, by, bw, bh - th);
 
-    // 底部倒角：暗面渐隐，制造厚度
-    const gBot = ctx.createLinearGradient(0, y + s * 0.62, 0, y + s * 0.94);
-    gBot.addColorStop(0, "rgba(24,26,54,0)");
-    gBot.addColorStop(1, "rgba(24,26,54,0.42)");
-    ctx.fillStyle = gBot;
-    roundRect(ctx, x + s * 0.04, y + s * 0.62, s * 0.92, s * 0.32, s * 0.18);
-    ctx.fill();
+    // 3) 顶面 1px 纯白极锐高光（#ffffff）
+    ctx.fillStyle = "#ffffff";
+    ctx.fillRect(bx, by, bw, 2);
 
-    // 极轻的暖色反光，避免大片死白
-    ctx.globalAlpha = alpha * (0.05 + tint * 0.05);
-    glow(ctx, x + s * 0.5, y + s * 0.5, s * 0.7, C.glowWarm, 0.5);
-    ctx.globalAlpha = alpha;
+    // 4) 亮面与暗面交界细线（#a8b8d8）
+    ctx.fillStyle = "#a8b8d8";
+    ctx.fillRect(bx, by + bh - th - 1, bw, 1);
+
+    ctx.globalAlpha = 1;
   }
 
-  // ---- 尖刺：三角刺，前兆时先探出一点点 ----
+  // ---- 尖刺：刀锋般锐利血红尖刺，绝对像素对齐，高对比度 ----
   function drawSpikeCell(x, y, s, progress, kind) {
-    const rise = clamp01(progress);            // 0 = 未出，1 = 完全弹出
-    const h = s * 0.62 * rise;
-    const baseY = y + s * 0.92;
+    const rise = clamp01(progress);
+    if (rise <= 0.04) return;
+
+    const rx = Math.round(x);
+    const ry = Math.round(y);
+    const sz = Math.round(s);
+    const h = Math.round(sz * 0.65 * rise);
+    const baseY = ry + sz - 1;
     const isLava = kind === "lava";
 
-    // 前兆光晕（先承诺后翻脸的"承诺"阶段）
-    if (rise < 1) {
-      const a = 0.18 + 0.3 * (1 - rise);
-      glow(ctx, x + s * 0.5, baseY - s * 0.1, s * 0.85, C.glowWarm, a);
-    }
-
     if (isLava) {
-      const g = ctx.createLinearGradient(0, baseY - s * 0.5, 0, baseY);
-      g.addColorStop(0, "#ff8a3c");
-      g.addColorStop(1, "#e02a12");
-      ctx.fillStyle = g;
-      roundRect(ctx, x + s * 0.06, baseY - s * 0.42, s * 0.88, s * 0.42, s * 0.1);
-      ctx.fill();
-      glow(ctx, x + s * 0.5, baseY - s * 0.2, s * 0.9, C.glowWarm, 0.4);
+      ctx.fillStyle = "#ff3b1e";
+      ctx.fillRect(rx + 1, baseY - Math.round(sz * 0.35), sz - 2, Math.round(sz * 0.35));
+      ctx.fillStyle = "#ffe24a";
+      ctx.fillRect(rx + 2, baseY - Math.round(sz * 0.35), sz - 4, 2);
       return;
     }
 
-    if (h <= 0.5) return;
+    // 3 个极其锋利的几何三角刺
     const teeth = 3;
-    ctx.fillStyle = C.spike;
+    const tw = sz / teeth;
+
+    // 1) 鲜红刺身（#ff284d）
+    ctx.fillStyle = "#ff284d";
     ctx.beginPath();
     for (let i = 0; i < teeth; i += 1) {
-      const cx = x + s * (0.18 + i * 0.32);
-      const bw = s * 0.15;
-      ctx.moveTo(cx - bw, baseY);
-      ctx.lineTo(cx, baseY - h);
-      ctx.lineTo(cx + bw, baseY);
-      ctx.closePath();
+      const tx = rx + i * tw;
+      ctx.moveTo(tx + 1, baseY);
+      ctx.lineTo(tx + tw * 0.5, baseY - h);
+      ctx.lineTo(tx + tw - 1, baseY);
     }
+    ctx.closePath();
     ctx.fill();
 
-    // 刺尖高光（渐变，非描边）
-    const sg = ctx.createLinearGradient(0, baseY - h, 0, baseY);
-    sg.addColorStop(0, "rgba(255,235,180,0.85)");
-    sg.addColorStop(0.5, "rgba(255,160,90,0.25)");
-    sg.addColorStop(1, "rgba(255,90,40,0)");
-    ctx.fillStyle = sg;
+    // 2) 锋刃高光棱线（#ffe6ea，1px 纯净亮白刃）
+    ctx.fillStyle = "#ffffff";
     ctx.beginPath();
     for (let i = 0; i < teeth; i += 1) {
-      const cx = x + s * (0.18 + i * 0.32);
-      const bw = s * 0.15;
-      ctx.moveTo(cx - bw, baseY);
-      ctx.lineTo(cx, baseY - h);
-      ctx.lineTo(cx + bw, baseY);
-      ctx.closePath();
+      const tx = rx + i * tw;
+      ctx.moveTo(tx + tw * 0.5 - 0.5, baseY);
+      ctx.lineTo(tx + tw * 0.5, baseY - h);
+      ctx.lineTo(tx + tw * 0.5 + 0.5, baseY);
     }
+    ctx.closePath();
     ctx.fill();
-
-    glow(ctx, x + s * 0.5, baseY, s * 1.0, C.glowWarm, 0.28);
   }
 
   // ---- 陷阱按种类绘制专属视觉 ----
@@ -442,138 +412,165 @@ export function createRenderer(canvas, options = {}) {
     }
   }
 
-  // ---- 终点门 ----
+  // ---- 终点门：极高对比度的赛博翡翠传送门 ----
   function drawGoal(g) {
-    const cx = originX + g.x * cell;
-    const cy = originY + g.y * cell + cell * 0.5;
+    if (!g) return;
+    const cx = Math.round(originX + g.x * cell + cell * 0.5);
+    const cy = Math.round(originY + g.y * cell + cell * 0.5);
     const s = cell;
     const visible = g.visible !== false;
 
     if (!visible) {
-      // 假门消失：只留一圈将熄的余光
-      glow(ctx, cx, cy, s * 0.85, C.glowCool, 0.18);
+      glow(ctx, cx, cy, s * 0.5, "rgba(0,255,170,", 0.12);
       return;
     }
 
-    const w = s * 0.62;
-    const h = s * 1.24;
-    // 门口光晕（径向柔光，非描边）
-    glow(ctx, cx, cy - h * 0.1, s * 1.05, "rgba(126,232,200,", 0.34);
+    const w = Math.round(s * 0.72);
+    const h = Math.round(s * 1.28);
+    const gx = Math.round(cx - w / 2);
+    const gy = Math.round(cy - h);
 
-    // 门框
-    ctx.fillStyle = "#2b3158";
-    roundRect(ctx, cx - w / 2 - s * 0.06, cy - h, w + s * 0.12, h + s * 0.06, s * 0.1);
-    ctx.fill();
-    // 门洞
-    const dg = ctx.createLinearGradient(0, cy - h, 0, cy);
-    dg.addColorStop(0, "#8ff0d4");
-    dg.addColorStop(1, "#2f9c86");
-    ctx.fillStyle = dg;
-    roundRect(ctx, cx - w / 2, cy - h + s * 0.06, w, h - s * 0.06, s * 0.08);
-    ctx.fill();
-    // 门内顶光
-    const tg = ctx.createLinearGradient(0, cy - h + s * 0.06, 0, cy - h * 0.4);
-    tg.addColorStop(0, "rgba(255,255,255,0.75)");
-    tg.addColorStop(1, "rgba(255,255,255,0)");
-    ctx.fillStyle = tg;
-    roundRect(ctx, cx - w / 2, cy - h + s * 0.06, w, h * 0.4, s * 0.08);
+    // 1) 黑色微外框
+    ctx.fillStyle = "#091016";
+    ctx.fillRect(gx - 2, gy - 2, w + 4, h + 4);
+
+    // 2) 鲜亮翠绿门框（#00ff9d 极高对比度）
+    ctx.fillStyle = "#00ff9d";
+    ctx.fillRect(gx, gy, w, h);
+
+    // 3) 内部深邃通道
+    ctx.fillStyle = "#041a12";
+    ctx.fillRect(gx + 3, gy + 3, w - 6, h - 3);
+
+    // 4) 门内通关指示信标（纯白核心 + 翡翠呼吸光）
+    const pulse = reduced ? 0.8 : 0.65 + Math.sin(time * 3.6) * 0.25;
+    ctx.fillStyle = `rgba(0, 255, 170, ${pulse})`;
+    ctx.beginPath();
+    ctx.arc(cx, gy + Math.round(h * 0.46), Math.round(s * 0.12), 0, TAU);
     ctx.fill();
 
-    if (!reduced) {
-      // 缓慢呼吸的柔光，把门"托"出来
-      const pulse = 0.16 + Math.sin(time * 2.1) * 0.07;
-      glow(ctx, cx, cy - h * 0.4, s * 1.3, "rgba(126,232,200,", pulse);
-    }
+    ctx.fillStyle = "#ffffff";
+    ctx.beginPath();
+    ctx.arc(cx, gy + Math.round(h * 0.46), Math.round(s * 0.05), 0, TAU);
+    ctx.fill();
   }
 
-  // ---- 蜡烛（隐藏收集品）----
+  // ---- 蜡烛：晶莹黄铜小蜡烛（纯净明亮，无大范围发虚散光）----
   function drawCandle(c, taken) {
     if (taken || !c) return;
-    const cx = originX + c.x * cell;
-    const cy = originY + c.y * cell;
+    const cx = Math.round(originX + c.x * cell + cell * 0.5);
+    const cy = Math.round(originY + c.y * cell + cell * 0.85);
     const s = cell;
-    glow(ctx, cx, cy, s * 1.3, "rgba(255,209,102,", 0.34);
 
-    // 蜡身
-    ctx.fillStyle = "#ffe9b0";
-    roundRect(ctx, cx - s * 0.07, cy - s * 0.04, s * 0.14, s * 0.34, s * 0.05);
-    ctx.fill();
-    // 火苗：两段渐变的泪滴
-    const flick = reduced ? 0 : Math.sin(time * 9) * s * 0.014;
-    const fg = ctx.createRadialGradient(cx + flick, cy - s * 0.2, 0, cx + flick, cy - s * 0.2, s * 0.2);
-    fg.addColorStop(0, "rgba(255,255,235,1)");
-    fg.addColorStop(0.4, "rgba(255,206,110,0.9)");
-    fg.addColorStop(1, "rgba(255,150,50,0)");
-    ctx.fillStyle = fg;
+    // 1) 底部微型黄铜烛盘
+    ctx.fillStyle = "#e0a020";
+    ctx.fillRect(cx - Math.round(s * 0.18), cy - Math.round(s * 0.08), Math.round(s * 0.36), Math.round(s * 0.08));
+
+    // 2) 洁白烛身
+    ctx.fillStyle = "#ffffff";
+    ctx.fillRect(cx - Math.round(s * 0.1), cy - Math.round(s * 0.36), Math.round(s * 0.2), Math.round(s * 0.28));
+
+    // 3) 细黑烛芯
+    ctx.fillStyle = "#1e293b";
+    ctx.fillRect(cx - 1, cy - Math.round(s * 0.42), 2, Math.round(s * 0.08));
+
+    // 4) 鲜活跳动明亮火苗
+    const flick = reduced ? 0 : Math.sin(time * 12) * (s * 0.02);
+    const fx = cx + flick;
+    const fy = cy - Math.round(s * 0.52);
+
+    ctx.fillStyle = "#ffaa1a";
     ctx.beginPath();
-    ctx.ellipse(cx + flick, cy - s * 0.2, s * 0.09, s * 0.15, 0, 0, TAU);
+    ctx.ellipse(fx, fy, Math.round(s * 0.1), Math.round(s * 0.15), 0, 0, TAU);
+    ctx.fill();
+
+    ctx.fillStyle = "#ffffff";
+    ctx.beginPath();
+    ctx.ellipse(fx, fy + 2, Math.round(s * 0.05), Math.round(s * 0.08), 0, 0, TAU);
     ctx.fill();
   }
 
-  // ---- 玩家：纯白软胶小方块（无描边，靠投影与柔光托起）----
+  // ---- 玩家：纯净白玉小恶魔方块（鲜红恶魔双角 + 灵动大眼睛 + 锐利立体边缘）----
   function drawPlayer(p, phase) {
     const s = cell;
-    const w = s * 0.62;
-    const h = s * 0.92;
-    const cx = originX + p.x * cell;
-    const cy = originY + p.y * cell;
+    const w = Math.round(s * 0.68);
+    const h = Math.round(s * 0.92);
+    const cx = Math.round(originX + p.x * cell);
+    const cy = Math.round(originY + p.y * cell);
 
-    // 死亡中：向内塌缩 + 紫色爆散
     let scale = 1;
     let alpha = 1;
     if (phase === "dying") {
       scale = 0.55;
-      alpha = 0.55;
-      glow(ctx, cx, cy - h * 0.5, s * 1.5, C.glowDemon, 0.5);
+      alpha = 0.5;
+      glow(ctx, cx, cy - h * 0.5, s * 1.2, C.glowDemon, 0.45);
     }
-
-    // 落地柔光
-    glow(ctx, cx, cy, s * 0.85, C.glowCool, 0.16);
 
     ctx.globalAlpha = alpha;
-    // 投影
-    ctx.fillStyle = "rgba(0,0,0,0.38)";
-    roundRect(ctx,
-      cx - w * 0.5 * scale + s * 0.04,
-      cy - h * scale + s * 0.1,
-      w * scale, h * scale, s * 0.18);
-    ctx.fill();
 
-    // 主体
-    ctx.fillStyle = C.player;
-    roundRect(ctx,
-      cx - w * 0.5 * scale,
-      cy - h * scale,
-      w * scale, h * scale, s * 0.18);
-    ctx.fill();
+    const pw = Math.round(w * scale);
+    const ph = Math.round(h * scale);
+    const px = Math.round(cx - pw * 0.5);
+    const py = Math.round(cy - ph);
 
-    // 顶部倒角（渐变）
-    const gTop = ctx.createLinearGradient(0, cy - h * scale, 0, cy - h * scale * 0.55);
-    gTop.addColorStop(0, "rgba(255,255,255,0.95)");
-    gTop.addColorStop(1, "rgba(255,255,255,0)");
-    ctx.fillStyle = gTop;
-    roundRect(ctx, cx - w * 0.5 * scale, cy - h * scale, w * scale, h * scale * 0.45, s * 0.18);
-    ctx.fill();
-
-    // 底部厚度
-    const gBot = ctx.createLinearGradient(0, cy - h * scale * 0.4, 0, cy);
-    gBot.addColorStop(0, "rgba(150,160,220,0)");
-    gBot.addColorStop(1, "rgba(90,100,170,0.55)");
-    ctx.fillStyle = gBot;
-    roundRect(ctx, cx - w * 0.5 * scale, cy - h * scale * 0.4, w * scale, h * scale * 0.4, s * 0.18);
-    ctx.fill();
-
-    // 眼睛（朝向）
+    // 1) 鲜红恶魔双角（恶魔标志！）
     if (phase !== "dying") {
-      const dir = p.facing < 0 ? -1 : 1;
-      ctx.fillStyle = "#242a4d";
+      ctx.fillStyle = "#ff2a55";
+      // 左角
       ctx.beginPath();
-      ctx.arc(cx + dir * w * 0.16, cy - h * 0.62, s * 0.05, 0, TAU);
+      ctx.moveTo(px + 4, py + 2);
+      ctx.lineTo(px - 3, py - 6);
+      ctx.lineTo(px + 8, py);
+      ctx.closePath();
       ctx.fill();
+      // 右角
       ctx.beginPath();
-      ctx.arc(cx + dir * w * 0.36, cy - h * 0.62, s * 0.05, 0, TAU);
+      ctx.moveTo(px + pw - 4, py + 2);
+      ctx.lineTo(px + pw + 3, py - 6);
+      ctx.lineTo(px + pw - 8, py);
+      ctx.closePath();
       ctx.fill();
     }
+
+    // 2) 底部深邃微投影
+    ctx.fillStyle = "rgba(0,0,0,0.5)";
+    ctx.fillRect(px + 1, cy - 2, pw - 2, 4);
+
+    // 3) 小方块立体下层边缘（暗靛灰 #64748b）
+    ctx.fillStyle = "#64748b";
+    roundRect(ctx, px, py, pw, ph, 3);
+    ctx.fill();
+
+    // 4) 纯白立体主体面（#ffffff，极高对比度）
+    ctx.fillStyle = "#ffffff";
+    roundRect(ctx, px, py, pw, ph - 3, 3);
+    ctx.fill();
+
+    // 5) 灵动大眼睛（眼神追随运动方向）
+    if (phase !== "dying") {
+      const dir = p.facing < 0 ? -1 : 1;
+      const eyeY = py + Math.round(ph * 0.4);
+      const eyeR = Math.max(2.5, Math.round(s * 0.08));
+
+      // 双眼位置
+      const eye1X = px + Math.round(pw * 0.3) + dir * 2;
+      const eye2X = px + Math.round(pw * 0.7) + dir * 2;
+
+      // 眼眶与黑瞳
+      ctx.fillStyle = "#0f172a";
+      ctx.beginPath();
+      ctx.arc(eye1X, eyeY, eyeR, 0, TAU);
+      ctx.arc(eye2X, eyeY, eyeR, 0, TAU);
+      ctx.fill();
+
+      // 晶亮反光高光点
+      ctx.fillStyle = "#ffffff";
+      ctx.beginPath();
+      ctx.arc(eye1X + (dir >= 0 ? 1 : -1), eyeY - 1, Math.max(1, eyeR * 0.4), 0, TAU);
+      ctx.arc(eye2X + (dir >= 0 ? 1 : -1), eyeY - 1, Math.max(1, eyeR * 0.4), 0, TAU);
+      ctx.fill();
+    }
+
     ctx.globalAlpha = 1;
   }
 
@@ -682,6 +679,15 @@ export function createRenderer(canvas, options = {}) {
   let currentMap = null;
 
   function draw(summary, dt) {
+    // 自动自愈尺寸与高刷屏 DPR（避免异步 reflow 导致画布被拉伸模糊）
+    const rect = canvas.getBoundingClientRect();
+    const curW = Math.max(240, Math.round(rect.width || canvas.clientWidth || 800));
+    const curH = Math.max(200, Math.round(rect.height || canvas.clientHeight || 520));
+    const curDpr = Math.min(3, Math.max(1, globalThis.devicePixelRatio || 1));
+    if (curW > 0 && curH > 0 && (curW !== vw || curH !== vh || curDpr !== dpr)) {
+      resize();
+    }
+
     const step = Number.isFinite(dt) ? dt : 1 / 60;
     if (!reduced) time += step;
     updateFx(step);

@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>符文塔防 - DOIN</title>
+  <meta name="description" content="极简轻肉鸽塔防：在回廊沿途唤醒远古符文，击退深渊魔潮，每波三选一质变遗物卡构筑割草流派。">
+  <link rel="icon" href="favicon.svg">
+  <link rel="stylesheet" href="css/style.css?v=dev">
+</head>
+<body>
+  <noscript>
+    <div style="padding: 24px; text-align: center; color: #fff; background: #111;">
+      <h2>请启用 JavaScript 以进入《符文塔防》</h2>
+      <p>本作依赖现代浏览器 WebAssembly 与 Canvas 2D 运行环境。</p>
+      <p><a href="/" style="color: #00f5d4;">返回 DOIN 门户首页</a></p>
+    </div>
+  </noscript>
+
+  <div class="app-container">
+    <!-- 顶梁紧凑状态栏 -->
+    <header class="top-header">
+      <div class="header-brand">
+        <a href="/" id="back-home" class="btn-home">
+          <span>‹</span>
+          <span id="label-back-home">DOIN 首页</span>
+        </a>
+        <div class="game-title-group">
+          <h1 id="game-main-title">符文塔防</h1>
+          <p id="game-sub-title">Rune Tower</p>
+        </div>
+      </div>
+
+      <div class="header-status">
+        <div class="status-badge">
+          <span id="label-wave" class="badge-label">波次</span>
+          <strong id="ui-wave" class="badge-val">1 / 20</strong>
+        </div>
+        <div class="status-badge">
+          <span id="label-mana" class="badge-label">法力</span>
+          <strong id="ui-mana" class="badge-val mana-val">220 ⬡</strong>
+        </div>
+        <div class="status-badge">
+          <span id="label-score" class="badge-label">功勋</span>
+          <strong id="ui-score" class="badge-val gold-val">0</strong>
+        </div>
+      </div>
+
+      <div class="header-actions">
+        <button id="btn-chapter-menu" class="btn-icon">章节</button>
+        <button id="btn-pause-top" class="btn-icon">暂停</button>
+        <button id="btn-audio" class="btn-icon" aria-label="切换音效">音效: 开</button>
+        <button id="btn-lang" class="btn-icon" aria-label="切换语言">English</button>
+      </div>
+    </header>
+
+    <!-- 桌面双栏核心作战机台 -->
+    <main class="main-stage">
+      <!-- 左侧：回廊主战场 -->
+      <section class="canvas-wrapper">
+        <canvas id="game-canvas" width="960" height="600"></canvas>
+
+        <!-- 悬浮符文基座操作环 -->
+        <div id="ui-pedestal-panel" class="pedestal-float-panel hidden">
+          <div class="panel-header">
+            <h3 id="pedestal-title">符文基座</h3>
+            <button id="btn-close-pedestal" class="btn-close-panel" aria-label="关闭">×</button>
+          </div>
+          <div id="pedestal-body">
+            <!-- 动态注入建塔或升级按钮 -->
+          </div>
+        </div>
+      </section>
+
+      <!-- 右侧：神谕控制盘 -->
+      <aside class="sidebar-panel">
+        <!-- 圣所水晶耐久 -->
+        <div class="card-box crystal-meter">
+          <div class="box-title">
+            <span id="ui-crystal-label">圣所水晶耐久</span>
+            <span id="ui-crystal-text">20 / 20</span>
+          </div>
+          <div class="progress-track">
+            <div id="ui-crystal-bar" class="progress-fill healthy" style="width: 100%;"></div>
+          </div>
+        </div>
+
+        <!-- 下波斥候预警 -->
+        <div class="card-box">
+          <div id="ui-scout-title" class="box-title">下波斥候预警</div>
+          <div id="ui-scout-list" class="scout-list">
+            <!-- 动态注入怪群信息 -->
+          </div>
+        </div>
+
+        <!-- 已激活流派遗物 -->
+        <div class="card-box">
+          <div id="ui-active-relics-title" class="box-title">已激活流派遗物</div>
+          <div id="ui-relics-shelf" class="relics-shelf">
+            <!-- 动态注入已获得卡牌徽章 -->
+          </div>
+        </div>
+
+        <!-- 核心出怪与变速控制 -->
+        <div class="combat-controls">
+          <button id="btn-start-wave" class="btn-combat start">唤醒魔潮</button>
+          <button id="btn-rush-wave" class="btn-combat rush hidden">提前引潮 (+法力)</button>
+          
+          <div class="sub-controls-row">
+            <button id="btn-speed" class="btn-combat speed">倍速: 1x</button>
+            <button id="btn-pause-inline" class="btn-combat pause">⏸ 暂停</button>
+          </div>
+          
+          <button id="btn-chapters" class="btn-combat chapters">📜 章节选关</button>
+        </div>
+
+        <div id="ui-hotkey-tip" class="hotkey-tip">
+          快捷键: [1-4] 选塔 | [U] 升阶 | [X] 分解 | [Space] 变速 | [P/Esc] 暂停 | [R] 引潮
+        </div>
+      </aside>
+    </main>
+  </div>
+
+  <!-- 暂停控制弹窗 -->
+  <div id="modal-pause" class="modal-overlay hidden">
+    <div class="modal-card pause-card">
+      <h2 id="pause-modal-title">防线暂歇</h2>
+      <p id="pause-modal-subtitle" class="modal-subtitle">符文流转已静止，可检视战场与战术</p>
+      
+      <div class="pause-actions-list">
+        <button id="btn-resume" class="btn-primary">继续防守</button>
+        <button id="btn-pause-chapters" class="btn-secondary">章节选关</button>
+        <button id="btn-pause-restart" class="btn-secondary">重新开始本局</button>
+        <a href="/" id="btn-pause-home" class="btn-secondary link-btn">返回 DOIN 首页</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- 章节选关与存档继续弹窗 -->
+  <div id="modal-chapters" class="modal-overlay hidden">
+    <div class="modal-card chapters-card">
+      <div class="chapters-header">
+        <h2 id="chapters-modal-title">深渊远征章节</h2>
+        <button id="btn-close-chapters" class="btn-close-panel" aria-label="关闭">×</button>
+      </div>
+      <p id="chapters-modal-subtitle" class="modal-subtitle">选择已解锁的章节展开防守（附带初始法力与初始遗物配给）：</p>
+      
+      <div id="chapters-container" class="chapters-grid">
+        <!-- 动态注入继续当前存档卡 + 四大章节卡 -->
+      </div>
+    </div>
+  </div>
+
+  <!-- 神龛三选一遗物抽卡弹窗 -->
+  <div id="modal-relic-draft" class="modal-overlay hidden">
+    <div class="modal-card">
+      <h2 id="draft-modal-title">远古神龛的赐福</h2>
+      <p id="draft-modal-subtitle" class="modal-subtitle">击退深渊魔潮！选取一枚远古符文遗物注入你的防守矩阵：</p>
+      <div id="relic-options-container" class="relic-options-grid">
+        <!-- 动态注入 3 张可选卡牌 -->
+      </div>
+      <div>
+        <button id="btn-relic-reroll" class="btn-reroll">重抽 (2)</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 终局通关/失败结算弹窗 -->
+  <div id="modal-endgame" class="modal-overlay hidden">
+    <div class="modal-card">
+      <h2 id="end-title">远古防线大捷！</h2>
+      <p id="end-subtitle" class="modal-subtitle">你成功击退了全部 20 波深渊魔潮</p>
+      <div id="end-stats" class="end-stats-box">
+        <!-- 动态注入战斗结算数据 -->
+      </div>
+      <div>
+        <button id="btn-restart" class="btn-primary">重开新局</button>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="js/main.mjs?v=dev"></script>
+</body>
+</html>

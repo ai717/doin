@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>太空防御者 · DOIN 在线小游戏</title>
+  <meta name="description" content="太空防御者：驾驶复古战机在几何弹幕里横向穿梭，擦弹充能引爆过载，夺回被俘僚机双机合体，五个星区三十波反打至敌方母舰。">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="css/style.css?v=dev">
+</head>
+<body>
+  <div id="game-app">
+    <header id="stage-bar">
+      <a href="/" id="back-home" class="bar-btn">
+        <span class="bar-glyph">←</span><span class="bar-text" id="back-text">返回门户</span>
+      </a>
+      <h1 id="app-title">
+        <span id="app-title-main">太空防御者</span>
+        <span id="app-subtitle">深空霓虹街机</span>
+      </h1>
+      <div class="stage-actions">
+        <button id="btn-sound" class="bar-btn" type="button" aria-pressed="true">
+          <span class="bar-glyph">🔊</span>
+        </button>
+        <button id="btn-lang" class="bar-btn" type="button">EN</button>
+        <button id="btn-help" class="bar-btn" type="button">
+          <span class="bar-glyph">?</span>
+        </button>
+      </div>
+    </header>
+
+    <nav id="mode-bar" role="tablist" aria-label="选择玩法模式">
+      <button class="mode-chip is-active" id="mode-campaign" type="button" role="tab" data-mode="campaign" aria-selected="true">星区战役</button>
+      <button class="mode-chip" id="mode-rush" type="button" role="tab" data-mode="rush" aria-selected="false">母舰突袭</button>
+      <button class="mode-chip" id="mode-survival" type="button" role="tab" data-mode="survival" aria-selected="false">生存狂潮</button>
+    </nav>
+
+    <main id="stage-core">
+      <aside id="wing-left" class="wing" aria-label="作战指令牌匾">
+        <div class="plaque-block">
+          <span class="plaque-label" id="label-sector">星区</span>
+          <strong class="plaque-value" id="val-sector">新兵星区</strong>
+        </div>
+        <div class="plaque-block">
+          <span class="plaque-label" id="label-wave">波次</span>
+          <strong class="plaque-value" id="val-wave">1 / 30</strong>
+        </div>
+        <div class="plaque-block">
+          <span class="plaque-label" id="label-hangar">机库状态</span>
+          <strong class="plaque-value plaque-value-sm" id="val-hangar">单机</strong>
+        </div>
+        <div class="plaque-block">
+          <span class="plaque-label" id="label-lives">残机</span>
+          <strong class="plaque-value plaque-value-sm" id="val-lives">3</strong>
+        </div>
+        <div class="wing-actions">
+          <button id="btn-launch" class="key-btn key-primary" type="button">出击</button>
+          <button id="btn-retry" class="key-btn" type="button">重打本波</button>
+          <button id="btn-hangar" class="key-btn" type="button">返回机库</button>
+        </div>
+        <p class="hint-text" id="key-hint">← → / A D 横移 · 空格或 J 开火 · K 引爆过载 · P 暂停 · R 重开</p>
+      </aside>
+
+      <section id="arena" aria-label="深空霓虹街机舞台">
+        <div id="crt-bezel">
+          <canvas id="stage-canvas" role="img" aria-label="太空防御者：战机横移射击与敌阵俯冲"></canvas>
+        </div>
+        <div id="toast" role="status" aria-live="polite"></div>
+      </section>
+
+      <aside id="wing-right" class="wing" aria-label="战况牌匾">
+        <div class="plaque-block">
+          <span class="plaque-label" id="label-shield">护盾</span>
+          <div class="shield-cells" id="shield-cells"></div>
+        </div>
+        <div class="meter">
+          <span class="plaque-label" id="label-overload">OVERLOAD</span>
+          <div class="meter-track"><i id="bar-overload"></i></div>
+        </div>
+        <div class="gauge-row">
+          <div class="gauge">
+            <span class="plaque-label" id="label-combo">连击链</span>
+            <strong class="gauge-value" id="val-combo">×1</strong>
+          </div>
+          <div class="gauge">
+            <span class="plaque-label" id="label-acc">命中率</span>
+            <strong class="gauge-value" id="val-acc">0%</strong>
+          </div>
+        </div>
+        <div class="gauge-row">
+          <div class="gauge">
+            <span class="plaque-label" id="label-graze">擦弹</span>
+            <strong class="gauge-value" id="val-graze">0</strong>
+          </div>
+          <div class="gauge">
+            <span class="plaque-label" id="label-timer">本波用时</span>
+            <strong class="gauge-value" id="val-timer">0s</strong>
+          </div>
+        </div>
+        <div class="scoreboard">
+          <span class="plaque-label" id="label-best">历史最佳</span>
+          <div class="score-line"><span id="label-best-score">最高分</span><strong id="val-best-score">0</strong></div>
+          <div class="score-line"><span id="label-best-wave">最远波次</span><strong id="val-best-wave">1</strong></div>
+          <div class="score-line"><span id="label-rush-best">突袭最快</span><strong id="val-rush-best">—</strong></div>
+        </div>
+        <label class="toggle" id="autofire-wrap">
+          <input type="checkbox" id="chk-autofire" checked>
+          <span id="label-autofire">自动开火</span>
+        </label>
+      </aside>
+    </main>
+
+    <div id="control-deck">
+      <div class="pad pad-move">
+        <button type="button" class="pad-btn" id="pad-left" data-hold="left">
+          <span class="pad-label" id="pad-left-label">左移</span><kbd>←</kbd>
+        </button>
+        <button type="button" class="pad-btn" id="pad-right" data-hold="right">
+          <span class="pad-label" id="pad-right-label">右移</span><kbd>→</kbd>
+        </button>
+      </div>
+      <div class="pad pad-fire">
+        <button type="button" class="pad-btn pad-primary" id="pad-fire" data-hold="fire">
+          <span class="pad-label" id="pad-fire-label">发射</span><kbd>J</kbd>
+        </button>
+        <button type="button" class="pad-btn pad-overload" id="pad-overload">
+          <span class="pad-label" id="pad-overload-label">过载</span><kbd>K</kbd>
+        </button>
+        <button type="button" class="pad-btn pad-pause" id="pad-pause">
+          <span class="pad-label" id="pad-pause-label">暂停</span><kbd>P</kbd>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div id="panel-hangar" class="overlay is-open">
+    <div class="panel panel-hangar">
+      <span class="panel-kicker" id="hangar-kicker">SPACE DEFENDER</span>
+      <h2 class="panel-title" id="hangar-title">出击准备</h2>
+      <p class="panel-desc" id="hangar-desc">选一波立刻起飞：擦过敌弹可充能 OVERLOAD，被皇蜂牵引时反手击落它就能夺回僚机双机合体。</p>
+      <p class="stars-line" id="total-stars">总星数 0/90</p>
+      <div id="wave-grid" class="wave-grid"></div>
+      <div class="panel-actions">
+        <button id="btn-hangar-start" class="btn btn-primary" type="button">出击</button>
+        <button id="btn-hangar-close" class="btn" type="button">关闭</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="panel-pause" class="overlay">
+    <div class="panel">
+      <h2 class="panel-title" id="pause-title">暂停</h2>
+      <p class="panel-desc" id="pause-desc">深空还在，弹幕也还在。</p>
+      <div class="panel-actions">
+        <button id="btn-resume" class="btn btn-primary" type="button">继续战斗</button>
+        <button id="btn-retry-pause" class="btn" type="button">重打本波</button>
+        <button id="btn-hangar-pause" class="btn" type="button">返回机库</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="panel-result" class="overlay">
+    <div class="panel panel-result">
+      <h2 class="panel-title" id="result-title">星区肃清！</h2>
+      <div class="result-stars" id="result-stars" aria-hidden="true">
+        <span class="star">★</span><span class="star">★</span><span class="star">★</span>
+      </div>
+      <div class="result-rows">
+        <div class="result-row"><span id="label-res-score">得分</span><strong id="res-score">0</strong></div>
+        <div class="result-row"><span id="label-res-acc">命中率</span><strong id="res-acc">0%</strong></div>
+        <div class="result-row"><span id="label-res-kills">击落</span><strong id="res-kills">0</strong></div>
+        <div class="result-row"><span id="label-res-graze">擦弹</span><strong id="res-graze">0</strong></div>
+        <div class="result-row"><span id="label-res-rescue">夺回僚机</span><strong id="res-rescue">0</strong></div>
+        <div class="result-row"><span id="label-res-time">用时</span><strong id="res-time">0s</strong></div>
+        <div class="result-row"><span id="label-res-bonus">通关奖励</span><strong id="res-bonus">0</strong></div>
+      </div>
+      <p class="result-hint" id="result-hint"></p>
+      <div class="panel-actions">
+        <button id="btn-next" class="btn btn-primary" type="button">下一波</button>
+        <button id="btn-retry-result" class="btn" type="button">重打本波</button>
+        <button id="btn-hangar-result" class="btn" type="button">返回机库</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="panel-help" class="overlay">
+    <div class="panel panel-help">
+      <h2 class="panel-title" id="help-title">玩法说明</h2>
+      <ol class="help-list">
+        <li id="help1"></li>
+        <li id="help2"></li>
+        <li id="help3"></li>
+        <li id="help4"></li>
+        <li id="help5"></li>
+        <li id="help6"></li>
+      </ol>
+      <div class="panel-actions">
+        <button id="btn-help-close" class="btn btn-primary" type="button">我知道了</button>
+      </div>
+    </div>
+  </div>
+
+  <noscript><p>需要启用 JavaScript 才能游玩太空防御者。</p></noscript>
+  <script type="module" src="js/main.mjs?v=dev"></script>
+</body>
+</html>

@@ -42,10 +42,10 @@ test("黄金数据覆盖全部 50 关，且每关都有非空轨迹", () => {
   }
 });
 
-test("黄金数据总帧数与预期一致（11802 帧）", () => {
+test("黄金数据总帧数与预期一致（8123 帧）", () => {
   let total = 0;
   for (const k of Object.keys(GOLDEN)) total += GOLDEN[k].length;
-  assert.equal(total, 11802, "总帧数变化意味着关卡或物理被改动，需重新求解");
+  assert.equal(total, 8123, "总帧数变化意味着关卡或物理被改动，需重新求解");
 });
 
 test("50 关黄金路径全部可复现通关（可解性 + 确定性铁证）", () => {

@@ -126,7 +126,7 @@ export function createUI({ game, renderer, audio }) {
 
     els.candleTitle.textContent = s.candleLabel;
     els.bestTitle.textContent = s.bestLabel;
-    els.gravTitle.textContent = s.title + " · " + s.sealLabel;
+    els.gravTitle.textContent = s.gravityLabel;
 
     els.btnRestart.textContent = s.retry;
     els.btnRestart.setAttribute("aria-label", s.retry);
@@ -431,17 +431,26 @@ export function createUI({ game, renderer, audio }) {
   function bindHold(el, name) {
     const down = (ev) => {
       ev.preventDefault();
+      try {
+        if (typeof el.setPointerCapture === "function") el.setPointerCapture(ev.pointerId);
+      } catch {}
       setHeld(name, true, el);
       audio.resume();
     };
     const up = (ev) => {
-      if (ev) ev.preventDefault();
+      if (ev) {
+        ev.preventDefault();
+        try {
+          if (typeof el.releasePointerCapture === "function" && el.hasPointerCapture(ev.pointerId)) {
+            el.releasePointerCapture(ev.pointerId);
+          }
+        } catch {}
+      }
       setHeld(name, false, el);
     };
     el.addEventListener("pointerdown", down);
     el.addEventListener("pointerup", up);
     el.addEventListener("pointercancel", up);
-    el.addEventListener("pointerleave", up);
     el.addEventListener("contextmenu", (ev) => ev.preventDefault());
   }
 
