@@ -515,6 +515,60 @@
         "title": "Pong Neo",
         "desc": "Top-down arcade table clash: slick angle slicing, spin cuts, escalating rally speed, tiered AI, local 2P and solo wall challenge!"
       }
+    },
+    {
+      "title": "森林冰火人",
+      "slug": "fire-ice",
+      "desc": "双人合作解谜：火人怕水、冰人怕岩浆，双键盘同屏协作，冻桥燃藤、传送合璧，双出口同步抵达！",
+      "icon": "🔥",
+      "cover": "/assets/covers/fire-ice.webp",
+      "tags": [
+        "双人",
+        "合作",
+        "解谜",
+        "平台跳跃"
+      ],
+      "url": "/fire-ice/",
+      "en": {
+        "title": "Ember & Tide",
+        "desc": "Local co-op puzzle platformer: the fire twin fears water, the ice twin fears lava. Freeze bridges, burn vines, teleport in sync, reach both exits together!"
+      }
+    },
+    {
+      "title": "符文塔防",
+      "slug": "rune-tower",
+      "desc": "极简轻肉鸽塔防：单条回廊沿途部署符文，波末三选一质变遗物卡（分裂/减速/连锁爆破），纯靠流派构筑与波次克制，5分钟极速防守！",
+      "icon": "🔮",
+      "cover": "/assets/covers/rune-tower.webp",
+      "tags": [
+        "塔防",
+        "肉鸽",
+        "策略",
+        "极简"
+      ],
+      "url": "/rune-tower/",
+      "en": {
+        "title": "Rune Tower",
+        "desc": "Minimalist roguelite tower defense: deploy runes along winding corridors, draft synergy relics (split, slow, chain overload) after each wave, 5-minute fast runs!"
+      }
+    },
+    {
+      "title": "恶魔迷途",
+      "slug": "devil-run",
+      "desc": "控制小方块跑跳冲向终点门，可脚下的砖、头顶的板、甚至重力都会反逻辑耍赖。50 个微关卡、零惩罚重生、固定可复现的坑爹陷阱，即点即玩！",
+      "icon": "😈",
+      "cover": "/assets/covers/devil-run.webp",
+      "tags": [
+        "平台跳跃",
+        "解谜",
+        "闯关",
+        "休闲"
+      ],
+      "url": "/devil-run/",
+      "en": {
+        "title": "Devil Run",
+        "desc": "Run and jump a tiny cube to the exit door, but the floor tiles, the ceiling and even gravity will troll you. 50 micro levels, zero-punishment respawn, fully deterministic traps!"
+      }
     }
   ]
 }

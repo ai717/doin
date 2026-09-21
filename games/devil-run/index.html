@@ -1,0 +1,173 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <title>恶魔迷途 · DOIN 在线小游戏</title>
+    <meta name="description" content="恶魔迷途（Devil Run）：控制小方块跑跳冲向终点门，可脚下的砖、头顶的板、甚至重力都会反逻辑耍赖。50 个微关卡、零惩罚重生、固定可复现的坑爹陷阱，即点即玩！">
+    <link rel="canonical" href="https://doin.win/devil-run/">
+    <meta name="theme-color" content="#0d1024">
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="DOIN">
+    <meta property="og:title" content="恶魔迷途 · DOIN 在线小游戏">
+    <meta property="og:description" content="50 个微关卡的反预判陷阱平台跳跃，每一步都可能是谎言。">
+    <meta property="og:url" content="https://doin.win/devil-run/">
+    <meta property="og:locale" content="zh_CN">
+    <meta property="og:image" content="https://doin.win/assets/og-image.png">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="恶魔迷途 · DOIN 在线小游戏">
+    <meta name="twitter:description" content="50 个微关卡的反预判陷阱平台跳跃，每一步都可能是谎言。">
+    <meta name="twitter:image" content="https://doin.win/assets/og-image.png">
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <link rel="stylesheet" href="css/style.css?v=dev">
+  </head>
+  <body>
+    <main class="cabinet">
+      <!-- 机台顶边：一体化紧凑状态栏（不是四角浮动按钮） -->
+      <header class="marquee">
+        <div class="marquee-left">
+          <span class="badge" id="node-badge" aria-hidden="true">01</span>
+          <div class="marquee-copy">
+            <h1 class="game-title" id="game-title">恶魔迷途</h1>
+            <p class="node-name" id="node-name">坦途</p>
+          </div>
+        </div>
+
+        <div class="marquee-right">
+          <div class="readout" title="关卡">
+            <span class="readout-tag" id="level-tag">关卡</span>
+            <b class="readout-val" id="level-val">1-1</b>
+          </div>
+          <div class="readout" title="用时">
+            <span class="readout-tag" id="time-tag">用时</span>
+            <b class="readout-val mono" id="time-val">0:00</b>
+          </div>
+          <div class="readout" title="死亡次数">
+            <span class="readout-tag" id="death-tag">死亡</span>
+            <b class="readout-val mono" id="death-val">0</b>
+          </div>
+        </div>
+      </header>
+
+      <section class="machine">
+        <!-- 左翼：节点印章台 -->
+        <aside class="wing wing-left" aria-label="进度">
+          <div class="plaque">
+            <p class="plaque-title" id="seal-title">章节印章</p>
+            <div class="seal-node">
+              <span class="seal-node-id" id="seal-node-id">01</span>
+              <span class="seal-node-count"><b id="seal-node-count">0</b><i>/15</i></span>
+            </div>
+            <div class="seal-bar" aria-hidden="true">
+              <span class="seal-bar-fill" id="seal-bar-fill"></span>
+            </div>
+            <p class="plaque-sub" id="seal-sub">通关点亮 · 蜡烛与无伤更难</p>
+          </div>
+
+          <div class="plaque plaque-total">
+            <p class="plaque-title" id="total-title">全部印章</p>
+            <div class="seal-node">
+              <span class="seal-node-count"><b id="total-count">0</b><i>/150</i></span>
+            </div>
+          </div>
+
+          <button type="button" class="tab-btn" id="levels-btn" aria-label="选关">选关</button>
+        </aside>
+
+        <!-- 中央：游戏舞台 -->
+        <div class="stage-wrap">
+          <canvas id="stage" aria-label="游戏画面" role="img"></canvas>
+
+          <div class="stage-overlay" id="stage-overlay" hidden>
+            <p class="overlay-text" id="overlay-text"></p>
+          </div>
+
+          <p class="hint" id="hint" aria-live="polite"></p>
+        </div>
+
+        <!-- 右翼：机械翻轴计数器 + 隐藏蜡烛提示 -->
+        <aside class="wing wing-right" aria-label="状态">
+          <div class="plaque">
+            <p class="plaque-title" id="candle-title">隐藏蜡烛</p>
+            <div class="candle-slot" id="candle-slot">
+              <span class="candle-ico" aria-hidden="true">🕯</span>
+              <span class="candle-state" id="candle-state">未找到</span>
+            </div>
+          </div>
+
+          <div class="plaque">
+            <p class="plaque-title" id="best-title">最佳用时</p>
+            <div class="readout big">
+              <b class="readout-val mono" id="best-val">--</b>
+            </div>
+          </div>
+
+          <div class="plaque">
+            <p class="plaque-title" id="grav-title">重力</p>
+            <div class="gravity-slot" id="gravity-slot">
+              <span class="gravity-glyph" id="gravity-glyph">↓</span>
+            </div>
+          </div>
+        </aside>
+      </section>
+
+      <!-- 底部操作台：实体道具键（不是通用管理按钮） -->
+      <footer class="deck">
+        <div class="deck-controls">
+          <button type="button" class="pad-btn" id="pad-left" aria-label="向左">←</button>
+          <button type="button" class="pad-btn" id="pad-right" aria-label="向右">→</button>
+          <button type="button" class="pad-btn pad-jump" id="pad-jump" aria-label="跳跃">跳</button>
+        </div>
+
+        <div class="deck-tools">
+          <button type="button" class="tool-btn" id="btn-restart" aria-label="重玩本关">重玩</button>
+          <button type="button" class="tool-btn" id="btn-sound" aria-pressed="true" aria-label="音效">♪</button>
+          <button type="button" class="tool-btn" id="btn-rules" aria-label="规则说明">规则</button>
+          <button type="button" class="tool-btn" id="btn-lang" aria-label="切换语言">EN</button>
+          <a class="tool-btn home" href="/" id="back-home" aria-label="返回首页">首页</a>
+        </div>
+      </footer>
+    </main>
+
+    <!-- 选关弹层 -->
+    <div class="layer" id="layer-levels" role="dialog" aria-modal="true" aria-labelledby="levels-heading" hidden>
+      <div class="panel panel-wide">
+        <h2 class="panel-title" id="levels-heading">选关</h2>
+        <div class="levels-scroll" id="levels-list"></div>
+        <div class="panel-actions">
+          <button type="button" class="btn btn-primary" id="levels-close">继续游戏</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 结算弹层 -->
+    <div class="layer" id="layer-result" role="dialog" aria-modal="true" aria-labelledby="result-heading" hidden>
+      <div class="panel">
+        <p class="result-badge" id="result-badge">通关</p>
+        <h2 class="panel-title" id="result-heading">门后是什么</h2>
+        <p class="result-line" id="result-line"></p>
+        <div class="seal-row" id="result-seals" aria-label="本关印章"></div>
+        <p class="result-note" id="result-note"></p>
+        <div class="panel-actions">
+          <button type="button" class="btn btn-primary" id="result-next">下一关</button>
+          <button type="button" class="btn" id="result-replay">重玩</button>
+          <button type="button" class="btn" id="result-close">留在此关</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 规则弹层 -->
+    <div class="layer" id="layer-rules" role="dialog" aria-modal="true" aria-labelledby="rules-heading" hidden>
+      <div class="panel">
+        <h2 class="panel-title" id="rules-heading">规则</h2>
+        <div class="rules-body" id="rules-body"></div>
+        <div class="panel-actions">
+          <button type="button" class="btn btn-primary" id="rules-close">知道了</button>
+        </div>
+      </div>
+    </div>
+
+    <noscript><p class="noscript">需要启用 JavaScript 才能游玩恶魔迷途。</p></noscript>
+    <script type="module" src="js/main.mjs?v=dev"></script>
+  </body>
+</html>
