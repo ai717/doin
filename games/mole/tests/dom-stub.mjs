@@ -4,8 +4,29 @@
 //  2. appendChild 必须摊平 DocumentFragment（插的是子节点，不是 fragment 本身）
 //  3. className setter 必须联动 classList
 //  4. navigator 在 Node 24 是只读 getter，必须用 defineProperty
+//  5. style.setProperty 必须真的存值，否则内联自定义属性（如 --duck-ms）在桩里凭空消失
 
 import { readFileSync } from "node:fs";
+
+/** 内联样式桩：把自定义属性与普通属性都真实记录下来，供断言读取 */
+function makeInlineStyle() {
+  const props = new Map();
+  return {
+    setProperty(name, value) {
+      props.set(String(name), String(value));
+    },
+    removeProperty(name) {
+      props.delete(String(name));
+    },
+    getPropertyValue(name) {
+      return props.get(String(name)) ?? "";
+    },
+    /** 供测试用：拿到全部内联属性 */
+    _all() {
+      return Object.fromEntries(props);
+    },
+  };
+}
 
 const HIDDEN_RE = /<[^>]*\bid="([^"]+)"[^>]*\bhidden\b[^>]*>|<[^>]*\bhidden\b[^>]*\bid="([^"]+)"[^>]*>/g;
 
@@ -53,7 +74,10 @@ export function installDom(html) {
       this.parentNode = null;
       this.attributes = {};
       this.dataset = {};
-      this.style = { setProperty() {}, removeProperty() {}, getPropertyValue: () => "" };
+      // 内联样式：必须真的存下来。曾经 setProperty 是 no-op，
+      // 于是 ui.mjs 写的 `--duck-ms` 在桩里凭空消失、断言全看不到 ——
+      // 又一个"桩量不到所以测不出来"的盲区。
+      this.style = makeInlineStyle();
       this._className = "";
       this._textContent = "";
       this._id = "";

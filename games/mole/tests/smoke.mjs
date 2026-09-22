@@ -193,7 +193,50 @@ check("语言切换写入 doin.lang",
     `clip.parent=${clip?.parentNode?.className} pit.parent=${pit?.parentNode?.className}`);
 }
 
-// ---- 12. 渲染噪声 ----
+// ---- 12. 缩回时长随机化必须真的落到 DOM 上 ----
+// ui.mjs 把每只鼠的 duckMs 写成内联 --duck-ms，CSS transition 读它。
+// 桩的 style.setProperty 曾经是 no-op，这条链路完全测不到（又一个盲区）。
+// 需要让地鼠自然走到 duck 阶段，所以先空推一段（不敲击，任其自行缩回）。
+{
+  // 注意：前面的用例already把上一局打到 over 了，主循环不再生成地鼠。
+  // 必须重新开局，否则这里永远等不到 duck 阶段（会得到假失败）。
+  startRun("normal");
+  // 地鼠要先自然走到 duck 阶段才会写 --duck-ms，所以空推若干帧（不敲击）。
+  // 不同难度/视口的露头时长不同，这里循环到出现第一个 duck 或到上限为止，
+  // 别写死一个帧数 —— 写死会在某些视口下偶发假失败。
+  const readDuck = () => {
+    const s = new Set();
+    for (const h of ui.holes) {
+      // 注意读的是洞位（view.el）而不是 .mole —— 属性设在洞位上，
+      // 靠 CSS 自定义属性的继承传到子元素 .mole 的 transition。
+      const v = h.el?.style?.getPropertyValue?.("--duck-ms");
+      if (v) s.add(v);
+    }
+    return s;
+  };
+  let seen = readDuck();
+  for (let i = 0; i < 40 && seen.size === 0; i += 1) {
+    env.step(10);
+    seen = readDuck();
+  }
+  check("缩回时长已写到 DOM 的 --duck-ms 上", seen.size > 0,
+    "没有任何洞位拿到内联 --duck-ms（setProperty 可能是 no-op，或地鼠始终没进入 duck）");
+  check("缩回时长是合法的 ms 数值", [...seen].every((v) => /^\d+ms$/.test(v)),
+    `异常值: ${[...seen].join(", ")}`);
+  // 多推一会儿以便采到多只鼠，验证"快慢有别"
+  for (let i = 0; i < 80; i += 1) {
+    env.step(10);
+    for (const v of readDuck()) seen.add(v);
+  }
+  if (seen.size > 1) {
+    const nums = [...seen].map((v) => parseInt(v, 10));
+    check("各鼠缩回时长有差异（不是恒定值）",
+      Math.max(...nums) > Math.min(...nums),
+      `全是 ${nums[0]}ms，随机化未生效`);
+  }
+}
+
+// ---- 13. 渲染噪声 ----
 check("无非法颜色/几何 NaN", runtimeErrors.length === 0, runtimeErrors.join(" | "));
 
 emit();

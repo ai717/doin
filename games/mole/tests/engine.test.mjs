@@ -3,7 +3,7 @@ import { describe, it } from "node:test";
 import assert from "node:assert/strict";
 
 import {
-  SPECIES, SPECIES_LIST, PHASE, MIN_UP_MS, DIFFICULTIES, DIFFICULTY_IDS,
+  SPECIES, SPECIES_LIST, PHASE, MIN_UP_MS, DUCK_RANGE_MS, DIFFICULTIES, DIFFICULTY_IDS,
   mulberry32, dailySeed, todayKey, difficultyConfig, pickSpecies,
   createRun, stepRun, hitHole, activeMoles, hasHittableTarget,
   secondsLeft, currentMultiplier,
@@ -210,6 +210,56 @@ describe("engine: 状态机推进", () => {
     const run = createRun({ seed: 5, rows: 3, cols: 4, durationMs: 5000 });
     stepRun(run, 100000);
     assert.ok(run.timeLeftMs >= 4000);
+  });
+});
+
+describe("engine: 缩回时长随机化", () => {
+  it("每只鼠都有 duckMs，且落在 DUCK_RANGE_MS 区间内", () => {
+    const run = createRun({ difficulty: "crazy", seed: 99, rows: 3, cols: 4 });
+    const seen = [];
+    for (let i = 0; i < 400; i += 1) {
+      stepRun(run, 17);
+      for (const h of run.holes) {
+        if (h) seen.push(h.duckMs);
+      }
+    }
+    assert.ok(seen.length > 5, `样本太少（${seen.length}），无法验证随机性`);
+    for (const d of seen) {
+      assert.ok(Number.isFinite(d), `duckMs 不是有限数：${d}`);
+      assert.ok(d >= DUCK_RANGE_MS[0] && d <= DUCK_RANGE_MS[1],
+        `duckMs=${d} 越界 [${DUCK_RANGE_MS}]`);
+    }
+  });
+
+  it("缩回时长确实有高低差（不是恒定值）", () => {
+    const run = createRun({ difficulty: "crazy", seed: 7, rows: 3, cols: 4 });
+    const seen = new Set();
+    for (let i = 0; i < 600; i += 1) {
+      stepRun(run, 17);
+      for (const h of run.holes) if (h) seen.add(h.duckMs);
+    }
+    assert.ok(seen.size >= 5,
+      `600 步只出现 ${seen.size} 种缩回时长，随机化没生效`);
+    const vals = [...seen];
+    assert.ok(Math.max(...vals) - Math.min(...vals) >= 30,
+      `缩回时长跨度仅 ${Math.max(...vals) - Math.min(...vals)}ms，快慢差别看不出来`);
+  });
+
+  it("duck 阶段按各自的 duckMs 结算，快慢鼠不同帧消失", () => {
+    // 直接构造两只 duckMs 不同的鼠，验证引擎读的是每只自己的值而非全局常量
+    const run = createRun({ seed: 3, rows: 3, cols: 4 });
+    putMole(run, 0, SPECIES.NORMAL, 1);
+    putMole(run, 1, SPECIES.NORMAL, 1);
+    stepRun(run, 16);
+    // 均进入 duck
+    run.holes[0].duckMs = 80;
+    run.holes[1].duckMs = 400;
+    assert.equal(run.holes[0].phase, PHASE.DUCK);
+    assert.equal(run.holes[1].phase, PHASE.DUCK);
+    // 推 120ms：快鼠已消失，慢鼠还在
+    stepRun(run, 100);
+    assert.equal(run.holes[0], null, "duckMs=80 的鼠应在 120ms 内消失");
+    assert.equal(run.holes[1]?.phase, PHASE.DUCK, "duckMs=400 的鼠此时不该消失");
   });
 });
 

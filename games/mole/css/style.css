@@ -21,9 +21,11 @@
   --cols: 4;
   --rows: 3;
   --safe-bottom: 16px;
-  /* 冒头 / 缩回时长：必须与 engine.mjs 的 RISE_MS / DUCK_MS 一致（layout.test.mjs 校验） */
+  /* 冒头时长：必须与 engine.mjs 的 RISE_MS 一致（layout.test.mjs 校验）。
+     缩回时长不在这里固定 —— 每只鼠的 duckMs 由引擎随机抽取，
+     运行时经内联 style 写到元素上（见下 .mole 的 --duck-ms 兜底）。 */
   --rise-ms: 220ms;
-  --duck-ms: 150ms;
+  --duck-ms: 150ms; /* 兜底值：engine.DUCK_MS，正常游玩时会被每只鼠的随机值覆盖 */
 }
 
 * { box-sizing: border-box; }
@@ -369,23 +371,38 @@ body {
   width: 66%;
   height: 100%;
   transform: translate(-50%, 100%);
-  transition: transform var(--duck-ms) cubic-bezier(.4, 0, .7, .4);
+  /* 缩回时长由每只鼠的 duckMs 决定：ui.mjs 把随机值写成内联 --duck-ms。
+     ease-in 让"被砸/缩回"有个由慢到快的加速感，比线性更像缩进洞里。 */
+  transition: transform var(--duck-ms) cubic-bezier(.45, .05, .55, .95);
   pointer-events: none;
   will-change: transform;
 }
 
 /* 冒头：一段肉眼可辨的"钻出来"（时长与 engine 的 RISE_MS 一致）。
    注意必须用 animation 而不是 transition —— 这里同时跑挤压拉伸，
-   而且 bob 动画若在 rise 阶段就启动会直接覆盖 transform，导致瞬移。 */
+   而且 bob 动画若在 rise 阶段就启动会直接覆盖 transform，导致瞬移。
+
+   缓动千万不要再用 cubic-bezier(.3,1,.5,1) 这种"前腔被抽空"的曲线：
+   它让 55% 的位移挤在头 20% 的时间里（220ms 动画里只有 44ms），
+   剩下 176ms 几乎不动 —— 观感就是"啪一下弹出来，然后僵在原地"。
+   改用 cubic-bezier(.3,.35,.4,.85)：实测 t=25%→37%、t=50%→71%、t=75%→91%，
+   前中段接近线性、末段才收束，位移均匀铺满整段时长。
+   位移节奏主要由 keyframes 的百分比控制，缓动只做轻微修饰。 */
 .hole[data-phase="rise"] .mole {
-  animation: mole-rise var(--rise-ms) cubic-bezier(.3, 1, .5, 1) both;
+  animation: mole-rise var(--rise-ms) cubic-bezier(.3, .35, .4, .85) both;
 }
 
+/* 三段式钻出：① 鼻尖先顶破地面 → ② 头肩缓慢挤上来（最慢的一段）→ ③ 收尾微过冲。
+   关键是把"头部越出地平线"这个瞬间放在 55% 附近，而不是 45% 前就冲过去，
+   这样玩家能看清"先露头、再出身子"的两拍。 */
 @keyframes mole-rise {
-  0% { transform: translate(-50%, 100%) scale(.82, .88); }
-  45% { transform: translate(-50%, 26%) scale(1.1, .92); }
-  72% { transform: translate(-50%, -5%) scale(.95, 1.08); }
-  100% { transform: translate(-50%, 0) scale(1, 1); }
+  0%   { transform: translate(-50%, 100%) scale(.78, .90); }
+  12%  { transform: translate(-50%, 88%)  scale(.84, .92); }
+  32%  { transform: translate(-50%, 62%)  scale(.94, .96); }
+  55%  { transform: translate(-50%, 24%)  scale(1.06, .93); }
+  78%  { transform: translate(-50%, -6%)  scale(.97, 1.06); }
+  90%  { transform: translate(-50%, 3%)   scale(1.02, .98); }
+  100% { transform: translate(-50%, 0)    scale(1, 1); }
 }
 
 /* 露头就位后转为呼吸晃动 */

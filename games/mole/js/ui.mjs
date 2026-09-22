@@ -196,6 +196,11 @@ export function syncHoles(ui, run) {
     }
     if (view.phase !== phase) {
       view.phase = phase;
+      // 缩回时长每只鼠不同：进入 duck 前把这只鼠的 duckMs 写到内联自定义属性上，
+      // .mole 的 transition 直接读它。必须在切 phase 之前写，否则会先按旧值起跳。
+      if (phase === "duck" && mole?.duckMs) {
+        view.el.style.setProperty("--duck-ms", `${mole.duckMs}ms`);
+      }
       view.el.dataset.phase = phase;
     }
   }

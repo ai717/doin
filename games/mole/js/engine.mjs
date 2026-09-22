@@ -20,7 +20,19 @@ export const PHASE = Object.freeze({ RISE: "rise", UP: "up", DUCK: "duck" });
  * 与 style.css 的 `--rise-ms` 保持一致（layout.test.mjs 会校验两者不脱钩）。
  */
 export const RISE_MS = 220;
+/**
+ * 缩回基准时长。仅作为 style.css `--duck-ms` 的对照基准 ——
+ * 实际每只鼠的缩回时长在 DUCK_RANGE_MS 内随机（见 duckDurationFor），
+ * 只有个别情况才会正好等于这个值。
+ */
 export const DUCK_MS = 150;
+/**
+ * 缩回时长区间（毫秒）。每只地鼠独立抽取，让"钻回去"有快慢差别：
+ * 有的利落一缩、有的迟疑地慢慢沉下去。纯观感差异，不影响判定 ——
+ * 命中判定只看 phase，duck 阶段本就不可再打（hitMole 会返回 action:null）。
+ * 下限别低于 ~110ms，否则会退化成"瞬移消失"。
+ */
+export const DUCK_RANGE_MS = Object.freeze([110, 260]);
 /** 露头时长下限（公平性红线：人类视觉反应中位数约 250ms，这里留足余量） */
 export const MIN_UP_MS = 450;
 export const FRENZY_MS = 4000;
@@ -102,6 +114,26 @@ function randBetween(rng, [min, max]) {
   return lo + rng() * (hi - lo);
 }
 
+/**
+ * 按固定顺序一次性抽齐"这只鼠的全部时长参数"：
+ *   draw 0 → 露头时长（难度区间 upMs）
+ *   draw 1 → 缩回时长（DUCK_RANGE_MS）
+ *
+ * 为什么要固定顺序、一次抽完？
+ * mulberry32 是状态化 PRNG，抽几次就推进几次状态。把抽取集中到一处并写死顺序，
+ * 可以保证"同一 seed → 同一序列"在任何代码改动下都不漂移，
+ * 每日挑战的题面（golden 测试）才不会因为无关重构而变。
+ */
+function durationsFor(rng, cfg, species) {
+  const upBase = randBetween(rng, cfg.upMs);
+  const duckMs = Math.round(randBetween(rng, DUCK_RANGE_MS));
+  const scale = species === SPECIES.GOLD ? 0.7 : species === SPECIES.HELMET ? 1.35 : 1;
+  return {
+    upMs: Math.max(MIN_UP_MS, Math.round(upBase * scale)),
+    duckMs,
+  };
+}
+
 /** 按权重抽鼠种；ban 用于公平性约束（如"场上已无非炸弹目标"时禁出炸弹） */
 export function pickSpecies(rng, weights, banBomb = false) {
   const pool = SPECIES_LIST.filter((s) => (banBomb ? s !== SPECIES.BOMB : true));
@@ -113,12 +145,6 @@ export function pickSpecies(rng, weights, banBomb = false) {
     if (roll <= 0) return s;
   }
   return pool[pool.length - 1];
-}
-
-function upDurationFor(rng, cfg, species) {
-  const base = randBetween(rng, cfg.upMs);
-  const scale = species === SPECIES.GOLD ? 0.7 : species === SPECIES.HELMET ? 1.35 : 1;
-  return Math.max(MIN_UP_MS, Math.round(base * scale));
 }
 
 export function createRun(options = {}) {
@@ -185,12 +211,15 @@ function spawnOne(state) {
   const banBomb = !hasHittableTarget(state);
   const species = pickSpecies(state.rng, cfg.weights, banBomb);
   const index = free[Math.floor(state.rng() * free.length) % free.length];
+  const timing = durationsFor(state.rng, cfg, species);
   const mole = {
     id: state.nextId++,
     species,
     phase: PHASE.RISE,
     t: 0,
-    upMs: upDurationFor(state.rng, cfg, species),
+    upMs: timing.upMs,
+    // 缩回时长每只独立随机（观感差异，不参与判定）
+    duckMs: timing.duckMs,
     hp: species === SPECIES.HELMET ? HELMET_HP : 1,
   };
   state.holes[index] = mole;
@@ -236,7 +265,7 @@ export function stepRun(state, dtMs) {
       } else {
         state.events.push({ type: "dodge", index: i });
       }
-    } else if (mole.phase === PHASE.DUCK && mole.t >= DUCK_MS) {
+    } else if (mole.phase === PHASE.DUCK && mole.t >= (mole.duckMs ?? DUCK_MS)) {
       state.holes[i] = null;
       state.events.push({ type: "clear", index: i });
     }

@@ -171,17 +171,81 @@ test("CSS: 冒头关键帧是一段真实的爬升过程", () => {
   assert.ok(stops.some((s) => s.y < -1), "中途应有轻微过冲，否则没有弹跳感");
   // 至少一帧带 scale，构成挤压拉伸
   assert.match(stop, /scale\(/);
+
+  // ★ 关键回归：位移必须均匀铺满整段时长，不能"前腔被抽空"。
+  // 曾经 45% 处就已经跑到 26%（越过了地平线 0 以上），前段占比过大 ——
+  // 配合 cubic-bezier(.3,1,.5,1) 的缓动，55% 的位移挤在头 20% 时间里，
+  // 观感就是"啪一下弹出来然后僵住"。这里直接约束分布：
+  //   · 半程（50%）时位移不应超过全程的 70%（留出可见的后半段）
+  //   · 25% 时不应超过 45%（头段别抢跑）
+  const pctAt = (frac) => {
+    // 在关键帧之间线性插值求进度（简化：只用于分布断言，不求精确缓动）
+    const target = frac * 100;
+    let a = stops[0];
+    let b = last;
+    for (let k = 0; k < stops.length - 1; k += 1) {
+      if (stops[k].at <= target && stops[k + 1].at >= target) {
+        [a, b] = [stops[k], stops[k + 1]];
+        break;
+      }
+    }
+    const span = b.at - a.at || 1;
+    const r = (target - a.at) / span;
+    return a.y + (b.y - a.y) * r;
+  };
+  // y 从 100 走到 0，进度 = (100 - y) / 100
+  const prog50 = (100 - pctAt(0.5)) / 100;
+  const prog25 = (100 - pctAt(0.25)) / 100;
+  assert.ok(prog50 <= 0.72,
+    `半程时就已完成 ${(prog50 * 100).toFixed(0)}% 的位移，后段会显得僵住（应 ≤72%）`);
+  assert.ok(prog25 <= 0.46,
+    `25% 时就已完成 ${(prog25 * 100).toFixed(0)}% 的位移，头段抢跑太狠（应 ≤46%）`);
+});
+
+test("CSS 冒头的缓动不能抢跑（禁止前腔被抽空的贝塞尔）", () => {
+  // cubic-bezier(.3,1,.5,1) 这类曲线：20% 时间就吃掉 55% 位移 → 看上去是瞬移。
+  // 判据是"曲线在头段是否过陡"，而不是简单看某个参数大小：
+  //   y1 接近 1 = 起手就是最高速（抢跑），这才是元凶；
+  //   y2=1 只是"末段平缓收尾"，本身没问题，不该被禁。
+  const rise = rule('.hole[data-phase="rise"] .mole');
+  const bez = rise.match(/cubic-bezier\(\s*([\d.]+)\s*,\s*([\d.]+)\s*,\s*([\d.]+)\s*,\s*([\d.]+)\s*\)/);
+  assert.ok(bez, "rise 应显式声明缓动曲线");
+  const [x1, y1, x2, y2] = bez.slice(1, 5).map(Number);
+  assert.ok(y1 <= 0.8, `缓动 y1=${y1} 太靠前，起手即最高速会抢跑（应 ≤0.8）`);
+  // 用真实贝塞尔求值确认：一半时间内的位移不超过 75%
+  const evalBez = (t, p1, p2) => {
+    const cx = 3 * x1, bx = 3 * (x2 - x1) - cx, ax = 1 - cx - bx;
+    const cy = 3 * p1, by = 3 * (p2 - p1) - cy, ay = 1 - cy - by;
+    const sx = (u) => ((ax * u + bx) * u + cx) * u;
+    const sy = (u) => ((ay * u + by) * u + cy) * u;
+    let u = t;
+    for (let k = 0; k < 40; k += 1) {
+      const e = sx(u) - t;
+      const d = (3 * ax * u + 2 * bx) * u + cx;
+      if (Math.abs(e) < 1e-7 || Math.abs(d) < 1e-7) break;
+      u -= e / d;
+    }
+    return sy(u);
+  };
+  const half = evalBez(0.5, y1, y2);
+  assert.ok(half <= 0.78, `一半时间就跑了 ${(half * 100).toFixed(0)}% 的位移，后段会僵住（应 ≤78%）`);
+  const quarter = evalBez(0.25, y1, y2);
+  assert.ok(quarter <= 0.5, `25% 时间跑了 ${(quarter * 100).toFixed(0)}% 的位移，抢跑过狠（应 ≤50%）`);
 });
 
 test("CSS 时长与 engine 的 RISE_MS / DUCK_MS 一致", async () => {
-  const { RISE_MS, DUCK_MS } = await import("../js/engine.mjs");
+  const { RISE_MS, DUCK_MS, DUCK_RANGE_MS } = await import("../js/engine.mjs");
   const root = css.slice(css.indexOf(":root"), css.indexOf("}", css.indexOf(":root")));
   const rise = root.match(/--rise-ms:\s*(\d+)ms/);
   const duck = root.match(/--duck-ms:\s*(\d+)ms/);
   assert.ok(rise, ":root 缺少 --rise-ms");
   assert.ok(duck, ":root 缺少 --duck-ms");
   assert.equal(Number(rise[1]), RISE_MS, `--rise-ms 应等于 engine.RISE_MS(${RISE_MS})`);
-  assert.equal(Number(duck[1]), DUCK_MS, `--duck-ms 应等于 engine.DUCK_MS(${DUCK_MS})`);
+  // --duck-ms 现在是兜底值：正常游玩时每只鼠的随机 duckMs 会内联覆盖它
+  assert.equal(Number(duck[1]), DUCK_MS, `--duck-ms 兜底值应等于 engine.DUCK_MS(${DUCK_MS})`);
+  // 兜底值必须落在随机区间内，否则"没拿到内联值"时观感会跳脱
+  assert.ok(DUCK_MS >= DUCK_RANGE_MS[0] && DUCK_MS <= DUCK_RANGE_MS[1],
+    `DUCK_MS(${DUCK_MS}) 应落在 DUCK_RANGE_MS 区间内`);
   // 冒头时长必须够长，肉眼才看得出过程
   assert.ok(RISE_MS >= 180, `RISE_MS=${RISE_MS} 太短，冒头会像瞬移`);
 });
