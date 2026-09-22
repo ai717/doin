@@ -13,14 +13,24 @@ for (const game of games) {
   urls.push(game.url.startsWith("http") ? game.url : new URL(game.url, siteUrl).href);
 }
 
+const today = new Date().toISOString().slice(0, 10);
+
 const rows = urls.map(function (url) {
   const priority = url === siteUrl + "/" ? "1.0" : "0.8";
-  return "  <url><loc>" + url + "</loc><changefreq>weekly</changefreq><priority>" + priority + "</priority></url>";
+  return [
+    "  <url>",
+    `    <loc>${url}</loc>`,
+    `    <lastmod>${today}</lastmod>`,
+    "    <changefreq>weekly</changefreq>",
+    `    <priority>${priority}</priority>`,
+    "  </url>"
+  ].join("\n");
 });
+
 const xml = [
-  "<?xml version=\"1.0\" encoding=\"UTF-8\"?>",
-  "<urlset xmlns=\"http://www.sitemaps.org/schemas/sitemap/0.9\">",
-  ...rows,
+  '<?xml version="1.0" encoding="UTF-8"?>',
+  '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">',
+  rows.join("\n"),
   "</urlset>",
   ""
 ].join("\n");

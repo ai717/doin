@@ -637,6 +637,23 @@
         "title": "Berry Bash",
         "desc": "Classic whack-a-mole in a sunny berry garden: moles pop out of the soil, whack them back down. Three difficulties, golden and helmeted moles, never-hit bombs, combo-driven Berry Frenzy and a daily seeded board."
       }
+    },
+    {
+      "title": "青蛙过河",
+      "slug": "frog",
+      "desc": "操控小青蛙逐格蹦跳，穿越车流公路、踩着漂移浮木渡河，把青蛙一只只送进对岸的家。5 章 40 关渐进闯关，吃飞虫续命，冲击每关最快用时。",
+      "icon": "🐸",
+      "cover": "/assets/covers/frog.webp",
+      "tags": [
+        "街机",
+        "经典",
+        "闯关"
+      ],
+      "url": "/frog/",
+      "en": {
+        "title": "Frogger",
+        "desc": "Hop a little frog across a busy highway and floating river logs, one jump at a time, and lead each frog safely home. 40 levels across five chapters, collect fireflies for extra lives and chase your fastest clear time."
+      }
     }
   ]
 }

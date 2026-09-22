@@ -1,0 +1,328 @@
+/* 青蛙过河 · 软胶玩具桌面戏剧台 */
+:root {
+  --wood-a: #f2d0a0;
+  --wood-b: #e0ae70;
+  --wood-line: rgba(120, 72, 30, 0.12);
+  --sun: rgba(255, 196, 120, 0.5);
+  --panel: #fff7e8;
+  --panel-edge: #d9a86a;
+  --ink: #4a3420;
+  --ink-soft: #7a5c3a;
+  --accent: #58c24f;
+  --accent-deep: #3f8f3a;
+  --danger: #e05a4a;
+  --bar-bg: linear-gradient(180deg, #fff0d6, #f6d9aa);
+  --shadow: 0 10px 28px rgba(90, 50, 10, 0.22);
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  min-height: 100%;
+}
+
+body {
+  font-family: system-ui, -apple-system, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+  color: var(--ink);
+  overscroll-behavior: none;
+  background:
+    radial-gradient(1100px 560px at 50% -12%, var(--sun), transparent 62%),
+    radial-gradient(760px 520px at 85% 112%, rgba(255, 150, 90, 0.22), transparent 60%),
+    linear-gradient(180deg, var(--wood-a), var(--wood-b));
+  background-attachment: fixed;
+}
+
+/* 木纹微纹理 */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background-image:
+    repeating-linear-gradient(96deg, transparent 0 26px, var(--wood-line) 26px 27px),
+    repeating-linear-gradient(0deg, transparent 0 74px, var(--wood-line) 74px 75px);
+  mix-blend-mode: multiply;
+  opacity: 0.7;
+}
+
+#game-app {
+  position: relative;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  max-width: 1220px;
+  margin: 0 auto;
+  padding: 14px 18px calc(24px + env(safe-area-inset-bottom));
+}
+
+/* —— 顶边一体化状态条 —— */
+#stage-bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 16px;
+  border-radius: 16px;
+  background: var(--bar-bg);
+  box-shadow: var(--shadow), inset 0 2px 0 rgba(255, 255, 255, 0.6);
+  border: 1px solid var(--panel-edge);
+  margin-bottom: 14px;
+}
+
+#stage-title {
+  flex: 1;
+  margin: 0;
+  font-size: 20px;
+  letter-spacing: 2px;
+  color: var(--accent-deep);
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.6);
+}
+
+.stage-actions { display: flex; gap: 8px; }
+
+.bar-btn, .ctl-btn {
+  font: inherit;
+  cursor: pointer;
+  border: 0;
+  border-radius: 12px;
+  padding: 9px 14px;
+  color: var(--ink);
+  background: linear-gradient(180deg, #fff, #f1d6a8);
+  box-shadow: 0 3px 0 rgba(120, 70, 20, 0.28), inset 0 1px 0 rgba(255, 255, 255, 0.8);
+  transition: transform 0.08s ease, box-shadow 0.08s ease;
+}
+.bar-btn:active, .ctl-btn:active {
+  transform: translateY(2px);
+  box-shadow: 0 1px 0 rgba(120, 70, 20, 0.28), inset 0 1px 0 rgba(255, 255, 255, 0.6);
+}
+.bar-btn:hover, .ctl-btn:hover { transform: translateY(-1px); }
+.ctl-primary {
+  background: linear-gradient(180deg, #7ed46e, var(--accent));
+  color: #fff;
+  box-shadow: 0 3px 0 rgba(40, 90, 30, 0.32), inset 0 1px 0 rgba(255, 255, 255, 0.5);
+}
+#back-home { text-decoration: none; display: inline-block; }
+
+/* —— 主舞台（左翼 / 中棋盘 / 右翼） —— */
+#stage-core {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+  justify-content: center;
+  flex: 1;
+}
+
+.side {
+  width: 210px;
+  flex: 0 0 210px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+#side-left h2, #side-right .wooden-card {
+  margin: 0;
+}
+
+#chapters-title {
+  font-size: 16px;
+  color: var(--ink-soft);
+  margin: 4px 0 6px;
+  letter-spacing: 1px;
+}
+
+/* 关卡列表（木牌） */
+#level-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
+#level-list .chapter h3 {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink-soft);
+  margin: 0 0 6px;
+}
+.level-grid {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
+}
+.lv {
+  width: 100%;
+  aspect-ratio: 1;
+  cursor: pointer;
+  border: 0;
+  border-radius: 10px;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  color: #fff;
+  background: linear-gradient(180deg, #7ed46e, #4da644);
+  box-shadow: 0 3px 0 rgba(40, 90, 30, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.5);
+  transition: transform 0.08s ease;
+}
+.lv:hover { transform: translateY(-2px); }
+.lv:active { transform: translateY(2px); }
+.lv.cleared {
+  background: linear-gradient(180deg, #ffd575, #f0a93a);
+  box-shadow: 0 3px 0 rgba(140, 80, 10, 0.32), inset 0 1px 0 rgba(255, 255, 255, 0.6);
+}
+.lv.locked {
+  background: #cfc3ab;
+  color: rgba(255, 255, 255, 0.7);
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+/* 右翼信息牌 */
+.wooden-card {
+  background: linear-gradient(180deg, #fff7e8, #f3ddb6);
+  border: 1px solid var(--panel-edge);
+  border-radius: 14px;
+  box-shadow: var(--shadow), inset 0 2px 0 rgba(255, 255, 255, 0.7);
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.info-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 14px;
+  color: var(--ink-soft);
+}
+.show-num {
+  font-size: 20px;
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+}
+.show-num.stars { color: #e9a53a; letter-spacing: 2px; }
+.side-actions { display: flex; flex-direction: column; gap: 8px; }
+
+/* —— 中央舞台 —— */
+#board-wrap {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+.hud {
+  display: flex;
+  gap: 18px;
+  padding: 8px 20px;
+  border-radius: 999px;
+  background: linear-gradient(180deg, #fff7e8, #f3ddb6);
+  border: 1px solid var(--panel-edge);
+  box-shadow: var(--shadow), inset 0 2px 0 rgba(255, 255, 255, 0.7);
+  font-variant-numeric: tabular-nums;
+}
+.hud-item { display: flex; align-items: center; gap: 6px; }
+.hud-icon { font-size: 16px; }
+.hud-label { font-size: 12px; color: var(--ink-soft); }
+.hud-num {
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--accent-deep);
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.7);
+}
+
+#board-frame {
+  width: 100%;
+  max-width: 560px;
+  aspect-ratio: 1 / 1;
+  position: relative;
+  touch-action: none;
+  border-radius: 18px;
+  overflow: hidden;
+  box-shadow: var(--shadow), 0 0 0 6px #fff7e8, 0 0 0 7px var(--panel-edge);
+}
+
+#board { display: block; }
+
+/* 触屏方向键（移动端） */
+#dpad {
+  display: none;
+  grid-template-areas:
+    ". up ."
+    "left down right";
+  grid-template-columns: repeat(3, 64px);
+  grid-template-rows: repeat(2, 56px);
+  gap: 8px;
+}
+.dpad-btn {
+  font: inherit;
+  font-size: 20px;
+  border: 0;
+  border-radius: 14px;
+  color: var(--ink);
+  background: linear-gradient(180deg, #fff, #f1d6a8);
+  box-shadow: 0 4px 0 rgba(120, 70, 20, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.8);
+  cursor: pointer;
+  touch-action: manipulation;
+}
+.dpad-btn:active { transform: translateY(2px); }
+.dpad-btn[data-dir="up"] { grid-area: up; }
+.dpad-btn[data-dir="left"] { grid-area: left; }
+.dpad-btn[data-dir="down"] { grid-area: down; }
+.dpad-btn[data-dir="right"] { grid-area: right; }
+
+/* —— 弹层 —— */
+.overlay {
+  position: fixed;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  background: rgba(70, 40, 10, 0.45);
+  backdrop-filter: blur(2px);
+  z-index: 50;
+  padding: 20px;
+}
+.overlay[hidden] { display: none; }
+
+.dialog {
+  width: min(420px, 92vw);
+  background: linear-gradient(180deg, #fff7e8, #f3ddb6);
+  border: 1px solid var(--panel-edge);
+  border-radius: 18px;
+  box-shadow: var(--shadow);
+  padding: 22px 22px 18px;
+  text-align: center;
+}
+.dialog h2 { margin: 0 0 10px; color: var(--accent-deep); font-size: 24px; }
+.dialog p { margin: 0 0 18px; white-space: pre-line; color: var(--ink-soft); line-height: 1.7; }
+.dlg-actions { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+
+noscript p { text-align: center; padding: 40px; }
+
+/* —— 响应式 —— */
+@media (max-width: 900px) {
+  .side { display: none; }
+  #stage-core { flex-direction: column; align-items: center; }
+  #board-frame { max-width: min(92vw, 480px); }
+}
+
+@media (max-width: 768px) {
+  #game-app {
+    padding-bottom: max(68px, calc(16px + env(safe-area-inset-bottom)));
+  }
+  #board-wrap { gap: 12px; }
+  .hud { gap: 14px; padding: 7px 16px; }
+  .hud-num { font-size: 19px; }
+  #dpad { display: grid; }
+  #stage-title { font-size: 17px; }
+}
+
+@media (max-width: 390px) {
+  #board-frame { max-width: 94vw; }
+  .stage-actions { gap: 5px; }
+  .bar-btn { padding: 8px 10px; }
+}
+
+/* —— 动效降级 —— */
+@media (prefers-reduced-motion: reduce) {
+  * { animation: none !important; transition: none !important; }
+}

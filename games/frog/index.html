@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>青蛙过河 · DOIN 在线小游戏</title>
+  <meta name="description" content="操控小青蛙逐格蹦跳，穿越车流公路、踩着漂移的浮木渡河，把青蛙一只只安全送进对岸的家。5 章 40 关渐进闯关，吃飞虫续命、冲击每关最快用时。">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="css/style.css?v=dev">
+</head>
+<body>
+  <div id="game-app">
+    <!-- 顶边一体化紧凑控制栏 -->
+    <header id="stage-bar">
+      <a href="/" id="back-home" class="bar-btn">← 门户</a>
+      <h1 id="stage-title">青蛙过河</h1>
+      <div class="stage-actions">
+        <button id="btn-sound" class="bar-btn" aria-label="音效">🔊</button>
+        <button id="btn-lang" class="bar-btn" aria-label="语言">EN</button>
+        <button id="btn-help" class="bar-btn" aria-label="玩法说明">?</button>
+      </div>
+    </header>
+
+    <!-- 游戏机台 / 主舞台核心 -->
+    <main id="stage-core">
+      <!-- 左翼：章节关卡木牌 -->
+      <aside id="side-left" class="side">
+        <h2 id="chapters-title">章节</h2>
+        <ol id="level-list"></ol>
+      </aside>
+
+      <!-- 中：棋盘舞台 -->
+      <section id="board-wrap">
+        <div id="hud" class="hud">
+          <div class="hud-item hud-lives" title="命数">
+            <span class="hud-icon" aria-hidden="true">❤</span>
+            <span id="hud-lives" class="hud-num">3</span>
+          </div>
+          <div class="hud-item hud-time">
+            <span class="hud-label" id="label-time">用时</span>
+            <span id="hud-time" class="hud-num">90</span>
+          </div>
+          <div class="hud-item hud-score">
+            <span class="hud-label" id="label-score">分数</span>
+            <span id="hud-score" class="hud-num">0</span>
+          </div>
+        </div>
+        <div id="board-frame">
+          <canvas id="board" aria-label="青蛙过河棋盘"></canvas>
+        </div>
+        <!-- 移动端掌机方向键 -->
+        <div id="dpad" aria-hidden="true">
+          <button data-dir="up" class="dpad-btn" aria-label="上">▲</button>
+          <button data-dir="left" class="dpad-btn" aria-label="左">◀</button>
+          <button data-dir="down" class="dpad-btn" aria-label="下">▼</button>
+          <button data-dir="right" class="dpad-btn" aria-label="右">▶</button>
+        </div>
+      </section>
+
+      <!-- 右翼：关卡信息牌 -->
+      <aside id="side-right" class="side">
+        <div id="info-panel" class="wooden-card">
+          <div class="info-row">
+            <span id="label-level">关卡</span>
+            <strong id="info-level" class="show-num">1</strong>
+          </div>
+          <div class="info-row">
+            <span id="label-best">最快</span>
+            <strong id="info-best" class="show-num">--</strong>
+          </div>
+          <div class="info-row">
+            <span id="label-stars">星级</span>
+            <strong id="info-stars" class="show-num stars">☆☆☆</strong>
+          </div>
+        </div>
+        <div class="side-actions">
+          <button id="btn-prev" class="ctl-btn">◀ 上一关</button>
+          <button id="btn-restart" class="ctl-btn ctl-primary">重开本关</button>
+          <button id="btn-next" class="ctl-btn">下一关 ▶</button>
+        </div>
+      </aside>
+    </main>
+  </div>
+
+  <!-- 结算 / 帮助弹层 -->
+  <div id="overlay" class="overlay" hidden>
+    <div class="dialog" id="dialog" role="dialog" aria-modal="true">
+      <h2 id="dlg-title"></h2>
+      <p id="dlg-body"></p>
+      <div class="dlg-actions">
+        <button id="dlg-primary" class="ctl-btn ctl-primary"></button>
+        <button id="dlg-secondary" class="ctl-btn"></button>
+        <button id="dlg-close" class="ctl-btn"></button>
+      </div>
+    </div>
+  </div>
+
+  <noscript><p>需要启用 JavaScript 才能游玩青蛙过河。</p></noscript>
+  <script type="module" src="js/main.mjs?v=dev"></script>
+</body>
+</html>
