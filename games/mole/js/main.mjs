@@ -6,7 +6,7 @@ import * as S from "./storage.mjs";
 import * as A from "./audio.mjs";
 import * as U from "./ui.mjs";
 import { accuracyPercent } from "./score.mjs";
-import { detectLocale, saveLocale, t, todayKey } from "./i18n.mjs";
+import { detectLocale, saveLocale, t } from "./i18n.mjs";
 
 const ui = U.createUI();
 const game = G.createController();
@@ -195,16 +195,32 @@ function bindInput() {
   });
 
   let resizeRaf = 0;
+  const applyGrid = () => {
+    const { rows, cols } = U.gridForWidth(window.innerWidth);
+    if (rows === ui.rows && cols === ui.cols) return;
+    // 网格变化必须同时重建 DOM 与引擎洞位，否则两者长度不一致
+    if (G.isRunning(game)) doPause();
+    U.buildGrid(ui, rows, cols);
+    G.setGrid(game, rows, cols);
+    if (game.run) {
+      // 洞位数变化后旧对局不再自洽，直接重置为未开局状态
+      game.run = null;
+      game.paused = false;
+      U.hideAllModals(ui);
+      U.showModal(ui, "welcome");
+      U.setPrimaryButton(ui, locale, "start");
+      U.setFrenzy(ui, false);
+    }
+    render();
+  };
+
   window.addEventListener("resize", () => {
     if (resizeRaf) cancelAnimationFrame(resizeRaf);
-    resizeRaf = requestAnimationFrame(() => {
-      const { rows, cols } = U.gridForWidth(window.innerWidth);
-      if (rows === ui.rows && cols === ui.cols) return;
-      if (G.isRunning(game)) return; // 局中不换网格，避免与引擎洞位数不一致
-      U.buildGrid(ui, rows, cols);
-      G.setGrid(game, rows, cols);
-      render();
-    });
+    resizeRaf = requestAnimationFrame(applyGrid);
+  });
+  window.addEventListener("orientationchange", () => {
+    if (resizeRaf) cancelAnimationFrame(resizeRaf);
+    resizeRaf = requestAnimationFrame(applyGrid);
   });
 }
 
@@ -261,6 +277,7 @@ function boot() {
   const { rows, cols } = U.gridForWidth(window.innerWidth);
   U.buildGrid(ui, rows, cols);
   G.setGrid(game, rows, cols);
+  ui.dom.garden.tabIndex = 0; // 供触屏获得键盘焦点，复用键盘映射
   U.setLocale(ui, locale);
   U.setSoundButton(ui, soundOn);
   U.setLangButton(ui, locale);

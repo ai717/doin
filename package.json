@@ -40,7 +40,8 @@
     "test:rune-tower": "node --test games/rune-tower/tests/*.test.mjs",
     "test:devil-run": "node --test games/devil-run/tests/engine.test.mjs games/devil-run/tests/golden.test.mjs games/devil-run/tests/game.test.mjs games/devil-run/tests/score.test.mjs games/devil-run/tests/storage.test.mjs games/devil-run/tests/i18n.test.mjs games/devil-run/tests/markup.test.mjs",
     "test:space-defender": "node --test games/space-defender/tests/*.test.mjs",
-    "test:mole": "node --test games/mole/tests/engine.test.mjs games/mole/tests/game.test.mjs games/mole/tests/storage.test.mjs games/mole/tests/i18n.test.mjs games/mole/tests/markup.test.mjs",
-    "smoke:devil-run": "node games/devil-run/tests/smoke.mjs"
+    "test:mole": "node --test games/mole/tests/engine.test.mjs games/mole/tests/game.test.mjs games/mole/tests/storage.test.mjs games/mole/tests/i18n.test.mjs games/mole/tests/assembly.test.mjs games/mole/tests/markup.test.mjs",
+    "smoke:devil-run": "node games/devil-run/tests/smoke.mjs",
+    "smoke:mole": "node games/mole/tests/smoke.mjs"
   }
 }

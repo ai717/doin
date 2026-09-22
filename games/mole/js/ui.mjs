@@ -269,27 +269,31 @@ export function toast(ui, text, warn = false) {
   toastTimer = setTimeout(() => el.classList.remove("is-show"), 1100);
 }
 
-export function showModal(ui, name) {
+/** 弹层可见性：以 classList 为唯一真相源（不混用 hidden 属性，避免双真相源） */
+export function isModalOpen(ui, name) {
+  const el = modalEl(ui, name);
+  return Boolean(el) && !el.classList.contains("hidden");
+}
+
+function modalEl(ui, name) {
   const map = {
     welcome: ui.dom.modalWelcome,
     pause: ui.dom.modalPause,
     gameover: ui.dom.modalGameover,
     rules: ui.dom.modalRules,
   };
-  const el = map[name];
+  return map[name];
+}
+
+export function showModal(ui, name) {
+  const el = modalEl(ui, name);
   if (!el) return;
   el.classList.remove("hidden");
   el.setAttribute("aria-hidden", "false");
 }
 
 export function hideModal(ui, name) {
-  const map = {
-    welcome: ui.dom.modalWelcome,
-    pause: ui.dom.modalPause,
-    gameover: ui.dom.modalGameover,
-    rules: ui.dom.modalRules,
-  };
-  const el = map[name];
+  const el = modalEl(ui, name);
   if (!el) return;
   el.classList.add("hidden");
   el.setAttribute("aria-hidden", "true");
@@ -337,6 +341,12 @@ export function showSettle(ui, locale, summary, best, isBest) {
 /** 桌面 4×3 / 移动 3×3 的网格尺寸决策 */
 export function gridForWidth(width) {
   return width <= 768 ? { rows: 3, cols: 3 } : { rows: 3, cols: 4 };
+}
+
+/** 当前生效的网格尺寸（优先读已构建状态，退化到视口） */
+export function currentGrid(ui, width) {
+  if (ui && ui.rows > 0 && ui.cols > 0) return { rows: ui.rows, cols: ui.cols };
+  return gridForWidth(width);
 }
 
 /** 键盘按键 → 洞位下标（越界返回 -1） */

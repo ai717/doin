@@ -9,6 +9,14 @@
 
 ### Current Baseline (2026-09-21)
 
+- **Mole 莓园打地鼠 / Berry Bash（新增，2026-09-23）**：**阳光莓园里的经典街机打地鼠**，按 `docs/plans/mole-prd.md` 本地端到端（模式 A）落地（拍板 **B 纯经典计分** / **B 三档难度无尽 轻松·普通·疯狂** / **A 首发含每日固定种子题面**）。
+  - **核心玩法**：地鼠从草地土台洞口冒出，`pointerdown` 当帧判定命中（挥锤动画纯视觉补间，根治"锤在半空鼠已缩"的品类通病）；四种鼠 `NORMAL / GOLD / HELMET(HP=2) / BOMB`；连击每满 20 触发 **4s 莓果狂热**（时间流速 ×0.62，`#toast` 提示 + 全屏 `frenzy-veil` 脉冲）；局时 60s，结算准确率/最高连击/狂热次数。
+  - **算法健全性与公平红线**：`mulberry32` 确定性种子 + `dailySeed(dateStr)`（FNV-1a 哈希日期）保证每日题面全站一致；**露头时长下限 `MIN_UP_MS = 450`**（疯狂档金鼠 0.7 缩放后仍 ≥450，故疯狂档 `upMs` 定为 `[660,800]`）；**场上无非炸弹目标时禁止出炸弹**（`pickSpecies(rng, weights, banBomb)`），杜绝"只有炸弹可点"的必死局面；`stepRun` 的 dt 钳制 `[0,100]`ms。
+  - **模块分层**：`engine`(DOM-free 规则权威) / `score`(计分唯一口径，`BASE_POINTS` 不反向 import engine 以避循环依赖) / `storage`(`doin.mole.v1`) / `game`(DOM-free 控制器) / `ui`(唯一碰 DOM) / `i18n`(约 50 键双表) / `audio`(WebAudio 程序化木质闷响、金光、铁盔铛、爆炸、狂热号角) / `main`(装配 + rAF 主循环)。
+  - **美学**：木质机台 + 暖阳莓园主题。木梁顶栏收纳返回/音效/语言/规则（避开四角散落按钮），左翼难度牌+纪录、中央草地土台舞台、右翼得分/连击/沙漏、底部木质操作台（开始/暂停/每日），**移动端 `padding-bottom: max(68px, …)` 广告安全避让**，`prefers-reduced-motion` 全量降级，`touch-action: none` + `overscroll-behavior: none` 防移动端滚动误触。
+  - **无浏览器冒烟（`npm run smoke:mole`）**：自研 `tests/dom-stub.mjs` + 受控 rAF，**3 视口（1280 / 390 / 834）各 33 断言全通过**；断言口径是"业务可观测量在推进"（剩余时间真的减少、命中后得分/连击增长、HUD 与引擎一致）而非仅"不抛异常"，因此抓出 3 个真 bug：① `main.mjs` 误从 `i18n` 导入实际定义在 `engine` 的 `todayKey`；② 弹层双真相源（产品用 `classList.toggle("hidden")`、桩读 `el.hidden`）——已在 `ui.mjs` 抽出 `modalEl` + `isModalOpen` 统一为 classList 单一真相源；③ 视口切换后 DOM 网格与引擎洞位失同步——`main.mjs` 的 `applyGrid` 改为同步重建 DOM + `G.setGrid`，并同时监听 `resize` 与 `orientationchange`。
+  - **全套门禁**：单测 **131/131 全绿**（engine / game / storage / i18n / assembly / markup 六文件，含 5000 步随机游走）、`node scripts/check-game.mjs mole` **19 pass / 0 fail(T1) / 0 warn(T2)**、640×640 莓粉系 3D 软胶封面（cv2.inpaint 固定 bbox 去水印）、`npm run test:home` 5/5、`npm run build` 通过且 `dist/mole/` 正常发布、sitemap 收录 `https://doin.win/mole/`。
+
 - **Winmine 经典扫雷（Windows 原版复刻）**（新增）：**高度复刻 Windows 最早版本扫雷 WinMine 的 90s 手感与视觉**，按 `docs/plans/winmine-prd.md` 本地端到端（模式 A）落地（拍板 **路线 B：首击必安全（延后布雷）** / **slug=winmine** / **破纪录弹窗 + 前 N 名成绩榜**）。
   - **核心玩法**：三档难度（初级 9×9/10、中级 16×16/40、高级 30×16/99）+ 自定义；左键翻开、右键 旗→问号→清除 循环、点数字 chord 和弦速开；LED 红字计数器、四态笑脸（🙂😮😵😎）、数字 1-8 原版配色。
   - **首击安全平衡**：延后布雷（`createState` 只建空盘，首次 `reveal` 才布雷），保证首击格及 8 邻域无雷；后续保留原版 50/50 猜雷局面（不做无猜保证），忠于经典手感。
