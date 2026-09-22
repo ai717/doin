@@ -177,7 +177,23 @@ check("语言切换写入 doin.lang",
   env.step(4);
 }
 
-// ---- 11. 渲染噪声 ----
+// ---- 11. 洞的结构契约：地鼠必须住在"底边压地平线"的活动区里，且洞口不带盖子 ----
+{
+  const hole = ui.holes[0].el;
+  const pit = hole.querySelector(".hole-pit");
+  const clip = hole.querySelector(".mole-clip");
+  const mole = hole.querySelector(".mole");
+  check("每个洞都有洞口、活动区与地鼠", Boolean(pit) && Boolean(clip) && Boolean(mole),
+    "缺少 .hole-pit / .mole-clip / .mole");
+  check("地鼠是活动区的子节点（隐藏态可被裁剪）", mole?.parentNode === clip,
+    `mole.parent=${mole?.parentNode?.className}`);
+  check("洞口不再是地鼠的裁剪容器", !hole.querySelector(".hole-rim"), ".hole-rim 仍然存在");
+  check("地鼠与洞口是兄弟节点（地鼠遮住洞口后半圈）",
+    clip?.parentNode === hole && pit?.parentNode === hole,
+    `clip.parent=${clip?.parentNode?.className} pit.parent=${pit?.parentNode?.className}`);
+}
+
+// ---- 12. 渲染噪声 ----
 check("无非法颜色/几何 NaN", runtimeErrors.length === 0, runtimeErrors.join(" | "));
 
 emit();

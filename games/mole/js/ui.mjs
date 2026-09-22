@@ -111,8 +111,8 @@ export function buildGrid(ui, rows, cols) {
 
     const pit = document.createElement("span");
     pit.className = "hole-pit";
-    const rim = document.createElement("span");
-    rim.className = "hole-rim";
+    const clip = document.createElement("span");
+    clip.className = "mole-clip";
     const mole = document.createElement("span");
     mole.className = "mole";
     const body = document.createElement("span");
@@ -131,7 +131,9 @@ export function buildGrid(ui, rows, cols) {
     key.className = "hole-key";
     key.textContent = (KEY_MAP[row]?.[col] ?? "").toUpperCase();
 
-    hole.append(pit, rim, mole, key);
+    // 层级自下而上：洞口椭圆（z1）→ 地鼠活动区（z2，底边压在地平线上）
+    clip.append(mole);
+    hole.append(pit, clip, key);
     frag.appendChild(hole);
     ui.holes.push({ el: hole, phase: "none", species: "", id: 0, broken: false });
   }
