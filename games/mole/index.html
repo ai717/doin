@@ -68,10 +68,15 @@
 
           <div class="frenzy-veil" id="frenzy-veil" aria-hidden="true"></div>
 
-          <!-- 木槌（桌面跟随光标；触屏设备隐藏） -->
+          <!-- 木槌（桌面跟随光标；触屏设备隐藏）。
+               外壳 .hammer 只负责定位与显隐，内层 .hammer-rig 负责旋转姿态 ——
+               两层必须分开：挥击动画若写在带负 margin 的外壳上，
+               百分比 translate 会与 margin 叠加，动画首帧会错位。 -->
           <div class="hammer" id="hammer" aria-hidden="true">
-            <span class="hammer-head"></span>
-            <span class="hammer-grip"></span>
+            <div class="hammer-rig" id="hammer-rig">
+              <span class="hammer-head"></span>
+              <span class="hammer-grip"></span>
+            </div>
           </div>
 
           <div id="toast" class="toast" aria-live="polite"></div>

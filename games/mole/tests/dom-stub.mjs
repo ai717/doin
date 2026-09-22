@@ -5,6 +5,8 @@
 //  3. className setter 必须联动 classList
 //  4. navigator 在 Node 24 是只读 getter，必须用 defineProperty
 //  5. style.setProperty 必须真的存值，否则内联自定义属性（如 --duck-ms）在桩里凭空消失
+//  5b. 直接属性赋值（el.style.left = "10px"）也必须能存 —— 用 Proxy 实现，见 makeInlineStyle
+//  6. 没有真实动画引擎：animationend 不会自己产生，依赖它的代码必须有 setTimeout 兜底
 
 import { readFileSync } from "node:fs";
 
@@ -164,7 +166,15 @@ export function installDom(html) {
     }
     removeEventListener(type, fn) { this._listeners.get(type)?.delete(fn); }
 
-    /** 派发合成事件（不冒泡，测试里显式逐级调用） */
+    /**
+     * 派发合成事件（不冒泡，测试里显式逐级调用）。
+     *
+     * 注意 animationend 不会自动产生 —— 桩里没有真实动画引擎。任何依赖
+     * animationend 收尾的代码，测试要自己 `el.dispatch("animationend")` 把它推完。
+     * 反过来说：**不要在业务层把 animationend 当成唯一收尾手段**，
+     * 必须配一个 setTimeout 兜底（见 ui.mjs 的 swingHammer），
+     * 否则测试环境与"动画被系统关掉"的真实场景都会把它卡住。
+     */
     dispatch(type, extra = {}) {
       const ev = {
         type,

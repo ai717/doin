@@ -724,6 +724,44 @@ body {
   50% { transform: translateY(8px); }
 }
 
+/* 落点冲击波：砸中的那一下从洞位中心炸开一圈短促的亮环。
+   与 .is-hit 同位（同一帧加上），时长刻意短于 .26s 的命中挤压 ——
+   冲击波先收、地鼠后陷，两个节拍错开，打击感才有"先砸到、再反馈"的层次。 */
+.hole.is-impact::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 62%;
+  width: 18px;
+  height: 18px;
+  margin: -9px 0 0 -9px;
+  border-radius: 50%;
+  z-index: 3;
+  pointer-events: none;
+  border: 3px solid rgba(255, 241, 190, .92);
+  box-shadow: 0 0 12px rgba(255, 205, 90, .75), inset 0 0 8px rgba(255, 235, 170, .6);
+  animation: impact-ring var(--impact-ms, 220ms) cubic-bezier(.15, .7, .3, 1) forwards;
+}
+
+@keyframes impact-ring {
+  0%   { transform: scale(.28); opacity: 1; border-width: 5px; }
+  55%  { opacity: .72; }
+  100% { transform: scale(2.5); opacity: 0; border-width: 1px; }
+}
+
+/* 屏幕微震：落在 .garden 上（不是 body），避免整页抖动与滚动条闪动。
+   .hole 无 overflow 裁剪，所以由洞位内部触发的震动不会被切边。 */
+.garden.is-shake { animation: garden-shake var(--shake-ms, 170ms) cubic-bezier(.2, .6, .3, 1); }
+
+@keyframes garden-shake {
+  0%   { transform: translate3d(0, 0, 0); }
+  18%  { transform: translate3d(-4px, 3px, 0); }
+  38%  { transform: translate3d(4px, -2px, 0); }
+  60%  { transform: translate3d(-3px, 1px, 0); }
+  80%  { transform: translate3d(2px, 0, 0); }
+  100% { transform: translate3d(0, 0, 0); }
+}
+
 /* 木槌：默认可见并接管光标。
    曾经过度收紧成 `@media (hover:hover) and (pointer:fine)` 才显示 ——
    触屏笔记本 / 混合输入设备上报的 primary pointer 不是 fine，木槌就整个消失了，
@@ -736,7 +774,9 @@ body {
    left/top。绝不要退回 absolute + garden 内坐标 —— garden 有 overflow:hidden，
    贴边命中时越出鼠标热点的槌体会被裁掉一截。 */
 .hammer {
-  /* position/label 由 ui.mjs 的 moveHammer 写成内联 fixed + 视口坐标（见该处注释）。
+  --swing-ms: 240ms;          /* 一整套挥击时长；见 @keyframes swing */
+
+  /* 位置由 ui.mjs 的 moveHammer 写成内联 fixed + 视口坐标（见该处注释）。
      这里的 fixed 与 50%/50% 只是"JS 尚未跑起来、或浏览器不支持 pointer 事件"时的
      兜底 —— 曾经没有初始位置，木槌以静态流落在洞位阵列之后、远超花园高度，
      被 .garden 的 overflow:hidden 整只裁掉，表现就是"鼠标完全没有锤子"。 */
@@ -746,11 +786,31 @@ body {
   z-index: 5;
   width: 74px;
   height: 74px;
-  /* 负上边距让"落槌点"位于锤头中心，而不是整个 74×74 盒子的左上角 */
+  /* 负边距把"落槌点"对到锤头中心，而不是整个 74×74 盒子的左上角 */
   margin: -22px 0 0 -31px;
   pointer-events: none;
   opacity: 0;                 /* 真正浮出的时机见文件下方的 .hammer.is-armed */
   transition: opacity .15s ease;
+
+  /* ★ 这里绝不加 transform！
+     挥击动画要在 .hammer-rig 上做旋转，而 transform 的百分比 translate 又是
+     相对"自身尺寸"而非包含块算了两次的 —— 两个因素叠一起，动画首帧会和
+     静止态错开 31px，观感就是"一按下去锤子先跳一下再砸"，比没有动画更糟。
+     因此把"定位"与"姿态"彻底分开：外壳只负责定位 + 显隐，内层 .hammer-rig
+     只负责旋转基点。 */
+}
+
+/* 旋转基点 = 握柄底部（手心位置）。74×74 盒子里握柄在 left:46px 附近，
+   绕这个点转，锤头才会划出一段真实的圆弧，而不是整只绕自己中心打转。 */
+.hammer-rig {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  transform-origin: 60px 66px;
+  /* 静止握持角：略微抬起，让锤子朝向光标外侧，不挡住落槌点 */
+  transform: rotate(-14deg);
 }
 
 .hammer-head {
@@ -774,15 +834,59 @@ body {
   border-radius: 8px;
   background: linear-gradient(180deg, #c8945f, #8a5533);
   border: 3px solid #5d3620;
+  /* 握柄角度相对 .hammer-rig 的静止角（-14deg）+ 24deg ≈ 10deg，接近竖直握持 */
   transform: rotate(24deg);
 }
 
-.hammer.is-swing { animation: swing .18s ease-out; }
+/* 挥锤：四拍蓄力-砸下-回弹-归位。
+   原实现有两个硬伤，导致"砸下去几乎没有动画感"：
+   1. 只有 .18s，且 0% 直接就是 rotate(-38deg) 的抬起态 —— **没有蓄力过程**，
+      玩家看到的是"锤子已经在上面了"，砸落的那一下反而被压缩到不足 40ms；
+   2. 三段关键帧里 0% 就已经抬起、立刻开始下落，**f 起手即最高速**，观感像闪现。
+   现在拆成可读的四拍（时长见 --swing-ms）：
+     0%   静止握持（= 未挥锤时的姿态）
+     16%  蓄力抬起（向上向后，玩家看清"要砸了"）
+     50%  全力砸落 + 轻微过冲（这一拍要慢一点，是打击感的来源）
+     74%  反冲回弹
+     100% 归位
+   倾角与基点说明见 .hammer / .hammer-rig。 */
+.hammer.is-swing .hammer-rig {
+  animation: swing var(--swing-ms) cubic-bezier(.25, .5, .35, 1) both;
+}
 
 @keyframes swing {
-  0% { transform: rotate(-38deg) translateY(0); }
-  45% { transform: rotate(6deg) translateY(4px); }
-  100% { transform: rotate(-30deg) translateY(0); }
+  /* 各帧都保持 translate(-31px,-22px)：与 .hammer 的负边距等值，把旋转基点
+     （transform-origin 60,66）平移回元素自身的坐标系原点，否则会多算一次偏移。 */
+  0%   { transform: translate(-31px, -22px) rotate(-14deg); }
+  16%  { transform: translate(-31px, -22px) rotate(-46deg) translateY(-5px); }
+  50%  { transform: translate(-31px, -22px) rotate(14deg)  translateY(3px); }
+  74%  { transform: translate(-31px, -22px) rotate(-24deg); }
+  100% { transform: translate(-31px, -22px) rotate(-14deg); }
+}
+
+/* 挥击拖影：用伪元素复制一份锤头，在砸落方向留一道模糊残影。
+   只在下砸窗口内出现（40%~62% ≈ 砸落那一拍），蓄力与回弹时不可见。
+   用伪元素而非独立 DOM 节点：零额外元素、零 JS 维护，也不参与命中判定。 */
+.hammer.is-swing::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 62px;
+  height: 40px;
+  border-radius: 12px;
+  background: linear-gradient(180deg, rgba(255, 242, 214, .55), rgba(214, 154, 96, .28));
+  filter: blur(5px);
+  opacity: 0;
+  z-index: -1;
+  animation: swing-trail var(--swing-ms) linear both;
+}
+
+@keyframes swing-trail {
+  0%, 36% { opacity: 0; transform: rotate(-40deg) translate(-6px, -10px) scale(.9); }
+  50%     { opacity: .95; transform: rotate(4deg) translate(4px, 6px) scale(1.04); }
+  64%     { opacity: 0; transform: rotate(16deg) translate(10px, 10px) scale(1.1); }
+  100%    { opacity: 0; }
 }
 
 /* 默认（指针设备）：木槌接管光标。
@@ -996,10 +1100,16 @@ body {
      系统关闭动画（Windows「显示动画」关闭 / 各种 reduced-motion 场景）会让
      这条媒体查询命中 —— 木槌消失、而上面 .garden{cursor:pointer} 又把光标交还，
      用户只会看到"没有锤子"，且完全不知道为什么。
-     动效降级的正确做法：保留木槌，只去掉挥击动画（transition/animation 已在上面的
-     通配规则里被压到 .001ms）。 */
+     动效降级的正确做法：保留木槌，只去掉挥击与震屏动画。
+     注意动画挂在 .hammer-rig 上，选择器必须跟着走 ——
+     写 .hammer.is-swing 是关不掉内层动画的（这里踩过）。 */
   .hammer { transition: none; }
-  .hammer.is-swing { animation: none; }
+  .hammer.is-swing .hammer-rig { animation: none; }
+  /* 降级时把姿态固定在静止握持角，别停在挥击中间某一帧 */
+  .hammer-rig { transform: rotate(-14deg) translate(-31px, -22px); }
+  .hammer.is-swing::before { animation: none; opacity: 0; }
+  .hole.is-impact::after { animation: none; opacity: 0; }
+  .garden.is-shake { animation: none; }
 }
 
 /* 非指针设备 / 木槌尚未接管光标前，别让木槌悬在屏幕正中挡视线 */

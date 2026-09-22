@@ -284,7 +284,78 @@ check("语言切换写入 doin.lang",
     `left=${hammer.style.left} top=${hammer.style.top}`);
 }
 
-// ---- 14. 渲染噪声 ----
+// ---- 14. 砸下去的反馈链路：挥锤动画 + 落点冲击波 + 屏幕微震 ----
+// 用户反馈"锤子砸下去缺乏动画效果"。这一段把三样反馈逐一钉死，
+// 否则将来任何一样被删掉都不会有测试报警。
+{
+  const hammer = ui.dom.hammer;
+  const rig = ui.dom.hammerRig ?? hammer.querySelector?.(".hammer-rig");
+  check("木槌有独立的姿态层 .hammer-rig", Boolean(rig),
+    "缺少内层 .hammer-rig（旋转动画必须挂它，不能挂带负 margin 的外壳）");
+  check("木槌姿态层已在 UI 层装配", Boolean(ui.dom.hammerRig),
+    "ui.dom.hammerRig 缺失 —— index.html 的 #hammer-rig 没被 createUI 接上");
+
+  // 先让游戏跑起来，否则 hitIndex 会被 isRunning 拦掉。
+  // 注意要推到真的有地鼠浮出（RISE_MS=220ms，4 帧远不够），
+  // 否则会打到空洞、hits 不涨 —— 那又是"断言写法错"而不是产品缺陷。
+  startRun("normal");
+  let holeWithMole = -1;
+  for (let i = 0; i < 60 && holeWithMole < 0; i += 1) {
+    env.step(10);
+    holeWithMole = game.run.holes.findIndex((m) => m && m.species !== "bomb" && m.phase === "up");
+  }
+  check("已等到一只可打的地鼠（前置条件）", holeWithMole >= 0,
+    "60×10ms 内没有地鼠进入 up 阶段，说明生成器或冒头时序有问题");
+
+  // --- 挥锤动画 ---
+  // pointerdown 监听器绑在 .holes-grid 上（事件委托），所以必须派发到 grid，
+  // 并把 target 设成洞位 —— 桩不冒泡，派发到洞位本身是收不到的。
+  const fireAt = (holeEl) =>
+    ui.dom.grid.dispatch("pointerdown", {
+      pointerType: "mouse", clientX: 500, clientY: 320, target: holeEl,
+    });
+
+  const targetHole = ui.holes[holeWithMole >= 0 ? holeWithMole : 0].el;
+  const holesBefore = game.run.hits;
+  fireAt(targetHole);
+  check("砸击真的命中了（hits 递增）", game.run.hits > holesBefore,
+    `hits ${holesBefore} -> ${game.run.hits}（holeWithMole=${holeWithMole} dataset.index=${targetHole.dataset.index}）`);
+  check("砸击后木槌挂上 is-swing", hammer.classList.contains("is-swing"),
+    `classList=${hammer.className}`);
+
+  // 动画收尾：桩不会自己发 animationend，测试显式推一下，
+  // 验证"动画结束摘类"这条路是通的（连击时靠它重启动画）
+  rig.dispatch("animationend");
+  check("animationend 后摘掉 is-swing（连击可重启）", !hammer.classList.contains("is-swing"),
+    `未摘类，第二次挥击将失效。classList=${hammer.className}`);
+
+  // --- 落点冲击波 ---
+  const hitHoles = ui.holes.filter((h) => h.el.classList.contains("is-impact"));
+  check("命中洞位挂上 is-impact（落点冲击波）", hitHoles.length > 0,
+    "没有任何洞位拿到 is-impact，砸中缺少落点反馈");
+  check("命中洞位同时有 is-hit（地鼠挤压）",
+    ui.holes.some((h) => h.el.classList.contains("is-hit")),
+    "is-hit 缺失，地鼠没有被打扁的反馈");
+
+  // --- 屏幕微震 ---
+  check("命中后 .garden 挂上 is-shake", ui.dom.garden.classList.contains("is-shake"),
+    `gardenClass=${ui.dom.garden.className}`);
+  check("微震时长写在 --shake-ms 上", /^\d+ms$/.test(ui.dom.garden.style.getPropertyValue("--shake-ms")),
+    `--shake-ms=${ui.dom.garden.style.getPropertyValue("--shake-ms")}`);
+
+  // 炸弹用更长的震动，与普通命中区分
+  const bombIdx = game.run.holes.findIndex((m) => m && m.species === "bomb");
+  if (bombIdx >= 0) {
+    // 清掉上一轮的时长，确保下面读到的是本次事件写的值
+    ui.dom.garden.style.setProperty("--shake-ms", "");
+    fireAt(ui.holes[bombIdx].el);
+    check("炸弹命中使用更强的震动（--shake-ms 更长）",
+      ui.dom.garden.style.getPropertyValue("--shake-ms") === "300ms",
+      `--shake-ms=${ui.dom.garden.style.getPropertyValue("--shake-ms")}`);
+  }
+}
+
+// ---- 15. 渲染噪声 ----
 check("无非法颜色/几何 NaN", runtimeErrors.length === 0, runtimeErrors.join(" | "));
 
 emit();

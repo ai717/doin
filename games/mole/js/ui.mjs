@@ -25,6 +25,7 @@ export function createUI() {
     garden: $("garden"),
     grid: $("holes-grid"),
     hammer: $("hammer"),
+    hammerRig: $("hammer-rig"),
     veil: $("frenzy-veil"),
     toast: $("toast"),
     backHome: $("back-home"),
@@ -268,9 +269,36 @@ export function spawnChips(ui, index, kind = "hit") {
 export function markHit(ui, index) {
   const view = ui.holes[index];
   if (!view) return;
-  view.el.classList.remove("is-hit");
+  view.el.classList.remove("is-hit", "is-impact");
   void view.el.offsetWidth;
   view.el.classList.add("is-hit");
+  // 落点冲击波与命中挤压同位、但更快收 —— 两个节拍错开才有"先砸到、再反馈"的层次
+  view.el.classList.add("is-impact");
+  impactTimers.set(view.el, resetImpactTimer(view.el));
+}
+
+/** 冲击波收尾：与 markHit 的重复触发配套，避免连击时类名残留导致下一槌不炸 */
+const impactTimers = new WeakMap();
+function resetImpactTimer(el) {
+  clearTimeout(impactTimers.get(el));
+  return setTimeout(() => {
+    el.classList.remove("is-impact");
+    impactTimers.delete(el);
+  }, 320);
+}
+
+/** 屏幕微震：只震 .garden，不震 body —— 整页抖动会带动滚动条闪烁，很廉价 */
+let shakeTimer = 0;
+export function shakeGarden(ui, strong = false) {
+  const el = ui.dom.garden;
+  if (!el) return;
+  el.classList.remove("is-shake");
+  void el.offsetWidth;
+  // 炸弹用更长的震动，与普通命中区分开
+  el.style.setProperty("--shake-ms", strong ? "300ms" : "170ms");
+  el.classList.add("is-shake");
+  clearTimeout(shakeTimer);
+  shakeTimer = setTimeout(() => el.classList.remove("is-shake"), strong ? 380 : 240);
 }
 
 /**
@@ -289,11 +317,31 @@ export function moveHammer(ui, x, y) {
   el.style.top = `${y}px`;
 }
 
+/**
+ * 触发一次挥锤。
+ *
+ * 动画挂在 .hammer-rig（内层）而不是 .hammer（外壳）上：外壳带负 margin 且承担
+ * fixed 定位，百分比 translate 会与 margin 叠加，首帧就会错位。
+ *
+ * 用 animationend 摘类，而不是 setTimeout 猜时长 —— 时长是 CSS 侧的 --swing-ms，
+ * 两边写死同一个数字迟早会不同步（改了 CSS 忘了改 JS，动画就永远播不完整）。
+ * 兜底：若动画被 reduced-motion 关掉（duration ≈ .001ms 仍会触发 animationend，
+ * 但保险起见）另设一个略长的定时器，避免类名残留把后续挥击吃掉。
+ */
+let swingTimer = 0;
 export function swingHammer(ui) {
   const el = ui.dom.hammer;
+  const rig = ui.dom.hammerRig;
+  if (!el || !rig) return;
+  // 重启动画：先摘类 + 强制重排，否则连击时中间几次挥击会被浏览器合并掉
   el.classList.remove("is-swing");
-  void el.offsetWidth;
+  void rig.offsetWidth;
   el.classList.add("is-swing");
+
+  const clear = () => el.classList.remove("is-swing");
+  clearTimeout(swingTimer);
+  rig.addEventListener("animationend", clear, { once: true });
+  swingTimer = setTimeout(clear, 600);
 }
 
 let toastTimer = 0;

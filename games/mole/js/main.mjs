@@ -43,6 +43,8 @@ function render() {
 function feedbackFor(result) {
   if (!result?.ok) return;
   U.markHit(ui, result.index);
+  // 砸中必有微震 —— 这是"砸下去了"最主要的体感来源，比锤子自身的旋转更好读
+  U.shakeGarden(ui, result.kind === "bomb");
   if (result.kind === "bomb") {
     U.spawnChips(ui, result.index, "bomb");
     A.playBomb();

@@ -352,11 +352,86 @@ test("CSS: 木槌有完整的实体构件（锤头 + 锤柄 + 挥击动画）", 
   // 锤柄必须旋转，否则是"一把没有握持角度的菜刀"
   assert.match(rule(".hammer-grip"), /transform:\s*rotate\(/, "锤柄应带旋转角度");
   // 挥击动画存在，且 reduced-motion 下被关掉而不是隐藏本体
-  assert.match(css, /\.hammer\.is-swing\s*\{[^}]*animation:\s*swing/, "缺挥击动画规则");
+  assert.match(css, /\.hammer\.is-swing\s+\.hammer-rig\s*\{[^}]*animation:\s*swing/,
+    "缺挥击动画规则（应挂在 .hammer-rig 上，不能挂带负 margin 的外壳）");
   assert.ok(/@keyframes\s+swing\s*\{/.test(css), "缺 @keyframes swing");
   const reduce = mediaBlocks(stripComments(css), "prefers-reduced-motion").join("\n");
-  assert.match(reduce, /\.hammer\.is-swing\s*\{[^}]*animation:\s*none/,
+  assert.match(reduce, /\.hammer\.is-swing[^{]*\{[^}]*animation:\s*none/,
     "reduced-motion 下应关掉挥击动画");
+});
+
+test("CSS: 挥击是一段可读的四拍动画（蓄力→砸落→回弹→归位）", () => {
+  const code = stripComments(css);
+  // ★ 这是"砸下去没有动画感"的根因防护：
+  // 原实现只有 .18s、且 0% 就是抬起态 —— 没有蓄力，砸落被压到不足 40ms。
+  // 时长必须够长，且关键帧必须从"静止握持"起步。
+  const swingMs = Number(css.match(/--swing-ms:\s*(\d+)ms/)?.[1] ?? 0);
+  assert.ok(swingMs >= 200, `--swing-ms=${swingMs}ms 太短，砸落那一拍会看不见`);
+  assert.ok(swingMs <= 400, `--swing-ms=${swingMs}ms 太长，连击时会追不上手速`);
+
+  // 按花括号深度配对截出 swing 块（朴素 indexOf("}") 会在第一帧就截断）
+  const start = code.indexOf("@keyframes swing");
+  assert.ok(start >= 0, "缺 @keyframes swing");
+  const open = code.indexOf("{", start);
+  let depth = 0;
+  let end = open;
+  for (let i = open; i < code.length; i += 1) {
+    if (code[i] === "{") depth += 1;
+    else if (code[i] === "}") {
+      depth -= 1;
+      if (depth === 0) { end = i + 1; break; }
+    }
+  }
+  const block = code.slice(open, end);
+  const frames = [...block.matchAll(/(\d+)%\s*\{([^}]*)\}/g)]
+    .map((m) => ({ pct: Number(m[1]), body: m[2] }));
+
+  assert.ok(frames.length >= 4, `关键帧只有 ${frames.length} 段，读不出"蓄力-砸落-回弹"的节拍`);
+  assert.equal(frames[0].pct, 0, "首帧必须是 0%（静止握持），不能一上来就是抬起态");
+
+  const angleAt = (pct) => {
+    const f = frames.find((x) => x.pct === pct);
+    if (!f) return null;
+    return Number(f.body.match(/rotate\((-?[\d.]+)deg\)/)?.[1] ?? NaN);
+  };
+  const rest = angleAt(0);
+  const lift = angleAt(16);
+  const smash = angleAt(50);
+  assert.ok(Number.isFinite(rest) && Number.isFinite(lift) && Number.isFinite(smash),
+    "0% / 16% / 50% 三帧必须都带 rotate");
+  assert.ok(lift < rest, `蓄力帧(${lift}deg)应比静止帧(${rest}deg)更向后抬，否则没有蓄力过程`);
+  assert.ok(smash > rest, `砸落帧(${smash}deg)应越过静止帧(${rest}deg)向前，否则砸不下去`);
+  // 蓄力到砸落的摆幅要够大，小角度摆动肉眼看不出
+  assert.ok(smash - lift >= 45, `蓄力到砸落只摆了 ${smash - lift}deg，摆幅太小看不出力道`);
+});
+
+test("CSS: 命中要有落点冲击波与屏幕微震（而不能只靠锤子自身旋转）", () => {
+  const code = stripComments(css);
+  // 冲击波挂在洞位上，与 .is-hit 同位不同时长（先炸后陷，才有层次）
+  assert.ok(/\.hole\.is-impact::after\s*\{/.test(code), "缺落点冲击波规则 .hole.is-impact::after");
+  assert.ok(/@keyframes\s+impact-ring\s*\{/.test(code), "缺 @keyframes impact-ring");
+  const ring = code.slice(code.indexOf(".hole.is-impact::after"));
+  assert.match(ring.slice(0, 700), /animation:\s*impact-ring/, "冲击波应挂 impact-ring 动画");
+  // 必须渐隐收场，不能停在实心圆上
+  assert.ok(/@keyframes\s+impact-ring\s*\{[\s\S]*?opacity:\s*0/.test(code),
+    "impact-ring 末帧应 opacity:0，否则会留下一个静止的圈");
+
+  // 屏幕微震落在 .garden 上，不能落在 body（整页抖会带动滚动条闪烁）
+  assert.ok(/\.garden\.is-shake\s*\{[^}]*animation:\s*garden-shake/.test(code),
+    "缺 .garden.is-shake 的震屏规则");
+  assert.ok(!/body[^{]*\{[^}]*garden-shake/.test(code), "震屏不得挂在 body 上");
+  const shake = code.slice(code.indexOf("@keyframes garden-shake"));
+  const shakeBody = shake.slice(0, 600);
+  // 必须首尾都回到 0，否则震完会永久偏移
+  assert.match(shakeBody, /0%\s*\{[^}]*translate3d\(0,\s*0,\s*0\)/, "震屏首帧应归零");
+  assert.match(shakeBody, /100%\s*\{[^}]*translate3d\(0,\s*0,\s*0\)/, "震屏末帧应归零，否则页面会永久错位");
+
+  // JS 侧接线
+  const ui = readJs("ui.mjs");
+  const main = readJs("main.mjs");
+  assert.match(ui, /export function shakeGarden/, "ui.mjs 缺 shakeGarden");
+  assert.match(ui, /classList\.add\("is-impact"\)/, "markHit 应加上 is-impact");
+  assert.match(main, /U\.shakeGarden\(ui/, "main.mjs 命中反馈里应调用 shakeGarden");
 });
 
 test("CSS: 地鼠有完整的形象构件（耳/爪/肚皮/牙/高光）", () => {
