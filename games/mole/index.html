@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>莓园打地鼠 · DOIN 在线小游戏</title>
+  <meta name="description" content="阳光莓园里的经典打地鼠：地鼠从土洞探头，一槌敲回去。轻松/普通/疯狂三档难度 + 每日固定题面，连击触发莓雨狂热，金鼠、铁盔鼠与禁打的炸弹鼠轮番登场。">
+  <link rel="icon" href="favicon.svg?v=dev" type="image/svg+xml">
+  <link rel="stylesheet" href="css/style.css?v=dev">
+</head>
+<body>
+  <noscript>
+    <div class="noscript-banner">
+      <p data-i18n="noscript">需要启用 JavaScript 才能游玩。</p>
+    </div>
+  </noscript>
+
+  <div id="game-app">
+    <!-- 木梁顶栏：返回 / 音效 / 语言 / 说明（内嵌紧凑栏，拒绝四角散落） -->
+    <header class="cabinet-topbar">
+      <a href="/" id="back-home" class="cab-btn" title="返回门户" aria-label="返回门户">←</a>
+      <h1 class="cab-title" data-i18n="gameTitle">莓园打地鼠</h1>
+      <div class="cab-tools">
+        <button id="btn-sound" class="cab-btn" title="音效" aria-label="音效">🔊</button>
+        <button id="btn-lang" class="cab-btn" title="语言" aria-label="语言">EN</button>
+        <button id="btn-help" class="cab-btn" title="玩法说明" aria-label="玩法说明">?</button>
+      </div>
+    </header>
+
+    <div class="cabinet-body">
+      <!-- 左翼木牌：难度 + 纪录 -->
+      <aside class="side-panel side-left" aria-label="难度与纪录">
+        <div class="panel-block">
+          <span class="panel-label" data-i18n="modeLabel">难度</span>
+          <div class="diff-tabs" id="diff-tabs">
+            <button type="button" class="diff-tab" data-mode="easy" data-hint="diffEasyHint" data-i18n="diffEasy">轻松</button>
+            <button type="button" class="diff-tab is-active" data-mode="normal" data-hint="diffNormalHint" data-i18n="diffNormal">普通</button>
+            <button type="button" class="diff-tab" data-mode="crazy" data-hint="diffCrazyHint" data-i18n="diffCrazy">疯狂</button>
+          </div>
+          <p class="panel-hint" id="diff-hint" data-i18n="diffNormalHint">加入铁盔鼠与炸弹鼠</p>
+        </div>
+        <div class="panel-block">
+          <span class="panel-label" data-i18n="best">最高分</span>
+          <span class="panel-value" id="hud-best">0</span>
+        </div>
+        <div class="panel-block">
+          <span class="panel-label" data-i18n="maxCombo">最长连击</span>
+          <span class="panel-value" id="hud-best-combo">0</span>
+        </div>
+        <div class="panel-block">
+          <span class="panel-label" data-i18n="accuracy">命中率</span>
+          <span class="panel-value" id="hud-accuracy">—</span>
+        </div>
+      </aside>
+
+      <!-- 中央主舞台：草地土台 + 洞位阵列 -->
+      <main class="stage-core">
+        <div class="garden" id="garden">
+          <div class="garden-sky" aria-hidden="true"></div>
+          <div class="garden-vines" aria-hidden="true">
+            <span class="vine berry"></span>
+            <span class="vine berry"></span>
+            <span class="vine berry"></span>
+            <span class="vine berry"></span>
+          </div>
+
+          <div class="holes-grid" id="holes-grid"></div>
+
+          <div class="frenzy-veil" id="frenzy-veil" aria-hidden="true"></div>
+
+          <!-- 木槌（桌面跟随光标；触屏设备隐藏） -->
+          <div class="hammer" id="hammer" aria-hidden="true">
+            <span class="hammer-head"></span>
+            <span class="hammer-grip"></span>
+          </div>
+
+          <div id="toast" class="toast" aria-live="polite"></div>
+
+          <!-- 开始弹窗 -->
+          <div id="modal-welcome" class="modal-layer">
+            <div class="modal-card">
+              <div class="modal-badge">🍓</div>
+              <h2 data-i18n="welcomeTitle">抡起木槌！</h2>
+              <p class="modal-text" data-i18n="welcomeDesc">地鼠从土洞探头，一槌敲回去。连击攒满触发莓雨狂热，别碰炸弹鼠。</p>
+              <div class="modal-btn-row">
+                <button type="button" id="btn-start" class="arcade-btn" data-i18n="btnStart">开始</button>
+                <button type="button" id="btn-daily-welcome" class="arcade-btn arcade-btn--alt" data-i18n="btnDaily">每日莓园</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- 暂停弹窗 -->
+          <div id="modal-pause" class="modal-layer hidden" aria-hidden="true">
+            <div class="modal-card">
+              <div class="modal-badge">⏸</div>
+              <h2 data-i18n="pauseTitle">已暂停</h2>
+              <p class="modal-text" data-i18n="pauseDesc">按 P 或回车继续</p>
+              <div class="modal-btn-row">
+                <button type="button" id="btn-resume" class="arcade-btn" data-i18n="btnResume">继续</button>
+                <button type="button" id="btn-restart-pause" class="arcade-btn arcade-btn--alt" data-i18n="btnRestart">重开</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- 结算弹窗 -->
+          <div id="modal-gameover" class="modal-layer hidden" aria-hidden="true">
+            <div class="modal-card">
+              <div class="modal-badge" id="settle-badge">🏆</div>
+              <h2 id="settle-title" data-i18n="gameoverTitle">时间到</h2>
+              <div class="score-summary">
+                <div class="summary-line">
+                  <span data-i18n="finalScore">本局得分</span>
+                  <strong id="settle-score" class="text-highlight">0</strong>
+                </div>
+                <div class="summary-line">
+                  <span data-i18n="finalCombo">最长连击</span>
+                  <strong id="settle-combo">0</strong>
+                </div>
+                <div class="summary-line">
+                  <span data-i18n="finalAccuracy">命中率</span>
+                  <strong id="settle-accuracy">0%</strong>
+                </div>
+                <div class="summary-line">
+                  <span data-i18n="finalBombs">误击炸弹</span>
+                  <strong id="settle-bombs">0</strong>
+                </div>
+                <div class="summary-line">
+                  <span data-i18n="best">最高分</span>
+                  <strong id="settle-best">0</strong>
+                </div>
+              </div>
+              <div class="modal-btn-row">
+                <button type="button" id="btn-replay" class="arcade-btn" data-i18n="btnReplay">再来一局</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- 规则弹窗 -->
+          <div id="modal-rules" class="modal-layer hidden" aria-hidden="true">
+            <div class="modal-card rules-card">
+              <div class="modal-badge">📖</div>
+              <h2 data-i18n="rulesTitle">玩法说明</h2>
+              <div class="rules-body">
+                <h3 data-i18n="ruleControlHeader">操作方式</h3>
+                <ul>
+                  <li data-i18n="ruleTap">鼠标点击 / 手指触摸地鼠，即点即中</li>
+                  <li data-i18n="ruleKeys">键盘：1 2 3 4 / Q W E R / A S D F 对应十二个洞位</li>
+                  <li data-i18n="rulePause">P 键或回车暂停/继续</li>
+                </ul>
+                <h3 data-i18n="ruleScoreHeader">得分与连击</h3>
+                <ul>
+                  <li data-i18n="ruleHit">普通鼠 1 分、金鼠 5 分、铁盔鼠需敲两下（掀盔 1 分、命中 3 分）</li>
+                  <li data-i18n="ruleBomb">炸弹鼠禁止击打：误击扣 3 分并清空连击，等它自己缩回去</li>
+                  <li data-i18n="ruleCombo">连击 8 起 ×1.5、16 起 ×2、24 起 ×3</li>
+                  <li data-i18n="ruleFrenzy">连击每满 20 触发 4 秒莓雨狂热：地鼠变慢、得分翻倍</li>
+                  <li data-i18n="ruleDaily">每日莓园用当天日期做种子，所有人同一套题面</li>
+                </ul>
+              </div>
+              <div class="modal-btn-row">
+                <button type="button" id="btn-close-rules" class="arcade-btn" data-i18n="btnClose">返回</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </main>
+
+      <!-- 右翼木牌：得分 / 连击 / 沙漏 -->
+      <aside class="side-panel side-right" aria-label="得分与连击">
+        <div class="panel-block">
+          <span class="panel-label" data-i18n="score">得分</span>
+          <span class="panel-value score-num" id="hud-score">0</span>
+        </div>
+        <div class="panel-block">
+          <span class="panel-label" data-i18n="combo">连击</span>
+          <span class="panel-value combo-num" id="hud-combo">0</span>
+          <span class="panel-sub" id="hud-mult">×1</span>
+        </div>
+        <div class="panel-block">
+          <span class="panel-label" data-i18n="timeLeft">剩余时间</span>
+          <div class="hourglass" id="hourglass" aria-hidden="true"><span class="hourglass-sand" id="hourglass-sand"></span></div>
+          <span class="panel-value time-num" id="hud-time">60</span>
+        </div>
+        <div class="panel-block">
+          <span class="panel-label" data-i18n="maxCombo">本局最长</span>
+          <span class="panel-value" id="hud-max-combo">0</span>
+        </div>
+      </aside>
+    </div>
+
+    <!-- 底部木质操作台 -->
+    <footer class="cabinet-controls">
+      <button type="button" id="btn-primary" class="arcade-btn arcade-btn--wide" data-i18n="btnStart">开始</button>
+      <button type="button" id="btn-pause" class="arcade-btn arcade-btn--wide arcade-btn--alt" data-i18n="btnPause">暂停</button>
+      <button type="button" id="btn-daily" class="arcade-btn arcade-btn--wide arcade-btn--berry" data-i18n="btnDaily">每日莓园</button>
+    </footer>
+  </div>
+
+  <script type="module" src="js/main.mjs?v=dev"></script>
+</body>
+</html>

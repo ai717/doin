@@ -9,6 +9,14 @@
 
 ### Current Baseline (2026-09-21)
 
+- **Winmine 经典扫雷（Windows 原版复刻）**（新增）：**高度复刻 Windows 最早版本扫雷 WinMine 的 90s 手感与视觉**，按 `docs/plans/winmine-prd.md` 本地端到端（模式 A）落地（拍板 **路线 B：首击必安全（延后布雷）** / **slug=winmine** / **破纪录弹窗 + 前 N 名成绩榜**）。
+  - **核心玩法**：三档难度（初级 9×9/10、中级 16×16/40、高级 30×16/99）+ 自定义；左键翻开、右键 旗→问号→清除 循环、点数字 chord 和弦速开；LED 红字计数器、四态笑脸（🙂😮😵😎）、数字 1-8 原版配色。
+  - **首击安全平衡**：延后布雷（`createState` 只建空盘，首次 `reveal` 才布雷），保证首击格及 8 邻域无雷；后续保留原版 50/50 猜雷局面（不做无猜保证），忠于经典手感。
+  - **成绩榜**：`storage.mjs` 存前 N 名（`MAX_RECORDS=10`）成绩，`recordResult` 按用时升序插入并截断，破纪录弹窗展示。
+  - **模块分层**：`engine`(纯函数规则，不可变状态转换) / `level`(三档预设+自定义) / `game`(DOM-free 控制器+计时) / `ui`(唯一碰 DOM 的 Win95 拟真窗口+LED+笑脸 SVG) / `storage`(`doin.winmine.v1`) / `i18n`(中英双表) / `audio`(WebAudio 程序化音效) / `main`(装配；左键翻/右键旗/长按插旗/F2 新局)。
+  - **美学**：Win95 青色桌面 `#008080` + 灰底浮雕窗口 + 机顶状态条 + 中央拟真窗口（titlebar/menubar/statusbar/棋盘），左/右两翼对话框收纳菜单与成绩榜，避开四角散落按钮与 SaaS 卡片集群；`prefers-reduced-motion` 降级、移动端底部广告安全避让。
+  - **全套门禁**：**单测 25/25 全绿**（engine / storage / i18n / markup 四文件），`node scripts/check-game.mjs winmine` **19 pass / 0 fail / 0 warn**；640×640 明黄→金渐变 3D 软胶封面（cv2.inpaint 固定 bbox 去水印）到位；`npm run build` 全站构建通过。
+
 - **Gomoku 五子连珠**（新增 & 全面深度修复）：**15×15 经典黑白对弈**，对标国际标准 Renju 竞技禁手规则与经典死活题范式，按 `docs/plans/gomoku-prd.md` 本地端到端落地并完成全维度性能与美学打磨（拍板 **1A 标准 Renju 禁手** / **2A 教学型容错** / **3A 自然语言复盘点评**）。
   - **核心玩法与模式编排**：
     - **人机对战（PvE）**：四档阶梯 AI（启蒙 / 进阶 / 高手 / 大师），从新手教学到深搜算力，胜负平衡；

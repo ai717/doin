@@ -1,0 +1,283 @@
+// 莓园打地鼠 — 装配入口：绑定事件、驱动主循环、协调各层
+
+import * as E from "./engine.mjs";
+import * as G from "./game.mjs";
+import * as S from "./storage.mjs";
+import * as A from "./audio.mjs";
+import * as U from "./ui.mjs";
+import { accuracyPercent } from "./score.mjs";
+import { detectLocale, saveLocale, t, todayKey } from "./i18n.mjs";
+
+const ui = U.createUI();
+const game = G.createController();
+
+let locale = detectLocale();
+let data = S.rollDailyIfNeeded(S.loadGameData(), E.todayKey());
+let soundOn = data.soundEnabled !== false;
+let rafId = 0;
+let lastTs = 0;
+let resizeTimer = 0;
+
+/* ---------------- 渲染 ---------------- */
+
+function renderHud() {
+  const run = game.run;
+  const mode = G.storageMode(game);
+  const total = (run?.hits ?? 0) + (run?.misses ?? 0);
+  U.updateHud(ui, run, {
+    best: S.bestOf(data, mode),
+    bestCombo: data.bestCombo?.[mode] ?? 0,
+    multiplier: E.currentMultiplier(run),
+    seconds: run ? E.secondsLeft(run) : 60,
+    accuracyText: total > 0 ? `${accuracyPercent(run.hits, run.misses)}%` : "—",
+  });
+}
+
+function render() {
+  U.syncHoles(ui, game.run);
+  renderHud();
+}
+
+/* ---------------- 事件反馈 ---------------- */
+
+function feedbackFor(result) {
+  if (!result?.ok) return;
+  U.markHit(ui, result.index);
+  if (result.kind === "bomb") {
+    U.spawnChips(ui, result.index, "bomb");
+    A.playBomb();
+    U.toast(ui, t("bombToast", locale), true);
+    return;
+  }
+  if (result.kind === "gold") {
+    U.spawnChips(ui, result.index, "gold");
+    A.playGold();
+  } else if (result.kind === "helmetBlock") {
+    U.spawnChips(ui, result.index, "helmet");
+    A.playClank();
+  } else {
+    U.spawnChips(ui, result.index, "hit");
+    A.playWhack(result.combo ?? 0);
+  }
+}
+
+function handleEvents(events) {
+  for (const ev of events) {
+    if (ev.type === "miss") {
+      A.playMiss();
+    } else if (ev.type === "frenzyStart") {
+      U.setFrenzy(ui, true);
+      U.toast(ui, t("frenzyToast", locale));
+      A.playFrenzy();
+    } else if (ev.type === "frenzyEnd") {
+      U.setFrenzy(ui, false);
+    } else if (ev.type === "over") {
+      settle();
+    }
+  }
+}
+
+/* ---------------- 生命周期 ---------------- */
+
+function startRun(mode) {
+  U.hideAllModals(ui);
+  U.setFrenzy(ui, false);
+  A.unlockAudio();
+  A.setMuted(!soundOn);
+  if (mode === "daily") {
+    const date = E.todayKey();
+    G.start(game, { mode: "daily", seed: E.dailySeed(date), date });
+  } else {
+    const fallback = game.mode === "daily" ? "normal" : game.mode;
+    const next = G.MODES.includes(mode) && mode !== "daily" ? mode : fallback;
+    G.start(game, { mode: next, seed: (Date.now() ^ (Math.random() * 0xffffffff)) >>> 0 });
+  }
+  U.setDifficultyTab(ui, game.mode === "daily" ? "normal" : game.mode);
+  U.setPrimaryButton(ui, locale, "running");
+  A.playStart();
+  render();
+}
+
+function settle() {
+  const sum = G.summary(game);
+  const mode = G.storageMode(game);
+  const prevBest = S.bestOf(data, mode);
+  const isBest = sum.score > prevBest;
+  data = S.updateWithRunResult(data, {
+    mode,
+    score: sum.score,
+    maxCombo: sum.maxCombo,
+    date: sum.date || E.todayKey(),
+  });
+  S.saveGameData(data);
+  U.setFrenzy(ui, false);
+  U.showSettle(ui, locale, sum, S.bestOf(data, mode), isBest);
+  U.setPrimaryButton(ui, locale, "start");
+  A.playOver();
+  renderHud();
+}
+
+function doPause() {
+  if (!G.isRunning(game)) return;
+  if (G.pause(game)) U.showModal(ui, "pause");
+}
+
+function doResume() {
+  if (!game.run || game.run.status !== "running") return;
+  if (G.resume(game)) U.hideModal(ui, "pause");
+}
+
+function togglePause() {
+  if (game.paused) doResume();
+  else doPause();
+}
+
+/* ---------------- 主循环 ---------------- */
+
+function frame(ts) {
+  const dt = lastTs ? Math.min(100, ts - lastTs) : 16;
+  lastTs = ts;
+  if (G.isRunning(game)) {
+    handleEvents(G.tick(game, dt));
+    render();
+  }
+  rafId = requestAnimationFrame(frame);
+}
+
+/* ---------------- 输入 ---------------- */
+
+function hitIndex(index) {
+  if (!G.isRunning(game)) return;
+  const result = G.hit(game, index);
+  feedbackFor(result);
+  renderHud();
+}
+
+function bindInput() {
+  const grid = ui.dom.grid;
+
+  grid.addEventListener("pointerdown", (ev) => {
+    const hole = ev.target.closest?.(".hole");
+    if (!hole) return;
+    ev.preventDefault();
+    A.unlockAudio();
+    A.setMuted(!soundOn);
+    U.swingHammer(ui);
+    hitIndex(Number(hole.dataset.index));
+  });
+
+  ui.dom.garden.addEventListener("pointermove", (ev) => {
+    U.moveHammer(ui, ev.clientX, ev.clientY);
+  });
+
+  window.addEventListener("keydown", (ev) => {
+    const key = ev.key;
+    if (key === "p" || key === "P") {
+      ev.preventDefault();
+      togglePause();
+      return;
+    }
+    if (key === "Enter") {
+      ev.preventDefault();
+      if (!game.run || game.run.status === "over") startRun(game.mode);
+      else togglePause();
+      return;
+    }
+    const index = U.keyToIndex(key, ui.cols);
+    if (index >= 0) {
+      ev.preventDefault();
+      hitIndex(index);
+    }
+  });
+
+  document.addEventListener("visibilitychange", () => {
+    if (document.hidden) doPause();
+  });
+
+  let resizeRaf = 0;
+  window.addEventListener("resize", () => {
+    if (resizeRaf) cancelAnimationFrame(resizeRaf);
+    resizeRaf = requestAnimationFrame(() => {
+      const { rows, cols } = U.gridForWidth(window.innerWidth);
+      if (rows === ui.rows && cols === ui.cols) return;
+      if (G.isRunning(game)) return; // 局中不换网格，避免与引擎洞位数不一致
+      U.buildGrid(ui, rows, cols);
+      G.setGrid(game, rows, cols);
+      render();
+    });
+  });
+}
+
+function bindButtons() {
+  ui.dom.btnStart.addEventListener("click", () => startRun(game.mode));
+  ui.dom.btnDailyWelcome.addEventListener("click", () => startRun("daily"));
+  ui.dom.btnDaily.addEventListener("click", () => startRun("daily"));
+  ui.dom.btnPrimary.addEventListener("click", () => {
+    if (G.isRunning(game)) {
+      startRun(game.mode);
+    } else {
+      startRun(game.mode === "daily" ? "normal" : game.mode);
+    }
+  });
+  ui.dom.btnPause.addEventListener("click", togglePause);
+  ui.dom.btnResume.addEventListener("click", doResume);
+  ui.dom.btnRestartPause.addEventListener("click", () => startRun(game.mode));
+  ui.dom.btnReplay.addEventListener("click", () => startRun(game.mode));
+  ui.dom.btnHelp.addEventListener("click", () => U.showModal(ui, "rules"));
+  ui.dom.btnCloseRules.addEventListener("click", () => U.hideModal(ui, "rules"));
+  ui.dom.modalRules.addEventListener("click", (ev) => {
+    if (ev.target === ui.dom.modalRules) U.hideModal(ui, "rules");
+  });
+
+  ui.dom.btnSound.addEventListener("click", () => {
+    soundOn = !soundOn;
+    A.setMuted(!soundOn);
+    U.setSoundButton(ui, soundOn);
+    data = S.saveGameData({ ...data, soundEnabled: soundOn });
+  });
+
+  ui.dom.btnLang.addEventListener("click", () => {
+    const next = locale === "zh" ? "en" : "zh";
+    saveLocale(next);
+    location.reload();
+  });
+
+  ui.dom.diffTabs.addEventListener("click", (ev) => {
+    const tab = ev.target.closest?.(".diff-tab");
+    if (!tab?.dataset.mode) return;
+    A.unlockAudio();
+    startRun(tab.dataset.mode);
+  });
+
+  // 弹层遮罩点击：开始弹窗不关（必须选难度/开始），其余可关
+  ui.dom.modalPause.addEventListener("click", (ev) => {
+    if (ev.target === ui.dom.modalPause) doResume();
+  });
+}
+
+/* ---------------- 启动 ---------------- */
+
+function boot() {
+  const { rows, cols } = U.gridForWidth(window.innerWidth);
+  U.buildGrid(ui, rows, cols);
+  G.setGrid(game, rows, cols);
+  U.setLocale(ui, locale);
+  U.setSoundButton(ui, soundOn);
+  U.setLangButton(ui, locale);
+  U.setDifficultyTab(ui, "normal");
+  U.setPrimaryButton(ui, locale, "start");
+  game.mode = data.difficulty && data.difficulty !== "daily" ? data.difficulty : "normal";
+  U.setDifficultyTab(ui, game.mode);
+  bindInput();
+  bindButtons();
+  render();
+  U.showModal(ui, "welcome");
+  rafId = requestAnimationFrame(frame);
+}
+
+boot();
+
+// 供无浏览器冒烟测试使用（生产环境无副作用）
+if (typeof window !== "undefined") {
+  window.__mole = { ui, game, startRun, hitIndex, render, E, G, S };
+}

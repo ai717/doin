@@ -102,6 +102,23 @@
       }
     },
     {
+      "title": "经典扫雷",
+      "slug": "winmine",
+      "desc": "Windows 原版扫雷 1:1 复刻：Win95 灰底浮雕、红色 LED 计数与俏皮笑脸，初级/中级/高级/自定义四档，右键插旗问号循环，最快成绩榜前 10 名。",
+      "icon": "🙂",
+      "cover": "/assets/covers/winmine.webp",
+      "tags": [
+        "益智",
+        "经典",
+        "怀旧"
+      ],
+      "url": "/winmine/",
+      "en": {
+        "title": "Classic Minesweeper",
+        "desc": "A faithful Windows Minesweeper replica: Win95 gray bevel board, red LED counters and the iconic smiley, with three presets plus custom boards and a top-10 best-times table."
+      }
+    },
+    {
       "title": "星轨调度大师",
       "slug": "orbit-sort",
       "desc": "调度彩色星体穿过中央星核，在有限中转空间中恢复每一条纯色星轨。",
@@ -589,7 +606,6 @@
     },
     {
       "title": "太空防御者",
-      "slug": "space-defender",
       "desc": "驾驶复古战机在几何弹幕里横向穿梭，擦弹充能引爆过载，击落牵引你的皇蜂夺回僚机双机合体。五个星区三十波、母舰突袭与生存狂潮，进度本机保存。",
       "icon": "🛸",
       "cover": "/assets/covers/space-defender.webp",
@@ -602,6 +618,23 @@
       "en": {
         "title": "Space Defender",
         "desc": "Pilot a retro fighter through geometric bullet patterns, graze bullets to charge OVERLOAD, and shoot down the Queen that beams you up to rescue your wingman for a dual-fighter fusion. 30 waves across 5 sectors plus Mothership Rush and Survival Onslaught."
+      }
+    },
+    {
+      "title": "莓园打地鼠",
+      "slug": "mole",
+      "desc": "阳光莓园里的打地鼠：地鼠从土洞探头，一槌敲回去。轻松/普通/疯狂三档难度，金鼠、铁盔鼠与禁打的炸弹鼠轮番登场，连击攒满触发莓雨狂热，另有每日固定题面全球同题。",
+      "icon": "🐹",
+      "cover": "/assets/covers/mole.webp",
+      "tags": [
+        "休闲",
+        "街机",
+        "反应"
+      ],
+      "url": "/mole/",
+      "en": {
+        "title": "Berry Bash",
+        "desc": "Classic whack-a-mole in a sunny berry garden: moles pop out of the soil, whack them back down. Three difficulties, golden and helmeted moles, never-hit bombs, combo-driven Berry Frenzy and a daily seeded board."
       }
     }
   ]
