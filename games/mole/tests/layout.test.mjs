@@ -63,6 +63,29 @@ function mediaBlocks(text, condition) {
   return out;
 }
 
+/**
+ * 取出指定 @keyframes 的完整块（按花括号深度配对）。
+ * 朴素的 `indexOf("}", open)` 会在第一帧的闭合括号就截断，
+ * 更糟的是直接 indexOf("@keyframes x") 后跑全局正则会一路吃到后面的
+ * 其它 keyframes —— 曾经因此把 mole-bob 的末帧当成 mole-rise 的末帧。
+ */
+function keyframesBlock(text, name) {
+  const head = text.indexOf(`@keyframes ${name}`);
+  assert.ok(head >= 0, `style.css 缺少 @keyframes ${name}`);
+  const open = text.indexOf("{", head);
+  let depth = 0;
+  let i = open;
+  while (i < text.length) {
+    if (text[i] === "{") depth += 1;
+    else if (text[i] === "}") {
+      depth -= 1;
+      if (depth === 0) return text.slice(open, i + 1);
+    }
+    i += 1;
+  }
+  return text.slice(open);
+}
+
 /** 取百分比；CSS 里写 `0`（无单位）视为 0% */
 function pct(text, prop) {
   const m = text.match(new RegExp(`${prop}:\\s*(-?[\\d.]+)%`));
@@ -235,11 +258,12 @@ test("CSS 冒头的缓动不能抢跑（禁止前腔被抽空的贝塞尔）", (
   assert.ok(quarter <= 0.5, `25% 时间跑了 ${(quarter * 100).toFixed(0)}% 的位移，抢跑过狠（应 ≤50%）`);
 });
 
-test("CSS 时长与 engine 的 RISE_MS / DUCK_MS 一致", async () => {
-  const { RISE_MS, DUCK_MS, DUCK_RANGE_MS } = await import("../js/engine.mjs");
+test("CSS 时长与 engine 的 RISE_MS / DUCK_MS / WHACKED_MS 一致", async () => {
+  const { RISE_MS, DUCK_MS, DUCK_RANGE_MS, WHACKED_MS, BLOCKED_MS } = await import("../js/engine.mjs");
   const root = css.slice(css.indexOf(":root"), css.indexOf("}", css.indexOf(":root")));
   const rise = root.match(/--rise-ms:\s*(\d+)ms/);
   const duck = root.match(/--duck-ms:\s*(\d+)ms/);
+  const squash = root.match(/--squash-ms:\s*(\d+)ms/);
   assert.ok(rise, ":root 缺少 --rise-ms");
   assert.ok(duck, ":root 缺少 --duck-ms");
   assert.equal(Number(rise[1]), RISE_MS, `--rise-ms 应等于 engine.RISE_MS(${RISE_MS})`);
@@ -250,6 +274,126 @@ test("CSS 时长与 engine 的 RISE_MS / DUCK_MS 一致", async () => {
     `DUCK_MS(${DUCK_MS}) 应落在 DUCK_RANGE_MS 区间内`);
   // 冒头时长必须够长，肉眼才看得出过程
   assert.ok(RISE_MS >= 180, `RISE_MS=${RISE_MS} 太短，冒头会像瞬移`);
+
+  // ★ 受击动画时长必须与"地鼠被打下后留在场上的时间"严格相等：
+  //   动画比之短 → 没演完就换下一只；比之长 → 沉到一半就开始冒新的。
+  assert.ok(squash, ":root 缺少 --squash-ms");
+  assert.equal(Number(squash[1]), WHACKED_MS,
+    `--squash-ms 应等于 engine.WHACKED_MS(${WHACKED_MS})`);
+  // 受击时长必须明显长于自然缩回的最快值，否则"被打"和"自己缩回"分不出来
+  assert.ok(WHACKED_MS > DUCK_RANGE_MS[1],
+    `WHACKED_MS(${WHACKED_MS}) 应长于自然缩回的最快值 ${DUCK_RANGE_MS[1]}ms，否则看不出被打`);
+  assert.ok(WHACKED_MS >= 300, `WHACKED_MS=${WHACKED_MS} 太短，"被砸扁+晕"演不完`);
+  assert.ok(WHACKED_MS <= 600, `WHACKED_MS=${WHACKED_MS} 太长，洞位被占太久会拖慢节奏`);
+
+  // ★ 非致命（被铁盔弹开）必须是一套独立的、短得多的时长：
+  //   这只鼠不会退场，用的动画末帧必须回到站立姿势，不能是"沉下去"。
+  const blockMs = root.match(/--block-ms:\s*(\d+)ms/);
+  assert.ok(blockMs, ":root 缺少 --block-ms");
+  assert.equal(Number(blockMs[1]), BLOCKED_MS, `--block-ms 应等于 engine.BLOCKED_MS(${BLOCKED_MS})`);
+  assert.ok(BLOCKED_MS < WHACKED_MS,
+    `BLOCKED_MS(${BLOCKED_MS}) 应短于致命受击的 WHACKED_MS(${WHACKED_MS})，两种反馈要能分辨`);
+});
+
+test("非致命反馈（被铁盔弹开）不得复用致命受击动画", () => {
+  const code = stripComments(css);
+  // ① 分派必须正确：helmetBlock 走 markBlock，其余走 markHit
+  const mainJs = readJs("main.mjs");
+  const blockBranch = mainJs.slice(
+    mainJs.indexOf('result.kind === "helmetBlock"'),
+    mainJs.indexOf('result.kind === "helmetBlock"') + 260,
+  );
+  assert.match(blockBranch, /markBlock\(/,
+    "helmetBlock 必须走 U.markBlock —— 走 markHit 会让没死的地鼠演一遍'被砸扁+沉下去'");
+  assert.ok(!/markHit\(/.test(blockBranch),
+    "helmetBlock 分支里不得再调 markHit，两套反馈必须互斥");
+  assert.match(readJs("ui.mjs"), /export function markBlock\(/,
+    "ui.mjs 缺少 markBlock —— 非致命反馈要有单独出口");
+
+  // ② CSS：要有独立的 is-blocked 动画，且**不能**用 forwards
+  const blocked = rule(".hole.is-blocked .mole");
+  assert.match(blocked, /animation:\s*mole-blocked/,
+    "缺少 .hole.is-blocked .mole 的遮挡反馈动画");
+  assert.ok(!/forwards/.test(blocked),
+    "is-blocked 绝不能加 forwards —— 地鼠没死，定格会把动作锁死在某一帧");
+
+  // ③ 末帧必须回到站立姿势：translate(-50%, 0) 且 scale(1, 1)
+  //    否则动画结束后会停在矮一截/歪一边的姿态上。
+  // 分帧：keyframesBlock 返回的是整段原文，要自己按 `NN% { … }` 切开
+  const bFrames = [...keyframesBlock(code, "mole-blocked").matchAll(/(\d+)%\s*\{([^}]*)\}/g)]
+    .map((m) => m[2]);
+  assert.ok(bFrames.length >= 3, "mole-blocked 至少要有 3 帧才看得出'晃了一下'");
+  assert.match(bFrames[bFrames.length - 1], /translate\(-50%,\s*0\)\s+scale\(1,\s*1\)/,
+    "mole-blocked 末帧必须回到站立姿势（活着的地鼠不能停在别的姿态）");
+  // 过程中要有明显的挤压和左右扭，才读得出"被磕了一下"
+  const bScaleY = bFrames.map((b) => Number(b.match(/scale\(\s*[\d.]+\s*,\s*([\d.]+)\s*\)/)?.[1] ?? 1));
+  assert.ok(Math.min(...bScaleY) <= 0.9, `至少要有一帧被压到 scaleY ≤ 0.9，当前 ${Math.min(...bScaleY)}`);
+  const bRotate = bFrames.map((b) => Math.abs(Number(b.match(/rotate\((-?[\d.]+)deg\)/)?.[1] ?? 0)));
+  assert.ok(Math.max(...bRotate) >= 4, `至少要有一帧扭到 ±4deg 以上，当前 ${Math.max(...bRotate)}`);
+
+  // ④ 头盔要有"磕到金属"的高光提示，否则玩家不知道打没打动
+  assert.match(code, /@keyframes\s+helmet-clank\s*\{/, "缺 @keyframes helmet-clank（铁盔挨击高光）");
+});
+
+test("CSS: 被揍是一段看得完的挨打动画（不被 syncHoles 掐断）", () => {
+  const code = stripComments(css);
+  const ui = readJs("ui.mjs");
+
+  // ★ 这条是"地鼠被打的状态缺乏"的根因护栏：
+  // syncHoles 一旦清 is-hit，动画就会被地鼠消失的那一帧掐断。
+  const syncBody = readJs("ui.mjs").slice(
+    ui.indexOf("export function syncHoles"),
+    ui.indexOf("export function markHit"),
+  );
+  assert.ok(!syncBody.includes('remove("is-hit"'),
+    "syncHoles 不得自己清 is-hit —— 清理必须统一走 releaseHit(view)");
+  // ★ 允许"新地鼠进洞"时收走残留，但这个条件必须写死：
+  //   只有 id 变成非 0（新鼠来了）才清；id 变 0（地鼠沉下去）绝不能清，
+  //   那正是受击动画播不完的根因。写反任何一边都会被下面两条抓住。
+  assert.match(syncBody, /if\s*\(\s*nextId\s*!==\s*0\s*\)\s*releaseHit\(/,
+    "syncHoles 只有在『新地鼠进洞』(nextId !== 0) 时才允许 releaseHit");
+  assert.match(readJs("ui.mjs"), /function\s+releaseHit\s*\(\s*view\s*\)/,
+    "缺少 releaseHit(view) —— 受击残留的清理要有唯一出口");
+  // 生命期必须由 markHit 独占管理（带兜底清理）
+  assert.match(ui.slice(ui.indexOf("export function markHit")), /setTimeout/,
+    "markHit 必须自己用定时器收回 is-hit，否则类名会永久残留");
+
+  // 动画本体存在，且采用 forwards 保持末帧（不然会弹回站立态再瞬移下去）
+  assert.match(code, /\.hole\.is-hit\s+\.mole\s*\{[^}]*animation:\s*mole-whack[^}]*forwards/,
+    "缺少 .hole.is-hit .mole 的受击动画，或没加 forwards（末帧会弹回）");
+  assert.ok(/@keyframes\s+mole-whack\s*\{/.test(code), "缺 @keyframes mole-whack");
+
+  // 真的被压扁：至少有一帧 scaleY 压到 0.5 以下，且横向撑开
+  const block = keyframesBlock(code, "mole-whack");
+  const frames = [...block.matchAll(/(\d+)%\s*\{([^}]*)\}/g)].map((m) => m[2]);
+  const scaleYs = frames
+    .map((b) => b.match(/scale\(\s*[\d.]+\s*,\s*([\d.]+)\s*\)/)?.[1])
+    .filter(Boolean)
+    .map(Number);
+  assert.ok(scaleYs.length >= 3, "受击动画应有多个关键帧才看得出过程");
+  assert.ok(Math.min(...scaleYs) <= 0.5,
+    `最少要有一帧压到 scaleY ≤ 0.5，当前最扁 ${Math.min(...scaleYs)} —— 压不扁就等于没打中`);
+  const scaleXs = frames
+    .map((b) => b.match(/scale\(\s*([\d.]+)\s*,/)?.[1])
+    .filter(Boolean)
+    .map(Number);
+  assert.ok(Math.max(...scaleXs) >= 1.3,
+    `横向要被压到撑开（scaleX ≥ 1.3），当前最宽 ${Math.max(...scaleXs)}`);
+  // 末帧必须沉到地平线以下，与 duck 的终态一致
+  assert.match(frames[frames.length - 1], /translate\(-50%,\s*100%\)/,
+    "受击动画末帧应沉到地平线以下，否则会停在洞口");
+
+  // 眩晕构件：闭眼横线 + 星星 + 闪白
+  assert.ok(/\.hole\.is-hit\s+\.mole-face::before/.test(code), "挨打应有表情变化（闭眼）");
+  assert.ok(/\.hole\.is-hit\s+\.mole-eye-glint\s*\{[^}]*opacity:\s*0/.test(code),
+    "挨打时眼部高光要收掉，否则会浮在闭眼线上");
+  assert.match(code, /\.hole\.is-hit\s+\.mole-stars\s*\{[^}]*display:\s*block/,
+    "挨打应显示头顶星星 .mole-stars");
+  assert.match(code, /\.hole\.is-hit\s+\.mole-body\s*\{[^}]*hit-flash/,
+    "挨打应有整只闪白hit-flash");
+  assert.ok(/@keyframes\s+star-orbit\s*\{/.test(code), "缺 @keyframes star-orbit");
+  // 星星用 clip-path 画，不许引入外部图片/font —— 零外部资源是平台红线
+  assert.match(code, /\.star\s*\{[^}]*clip-path/, "星星应用 clip-path 绘制（零外部资源）");
 });
 
 test("CSS: 木槌默认可见（不得再用 hover/pointer 媒体查询才显示）", () => {
@@ -351,13 +495,26 @@ test("CSS: 木槌有完整的实体构件（锤头 + 锤柄 + 挥击动画）", 
   assert.match(head, /box-shadow/, "锤头应有内高光");
   // 锤柄必须旋转，否则是"一把没有握持角度的菜刀"
   assert.match(rule(".hammer-grip"), /transform:\s*rotate\(/, "锤柄应带旋转角度");
-  // 挥击动画存在，且 reduced-motion 下被关掉而不是隐藏本体
-  assert.match(css, /\.hammer\.is-swing\s+\.hammer-rig\s*\{[^}]*animation:\s*swing/,
-    "缺挥击动画规则（应挂在 .hammer-rig 上，不能挂带负 margin 的外壳）");
+  // 挥击动画挂在本体上即可 —— margin 不参与 transform，纯 rotate 不冲突；
+  // 只有**百分比 translate** 才会与负 margin 叠加（那才是真坑）。
+  assert.match(css, /\.hammer\.is-swing\s*\{[^}]*animation:\s*swing/, "缺挥击动画规则");
   assert.ok(/@keyframes\s+swing\s*\{/.test(css), "缺 @keyframes swing");
+  // 旋转基点必须偏离中心 —— 绕自己中心转会像"贴图在旋"，不像手在抡
+  const hammerBody = rule(".hammer");
+  const origin = hammerBody.match(/transform-origin:\s*([\d.]+)px\s+([\d.]+)px/);
+  assert.ok(origin, ".hammer 应显式设置 transform-origin（默认 50% 50% 会绕中心打转）");
+  const [ox, oy] = [Number(origin[1]), Number(origin[2])];
+  const size = Number(hammerBody.match(/width:\s*(\d+)px/)?.[1] ?? 74);
+  assert.ok(Math.abs(ox - size / 2) >= 8 || Math.abs(oy - size / 2) >= 8,
+    `transform-origin(${ox},${oy}) 太靠近中心 ${size / 2}，看不出"抡"的圆弧`);
   const reduce = mediaBlocks(stripComments(css), "prefers-reduced-motion").join("\n");
-  assert.match(reduce, /\.hammer\.is-swing[^{]*\{[^}]*animation:\s*none/,
+  assert.match(reduce, /\.hammer\.is-swing\s*\{[^}]*animation:\s*none/,
     "reduced-motion 下应关掉挥击动画");
+  // 降级时把姿态钉在静止握持角，不能停在挥击中间某一帧
+  const restDeg = Number(hammerBody.match(/transform:\s*rotate\((-?[\d.]+)deg\)/)?.[1] ?? NaN);
+  assert.ok(Number.isFinite(restDeg), ".hammer 应有静止握持角");
+  assert.ok(reduce.includes(`rotate(${restDeg}deg)`),
+    `reduced-motion 应把姿态钉到静止角 rotate(${restDeg}deg)，否则会停在挥击中间`);
 });
 
 test("CSS: 挥击是一段可读的四拍动画（蓄力→砸落→回弹→归位）", () => {
@@ -369,25 +526,17 @@ test("CSS: 挥击是一段可读的四拍动画（蓄力→砸落→回弹→归
   assert.ok(swingMs >= 200, `--swing-ms=${swingMs}ms 太短，砸落那一拍会看不见`);
   assert.ok(swingMs <= 400, `--swing-ms=${swingMs}ms 太长，连击时会追不上手速`);
 
-  // 按花括号深度配对截出 swing 块（朴素 indexOf("}") 会在第一帧就截断）
-  const start = code.indexOf("@keyframes swing");
-  assert.ok(start >= 0, "缺 @keyframes swing");
-  const open = code.indexOf("{", start);
-  let depth = 0;
-  let end = open;
-  for (let i = open; i < code.length; i += 1) {
-    if (code[i] === "{") depth += 1;
-    else if (code[i] === "}") {
-      depth -= 1;
-      if (depth === 0) { end = i + 1; break; }
-    }
-  }
-  const block = code.slice(open, end);
+  const block = keyframesBlock(code, "swing");
   const frames = [...block.matchAll(/(\d+)%\s*\{([^}]*)\}/g)]
     .map((m) => ({ pct: Number(m[1]), body: m[2] }));
 
   assert.ok(frames.length >= 4, `关键帧只有 ${frames.length} 段，读不出"蓄力-砸落-回弹"的节拍`);
   assert.equal(frames[0].pct, 0, "首帧必须是 0%（静止握持），不能一上来就是抬起态");
+
+  // ★ 禁止在关键帧里写 translate —— .hammer 带负 margin 做落点对齐，
+  //   百分比/固定 translate 都会与 margin 叠加，动画首帧整体跳一块。
+  const bad = frames.find((f) => /translate/.test(f.body));
+  assert.ok(!bad, `关键帧 ${bad?.pct}% 含 translate()，会与 .hammer 的负 margin 叠加导致跳位`);
 
   const angleAt = (pct) => {
     const f = frames.find((x) => x.pct === pct);
@@ -397,12 +546,19 @@ test("CSS: 挥击是一段可读的四拍动画（蓄力→砸落→回弹→归
   const rest = angleAt(0);
   const lift = angleAt(16);
   const smash = angleAt(50);
+  const settle = angleAt(100);
   assert.ok(Number.isFinite(rest) && Number.isFinite(lift) && Number.isFinite(smash),
     "0% / 16% / 50% 三帧必须都带 rotate");
   assert.ok(lift < rest, `蓄力帧(${lift}deg)应比静止帧(${rest}deg)更向后抬，否则没有蓄力过程`);
   assert.ok(smash > rest, `砸落帧(${smash}deg)应越过静止帧(${rest}deg)向前，否则砸不下去`);
   // 蓄力到砸落的摆幅要够大，小角度摆动肉眼看不出
   assert.ok(smash - lift >= 45, `蓄力到砸落只摆了 ${smash - lift}deg，摆幅太小看不出力道`);
+
+  // ★ 首末帧必须都等于 .hammer 的静止握持角 —— 不一致会在按下/松开时姿态跳变
+  const restDeg = Number(rule(".hammer").match(/transform:\s*rotate\((-?[\d.]+)deg\)/)?.[1] ?? NaN);
+  assert.ok(Number.isFinite(restDeg), ".hammer 缺少静止握持角");
+  assert.equal(rest, restDeg, `swing 首帧(${rest}deg)应等于静止握持角(${restDeg}deg)`);
+  assert.equal(settle, restDeg, `swing 末帧(${settle}deg)应回到静止握持角(${restDeg}deg)，否则会跳变`);
 });
 
 test("CSS: 命中要有落点冲击波与屏幕微震（而不能只靠锤子自身旋转）", () => {

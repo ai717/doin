@@ -25,6 +25,12 @@
      缩回时长不在这里固定 —— 每只鼠的 duckMs 由引擎随机抽取，
      运行时经内联 style 写到元素上（见下 .mole 的 --duck-ms 兜底）。 */
   --rise-ms: 220ms;
+  /* 被揍的完整动作时长：必须与 engine.WHACKED_MS 一致（layout.test.mjs 校验）。
+     命中后地鼠会留在场上这么久才沉下去 —— 少于这个值，"被砸扁+晕"根本演不完。 */
+  --squash-ms: 380ms;
+  /* 被铁盔弹开的原地晃动时长：必须与 engine.BLOCKED_MS 一致（layout.test.mjs 校验）。
+     这套是"非致命"反馈，鼠不会退场 —— 别跟上面的 --squash-ms 混用。 */
+  --block-ms: 200ms;
   --duck-ms: 150ms; /* 兜底值：engine.DUCK_MS，正常游玩时会被每只鼠的随机值覆盖 */
 }
 
@@ -418,13 +424,112 @@ body {
 
 .hole[data-phase="duck"] .mole { transform: translate(-50%, 100%); animation: none; }
 
-.hole.is-hit .mole { animation: squash .26s ease-out; }
+/* ★ 被揍：这一套是"打到它了"的全部说服力。
+   曾经 `.hole.is-hit .mole` 只挂一个 .26s 的 squash，而 markHit 加的类名会在
+   地鼠从引擎里消失时被 syncHoles 顺手摘掉 —— 动画播到 1/5 就被掐断，
+   玩家看到的是"锤子落下、地鼠凭空没了"。两处都已修（见 ui.mjs 的注释）。
 
-@keyframes squash {
-  0% { transform: translate(-50%, 0) scale(1, 1); }
-  30% { transform: translate(-50%, 14%) scale(1.32, .58); }
-  60% { transform: translate(-50%, -6%) scale(.9, 1.12); }
-  100% { transform: translate(-50%, 100%) scale(1, 1); }
+   现在的四拍：① 一砸到底压成饼 → ② 弹起一点点（回弹）
+              → ③ 晃着不被 KEEP 住 → ④ 软塌塌沉下去。
+   时长必须与 engine.WHACKED_MS 一致（layout.test.mjs 校验）。 */
+.hole.is-hit .mole {
+  animation: mole-whack var(--squash-ms) cubic-bezier(.22, .68, .3, 1) forwards;
+}
+
+@keyframes mole-whack {
+  0%   { transform: translate(-50%, 0)    scale(1, 1)        rotate(0deg); }
+  16%  { transform: translate(-50%, 22%)  scale(1.46, .34)   rotate(-4deg); }
+  32%  { transform: translate(-50%, 2%)   scale(.86, 1.24)   rotate(5deg); }
+  48%  { transform: translate(-50%, 16%)  scale(1.24, .62)   rotate(-3deg); }
+  66%  { transform: translate(-50%, 8%)   scale(.94, 1.06)   rotate(2deg); }
+  100% { transform: translate(-50%, 100%) scale(1, 1)        rotate(6deg); }
+}
+
+/* ★ 被铁盔弹开（非致命）：这只鼠**不会退场**，所以绝对不能复用上面的挨打动画。
+   mole-whack 的末帧是"沉到地平线以下"，用在活着的地鼠身上会让它先消失、
+   动画结束后又弹回洞口 —— 看着像卡帧、像穿模。
+   被弹开只该在原地晃一下，末帧必须回到站立姿势（因此**不能加 forwards**）。
+   时长与 engine.BLOCKED_MS 一致（layout.test.mjs 校验）。 */
+.hole.is-blocked .mole {
+  animation: mole-blocked var(--block-ms) cubic-bezier(.3, .8, .35, 1);
+}
+
+@keyframes mole-blocked {
+  0%   { transform: translate(-50%, 0)    scale(1, 1)       rotate(0deg); }
+  22%  { transform: translate(-50%, 9%)   scale(1.18, .86)  rotate(-7deg); }
+  52%  { transform: translate(-50%, -3%)  scale(.93, 1.08)  rotate(5deg); }
+  78%  { transform: translate(-50%, 2%)   scale(1.05, .97)  rotate(-2deg); }
+  100% { transform: translate(-50%, 0)    scale(1, 1)       rotate(0deg); }
+}
+
+/* 头盔挨了一下要亮一下：告诉玩家"打到的是盔，不是肉" */
+.hole.is-blocked .mole-helmet { animation: helmet-clank var(--block-ms) ease-out; }
+
+@keyframes helmet-clank {
+  0%   { filter: brightness(3) saturate(.3); }
+  100% { filter: brightness(1) saturate(1); }
+}
+
+/* 眩晕表现之一：眼睛闭成一条横线。
+   注意眼睛是 .mole-face 的两个伪元素（左右各一只），单个伪元素画不出交叉的 X
+   —— 硬凑只会被读成"眼睛歪了"。卡通里"挨打"最稳的画法本来就是闭眼 + 冒星星，
+   压扁成线比伪 X 更可读，也更省事。 */
+.hole.is-hit .mole-face::before,
+.hole.is-hit .mole-face::after {
+  border-radius: 999px;
+  box-shadow: none;
+  /* 压扁成横线：宽度略收、高度砍到 ~2px 量级，读出来就是紧闭的眼 */
+  height: 8%;
+  top: 28%;
+  transform: scale(1.18, .3);
+  background: #241409;
+}
+
+/* 眼睛里的高光点要跟着消失，否则会浮在闭眼线上 */
+.hole.is-hit .mole-eye-glint { opacity: 0; }
+
+/* 眩晕表现之二：头顶转圈的星星 */
+.mole-stars {
+  position: absolute;
+  left: 50%;
+  top: -6%;
+  width: 62%;
+  height: 26%;
+  transform: translateX(-50%);
+  pointer-events: none;
+  display: none;
+}
+.hole.is-hit .mole-stars { display: block; }
+
+.star {
+  position: absolute;
+  top: 30%;
+  width: 26%;
+  aspect-ratio: 1;
+  background: #ffe066;
+  /* 五角星：两个旋转的方块叠罗汉是常见的零资源画法，但边缘太硬；
+     这里直接用 clip-path 五角星，形状干净且零外部资源。 */
+  clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
+  filter: drop-shadow(0 0 3px rgba(255, 200, 60, .85));
+  opacity: 0;
+}
+.star:nth-child(1) { left: 0%;  animation: star-orbit var(--squash-ms) linear; }
+.star:nth-child(2) { left: 37%; animation: star-orbit var(--squash-ms) linear .06s; }
+.star:nth-child(3) { left: 74%; animation: star-orbit var(--squash-ms) linear .12s; }
+
+@keyframes star-orbit {
+  0%   { opacity: 0; transform: translateY(6px) scale(.4) rotate(0deg); }
+  18%  { opacity: 1; transform: translateY(0)   scale(1)  rotate(60deg); }
+  70%  { opacity: 1; transform: translateY(-4px) scale(1) rotate(200deg); }
+  100% { opacity: 0; transform: translateY(-10px) scale(.5) rotate(300deg); }
+}
+
+/* 被打瞬间整只鼠压一层暖白高光 —— 卡通动画里"挨打闪一下"的经典手法 */
+.hole.is-hit .mole-body { animation: hit-flash .12s steps(1) 2; }
+
+@keyframes hit-flash {
+  0%   { filter: brightness(2.6) saturate(.4); }
+  100% { filter: brightness(1) saturate(1); }
 }
 
 /* 躯干：梨形软胶，上窄下宽 */
@@ -792,24 +897,12 @@ body {
   opacity: 0;                 /* 真正浮出的时机见文件下方的 .hammer.is-armed */
   transition: opacity .15s ease;
 
-  /* ★ 这里绝不加 transform！
-     挥击动画要在 .hammer-rig 上做旋转，而 transform 的百分比 translate 又是
-     相对"自身尺寸"而非包含块算了两次的 —— 两个因素叠一起，动画首帧会和
-     静止态错开 31px，观感就是"一按下去锤子先跳一下再砸"，比没有动画更糟。
-     因此把"定位"与"姿态"彻底分开：外壳只负责定位 + 显隐，内层 .hammer-rig
-     只负责旋转基点。 */
-}
-
-/* 旋转基点 = 握柄底部（手心位置）。74×74 盒子里握柄在 left:46px 附近，
-   绕这个点转，锤头才会划出一段真实的圆弧，而不是整只绕自己中心打转。 */
-.hammer-rig {
-  position: absolute;
-  left: 0;
-  top: 0;
-  width: 100%;
-  height: 100%;
-  transform-origin: 60px 66px;
-  /* 静止握持角：略微抬起，让锤子朝向光标外侧，不挡住落槌点 */
+  /* 旋转基点 = 握柄右下角（手心位置）。默认 50% 50% 会让整只绕自己中心打转，
+     看起来像"贴图在旋",而不是"手在抡"。绕握柄端转才能划出真实的圆弧。 */
+  transform-origin: 62px 66px;
+  /* 静止握持角：略微后仰，让锤头翘向光标外侧，不遮住落槌点。
+     ★ 这个角度必须与 @keyframes swing 的首帧/末帧一致，
+       否则按下或松开的瞬间锤子会姿态跳变。 */
   transform: rotate(-14deg);
 }
 
@@ -834,34 +927,37 @@ body {
   border-radius: 8px;
   background: linear-gradient(180deg, #c8945f, #8a5533);
   border: 3px solid #5d3620;
-  /* 握柄角度相对 .hammer-rig 的静止角（-14deg）+ 24deg ≈ 10deg，接近竖直握持 */
+  /* 握柄相对锤头下垂 24deg，与外壳的静止角叠加后接近自然握持 */
   transform: rotate(24deg);
 }
 
 /* 挥锤：四拍蓄力-砸下-回弹-归位。
-   原实现有两个硬伤，导致"砸下去几乎没有动画感"：
+   曾经"砸下去几乎没有动画感"，两个硬伤：
    1. 只有 .18s，且 0% 直接就是 rotate(-38deg) 的抬起态 —— **没有蓄力过程**，
-      玩家看到的是"锤子已经在上面了"，砸落的那一下反而被压缩到不足 40ms；
-   2. 三段关键帧里 0% 就已经抬起、立刻开始下落，**f 起手即最高速**，观感像闪现。
-   现在拆成可读的四拍（时长见 --swing-ms）：
-     0%   静止握持（= 未挥锤时的姿态）
-     16%  蓄力抬起（向上向后，玩家看清"要砸了"）
-     50%  全力砸落 + 轻微过冲（这一拍要慢一点，是打击感的来源）
+      玩家看到的是"锤子已经在上面了"，砸落那一下反而被压缩到不足 40ms；
+   2. 末帧 -30deg 与首帧 -38deg 不一致，挥完会有一次姿态跳变。
+   现在拆成可读的四拍（时长见 --swing-ms），且首末帧都锁在静止握持角：
+     0%   静止握持（= 未挥锤时的姿态，起手不闪跳）
+     16%  蓄力抬起（向后拉开，玩家看清"要砸了"）
+     50%  全力砸落 + 过冲（这一拍是打击感的来源）
      74%  反冲回弹
-     100% 归位
-   倾角与基点说明见 .hammer / .hammer-rig。 */
-.hammer.is-swing .hammer-rig {
+     100% 归位（回到静止角，不与下一槌脱节）
+
+   ★ 动画直接挂在 .hammer 本体上，不要再套一层 .hammer-rig：
+     ① margin 不参与 transform，纯 rotate 与负 margin 不冲突，
+        只有**百分比 translate** 才会叠加 —— 那才是踩过的坑；
+     ② 挂本体不依赖后代选择器，选择器更短、更少意外。 */
+.hammer.is-swing {
   animation: swing var(--swing-ms) cubic-bezier(.25, .5, .35, 1) both;
 }
 
+/* 各帧只写 rotate，绝不写 translate —— 详见上面的说明。 */
 @keyframes swing {
-  /* 各帧都保持 translate(-31px,-22px)：与 .hammer 的负边距等值，把旋转基点
-     （transform-origin 60,66）平移回元素自身的坐标系原点，否则会多算一次偏移。 */
-  0%   { transform: translate(-31px, -22px) rotate(-14deg); }
-  16%  { transform: translate(-31px, -22px) rotate(-46deg) translateY(-5px); }
-  50%  { transform: translate(-31px, -22px) rotate(14deg)  translateY(3px); }
-  74%  { transform: translate(-31px, -22px) rotate(-24deg); }
-  100% { transform: translate(-31px, -22px) rotate(-14deg); }
+  0%   { transform: rotate(-14deg); }
+  16%  { transform: rotate(-52deg); }
+  50%  { transform: rotate(16deg); }
+  74%  { transform: rotate(-26deg); }
+  100% { transform: rotate(-14deg); }
 }
 
 /* 挥击拖影：用伪元素复制一份锤头，在砸落方向留一道模糊残影。
@@ -1101,15 +1197,24 @@ body {
      这条媒体查询命中 —— 木槌消失、而上面 .garden{cursor:pointer} 又把光标交还，
      用户只会看到"没有锤子"，且完全不知道为什么。
      动效降级的正确做法：保留木槌，只去掉挥击与震屏动画。
-     注意动画挂在 .hammer-rig 上，选择器必须跟着走 ——
-     写 .hammer.is-swing 是关不掉内层动画的（这里踩过）。 */
+     选择器要与动画实际挂载的元素一致 —— 动画挂在 .hammer 本体上，
+     这里就必须写 .hammer.is-swing（写别的元素关不掉）。 */
   .hammer { transition: none; }
-  .hammer.is-swing .hammer-rig { animation: none; }
-  /* 降级时把姿态固定在静止握持角，别停在挥击中间某一帧 */
-  .hammer-rig { transform: rotate(-14deg) translate(-31px, -22px); }
+  .hammer.is-swing { animation: none; }
+  /* 降级时把姿态钉在静止握持角，别停在挥击中间某一帧 */
+  .hammer { transform: rotate(-14deg); }
   .hammer.is-swing::before { animation: none; opacity: 0; }
   .hole.is-impact::after { animation: none; opacity: 0; }
   .garden.is-shake { animation: none; }
+  /* 受击动画降级：不播"被砸扁"的逐帧过程，但要把"打中了"交代清楚 ——
+     直接沉下去 + 保留 X 眼与星星（它们是静态样式，不是动画），
+     否则降级时命中就变成"地鼠凭空消失"。 */
+  .hole.is-hit .mole { animation: none; transform: translate(-50%, 100%); }
+  .hole.is-hit .mole-stars { display: block; }
+  .hole.is-hit .star { opacity: 1; animation: none; }
+  /* 被弹开：不播晃动过程，但保留"站着"这个事实（动画被禁止后自然回到静止态） */
+  .hole.is-blocked .mole,
+  .hole.is-blocked .mole-helmet { animation: none; }
 }
 
 /* 非指针设备 / 木槌尚未接管光标前，别让木槌悬在屏幕正中挡视线 */

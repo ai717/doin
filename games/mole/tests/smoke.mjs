@@ -289,11 +289,12 @@ check("语言切换写入 doin.lang",
 // 否则将来任何一样被删掉都不会有测试报警。
 {
   const hammer = ui.dom.hammer;
-  const rig = ui.dom.hammerRig ?? hammer.querySelector?.(".hammer-rig");
-  check("木槌有独立的姿态层 .hammer-rig", Boolean(rig),
-    "缺少内层 .hammer-rig（旋转动画必须挂它，不能挂带负 margin 的外壳）");
-  check("木槌姿态层已在 UI 层装配", Boolean(ui.dom.hammerRig),
-    "ui.dom.hammerRig 缺失 —— index.html 的 #hammer-rig 没被 createUI 接上");
+  check("木槌元素已装配", Boolean(hammer), "缺少 #hammer");
+  // 挥击动画必须挂在 .hammer 本体上 —— 曾经套了一层 .hammer-rig，
+  // 依赖后代选择器，多一层就多一处失配的可能。
+  check("挥击动画挂在 .hammer 本体（无多余内层）",
+    !/\.hammer\.is-swing\s+\.hammer-rig/.test(readFileSync(resolve(gameDir, "css/style.css"), "utf8")),
+    "CSS 里仍残留 .hammer.is-swing .hammer-rig 的后代选择器");
 
   // 先让游戏跑起来，否则 hitIndex 会被 isRunning 拦掉。
   // 注意要推到真的有地鼠浮出（RISE_MS=220ms，4 帧远不够），
@@ -325,7 +326,7 @@ check("语言切换写入 doin.lang",
 
   // 动画收尾：桩不会自己发 animationend，测试显式推一下，
   // 验证"动画结束摘类"这条路是通的（连击时靠它重启动画）
-  rig.dispatch("animationend");
+  hammer.dispatch("animationend");
   check("animationend 后摘掉 is-swing（连击可重启）", !hammer.classList.contains("is-swing"),
     `未摘类，第二次挥击将失效。classList=${hammer.className}`);
 
@@ -355,7 +356,91 @@ check("语言切换写入 doin.lang",
   }
 }
 
-// ---- 15. 渲染噪声 ----
+// ---- 15. 受击状态的存活时间（用户反馈"地鼠被打的状态缺乏"的回归） ----
+// 根因复盘：命中后 engine 立刻把鼠置成 DUCK 并按 duckMs 计时，
+// 几十毫秒内 holes[i] 就变成 null。syncHoles 见到 view.id 变化会顺手清一遍 class，
+// 于是 380ms 的挨打动画播不到一半就被掐断 —— 玩家看到的是"锤子落下、地鼠直接没了"。
+// 这里把"多帧之后 is-hit 还在"钉死：只要 syncHoles 再去清,这条就会红。
+{
+  const fireOnce = (holeEl) =>
+    ui.dom.grid.dispatch("pointerdown", {
+      pointerType: "mouse", clientX: 500, clientY: 320, target: holeEl,
+    });
+
+  let idx = -1;
+  for (let i = 0; i < 80 && idx < 0; i += 1) {
+    env.step(10);
+    idx = game.run.holes.findIndex((m) => m && m.species !== "bomb" && m.phase === "up");
+  }
+  check("等到下一只可打的地鼠（前置条件）", idx >= 0, "80×10ms 内没有地鼠浮出");
+
+  const holeEl = ui.holes[idx >= 0 ? idx : 0].el;
+  fireOnce(holeEl);
+  check("命中瞬间挂上 is-hit", holeEl.classList.contains("is-hit"),
+    `classList=${holeEl.className}`);
+  // 眩晕星星：buildGrid 每个洞都得有，靠 CSS 的 .is-hit 显形。
+  // 桩的 querySelector 只认单一简单选择器，后裔选择器必须拆两步查。
+  const starsWrap = ui.holes[0].el.querySelector(".mole-stars");
+  check("每个洞位都有眩晕星星构件",
+    Boolean(starsWrap) && ui.holes.every((h) => h.el.querySelector(".mole-stars")?.querySelectorAll(".star").length === 3),
+    `缺少 .mole-stars/.star（wrap=${Boolean(starsWrap)}）—— 挨打时头顶没有星星`);
+
+  // 推进 240ms —— 已经超过最快的自然缩回时长（DUCK_RANGE_MS 下界 110ms），
+  // 过去这正是会被 syncHoles 掐断的窗口。注意 step 第一个参数是帧数不是毫秒。
+  env.step(15, 16);
+  check("受击 240ms 后 is-hit 仍在（未被 syncHoles 掐断）", holeEl.classList.contains("is-hit"),
+    `classList=${holeEl.className} —— syncHoles 又把受击类清了，挨打动画会被截断`);
+  // 同一时刻地鼠必须还在场上：受击下沉走固定 WHACKED_MS，不再用随机的自然缩回时长。
+  check("受击 240ms 地鼠仍在场上（受击下沉走固定时长）", Boolean(game.run.holes[idx]),
+    `holes[${idx}]=${JSON.stringify(game.run.holes[idx] ?? null)} —— 被打的地鼠提前退场，动作演不完`);
+
+  // 再推过 WHACKED_MS：此时 engine 已把洞位清空（holes[i] === null），
+  // 而 is-hit 必须还挂在 DOM 上 —— 这正是以前被 syncHoles 顺手清掉的时刻。
+  env.step(12, 16); // 累计 ~432ms
+  check("洞位清空后 is-hit 仍存活（真正的回归点）",
+    game.run.holes[idx] === null && holeEl.classList.contains("is-hit"),
+    `holes[${idx}]=${JSON.stringify(game.run.holes[idx] ?? null)} classList=${holeEl.className}`);
+
+  // 反过来看另一半契约：等这只洞位的**下一只**地鼠进场，受击残留必须被收走，
+  // 否则 .hole.is-hit .mole 的 animation 会盖掉新鼠的冒头动画（看着像闪一下）。
+  let respawned = false;
+  for (let i = 0; i < 600 && !respawned; i += 1) {
+    env.step(5, 16);
+    respawned = Boolean(game.run.holes[idx]);
+  }
+  check("同一洞位的新地鼠进场时会收走受击残留",
+    respawned && !holeEl.classList.contains("is-hit"),
+    `respawned=${respawned} classList=${holeEl.className}`);
+}
+
+// ---- 16. 铁盔鼠：非致命（弹开）与致命（打死）必须是两套反馈 ----
+// 之前两者共用 markHit，而 markHit 的动画末帧是"沉到地平线以下" ——
+// 被铁盔挡住的地鼠其实没死，于是会先沉下去、动画结束后又弹回洞口，看着像卡帧。
+{
+  startRun("normal");
+  let hi = -1;
+  for (let i = 0; i < 500 && hi < 0 && game.run; i += 1) {
+    env.step(5, 16);
+    hi = game.run.holes.findIndex((m) => m && m.species === "helmet" && m.hp > 1 && m.phase === "up");
+  }
+  if (hi >= 0 && game.run) {
+    const el = ui.holes[hi].el;
+    const fireHelmet = () =>
+      ui.dom.grid.dispatch("pointerdown", { pointerType: "mouse", clientX: 500, clientY: 320, target: el });
+    fireHelmet();
+    check("铁盔第一次被打到：挂 is-blocked 而非 is-hit",
+      el.classList.contains("is-blocked") && !el.classList.contains("is-hit"),
+      `classList=${el.className} —— 没死的地鼠不能演"被砸扁+沉下去"`);
+    fireHelmet();
+    check("铁盔第二锤打死：切到 is-hit 并收掉 is-blocked",
+      el.classList.contains("is-hit") && !el.classList.contains("is-blocked"),
+      `classList=${el.className}`);
+  } else {
+    notes.push(`NOTE 未抽到铁盔鼠，跳过本段（50 次×5 帧内没出现 hp=2 的铁盔）`);
+  }
+}
+
+// ---- 17. 渲染噪声 ----
 check("无非法颜色/几何 NaN", runtimeErrors.length === 0, runtimeErrors.join(" | "));
 
 emit();

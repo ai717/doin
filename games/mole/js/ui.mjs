@@ -25,7 +25,6 @@ export function createUI() {
     garden: $("garden"),
     grid: $("holes-grid"),
     hammer: $("hammer"),
-    hammerRig: $("hammer-rig"),
     veil: $("frenzy-veil"),
     toast: $("toast"),
     backHome: $("back-home"),
@@ -145,8 +144,18 @@ export function buildGrid(ui, rows, cols) {
     blushR.className = "mole-blush mole-blush--r";
     const snout = document.createElement("span");
     snout.className = "mole-snout";
-    // 顺序即层叠：躯干 → 耳朵 → 爪子 → 盔/引信 → 五官 → 腮红
-    mole.append(body, earL, earR, pawL, pawR, helmet, fuse, face, glintL, glintR, blushL, blushR, snout);
+    // 挨打时头顶转圈的星星（平时 display:none，只有 .is-hit 时显形）
+    const stars = document.createElement("span");
+    stars.className = "mole-stars";
+    stars.setAttribute("aria-hidden", "true");
+    for (let k = 0; k < 3; k += 1) {
+      const s = document.createElement("i");
+      s.className = "star";
+      stars.append(s);
+    }
+    // 顺序即层叠：躯干 → 耳朵 → 爪子 → 盔/引信 → 五官 → 腮红 → 星星（最上层）
+    mole.append(body, earL, earR, pawL, pawR, helmet, fuse, face, glintL, glintR,
+      blushL, blushR, snout, stars);
 
     const key = document.createElement("span");
     key.className = "hole-key";
@@ -160,6 +169,24 @@ export function buildGrid(ui, rows, cols) {
   }
   ui.dom.grid.replaceChildren(frag);
   return { rows: r, cols: c };
+}
+
+/** 受击类的清理定时器：按元素存，重击同一洞位时先撤掉上一条 */
+const hitTimers = new WeakMap();
+const impactTimers = new WeakMap();
+const blockTimers = new WeakMap();
+
+/**
+ * 收走某个洞位的受击残留（is-hit / is-impact），并撤掉尚未触发的定时器。
+ * ★ 只在"新地鼠进洞"时调用。地鼠沉下去（id → 0）这条路径绝对不许调用 ——
+ *   那正是受击动画被掐断的原因（详见 syncHoles 里的注释）。
+ */
+function releaseHit(view) {
+  const el = view.el;
+  clearTimeout(hitTimers.get(el));
+  clearTimeout(impactTimers.get(el));
+  clearTimeout(blockTimers.get(el));
+  el.classList.remove("is-hit", "is-impact", "is-blocked");
 }
 
 /** 把引擎里的洞位状态同步到 DOM（只做增量改动） */
@@ -182,9 +209,19 @@ export function syncHoles(ui, run) {
     const species = mole ? mole.species : "";
     const broken = Boolean(mole && mole.species === "helmet" && mole.hp <= 1);
 
-    if (view.id !== (mole?.id ?? 0)) {
-      view.id = mole?.id ?? 0;
-      view.el.classList.remove("is-hit");
+    const nextId = mole?.id ?? 0;
+    if (view.id !== nextId) {
+      view.id = nextId;
+      // ★ id 变成 0（地鼠沉下去了）时绝不能清 is-hit！
+      //   命中后 engine 立刻把鼠置为 DUCK，几帧后 holes[i] 变 null ——
+      //   若在这里摘掉 is-hit，"被砸扁"的动画会在播放到一半时被强行掐断，
+      //   玩家看到的就是"锤子落下、地鼠直接没了"，毫无打击反馈。
+      //   （is-hit 的生命期主要由 markHit 的定时器管理，见下方 timers。）
+      //
+      //   反过来，id 变成非 0（一只**新的**地鼠进洞了）必须立刻清干净：
+      //   残留的 is-hit 会让 .hole.is-hit .mole 的 animation 覆盖掉冒头动画，
+      //   新鼠会直接从"沉到底"的终帧弹出来，看着像闪了一下。
+      if (nextId !== 0) releaseHit(view);
     }
     if (view.species !== species) {
       view.species = species;
@@ -266,25 +303,52 @@ export function spawnChips(ui, index, kind = "hit") {
   }
 }
 
-export function markHit(ui, index) {
+/**
+ * 标记一次命中。
+ *
+ * ★ 这两个类名的生命期**由这里独占管理**，syncHoles 不许碰（见那里的注释）。
+ * 原因：命中后 engine 立刻把鼠置为 DUCK，几十毫秒后 holes[i] 变 null，
+ * 若顺着"地鼠消失"顺手清 is-hit，动画会被掐断在开头 ——
+ * 表现就是"锤子落下、地鼠凭空没了"，完全没有打中的反馈。
+ *
+ * 时长来源于注入的 playMs（= engine.WHACKED_MS），不在这里写死，
+ * 免得改了 CSS/engine 之后两边不同步。
+ */
+export function markHit(ui, index, playMs = 380) {
   const view = ui.holes[index];
   if (!view) return;
-  view.el.classList.remove("is-hit", "is-impact");
-  void view.el.offsetWidth;
-  view.el.classList.add("is-hit");
-  // 落点冲击波与命中挤压同位、但更快收 —— 两个节拍错开才有"先砸到、再反馈"的层次
-  view.el.classList.add("is-impact");
-  impactTimers.set(view.el, resetImpactTimer(view.el));
+  const el = view.el;
+  // 重启动画：连击打到同一个洞位时，必须先摘类并强制重排，
+  // 否则浏览器会把连续几次命中合并成一次，第二次以后不再播放
+  releaseHit(view);
+  void el.offsetWidth;
+  el.classList.add("is-hit");
+  // 冲击波更快收：先炸后陷，两个节拍错开才有层次
+  el.classList.add("is-impact");
+
+  impactTimers.set(el, setTimeout(() => el.classList.remove("is-impact"), 260));
+  hitTimers.set(el, setTimeout(() => el.classList.remove("is-hit"), playMs + 40));
 }
 
-/** 冲击波收尾：与 markHit 的重复触发配套，避免连击时类名残留导致下一槌不炸 */
-const impactTimers = new WeakMap();
-function resetImpactTimer(el) {
+/**
+ * 标记一次"被铁盔弹开"（非致命）。
+ *
+ * ★ 与 markHit 的区别：这只鼠**不会退场**。所以：
+ *   - 不挂 is-hit —— 那套动画的末帧是"沉到地平线以下"，会让活着的地鼠凭空消失；
+ *   - 只挂 is-blocked —— 原地晃一下，动画结束后回到站立姿势（因此不能用 forwards）；
+ *   - 生命期同样由这里独占管理，syncHoles 不碰。
+ */
+export function markBlock(ui, index, playMs = 200) {
+  const view = ui.holes[index];
+  if (!view) return;
+  const el = view.el;
+  releaseHit(view);
+  void el.offsetWidth;
+  el.classList.add("is-blocked");
+  el.classList.add("is-impact");
   clearTimeout(impactTimers.get(el));
-  return setTimeout(() => {
-    el.classList.remove("is-impact");
-    impactTimers.delete(el);
-  }, 320);
+  impactTimers.set(el, setTimeout(() => el.classList.remove("is-impact"), 260));
+  blockTimers.set(el, setTimeout(() => el.classList.remove("is-blocked"), playMs + 40));
 }
 
 /** 屏幕微震：只震 .garden，不震 body —— 整页抖动会带动滚动条闪烁，很廉价 */
@@ -320,27 +384,27 @@ export function moveHammer(ui, x, y) {
 /**
  * 触发一次挥锤。
  *
- * 动画挂在 .hammer-rig（内层）而不是 .hammer（外壳）上：外壳带负 margin 且承担
- * fixed 定位，百分比 translate 会与 margin 叠加，首帧就会错位。
+ * 动画挂在 .hammer 本体上。用 animationend 摘类而不是 setTimeout 猜时长 ——
+ * 时长是 CSS 侧的 --swing-ms，两边写死同一个数字迟早会不同步（改了 CSS 忘了
+ * 改 JS，动画就永远播不完整）。
  *
- * 用 animationend 摘类，而不是 setTimeout 猜时长 —— 时长是 CSS 侧的 --swing-ms，
- * 两边写死同一个数字迟早会不同步（改了 CSS 忘了改 JS，动画就永远播不完整）。
- * 兜底：若动画被 reduced-motion 关掉（duration ≈ .001ms 仍会触发 animationend，
- * 但保险起见）另设一个略长的定时器，避免类名残留把后续挥击吃掉。
+ * 兜底定时器是必须的，不能只靠 animationend：
+ * ① 我们的无浏览器桩里根本没有动画引擎，animationend 永远不会来；
+ * ② prefers-reduced-motion 下动画被压到 .001ms，行为不可依赖。
+ * 少了兜底，连击时第二槌之后会因为类名残留而彻底不挥。
  */
 let swingTimer = 0;
 export function swingHammer(ui) {
   const el = ui.dom.hammer;
-  const rig = ui.dom.hammerRig;
-  if (!el || !rig) return;
+  if (!el) return;
   // 重启动画：先摘类 + 强制重排，否则连击时中间几次挥击会被浏览器合并掉
   el.classList.remove("is-swing");
-  void rig.offsetWidth;
+  void el.offsetWidth;
   el.classList.add("is-swing");
 
   const clear = () => el.classList.remove("is-swing");
   clearTimeout(swingTimer);
-  rig.addEventListener("animationend", clear, { once: true });
+  el.addEventListener("animationend", clear, { once: true });
   swingTimer = setTimeout(clear, 600);
 }
 

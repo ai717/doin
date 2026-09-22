@@ -33,6 +33,29 @@ export const DUCK_MS = 150;
  * 下限别低于 ~110ms，否则会退化成"瞬移消失"。
  */
 export const DUCK_RANGE_MS = Object.freeze([110, 260]);
+
+/**
+ * 受击下沉时长（毫秒）：被锤子砸中后，地鼠留在场上演完"挨打"动作的时长。
+ *
+ * 为什么不能复用随机的 duckMs：那个区间是给**自然缩回**用的（有的利落、
+ * 有的迟疑）。但被打中的地鼠需要**至少这么多时间**把"被砸扁 → 晕 → 沉下去"
+ * 演完，否则像快来快去的 flash，玩家完全看不到打中了。
+ *
+ * 这个值必须与 style.css 的 `--squash-ms` 一致（layout.test.mjs 校验），
+ * 否则动画要么播不完、要么下一只鼠已经冒出来它还在展示。
+ */
+export const WHACKED_MS = 380;
+/**
+ * 被铁盔弹开的原地晃动时长（毫秒）。
+ *
+ * ★ 这跟上面的受击下沉是两码事，千万别合并：
+ *   铁盔鼠第一下打不死（`helmetBlock`），engine 不会让它退场 ——
+ *   如果也播"被砸扁 → 沉下去"，玩家会看到它沉进洞里又因为没死而弹回来，
+ *   看着像卡帧。被挡住只该"原地一晃"，终态必须回到站立姿势。
+ *
+ * 必须与 style.css 的 `--block-ms` 一致（layout.test.mjs 校验）。
+ */
+export const BLOCKED_MS = 200;
 /** 露头时长下限（公平性红线：人类视觉反应中位数约 250ms，这里留足余量） */
 export const MIN_UP_MS = 450;
 export const FRENZY_MS = 4000;
@@ -312,6 +335,8 @@ export function hitHole(state, index) {
     state.score = applyBombPenalty(state.score);
     mole.phase = PHASE.DUCK;
     mole.t = 0;
+    // 误击炸弹同样要看得见"炸了"，复用同一套受击下沉时长
+    mole.duckMs = WHACKED_MS;
     state.events.push({ type: "bomb", index: i });
     return { ok: true, kind: "bomb", index: i, species: mole.species, points: -3, combo: 0, frenzy };
   }
@@ -336,6 +361,10 @@ export function hitHole(state, index) {
   const kind = mole.species === SPECIES.GOLD ? "gold" : mole.species === SPECIES.HELMET ? "helmet" : "hit";
   mole.phase = PHASE.DUCK;
   mole.t = 0;
+  // ★ 受击下沉用固定时长，不走随机 duckMs：
+  //   随机值是给"自然缩回"用的，快到 110ms 时玩家根本看不清"被砸扁"就被清场，
+  //   这就是"地鼠被打的状态缺乏"的根因。受击必须演满 WHACKED_MS。
+  mole.duckMs = WHACKED_MS;
   maybeStartFrenzy(state);
   state.events.push({ type: "hit", index: i, species: mole.species, points });
   return { ok: true, kind, index: i, species: mole.species, points, combo: state.combo, frenzy };

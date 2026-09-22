@@ -42,9 +42,23 @@ function render() {
 
 function feedbackFor(result) {
   if (!result?.ok) return;
-  U.markHit(ui, result.index);
   // 砸中必有微震 —— 这是"砸下去了"最主要的体感来源，比锤子自身的旋转更好读
   U.shakeGarden(ui, result.kind === "bomb");
+
+  // ★ 铁盔鼠被弹开（helmetBlock）是**非致命**的：engine 不会让它退场。
+  //   这里必须走 markBlock 播"原地一晃"，绝不能走 markHit ——
+  //   那套动画的末帧是沉到地平线以下，会让活着的地鼠先从画面消失再弹回来。
+  if (result.kind === "helmetBlock") {
+    U.markBlock(ui, result.index, E.BLOCKED_MS);
+    U.spawnChips(ui, result.index, "helmet");
+    A.playClank();
+    return;
+  }
+
+  // 其余（普鼠 / 金鼠 / 铁盔致命击 / 炸弹）地鼠都会退场，
+  // 播放时长以 engine 为准（受击下沉时长），UI 不得自定 ——
+  // 否则动画时长与"地鼠还留在场上"的时间会对不上
+  U.markHit(ui, result.index, E.WHACKED_MS);
   if (result.kind === "bomb") {
     U.spawnChips(ui, result.index, "bomb");
     A.playBomb();
@@ -54,9 +68,6 @@ function feedbackFor(result) {
   if (result.kind === "gold") {
     U.spawnChips(ui, result.index, "gold");
     A.playGold();
-  } else if (result.kind === "helmetBlock") {
-    U.spawnChips(ui, result.index, "helmet");
-    A.playClank();
   } else {
     U.spawnChips(ui, result.index, "hit");
     A.playWhack(result.combo ?? 0);

@@ -69,14 +69,12 @@
           <div class="frenzy-veil" id="frenzy-veil" aria-hidden="true"></div>
 
           <!-- 木槌（桌面跟随光标；触屏设备隐藏）。
-               外壳 .hammer 只负责定位与显隐，内层 .hammer-rig 负责旋转姿态 ——
-               两层必须分开：挥击动画若写在带负 margin 的外壳上，
-               百分比 translate 会与 margin 叠加，动画首帧会错位。 -->
+               只有一层：旋转动画直接挂 .hammer 本体。
+               曾经包了一层 .hammer-rig 专门做旋转，后来确认没必要 ——
+               margin 不参与 transform，纯 rotate 与负 margin 互不干扰。 -->
           <div class="hammer" id="hammer" aria-hidden="true">
-            <div class="hammer-rig" id="hammer-rig">
-              <span class="hammer-head"></span>
-              <span class="hammer-grip"></span>
-            </div>
+            <span class="hammer-head"></span>
+            <span class="hammer-grip"></span>
           </div>
 
           <div id="toast" class="toast" aria-live="polite"></div>
