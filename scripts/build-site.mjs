@@ -35,13 +35,21 @@ function copyGame(source, destination, exclude = []) {
   });
 }
 
-function runNpm(args, cwd) {
+function runNpm(args, cwd, execPath = process.execPath) {
   const options = { cwd, stdio: "inherit" };
+  const cli = resolve(dirname(execPath), "node_modules", "npm", "bin", "npm-cli.js");
   if (process.platform === "win32") {
-    execFileSync(process.execPath, [npmCli, ...args], options);
+    execFileSync(execPath, [existsSync(cli) ? cli : npmCli, ...args], options);
   } else {
     execFileSync("npm", args, options);
   }
+}
+
+/** 子游戏若自带 node_modules，优先用钉在目录内的 Node 构建，避免宿主 Node 版本过旧 */
+function resolveGameExecPath(source) {
+  if (process.platform !== "win32") return process.execPath;
+  const pinned = resolve(source, "node-tool", "node.exe");
+  return existsSync(pinned) ? pinned : process.execPath;
 }
 
 // ==================== 全局统计与广告标签注入总开关 ====================
@@ -133,11 +141,11 @@ for (const game of games) {
     const packageJson = JSON.parse(readFileSync(packageFile, "utf8"));
     if (!packageJson.scripts || !packageJson.scripts.build) throw new Error("No build script for game: " + game.slug);
     if (process.env.CI || !existsSync(resolve(source, "node_modules"))) {
-      runNpm(["ci"], source);
+      runNpm(["ci"], source, resolveGameExecPath(source));
     }
     const built = resolve(source, "dist");
     removeOutput(built);
-    runNpm(["run", "build"], source);
+    runNpm(["run", "build"], source, resolveGameExecPath(source));
     if (!existsSync(resolve(built, "index.html"))) throw new Error("Build produced no index.html for game: " + game.slug);
     cpSync(built, destination, { recursive: true });
   } else if (existsSync(staticIndex)) {

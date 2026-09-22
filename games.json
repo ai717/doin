@@ -606,6 +606,7 @@
     },
     {
       "title": "太空防御者",
+      "slug": "space-defender",
       "desc": "驾驶复古战机在几何弹幕里横向穿梭，擦弹充能引爆过载，击落牵引你的皇蜂夺回僚机双机合体。五个星区三十波、母舰突袭与生存狂潮，进度本机保存。",
       "icon": "🛸",
       "cover": "/assets/covers/space-defender.webp",
