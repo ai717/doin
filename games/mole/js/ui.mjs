@@ -273,10 +273,20 @@ export function markHit(ui, index) {
   view.el.classList.add("is-hit");
 }
 
+/**
+ * 木槌跟随光标。
+ *
+ * 位置用 position:fixed 的**视口坐标** —— 不能用 garden 内的 absolute 坐标，原因：
+ * garden 是 overflow:hidden 的裁剪容器，而木槌本体（74×74 加负 margin）明显
+ * 越出鼠标热点，在贴边命中时会被裁掉一截，观感像"木槌缺了半边"。
+ * fixed 让它脱离裁剪盒；同时省掉了每次 pointermove 都读 getBoundingClientRect
+ * 触发的强制同步布局（打在 60fps 的 pointermove 上是实打实的掉帧源）。
+ */
 export function moveHammer(ui, x, y) {
-  const rect = ui.dom.garden.getBoundingClientRect();
-  ui.dom.hammer.style.left = `${x - rect.left}px`;
-  ui.dom.hammer.style.top = `${y - rect.top}px`;
+  const el = ui.dom.hammer;
+  el.style.position = "fixed";
+  el.style.left = `${x}px`;
+  el.style.top = `${y}px`;
 }
 
 export function swingHammer(ui) {

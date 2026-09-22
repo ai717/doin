@@ -239,7 +239,52 @@ check("语言切换写入 doin.lang",
   }
 }
 
-// ---- 13. 渲染噪声 ----
+// ---- 13. 木槌链路：指针进入 → 显形 → 跟随光标 ----
+// 这一段的来由：曾有版本把木槌过度收紧到 `(hover:hover) and (pointer:fine)`，
+// 之后再怎么点都"看不到锤子"，而所有测试全绿 —— 因为没有任何断言碰过这条链路。
+// 桩测不到像素，但能测"类名 + 内联坐标是否真的写进去了"。
+{
+  const hammer = ui.dom.hammer;
+  const garden = ui.dom.garden;
+  check("木槌元素已装配", Boolean(hammer) && Boolean(garden), "缺少 #hammer 或 #garden");
+  const armed = () => hammer.classList.contains("is-armed");
+
+  // 从"未悬停"的干净态开始
+  garden.dispatch("pointerleave", {});
+  check("指针离开后木槌收起（无 is-armed）", !armed(),
+    `classList=${hammer.className}`);
+
+  // 指针进入花园：应立刻显形，不依赖用户先动一下鼠标
+  garden.dispatch("pointerenter", { pointerType: "mouse", clientX: 300, clientY: 200 });
+  check("指针进入花园后木槌显形", armed(), "pointerenter 未点亮 is-armed");
+
+  // 先清掉上一轮可能残留的内联坐标，确保下面的断言来自本次事件
+  hammer.style.left = "";
+  hammer.style.top = "";
+  garden.dispatch("pointermove", { pointerType: "mouse", clientX: 300, clientY: 200 });
+  // ★ 必须写"视口坐标"而不是 garden 内相对坐标：
+  // 木槌是 fixed 定位，写相对坐标会让锤子整体偏移 garden 的 left/top。
+  // 桩给 #garden 的 rect 是 left:40 / top:90，因此两种写法结果必然不同，可断言。
+  check("木槌跟随光标写入视口 left", hammer.style.left === "300px",
+    `left=${hammer.style.left}（期望 300px；写成 ${300 - 40}px 说明又退回了 garden 相对坐标）`);
+  check("木槌跟随光标写入视口 top", hammer.style.top === "200px",
+    `top=${hammer.style.top}（期望 200px；写成 ${200 - 90}px 说明又退回了 garden 相对坐标）`);
+  check("木槌定位为 fixed（脱离 .garden 的 overflow 裁剪）",
+    hammer.style.position === "fixed", `position=${hammer.style.position || "(空)"}`);
+
+  // 触屏兜底：pointerType=touch 时必须收走木槌，否则触屏上会有一把锤子跟着手指
+  garden.dispatch("pointermove", { pointerType: "touch", clientX: 120, clientY: 120 });
+  check("触摸时收走木槌并上 is-touch", !armed() && garden.classList.contains("is-touch"),
+    `armed=${armed()} is-touch=${garden.classList.contains("is-touch")}`);
+  // 鼠标回来必须能恢复（混合输入设备不能被一次触摸永久锁死）
+  garden.dispatch("pointermove", { pointerType: "mouse", clientX: 400, clientY: 300 });
+  check("鼠标回来后木槌恢复", armed() && !garden.classList.contains("is-touch"),
+    `armed=${armed()} is-touch=${garden.classList.contains("is-touch")}`);
+  check("恢复后坐标同步更新", hammer.style.left === "400px" && hammer.style.top === "300px",
+    `left=${hammer.style.left} top=${hammer.style.top}`);
+}
+
+// ---- 14. 渲染噪声 ----
 check("无非法颜色/几何 NaN", runtimeErrors.length === 0, runtimeErrors.join(" | "));
 
 emit();

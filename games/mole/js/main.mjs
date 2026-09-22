@@ -162,14 +162,35 @@ function bindInput() {
     ev.preventDefault();
     A.unlockAudio();
     A.setMuted(!soundOn);
-    U.swingHammer(ui);
+    // 键盘命中也要有反馈，但锤子不该瞬移到别处 —— 只有指针来源才跟着点落下槌
+    if (ev.pointerType !== "touch") {
+      ui.dom.hammer.classList.add("is-armed");
+      U.moveHammer(ui, ev.clientX, ev.clientY);
+      U.swingHammer(ui);
+    }
     hitIndex(Number(hole.dataset.index));
   });
 
+  // 木槌只在指针真正悬停于花园内时浮出（见 style.css 的 .hammer.is-armed）。
+  // pointerenter/leave 与 pointermove 分开绑定：enter 负责"立刻显形"，
+  // 不依赖用户先动一下鼠标 —— 曾经只有 pointermove，导致停着不动时看不到锤子。
+  const armHammer = () => ui.dom.hammer.classList.add("is-armed");
+  const disarmHammer = () => ui.dom.hammer.classList.remove("is-armed");
+  ui.dom.garden.addEventListener("pointerenter", armHammer);
+  ui.dom.garden.addEventListener("pointerleave", disarmHammer);
+  // 兜底：指针已在花园内、且从未触发 enter（如页面加载完成时鼠标就停在那儿，
+  // 或某些浏览器在触屏模拟下不发 enter），首次移动必须能把它叫出来
+  ui.dom.garden.addEventListener("pointerover", armHammer);
+
   ui.dom.garden.addEventListener("pointermove", (ev) => {
     // 混合输入设备（触屏笔记本）兜底：真看到触摸就收走木槌，避免"既没锤子也没光标"
-    if (ev.pointerType === "touch") ui.dom.garden.classList.add("is-touch");
-    else ui.dom.garden.classList.remove("is-touch");
+    if (ev.pointerType === "touch") {
+      ui.dom.garden.classList.add("is-touch");
+      disarmHammer();
+      return;
+    }
+    ui.dom.garden.classList.remove("is-touch");
+    armHammer();
     U.moveHammer(ui, ev.clientX, ev.clientY);
   });
 

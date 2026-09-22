@@ -22,6 +22,8 @@ import { holeMetrics, moleGeometry, stageWidthFor, groundLineMatchesPitCenter } 
 
 const gameDir = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const css = readFileSync(resolve(gameDir, "css", "style.css"), "utf8");
+const cssCode = () => stripComments(css);
+const readJs = (name) => readFileSync(resolve(gameDir, "js", name), "utf8");
 
 /** 取一条规则（支持 .a .b,\n.c .d 这种逗号选择器组） */
 function rule(selector) {
@@ -251,7 +253,11 @@ test("CSS 时长与 engine 的 RISE_MS / DUCK_MS 一致", async () => {
 });
 
 test("CSS: 木槌默认可见（不得再用 hover/pointer 媒体查询才显示）", () => {
-  assert.match(rule(".hammer"), /opacity:\s*1/, "木槌应默认可见");
+  const hammer = rule(".hammer");
+  // 可见性现在由 .is-armed 控制：基础态隐藏、悬停浮现。
+  // 断言要落到"存在一条把它点亮的规则"，而不是死盯基础态 opacity 的值。
+  assert.match(css, /\.hammer\.is-armed\s*\{[^}]*opacity:\s*1/, "缺少 .hammer.is-armed 的显形规则");
+  assert.match(hammer, /opacity:\s*0/, "基础态应先隐藏（悬停时由 .is-armed 点亮）");
   // .garden 有多条规则，不能只查第一条
   assert.match(css, /\.garden\s*\{[^}]*cursor:\s*none/, "默认应由木槌接管光标");
   // 曾经过度收紧成 (hover:hover) and (pointer:fine) 才显示，触屏笔记本上直接消失。
@@ -268,6 +274,89 @@ test("CSS: 木槌默认可见（不得再用 hover/pointer 媒体查询才显示
     assert.ok(!/\.hammer\s*\{[^}]*display:\s*none/.test(body),
       "max-width:768px 内不得隐藏 .hammer（桌面窄窗口会失去木槌）");
   }
+  // ★ 动效降级里同样不得隐藏木槌：
+  // 系统关闭动画时 reduced-motion 会命中，若在此 display:none，
+  // 木槌没了、光标又被 .garden{cursor:pointer} 交还 —— 用户只会看到"没有锤子"。
+  for (const body of mediaBlocks(code, "prefers-reduced-motion")) {
+    assert.ok(!/\.hammer\s*\{[^}]*display:\s*none/.test(body),
+      "prefers-reduced-motion 内不得隐藏 .hammer，应只去掉挥击动画");
+  }
+  // 全文件范围内，禁止任何针对 .hammer 的 display:none —— 木槌只允许被
+  // (hover:none) and (pointer:coarse) 与 .is-touch 两类触屏规则收走。
+  // 注意：匹配到的只是规则体，看不到外层 @media 条件，
+  // 所以要顺着匹配位置往前找最近的 @media 头部来判断上下文。
+  const code2 = code;
+  for (const m of code2.matchAll(/\.hammer[^{}]*\{[^}]*display:\s*none[^}]*\}/g)) {
+    const before = code2.slice(0, m.index);
+    // 往前找到最近一个未闭合的 @media 条件
+    const lastAt = before.lastIndexOf("@media");
+    const ctx = lastAt >= 0 ? before.slice(lastAt, lastAt + 120) : "";
+    const isTouchScoped =
+      /pointer:\s*coarse/.test(ctx) || /\.garden\.is-touch/.test(before.slice(-200)) ||
+      /is-touch/.test(m[0]);
+    assert.ok(isTouchScoped,
+      `发现非触屏场景下隐藏木槌的规则（上下文：${ctx.replace(/\s+/g, " ").slice(0, 80)}）`);
+  }
+});
+
+test("CSS: 木槌必须脱离 .garden 的裁剪盒（fixed 定位 + 初始位置）", () => {
+  const hammer = rule(".hammer");
+  // ★ 这是"完全看不到木槌"的高危点：
+  // .garden 有 overflow:hidden，若木槌用 absolute/static 落在花园内且没有
+  // 初始 left/top，它会停在洞位阵列之后的正常文档流位置、远超花园高度，
+  // 被整只裁掉 —— 页面上就是一把锤子都没有。
+  assert.match(hammer, /position:\s*fixed/, "木槌必须 fixed 定位，脱离 .garden 的 overflow 裁剪");
+  assert.match(hammer, /left:\s*[\d.]+(px|%)/, "木槌必须有初始 left，不能依赖 JS 首次写入");
+  assert.match(hammer, /top:\s*[\d.]+(px|%)/, "木槌必须有初始 top");
+  // 负边距把"落槌点"对到锤头中心，而不是 74×74 盒子左上角。
+  // 上边距应落在 -20~-32 之间（锤头高 40，其中心约 -20）
+  const m = hammer.match(/margin:\s*(-?[\d.]+)px/);
+  assert.ok(m, "木槌应有负上边距对齐落槌点");
+  const top = Number(m[1]);
+  assert.ok(top <= -18 && top >= -34, `木槌 margin-top=${top}px 不居中（建议 -20 ~ -24）`);
+
+  // JS 侧必须写 position:fixed + 视口坐标；不能再用 garden 内相对坐标
+  const ui = readJs("ui.mjs");
+  assert.match(ui, /style\.position\s*=\s*"fixed"/, "moveHammer 应显式设 position:fixed");
+  assert.match(ui, /style\.left\s*=\s*`\$\{x\}px`/, "moveHammer 应用视口坐标 x，不能减 rect.left");
+  assert.ok(!/rect\.left/.test(ui), "moveHammer 不应再依赖 getBoundingClientRect 做坐标换算");
+});
+
+test("CSS: 木槌的显隐由 .is-armed 驱动，且触屏兜底不能变成常驻隐藏", () => {
+  const code = cssCode();
+  const main = readJs("main.mjs");
+  // 只有显式加类才浮出
+  assert.match(main, /classList\.add\("is-armed"\)/, "main.mjs 应在指针进入时加 .is-armed");
+  assert.match(main, /classList\.remove\("is-armed"\)/, "main.mjs 应在指针离开时摘掉 .is-armed");
+  // 必须同时绑 enter 与 move：只有 move 的话，鼠标停着不动看不到锤子
+  assert.match(main, /addEventListener\("pointerenter"/, "缺 pointerenter，鼠标静止进入时锤子不出现");
+  assert.match(main, /addEventListener\("pointerover"/, "缺 pointerover 兜底");
+  assert.match(main, /addEventListener\("pointerleave"/, "缺 pointerleave，锤子会一直挂着");
+  // 触屏兜底分支不得误伤鼠标：pointerType 判断必须存在
+  assert.match(main, /pointerType\s*===\s*"touch"/, "缺 pointerType 判断，触屏兜底会误伤鼠标");
+  // 非触屏规则之间不得互相打架：.is-armed 的 opacity:1 必须排在基础 opacity:0 之后
+  const idxBase = code.indexOf("opacity: 0");
+  const idxArmed = code.indexOf(".hammer.is-armed");
+  assert.ok(idxBase >= 0 && idxArmed > idxBase, ".is-armed 规则应排在后，避免被基础态覆盖");
+});
+
+test("CSS: 木槌有完整的实体构件（锤头 + 锤柄 + 挥击动画）", () => {
+  for (const sel of [".hammer-head", ".hammer-grip"]) {
+    assert.ok(new RegExp(`\\${sel}\\s*\\{`).test(css), `缺少木槌构件样式 ${sel}`);
+  }
+  // 锤头要有厚度感（渐变 + 描边 + 内高光），不能是块死板的纯色方块
+  const head = rule(".hammer-head");
+  assert.match(head, /linear-gradient/, "锤头应有材质渐变");
+  assert.match(head, /border:\s*\d+px\s+solid/, "锤头应有描边定义体积");
+  assert.match(head, /box-shadow/, "锤头应有内高光");
+  // 锤柄必须旋转，否则是"一把没有握持角度的菜刀"
+  assert.match(rule(".hammer-grip"), /transform:\s*rotate\(/, "锤柄应带旋转角度");
+  // 挥击动画存在，且 reduced-motion 下被关掉而不是隐藏本体
+  assert.match(css, /\.hammer\.is-swing\s*\{[^}]*animation:\s*swing/, "缺挥击动画规则");
+  assert.ok(/@keyframes\s+swing\s*\{/.test(css), "缺 @keyframes swing");
+  const reduce = mediaBlocks(stripComments(css), "prefers-reduced-motion").join("\n");
+  assert.match(reduce, /\.hammer\.is-swing\s*\{[^}]*animation:\s*none/,
+    "reduced-motion 下应关掉挥击动画");
 });
 
 test("CSS: 地鼠有完整的形象构件（耳/爪/肚皮/牙/高光）", () => {

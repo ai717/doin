@@ -728,16 +728,28 @@ body {
    曾经过度收紧成 `@media (hover:hover) and (pointer:fine)` 才显示 ——
    触屏笔记本 / 混合输入设备上报的 primary pointer 不是 fine，木槌就整个消失了，
    而 cursor:none 也没生效，结果"既没锤子也没光标"。改为默认显示，
-   仅对真正的纯触屏设备（hover:none 且 pointer:coarse）隐藏；
-   混合设备由 main.mjs 在识别到触摸时加 .is-touch 兜底。 */
+   仅对真正的触屏设备（pointer:coarse）隐藏；混合设备由 main.mjs 在识别到
+   触摸时加 .is-touch 兜底。
+
+   定位策略（关键，改坏会直接导致"看不到锤子"）：
+   木槌是 `position: fixed` + 视口坐标，由 moveHammer 在 pointermove 里写内联
+   left/top。绝不要退回 absolute + garden 内坐标 —— garden 有 overflow:hidden，
+   贴边命中时越出鼠标热点的槌体会被裁掉一截。 */
 .hammer {
-  position: absolute;
+  /* position/label 由 ui.mjs 的 moveHammer 写成内联 fixed + 视口坐标（见该处注释）。
+     这里的 fixed 与 50%/50% 只是"JS 尚未跑起来、或浏览器不支持 pointer 事件"时的
+     兜底 —— 曾经没有初始位置，木槌以静态流落在洞位阵列之后、远超花园高度，
+     被 .garden 的 overflow:hidden 整只裁掉，表现就是"鼠标完全没有锤子"。 */
+  position: fixed;
+  left: 50%;
+  top: 50%;
   z-index: 5;
   width: 74px;
   height: 74px;
-  margin: -14px 0 0 -30px;
+  /* 负上边距让"落槌点"位于锤头中心，而不是整个 74×74 盒子的左上角 */
+  margin: -22px 0 0 -31px;
   pointer-events: none;
-  opacity: 1;
+  opacity: 0;                 /* 真正浮出的时机见文件下方的 .hammer.is-armed */
   transition: opacity .15s ease;
 }
 
@@ -773,7 +785,9 @@ body {
   100% { transform: rotate(-30deg) translateY(0); }
 }
 
-/* 默认（指针设备）：木槌接管光标 */
+/* 默认（指针设备）：木槌接管光标。
+   cursor:none 只加在 .garden 上 —— 木槌自己是 fixed 定位、已不在 garden 的
+   渲染流里，别指望靠父级继承来隐藏它带来的光标问题。 */
 .garden { cursor: none; }
 
 /* 纯触屏设备：没有悬停概念，恢复普通光标并收走木槌 */
@@ -785,6 +799,13 @@ body {
 /* 混合输入设备兜底：运行时真看到触摸就切换（main.mjs 加类） */
 .garden.is-touch { cursor: pointer; }
 .garden.is-touch .hammer { display: none; }
+
+/* 木槌生命期：只在指针真正悬停在花园里时浮出（JS 加 .is-armed）。
+   意义有二：
+   1. 不玩游戏（鼠标停在舞台外）时，屏幕正中不会挂着一把莫名其妙的锤子；
+   2. 万一 moveHammer 一次都没跑到，木槌也只是"隐藏"而不是"摆在怪位置"，
+      排查方向立刻收窄到 pointer 事件要不要得到。 */
+.hammer.is-armed { opacity: 1; }
 
 /* toast */
 .toast {
@@ -971,5 +992,17 @@ body {
 
 @media (prefers-reduced-motion: reduce) {
   .garden { cursor: pointer; }
+  /* 这里绝不能 display:none 木槌！
+     系统关闭动画（Windows「显示动画」关闭 / 各种 reduced-motion 场景）会让
+     这条媒体查询命中 —— 木槌消失、而上面 .garden{cursor:pointer} 又把光标交还，
+     用户只会看到"没有锤子"，且完全不知道为什么。
+     动效降级的正确做法：保留木槌，只去掉挥击动画（transition/animation 已在上面的
+     通配规则里被压到 .001ms）。 */
+  .hammer { transition: none; }
+  .hammer.is-swing { animation: none; }
+}
+
+/* 非指针设备 / 木槌尚未接管光标前，别让木槌悬在屏幕正中挡视线 */
+@media (hover: none) and (pointer: coarse), (pointer: coarse) {
   .hammer { display: none; }
 }

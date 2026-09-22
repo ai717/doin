@@ -11,7 +11,7 @@ import { readFileSync } from "node:fs";
 /** 内联样式桩：把自定义属性与普通属性都真实记录下来，供断言读取 */
 function makeInlineStyle() {
   const props = new Map();
-  return {
+  const api = {
     setProperty(name, value) {
       props.set(String(name), String(value));
     },
@@ -26,6 +26,25 @@ function makeInlineStyle() {
       return Object.fromEntries(props);
     },
   };
+  // 真实 CSSStyleDeclaration 支持 `el.style.left = "10px"` 这种直接赋值。
+  // 只实现 setProperty 会漏掉直接赋值路径 —— 曾经 moveHammer 用的就是
+  // `style.left=...`，桩里读到的却是空字符串，导致"木槌定位"完全测不到。
+  // 用 Proxy 把任意属性读写都映射到同一份 props。
+  return new Proxy(api, {
+    get(target, key) {
+      if (key in target) return target[key];
+      if (typeof key !== "string") return undefined;
+      return props.get(key) ?? "";
+    },
+    set(target, key, value) {
+      if (typeof key === "string" && !(key in target)) {
+        props.set(key, String(value));
+        return true;
+      }
+      target[key] = value;
+      return true;
+    },
+  });
 }
 
 const HIDDEN_RE = /<[^>]*\bid="([^"]+)"[^>]*\bhidden\b[^>]*>|<[^>]*\bhidden\b[^>]*\bid="([^"]+)"[^>]*>/g;
@@ -199,7 +218,16 @@ export function installDom(html) {
       return out;
     }
 
-    getBoundingClientRect() { return { left: 0, top: 0, width: 640, height: 480, right: 640, bottom: 480 }; }
+    // 桩没有真实排版引擎，rect 只能是常量 —— 但可以按元素类型给一个"像样"的值，
+    // 让依赖 rect 的坐标换算至少能算出稳定、可断言的数。
+    // 注意 #garden 故意给非零 left/top：若代码用 `x - rect.left` 做换算，
+    // 桩里就会得到与视口坐标不同的结果，断言能立刻发现换算被改回去了。
+    getBoundingClientRect() {
+      if (this.id === "garden") {
+        return { left: 40, top: 90, width: 720, height: 520, right: 760, bottom: 610 };
+      }
+      return { left: 0, top: 0, width: 640, height: 480, right: 640, bottom: 480 };
+    }
 
     /* eslint-disable no-unused-vars */
     get innerHTML() { return ""; }

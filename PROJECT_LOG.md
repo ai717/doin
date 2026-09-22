@@ -9,6 +9,18 @@
 
 ### Current Baseline (2026-09-21)
 
+- **Sitemap.xml 格式与 lastmod 时间戳升级（解决 Google Search Console 抓取识别问题）**：
+  - 升级 `scripts/gen-sitemap.mjs`，由原本的单行紧凑模式重构为多行缩进标准 XML；
+  - 自动为每个游戏条目（以及首页）注入标准的 `<lastmod>YYYY-MM-DD</lastmod>` 时间戳，明确标记最新动态；
+  - 解决 GSC 提交时因无更新时间戳导致的长周期排队与“无法抓取/类型未知”假性假死状态。
+- **Frog 青蛙过河 / Frogger（新增，2026-09-23）**：**软胶玩具桌面戏剧台里的经典街机渡河**，对标 Konami《Frogger》(1981) + Crossy Road 手感，按 `docs/plans/frog-prd.md` 本地端到端（模式 A）落地（拍板 **方案 A 软胶黏土视觉** / **简化浮木变体（龟不下潜）** / **飞虫续命**）。
+  - **核心玩法**：俯视 `13×13` 网格，自上而下「归巢行 → 5 行河流 → 中央安全岛 → 5 行公路 → 起点草地」；逐格蹦跳穿越车流、踩着漂移浮木渡河，把 5 只青蛙一只只送进对岸 5 个家槽。**5 章 × 8 关 = 40 关**渐进闯关，评价口径为**星级（按总损失命数）+ 每关最快用时**（不做无尽冲分）。飞虫槽命中即 `+1 命 +200` 分。
+  - **算法健全性与无死局保证**：`mulberry32` 确定性种子；车辆/浮木占用为纯时间函数、以「格中心点 + 连续相位 `time*speed`」判定（`centerIndex`，与渲染平滑插值严格同一时间函数，杜绝离散 floor 相位滞后误撞）；`PERIOD=COLS=13` 每屏一循环；车道生成保证 `minGap ≥ 1`（任意时刻必有安全列）、河流任意时刻必有落脚浮木，固定步长 `stepFrame`/`stepSeconds` 可复现；测试含 1000+ 步确定性随机游走 + 全 40 关无死局断言。
+  - **模块分层**：`engine`(DOM-free 规则权威，`laneHits`/`riverSolid` 纯函数占用判定) / `level`(40 关分章难度递进) / `score`(计分唯一口径 + 星级) / `game`(DOM-free 控制器) / `render`(Canvas 软胶黏土立体渲染 + 粒子) / `storage`(`doin.frog.v1`) / `i18n`(中英双表 `doin.lang`) / `audio`(WebAudio 程序化音效) / `ui`(唯一碰 DOM) / `main`(装配 + rAF 主循环)。
+  - **美学**：暖木桌戏剧台 + 软胶黏土玩具立体模型；木梁顶栏收纳返回/音效/语言/规则（避开四角散落按钮），左翼章节关卡木牌、中央棋盘舞台、右翼关卡信息牌与重开/上下关操作台，移动端掌机方向键；`prefers-reduced-motion` 降级、移动端底部 `max(68px, …)` 广告安全避让、`touch-action:none` 防误触。
+  - **全套门禁**：单测 **36/36 全绿**（engine / storage / i18n / markup / render 五文件，含归巢/续命/撞车/落水/超时/边界、随机游走与渲染冒烟扫频），`node scripts/check-game.mjs frog` **19 pass / 0 fail(T1) / 0 warn(T2)**，640×640 暖棕古铜渐变 3D 软胶封面（cv2.inpaint 固定 bbox 去水印）到位，`npm run build` 全站构建通过且 `dist/frog/` 正常发布。
+  - **渲染回归修复（2026-09-23）**：边缘换行（车/木漂到右缘回绕左缘）会切出亚像素碎片，`drawVehicle`/`drawLogAt` 中 `w/2 - pad` 变负半径，触发 `ctx.ellipse`/`arcTo` 的 `IndexSizeError`，异常抛穿 `draw()` 使 rAF 主循环中断、车/荷叶/青蛙全部不绘制（表象「游戏未加载成功」）。修复：两函数加窄片保护 `if (w <= pad*2+1) return`；新增 `tests/render.test.mjs`（mock Canvas 对齐浏览器负半径抛错行为，40 关 × 连续相位 + 5000 帧换行扫频），杜绝此类负半径回归。
+
 - **Mole 莓园打地鼠 / Berry Bash（新增，2026-09-23）**：**阳光莓园里的经典街机打地鼠**，按 `docs/plans/mole-prd.md` 本地端到端（模式 A）落地（拍板 **B 纯经典计分** / **B 三档难度无尽 轻松·普通·疯狂** / **A 首发含每日固定种子题面**）。
   - **核心玩法**：地鼠从草地土台洞口冒出，`pointerdown` 当帧判定命中（挥锤动画纯视觉补间，根治"锤在半空鼠已缩"的品类通病）；四种鼠 `NORMAL / GOLD / HELMET(HP=2) / BOMB`；连击每满 20 触发 **4s 莓果狂热**（时间流速 ×0.62，`#toast` 提示 + 全屏 `frenzy-veil` 脉冲）；局时 60s，结算准确率/最高连击/狂热次数。
   - **算法健全性与公平红线**：`mulberry32` 确定性种子 + `dailySeed(dateStr)`（FNV-1a 哈希日期）保证每日题面全站一致；**露头时长下限 `MIN_UP_MS = 450`**（疯狂档金鼠 0.7 缩放后仍 ≥450，故疯狂档 `upMs` 定为 `[660,800]`）；**场上无非炸弹目标时禁止出炸弹**（`pickSpecies(rng, weights, banBomb)`），杜绝"只有炸弹可点"的必死局面；`stepRun` 的 dt 钳制 `[0,100]`ms。
@@ -16,6 +28,13 @@
   - **美学**：木质机台 + 暖阳莓园主题。木梁顶栏收纳返回/音效/语言/规则（避开四角散落按钮），左翼难度牌+纪录、中央草地土台舞台、右翼得分/连击/沙漏、底部木质操作台（开始/暂停/每日），**移动端 `padding-bottom: max(68px, …)` 广告安全避让**，`prefers-reduced-motion` 全量降级，`touch-action: none` + `overscroll-behavior: none` 防移动端滚动误触。
   - **无浏览器冒烟（`npm run smoke:mole`）**：自研 `tests/dom-stub.mjs` + 受控 rAF，**3 视口（1280 / 390 / 834）各 33 断言全通过**；断言口径是"业务可观测量在推进"（剩余时间真的减少、命中后得分/连击增长、HUD 与引擎一致）而非仅"不抛异常"，因此抓出 3 个真 bug：① `main.mjs` 误从 `i18n` 导入实际定义在 `engine` 的 `todayKey`；② 弹层双真相源（产品用 `classList.toggle("hidden")`、桩读 `el.hidden`）——已在 `ui.mjs` 抽出 `modalEl` + `isModalOpen` 统一为 classList 单一真相源；③ 视口切换后 DOM 网格与引擎洞位失同步——`main.mjs` 的 `applyGrid` 改为同步重建 DOM + `G.setGrid`，并同时监听 `resize` 与 `orientationchange`。
   - **全套门禁**：单测 **131/131 全绿**（engine / game / storage / i18n / assembly / markup 六文件，含 5000 步随机游走）、`node scripts/check-game.mjs mole` **19 pass / 0 fail(T1) / 0 warn(T2)**、640×640 莓粉系 3D 软胶封面（cv2.inpaint 固定 bbox 去水印）、`npm run test:home` 5/5、`npm run build` 通过且 `dist/mole/` 正常发布、sitemap 收录 `https://doin.win/mole/`。
+  - **视觉回归 5 轮（用户逐轮目视验收驱动）**：
+    1. *洞的形状*（"地鼠默认在外面 / 洞有个盖子"）→ 定论经典模型 = 洞口椭圆永远可见 + 地鼠活动区底边压在"地平线"向上生长；新建 `tests/layout.mjs` 纯函数布局模拟器，在 6 个真实视口实算几何（**桩量不到像素，视觉契约必须靠 CSS 解析 + 数学实算**）。
+    2. *头被削平* → `.mole-clip` 的 `bottom+height` 曾为 `27%+78%=105%` 越出洞位，`overflow:hidden` 从头顶横切；收紧到 73%，并入护栏 `bottom + height <= 100%`。
+    3. *冒头太突然* → 真因是 `cubic-bezier(.3,1,.5,1)` **前腔抽空**（20% 时间吃掉 55% 位移），换成 `.3,.35,.4,.85` + 四拍 `@keyframes mole-rise`；顺带把缩回时长随机化（每只鼠独立 `duckMs ∈ [110,260]ms`，采样顺序写死以防每日题面漂移）。
+    4. *木槌完全不可见*（三个叠加根因）→ ① `.hammer` 无初始 `left/top` 的 absolute **不脱离正常流**，而 `.garden` 只有 padding、内容又全是绝对定位（content-box 高 ≈ 0），木槌落在流内正好被 `overflow:hidden` 整只裁掉；② 坐标空间错误，改用 **`position:fixed` + 视口坐标**（同时省掉每次 pointermove 读 `getBoundingClientRect` 的强制同步布局）；③ `prefers-reduced-motion` 块内藏着 `.hammer{display:none}`（**动效降级 ≠ 删除功能**）。另把木槌改为 `.is-armed` 悬停浮现，补 `pointerenter`（原先只有 `pointermove`，鼠标静止时锤子不出现）与 `pointerover` 兜底。
+  - **桩的盲区逐轮补齐**：① 弹层双真相源（产品 classList / 桩 el.hidden）→ 统一 classList；② `style.setProperty` 是 no-op → 真实记录；③ 不支持 `style.left = x` **直接赋值** → 改 **Proxy** 实现；④ `getBoundingClientRect` 恒返常量 → 给 `#garden` 返回 `left:40/top:90`，一旦有人改回相对坐标断言立刻显形。
+  - **最终门禁**：单测 **189/189**（engine / game / storage / i18n / assembly / markup / layout 七文件）、`check-game mole` **19 pass / 0 fail(T1) / 0 warn(T2)**、**3 视口（1280×800 / 390×844 / 834×1112）冒烟各 50/50**（含 10 项木槌链路：事件顺序 → `.is-armed` → 视口坐标 → 触屏兜底互不锁死）、`npm run build` 通过且 `dist/mole/` 已同步新代码。
 
 - **Winmine 经典扫雷（Windows 原版复刻）**（新增）：**高度复刻 Windows 最早版本扫雷 WinMine 的 90s 手感与视觉**，按 `docs/plans/winmine-prd.md` 本地端到端（模式 A）落地（拍板 **路线 B：首击必安全（延后布雷）** / **slug=winmine** / **破纪录弹窗 + 前 N 名成绩榜**）。
   - **核心玩法**：三档难度（初级 9×9/10、中级 16×16/40、高级 30×16/99）+ 自定义；左键翻开、右键 旗→问号→清除 循环、点数字 chord 和弦速开；LED 红字计数器、四态笑脸（🙂😮😵😎）、数字 1-8 原版配色。
