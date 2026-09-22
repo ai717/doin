@@ -117,15 +117,35 @@ export function buildGrid(ui, rows, cols) {
     mole.className = "mole";
     const body = document.createElement("span");
     body.className = "mole-body";
+    const belly = document.createElement("span");
+    belly.className = "mole-belly";
+    body.append(belly);
+    const earL = document.createElement("span");
+    earL.className = "mole-ear mole-ear--l";
+    const earR = document.createElement("span");
+    earR.className = "mole-ear mole-ear--r";
+    const pawL = document.createElement("span");
+    pawL.className = "mole-paw mole-paw--l";
+    const pawR = document.createElement("span");
+    pawR.className = "mole-paw mole-paw--r";
     const helmet = document.createElement("span");
     helmet.className = "mole-helmet";
     const fuse = document.createElement("span");
     fuse.className = "mole-fuse";
     const face = document.createElement("span");
     face.className = "mole-face";
+    const glintL = document.createElement("span");
+    glintL.className = "mole-eye-glint mole-eye-glint--l";
+    const glintR = document.createElement("span");
+    glintR.className = "mole-eye-glint mole-eye-glint--r";
+    const blushL = document.createElement("span");
+    blushL.className = "mole-blush mole-blush--l";
+    const blushR = document.createElement("span");
+    blushR.className = "mole-blush mole-blush--r";
     const snout = document.createElement("span");
     snout.className = "mole-snout";
-    mole.append(body, helmet, fuse, face, snout);
+    // 顺序即层叠：躯干 → 耳朵 → 爪子 → 盔/引信 → 五官 → 腮红
+    mole.append(body, earL, earR, pawL, pawR, helmet, fuse, face, glintL, glintR, blushL, blushR, snout);
 
     const key = document.createElement("span");
     key.className = "hole-key";

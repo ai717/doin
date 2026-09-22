@@ -65,10 +65,12 @@ export function holeMetrics(viewportWidth, rows, cols) {
   // 地平线 = 洞口椭圆垂直中心
   const groundLine = (pitTop + pitBottom) / 2;
 
-  // .mole-clip：bottom 27% / height 78%（底边压地平线，向上生长）
+  // .mole-clip：bottom 27% / height 73%（底边压地平线，向上生长）
+  // 27 + 73 = 100，即裁剪盒上沿正好落在洞位顶端 —— 不可再高，
+  // 否则上沿越出洞位会把站直的地鼠头削平。
   const clipBottomOffset = holeHeight * 0.27;
   const clipBottom = holeHeight - clipBottomOffset;
-  const clipHeight = holeHeight * 0.78;
+  const clipHeight = holeHeight * 0.73;
   const clipTop = clipBottom - clipHeight;
 
   // .mole：width 66% of clip(=62% holeW) / height 100% of clip

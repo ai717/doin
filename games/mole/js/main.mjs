@@ -167,6 +167,9 @@ function bindInput() {
   });
 
   ui.dom.garden.addEventListener("pointermove", (ev) => {
+    // 混合输入设备（触屏笔记本）兜底：真看到触摸就收走木槌，避免"既没锤子也没光标"
+    if (ev.pointerType === "touch") ui.dom.garden.classList.add("is-touch");
+    else ui.dom.garden.classList.remove("is-touch");
     U.moveHammer(ui, ev.clientX, ev.clientY);
   });
 

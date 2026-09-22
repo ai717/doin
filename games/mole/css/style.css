@@ -21,6 +21,9 @@
   --cols: 4;
   --rows: 3;
   --safe-bottom: 16px;
+  /* 冒头 / 缩回时长：必须与 engine.mjs 的 RISE_MS / DUCK_MS 一致（layout.test.mjs 校验） */
+  --rise-ms: 220ms;
+  --duck-ms: 150ms;
 }
 
 * { box-sizing: border-box; }
@@ -338,13 +341,17 @@ body {
 }
 
 /* 地鼠的活动区：底边压在"地平线"上（坑口椭圆的垂直中心），向上生长。
-   裁剪发生在这里 —— 隐藏态整只沉到地平线以下，等于钻回土里。 */
+   裁剪发生在这里 —— 隐藏态整只沉到地平线以下，等于钻回土里。
+
+   注意 height/bottom 必须保证裁剪盒的**上沿不低于洞位顶边**：
+   bottom 27% + height 78% = 上沿到洞位高的 73%（= 洞位顶端），刚好贴合。
+   若 height 再大，上沿越出洞位就会把地鼠的头削平。 */
 .mole-clip {
   position: absolute;
   left: 3%;
   right: 3%;
   bottom: 27%;
-  height: 78%;
+  height: 73%;
   z-index: 2;
   overflow: hidden;
 }
@@ -352,24 +359,40 @@ body {
 /* 地鼠：软胶质感，站立姿态（身长 ≈ 鼠宽 ×1.34）。
    隐藏态整只沉到地平线以下 —— 洞里只剩黑坑，这是经典打地鼠的样子。 */
 .mole {
+  /* 皮毛配色：鼠种只改这三个变量，躯干/耳朵/爪子/肚皮一起跟着变 */
+  --fur-1: #dcaa7a;
+  --fur-2: #b0784c;
+  --fur-3: #7d5030;
   position: absolute;
   left: 50%;
   bottom: 0;
   width: 66%;
   height: 100%;
   transform: translate(-50%, 100%);
-  transition: transform .13s cubic-bezier(.34, 1.4, .64, 1);
+  transition: transform var(--duck-ms) cubic-bezier(.4, 0, .7, .4);
   pointer-events: none;
   will-change: transform;
 }
 
-.hole[data-phase="rise"] .mole,
+/* 冒头：一段肉眼可辨的"钻出来"（时长与 engine 的 RISE_MS 一致）。
+   注意必须用 animation 而不是 transition —— 这里同时跑挤压拉伸，
+   而且 bob 动画若在 rise 阶段就启动会直接覆盖 transform，导致瞬移。 */
+.hole[data-phase="rise"] .mole {
+  animation: mole-rise var(--rise-ms) cubic-bezier(.3, 1, .5, 1) both;
+}
+
+@keyframes mole-rise {
+  0% { transform: translate(-50%, 100%) scale(.82, .88); }
+  45% { transform: translate(-50%, 26%) scale(1.1, .92); }
+  72% { transform: translate(-50%, -5%) scale(.95, 1.08); }
+  100% { transform: translate(-50%, 0) scale(1, 1); }
+}
+
+/* 露头就位后转为呼吸晃动 */
 .hole[data-phase="up"] .mole {
   transform: translate(-50%, 0);
   animation: mole-bob 1.1s ease-in-out infinite;
 }
-
-.hole[data-phase="rise"] .mole { transition-duration: .11s; }
 
 @keyframes mole-bob {
   0%, 100% { transform: translate(-50%, 0) scaleY(1); }
@@ -387,67 +410,158 @@ body {
   100% { transform: translate(-50%, 100%) scale(1, 1); }
 }
 
+/* 躯干：梨形软胶，上窄下宽 */
 .mole-body {
   position: absolute;
   inset: 0;
-  border-radius: 48% 48% 40% 40% / 52% 52% 48% 48%;
-  background: radial-gradient(circle at 32% 24%, #dcaa7a 0%, #b0784c 46%, #7d5030 100%);
+  border-radius: 46% 46% 42% 42% / 40% 40% 60% 60%;
+  background: radial-gradient(circle at 32% 22%, var(--fur-1) 0%, var(--fur-2) 48%, var(--fur-3) 100%);
   box-shadow:
-    inset 0 -10px 14px rgba(60, 32, 12, .45),
-    inset 0 8px 12px rgba(255, 236, 205, .5),
+    inset 0 -10px 16px rgba(60, 32, 12, .4),
+    inset 0 8px 14px rgba(255, 240, 212, .5),
     0 6px 10px rgba(30, 18, 8, .3);
 }
 
+/* 肚皮：浅色椭圆，让身子有"正面感" */
+.mole-belly {
+  position: absolute;
+  left: 50%;
+  top: 52%;
+  width: 62%;
+  height: 42%;
+  transform: translateX(-50%);
+  border-radius: 50% 50% 46% 46%;
+  background: radial-gradient(ellipse at 50% 30%, rgba(255, 236, 205, .85), rgba(255, 224, 186, .35) 62%, transparent 78%);
+}
+
+/* 耳朵：头顶两侧的小圆，压在躯干上沿 */
+.mole-ear {
+  position: absolute;
+  top: -1%;
+  width: 27%;
+  height: 19%;
+  border-radius: 50%;
+  background: radial-gradient(circle at 40% 32%, var(--fur-1), var(--fur-3) 88%);
+  box-shadow: inset 0 -2px 3px rgba(50, 28, 12, .4);
+}
+.mole-ear--l { left: -4%; transform: rotate(-18deg); }
+.mole-ear--r { right: -4%; transform: rotate(18deg); }
+
+/* 前爪：攀在洞口边缘的两只小手 */
+.mole-paw {
+  position: absolute;
+  top: 58%;
+  width: 26%;
+  height: 15%;
+  border-radius: 50% 50% 44% 44%;
+  background: radial-gradient(circle at 45% 30%, var(--fur-1), var(--fur-2) 82%);
+  box-shadow: 0 2px 4px rgba(30, 18, 8, .35), inset 0 -2px 3px rgba(60, 32, 12, .35);
+}
+.mole-paw--l { left: -8%; transform: rotate(-12deg); }
+.mole-paw--r { right: -8%; transform: rotate(12deg); }
+
+/* 眼睛 */
 .mole-face { position: absolute; inset: 0; }
 
 .mole-face::before,
 .mole-face::after {
   content: "";
   position: absolute;
-  top: 30%;
-  width: 13%;
-  height: 13%;
+  top: 24%;
+  width: 16%;
+  height: 15%;
   border-radius: 50%;
-  background: #2a1a10;
-  box-shadow: inset 0 -1px 2px rgba(255, 255, 255, .35);
+  background: radial-gradient(circle at 38% 30%, #4a3226 0%, #1d1209 60%, #0d0805 100%);
+  box-shadow:
+    inset 0 -1px 2px rgba(255, 255, 255, .3),
+    0 0 0 1px rgba(255, 240, 214, .25);
 }
-.mole-face::before { left: 28%; }
-.mole-face::after { right: 28%; }
+.mole-face::before { left: 24%; }
+.mole-face::after { right: 24%; }
 
+/* 高光：眼睛里的小白点，一下就有神了 */
+.mole-eye-glint {
+  position: absolute;
+  top: 27%;
+  width: 6%;
+  height: 5.5%;
+  border-radius: 50%;
+  background: #fff;
+  opacity: .9;
+}
+.mole-eye-glint--l { left: 27%; }
+.mole-eye-glint--r { right: 30%; }
+
+/* 吻部：粉鼻子 + 两颗门牙 */
 .mole-snout {
   position: absolute;
   left: 50%;
-  top: 48%;
-  width: 26%;
-  height: 18%;
+  top: 40%;
+  width: 30%;
+  height: 20%;
   transform: translateX(-50%);
-  border-radius: 50%;
-  background: radial-gradient(circle at 50% 30%, #ffd9c2, #e8a98c);
-  box-shadow: inset 0 -2px 3px rgba(120, 70, 40, .4);
+  border-radius: 50% 50% 46% 46%;
+  background: radial-gradient(circle at 50% 28%, #ffe3d0, #e8a98c 82%);
+  box-shadow: inset 0 -2px 4px rgba(120, 70, 40, .35);
 }
 
+.mole-snout::before {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 8%;
+  width: 40%;
+  height: 30%;
+  transform: translateX(-50%);
+  border-radius: 50%;
+  background: radial-gradient(circle at 42% 30%, #ff9db1, #d9566f);
+  box-shadow: inset 0 -1px 2px rgba(120, 20, 40, .4);
+}
+
+/* 两颗门牙 */
 .mole-snout::after {
   content: "";
   position: absolute;
   left: 50%;
-  top: 34%;
-  width: 34%;
+  top: 62%;
+  width: 44%;
   height: 34%;
   transform: translateX(-50%);
-  border-radius: 50%;
-  background: #7a4230;
+  border-radius: 12% 12% 34% 34%;
+  background:
+    linear-gradient(90deg, #fffdf4 0 46%, rgba(0, 0, 0, .18) 46% 54%, #fffdf4 54% 100%);
+  box-shadow: 0 1px 2px rgba(80, 50, 30, .35);
 }
+
+/* 腮红 */
+.mole-blush {
+  position: absolute;
+  top: 38%;
+  width: 14%;
+  height: 8%;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255, 130, 150, .55), rgba(255, 130, 150, 0) 72%);
+}
+.mole-blush--l { left: 12%; }
+.mole-blush--r { right: 12%; }
 
 .mole-helmet,
 .mole-fuse { display: none; }
 
-/* 金鼠 */
+/* 金鼠：只换毛色变量，耳朵/爪子/肚皮自动跟随 */
+.hole[data-species="gold"] .mole {
+  --fur-1: #ffe9a0;
+  --fur-2: #f2c14e;
+  --fur-3: #b8862a;
+}
 .hole[data-species="gold"] .mole-body {
-  background: radial-gradient(circle at 32% 24%, #ffe9a0 0%, #f2c14e 46%, #b8862a 100%);
   box-shadow:
     inset 0 -10px 14px rgba(120, 80, 10, .45),
     inset 0 8px 12px rgba(255, 248, 210, .6),
-    0 0 16px rgba(246, 195, 74, .7);
+    0 0 18px rgba(246, 195, 74, .75);
+}
+.hole[data-species="gold"] .mole-belly {
+  background: radial-gradient(ellipse at 50% 30%, rgba(255, 252, 226, .9), rgba(255, 244, 190, .4) 62%, transparent 78%);
 }
 
 /* 铁盔鼠 */
@@ -478,12 +592,22 @@ body {
 .hole[data-species="helmet"][data-broken="1"] .mole-helmet { display: none; }
 
 /* 炸弹鼠 */
+.hole[data-species="bomb"] .mole {
+  --fur-1: #6b6470;
+  --fur-2: #3e3a42;
+  --fur-3: #22202a;
+}
 .hole[data-species="bomb"] .mole-body {
-  background: radial-gradient(circle at 32% 24%, #6b6470 0%, #3e3a42 48%, #22202a 100%);
   box-shadow:
     inset 0 -10px 14px rgba(0, 0, 0, .5),
     inset 0 8px 12px rgba(255, 255, 255, .18),
     0 0 14px rgba(40, 30, 45, .6);
+}
+/* 炸弹鼠不要腮红，换成阴森感 */
+.hole[data-species="bomb"] .mole-blush { display: none; }
+.hole[data-species="bomb"] .mole-snout::before { background: radial-gradient(circle at 42% 30%, #ffb37a, #c2410c); }
+.hole[data-species="bomb"] .mole-snout::after {
+  background: linear-gradient(90deg, #f4f0e4 0 46%, rgba(0, 0, 0, .2) 46% 54%, #f4f0e4 54% 100%);
 }
 
 .hole[data-species="bomb"] .mole-fuse {
@@ -583,7 +707,12 @@ body {
   50% { transform: translateY(8px); }
 }
 
-/* 木槌 */
+/* 木槌：默认可见并接管光标。
+   曾经过度收紧成 `@media (hover:hover) and (pointer:fine)` 才显示 ——
+   触屏笔记本 / 混合输入设备上报的 primary pointer 不是 fine，木槌就整个消失了，
+   而 cursor:none 也没生效，结果"既没锤子也没光标"。改为默认显示，
+   仅对真正的纯触屏设备（hover:none 且 pointer:coarse）隐藏；
+   混合设备由 main.mjs 在识别到触摸时加 .is-touch 兜底。 */
 .hammer {
   position: absolute;
   z-index: 5;
@@ -591,7 +720,7 @@ body {
   height: 74px;
   margin: -14px 0 0 -30px;
   pointer-events: none;
-  opacity: 0;
+  opacity: 1;
   transition: opacity .15s ease;
 }
 
@@ -627,10 +756,18 @@ body {
   100% { transform: rotate(-30deg) translateY(0); }
 }
 
-@media (hover: hover) and (pointer: fine) {
-  .garden { cursor: none; }
-  .hammer { opacity: 1; }
+/* 默认（指针设备）：木槌接管光标 */
+.garden { cursor: none; }
+
+/* 纯触屏设备：没有悬停概念，恢复普通光标并收走木槌 */
+@media (hover: none) and (pointer: coarse) {
+  .garden { cursor: pointer; }
+  .hammer { display: none; }
 }
+
+/* 混合输入设备兜底：运行时真看到触摸就切换（main.mjs 加类） */
+.garden.is-touch { cursor: pointer; }
+.garden.is-touch .hammer { display: none; }
 
 /* toast */
 .toast {
@@ -788,7 +925,6 @@ body {
 
   #game-app { padding-left: 10px; padding-right: 10px; }
   .garden { border-width: 5px; border-radius: 20px; }
-  .hammer { display: none; }
   .hole { aspect-ratio: 1 / 1; }
   .arcade-btn { min-height: 48px; }
   .cabinet-controls { flex-wrap: wrap; }
@@ -811,10 +947,12 @@ body {
   }
   .garden-sky { animation: none; }
   .mole { transition: none; }
+  /* 降级到瞬移，但仍保留"位置正确"（不回退到洞口外） */
   .hole[data-phase="rise"] .mole { animation: none; transform: translate(-50%, 0); }
+  .hole[data-phase="up"] .mole { animation: none; }
 }
 
-@media (prefers-reduced-motion: reduce) and (hover: hover) and (pointer: fine) {
-  .hammer { display: none; }
+@media (prefers-reduced-motion: reduce) {
   .garden { cursor: pointer; }
+  .hammer { display: none; }
 }

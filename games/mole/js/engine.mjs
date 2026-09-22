@@ -14,7 +14,12 @@ export const SPECIES_LIST = Object.freeze([SPECIES.NORMAL, SPECIES.GOLD, SPECIES
 
 export const PHASE = Object.freeze({ RISE: "rise", UP: "up", DUCK: "duck" });
 
-export const RISE_MS = 120;
+/**
+ * 冒头时长：地鼠从地平线爬升到位的时长（毫秒）。
+ * 必须能被人眼看清"钻出来"的过程，不能是瞬移。
+ * 与 style.css 的 `--rise-ms` 保持一致（layout.test.mjs 会校验两者不脱钩）。
+ */
+export const RISE_MS = 220;
 export const DUCK_MS = 150;
 /** 露头时长下限（公平性红线：人类视觉反应中位数约 250ms，这里留足余量） */
 export const MIN_UP_MS = 450;

@@ -34,6 +34,33 @@ function escapeRe(s) {
   return s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
 
+/** 去掉 /* … *\/ 注释，避免注释里提到的旧写法被误判成实际代码 */
+function stripComments(text) {
+  return text.replace(/\/\*[\s\S]*?\*\//g, "");
+}
+
+/**
+ * 取出指定 @media 条件的完整规则体（按花括号深度配对）。
+ * 朴素的 indexOf("}") 会在嵌套规则的第一层就截断，
+ * 把后面无关媒体查询的内容也吃进来 —— 这就是之前误报的原因。
+ */
+function mediaBlocks(text, condition) {
+  const out = [];
+  const re = new RegExp(`@media\\s*\\(?[^{]*${escapeRe(condition)}[^{]*\\{`, "g");
+  for (let m; (m = re.exec(text)); ) {
+    let i = m.index + m[0].length;
+    let depth = 1;
+    const start = i;
+    while (i < text.length && depth > 0) {
+      if (text[i] === "{") depth++;
+      else if (text[i] === "}") depth--;
+      i++;
+    }
+    out.push(text.slice(start, i - 1));
+  }
+  return out;
+}
+
 /** 取百分比；CSS 里写 `0`（无单位）视为 0% */
 function pct(text, prop) {
   const m = text.match(new RegExp(`${prop}:\\s*(-?[\\d.]+)%`));
@@ -80,7 +107,7 @@ test("CSS: 洞与洞口的几何百分比与模拟器一致", () => {
 test("CSS: 地鼠活动区的百分比与模拟器一致", () => {
   const clip = rule(".mole-clip");
   assert.equal(pct(clip, "bottom"), 0.27, "活动区底边应压在地平线上（27%）");
-  assert.equal(pct(clip, "height"), 0.78);
+  assert.equal(pct(clip, "height"), 0.73, "活动区高度应使上沿正好落在洞位顶端（27+73=100）");
   assert.equal(pct(clip, "left"), 0.03);
   assert.equal(pct(clip, "right"), 0.03);
   assert.match(clip, /overflow:\s*hidden/, "活动区必须裁剪，否则隐藏态地鼠会露在洞外");
@@ -97,8 +124,103 @@ test("CSS: 地鼠尺寸与位移百分比与模拟器一致", () => {
 });
 
 test("CSS: 冒出态回到 translate(-50%, 0)", () => {
-  assert.match(rule('.hole[data-phase="rise"] .mole'),
+  assert.match(rule('.hole[data-phase="up"] .mole'),
     /transform:\s*translate\(-50%,\s*0\)/, "冒出态应回到 translate(-50%, 0)");
+});
+
+test("CSS: 冒头是一段可见动画，不是瞬移（bob 不得在 rise 阶段抢跑）", () => {
+  const rise = rule('.hole[data-phase="rise"] .mole');
+  // 必须用 animation：同时要跑挤压拉伸，且 animation 优先级高于 transition
+  assert.match(rise, /animation:\s*mole-rise/, "rise 应绑定 mole-rise 动画");
+  assert.match(css, /@keyframes\s+mole-rise/, "缺少 @keyframes mole-rise");
+  // 关键回归：rise 规则里绝不能出现 mole-bob —— 一旦共用，bob 会立刻覆盖
+  // transform，把整段冒头过程吃掉，表现就是"地鼠突然出现"。
+  assert.ok(!/mole-bob/.test(rise),
+    "rise 规则不得包含 mole-bob（会覆盖 transform 导致瞬移）");
+  const up = rule('.hole[data-phase="up"] .mole');
+  assert.match(up, /mole-bob/, "bob 应只在 up 阶段跑");
+});
+
+test("CSS: 冒头关键帧是一段真实的爬升过程", () => {
+  // 关键：必须把切片夹在 mole-rise 的花括号块内。
+  // 只 indexOf("@keyframes mole-rise") 会让正则一路吃到后面的 mole-bob，
+  // 末帧就变成了 bob 的 0% { translate(-50%, -50%) } —— 会得到假的失败。
+  const kfStart = css.indexOf("@keyframes mole-rise");
+  assert.ok(kfStart >= 0, "缺少 @keyframes mole-rise");
+  const block = css.slice(kfStart);
+  // @keyframes 内部还有每帧自己的花括号，必须按深度配对取完整块，
+  // 否则会在第一帧的 `}` 就截断，只剩 1 个关键帧。
+  const open = block.indexOf("{");
+  let i = open + 1;
+  let depth = 1;
+  while (i < block.length && depth > 0) {
+    if (block[i] === "{") depth++;
+    else if (block[i] === "}") depth--;
+    i++;
+  }
+  const stop = block.slice(open + 1, i - 1);
+  assert.ok(stop.includes("100%"), `mole-rise 块内应含 100% 帧（实际切片：${stop.slice(0, 60)}）`);
+  // 注意 100% 帧写成 `translate(-50%, 0)`（不带 %），正则要容忍
+  const stops = [...stop.matchAll(/([\d.]+)%\s*\{[^}]*translate\(-50%,\s*(-?[\d.]+)%?\)/g)]
+    .map((m) => ({ at: Number(m[1]), y: Number(m[2]) }));
+  assert.ok(stops.length >= 3, `mole-rise 至少需要 3 个关键帧，实际 ${stops.length}`);
+  assert.ok(stops[0].y > 50, `首帧应还在洞里（y=${stops[0].y}%）`);
+  const last = stops[stops.length - 1];
+  assert.equal(last.at, 100, "末帧应在 100%");
+  assert.equal(last.y, 0, "末帧应回到 0");
+  assert.ok(stops.some((s) => s.y < -1), "中途应有轻微过冲，否则没有弹跳感");
+  // 至少一帧带 scale，构成挤压拉伸
+  assert.match(stop, /scale\(/);
+});
+
+test("CSS 时长与 engine 的 RISE_MS / DUCK_MS 一致", async () => {
+  const { RISE_MS, DUCK_MS } = await import("../js/engine.mjs");
+  const root = css.slice(css.indexOf(":root"), css.indexOf("}", css.indexOf(":root")));
+  const rise = root.match(/--rise-ms:\s*(\d+)ms/);
+  const duck = root.match(/--duck-ms:\s*(\d+)ms/);
+  assert.ok(rise, ":root 缺少 --rise-ms");
+  assert.ok(duck, ":root 缺少 --duck-ms");
+  assert.equal(Number(rise[1]), RISE_MS, `--rise-ms 应等于 engine.RISE_MS(${RISE_MS})`);
+  assert.equal(Number(duck[1]), DUCK_MS, `--duck-ms 应等于 engine.DUCK_MS(${DUCK_MS})`);
+  // 冒头时长必须够长，肉眼才看得出过程
+  assert.ok(RISE_MS >= 180, `RISE_MS=${RISE_MS} 太短，冒头会像瞬移`);
+});
+
+test("CSS: 木槌默认可见（不得再用 hover/pointer 媒体查询才显示）", () => {
+  assert.match(rule(".hammer"), /opacity:\s*1/, "木槌应默认可见");
+  // .garden 有多条规则，不能只查第一条
+  assert.match(css, /\.garden\s*\{[^}]*cursor:\s*none/, "默认应由木槌接管光标");
+  // 曾经过度收紧成 (hover:hover) and (pointer:fine) 才显示，触屏笔记本上直接消失。
+  // 注意：只允许出现在注释里，不允许出现在实际选择器/媒体查询中。
+  const code = stripComments(css);
+  assert.ok(!/\(hover:\s*hover\)\s+and\s+\(pointer:\s*fine\)/.test(code),
+    "不得再用 (hover:hover) and (pointer:fine) 门槛，触屏笔记本会匹配不上");
+  // 纯触屏才隐藏
+  const coarse = code.match(/@media\s*\(hover:\s*none\)\s*and\s*\(pointer:\s*coarse\)/);
+  assert.ok(coarse, "缺少纯触屏设备的隐藏规则");
+  // 窄窗口（≤768px）不得隐藏木槌 —— 桌面浏览器缩窄后指针仍是鼠标。
+  // 必须按花括号深度切片，否则会误取到后面 prefers-reduced-motion 块里的规则。
+  for (const body of mediaBlocks(code, "max-width: 768px")) {
+    assert.ok(!/\.hammer\s*\{[^}]*display:\s*none/.test(body),
+      "max-width:768px 内不得隐藏 .hammer（桌面窄窗口会失去木槌）");
+  }
+});
+
+test("CSS: 地鼠有完整的形象构件（耳/爪/肚皮/牙/高光）", () => {
+  for (const sel of [".mole-ear", ".mole-paw", ".mole-belly", ".mole-eye-glint", ".mole-blush"]) {
+    assert.ok(new RegExp(`\\${sel}\\s*\\{`).test(css), `缺少构件样式 ${sel}`);
+  }
+  // 门牙是独立伪元素规则，不能拿 .mole-snout 的规则体去找 ::after
+  assert.ok(/\.mole-snout::after\s*\{/.test(css), "吻部应有门牙（独立 ::after 规则）");
+  assert.ok(/\.mole-snout::before\s*\{/.test(css), "吻部应有鼻子（独立 ::before 规则）");
+  // 鼠种只改毛色变量，构件自动跟随
+  assert.match(css, /--fur-1:/, "应使用毛色变量 --fur-1");
+  assert.match(css, /--fur-2:/, "应使用毛色变量 --fur-2");
+  assert.match(css, /--fur-3:/, "应使用毛色变量 --fur-3");
+  for (const sp of ["gold", "bomb"]) {
+    assert.ok(new RegExp(`\\.hole\\[data-species="${sp}"\\]\\s+\\.mole\\s*\\{[^}]*--fur-1`).test(css),
+      `${sp} 鼠应通过毛色变量换色`);
+  }
 });
 
 test("CSS: 不存在盖子式实心遮罩，也不存在椭圆径向收窄", () => {
@@ -111,6 +233,18 @@ test("CSS: 不存在盖子式实心遮罩，也不存在椭圆径向收窄", () 
 test("CSS: 洞口与地鼠活动区的层级正确（地鼠遮住洞口后半圈）", () => {
   assert.match(rule(".hole-pit"), /z-index:\s*1/);
   assert.match(rule(".mole-clip"), /z-index:\s*2/);
+});
+
+test("CSS: 活动区裁剪盒不越出洞位顶边（否则会把地鼠的头削平）", () => {
+  // bottom + height <= 100%  ⇔  裁剪盒上沿不高于洞位顶端。
+  // 曾经写成 bottom 27% / height 78%（合计 105%），上沿越出洞位，
+  // 冒出就位的地鼠头顶被 overflow:hidden 削成一条平线。
+  const clip = rule(".mole-clip");
+  const bottom = pct(clip, "bottom");
+  const height = pct(clip, "height");
+  assert.ok(bottom + height <= 1 + 1e-6,
+    `bottom(${bottom * 100}%) + height(${height * 100}%) = ${(bottom + height) * 100}% 超过 100%，会削掉地鼠的头`);
+  assert.ok(height >= 0.6, `活动区高度 ${height * 100}% 太矮，地鼠藏不住`);
 });
 
 /* ============ B. 几何断言（真实视口宽度） ============ */
