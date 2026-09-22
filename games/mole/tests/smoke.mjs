@@ -228,11 +228,14 @@ check("语言切换写入 doin.lang",
     env.step(10);
     for (const v of readDuck()) seen.add(v);
   }
-  if (seen.size > 1) {
-    const nums = [...seen].map((v) => parseInt(v, 10));
-    check("各鼠缩回时长有差异（不是恒定值）",
-      Math.max(...nums) > Math.min(...nums),
-      `全是 ${nums[0]}ms，随机化未生效`);
+  // 无条件断言：若只采到一个值，要么随机化失效、要么采样窗口太短，
+  // 两种情况都该暴露出来，不能静默跳过。
+  const nums = [...seen].map((v) => parseInt(v, 10));
+  check("各鼠缩回时长有差异（不是恒定值）", nums.length >= 2,
+    `只采到 ${nums.length} 种缩回时长（${nums.join(",")}ms），随机化没生效或采样窗口太短`);
+  if (nums.length >= 2) {
+    check("缩回时长的快慢跨度足够明显", Math.max(...nums) - Math.min(...nums) >= 20,
+      `跨度仅 ${Math.max(...nums) - Math.min(...nums)}ms（${Math.min(...nums)}~${Math.max(...nums)}），看不出快慢差别`);
   }
 }
 
