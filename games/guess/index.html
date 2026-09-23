@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>猜数字 · DOIN 在线小游戏</title>
+  <meta name="description" content="深海声呐围猎：系统藏一个数，你投下浮标，回波只说大了还是小了，外加一个温度。三十关，暗流、谎灯、浊流逐章加码。">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="css/style.css?v=dev">
+</head>
+<body>
+  <div id="game-app">
+    <header id="stage-bar">
+      <a href="/" id="back-home" class="bar-btn" data-i18n="back">返回门户</a>
+      <div class="bar-brand">
+        <span id="stage-title" data-i18n="appTitle">猜数字</span>
+        <span id="stage-kicker" data-i18n="appKicker">声呐围猎</span>
+      </div>
+      <div class="stage-actions">
+        <button id="btn-levels" class="bar-btn" data-i18n="levels">猎场图</button>
+        <button id="btn-sound" class="bar-btn" data-i18n-title="sound" data-i18n-aria="sound">🔊</button>
+        <button id="btn-lang" class="bar-btn" data-i18n="langSwitch">EN</button>
+        <button id="btn-help" class="bar-btn" data-i18n-title="help" data-i18n-aria="help">?</button>
+      </div>
+    </header>
+
+    <main id="stage-core">
+      <section id="sonar-stage">
+        <div id="level-plaque">
+          <span id="plaque-chapter"></span>
+          <span id="plaque-level"></span>
+          <span id="plaque-range"></span>
+          <span id="plaque-mech"></span>
+        </div>
+
+        <div id="sonar-shell">
+          <div id="sonar-band">
+            <div class="band-water"></div>
+            <div id="band-fog"></div>
+            <div id="band-live"></div>
+            <div id="band-buoys"></div>
+            <div class="band-sweep"></div>
+          </div>
+          <div id="band-scale">
+            <span id="scale-min">1</span>
+            <span id="scale-mid">—</span>
+            <span id="scale-max">100</span>
+          </div>
+          <div id="band-note"></div>
+        </div>
+
+        <div id="console-deck">
+          <div id="dial">
+            <div id="dial-screen"><span id="dial-value">–</span></div>
+            <div id="dial-sub"><span id="dial-hint">1 – 100</span></div>
+          </div>
+          <div id="keypad">
+            <button class="key" data-digit="1">1</button>
+            <button class="key" data-digit="2">2</button>
+            <button class="key" data-digit="3">3</button>
+            <button class="key" data-digit="4">4</button>
+            <button class="key" data-digit="5">5</button>
+            <button class="key" data-digit="6">6</button>
+            <button class="key" data-digit="7">7</button>
+            <button class="key" data-digit="8">8</button>
+            <button class="key" data-digit="9">9</button>
+            <button class="key key-wide" id="btn-del" data-i18n="btnDel">退格</button>
+            <button class="key" data-digit="0">0</button>
+            <button class="key key-fire" id="btn-fire" data-i18n="btnFire">发射</button>
+          </div>
+        </div>
+
+        <div id="gear-tray">
+          <button id="btn-probe" class="gear"><span class="gear-name" data-i18n="btnProbe">声呐探针</span><span class="gear-cost">×1</span></button>
+          <button id="btn-scan" class="gear"><span class="gear-name" data-i18n="btnScan">扫描线</span><span class="gear-cost">×1</span></button>
+          <button id="btn-recall" class="gear"><span class="gear-name" data-i18n="btnRecall">回溯</span><span class="gear-cost">×1</span></button>
+        </div>
+      </section>
+
+      <aside id="hunter-cabin">
+        <div class="cabin-window">
+          <div class="cabin-title" data-i18n="hudTorpedo">鱼雷</div>
+          <div id="tube-slots"></div>
+          <div id="tube-count"></div>
+          <div id="hunter-stats">
+            <div class="stat"><span data-i18n="hudUsed">已投</span><b id="stat-used">0</b></div>
+            <div class="stat"><span data-i18n="hudPar">标准</span><b id="stat-par">–</b></div>
+            <div class="stat"><span data-i18n="hudBest">最少投掷</span><b id="stat-best">–</b></div>
+          </div>
+        </div>
+        <div id="echo-panel">
+          <div class="panel-head" data-i18n="hudEcho">回波日志</div>
+          <ol id="echo-log"></ol>
+        </div>
+      </aside>
+    </main>
+
+    <div id="panel-ready" class="overlay">
+      <div class="sheet">
+        <div class="sheet-kicker" id="ready-kicker" data-i18n="readyKicker">深海声呐围猎</div>
+        <h2 class="sheet-title" id="ready-title" data-i18n="readyTitle">猜数字</h2>
+        <p class="sheet-desc" id="ready-desc" data-i18n="readyDesc"></p>
+        <p class="sheet-hint" id="ready-hint" data-i18n="readyHint"></p>
+        <div class="sheet-actions">
+          <button id="btn-dive" class="big-btn" data-i18n="btnDive">下潜开局</button>
+          <button id="btn-ready-levels" class="ghost-btn" data-i18n="levels">猎场图</button>
+        </div>
+        <div id="ready-stats" class="sheet-stats"></div>
+      </div>
+    </div>
+
+    <div id="panel-levels" class="overlay hidden">
+      <div class="sheet sheet-wide">
+        <div class="sheet-kicker" data-i18n="levelsTitle">猎场图</div>
+        <p class="sheet-desc" data-i18n="levelsNote"></p>
+        <div id="levels-body"></div>
+        <div class="sheet-actions">
+          <button id="btn-levels-close" class="ghost-btn" data-i18n="btnResume">继续</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="panel-help" class="overlay hidden">
+      <div class="sheet sheet-wide">
+        <div class="sheet-kicker" data-i18n="helpTitle">玩法说明</div>
+        <ul class="help-list">
+          <li data-i18n="help1"></li>
+          <li data-i18n="help2"></li>
+          <li data-i18n="help3"></li>
+          <li data-i18n="help4"></li>
+          <li data-i18n="help5"></li>
+          <li data-i18n="help6"></li>
+          <li data-i18n="help7"></li>
+        </ul>
+        <div class="sheet-actions">
+          <button id="btn-help-close" class="big-btn" data-i18n="helpClose">我知道了</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="panel-result" class="overlay hidden">
+      <div class="sheet">
+        <div class="sheet-kicker" id="result-kicker">—</div>
+        <h2 class="sheet-title" id="result-title">—</h2>
+        <div id="result-target" class="result-target">—</div>
+        <div id="result-stars" class="stars"></div>
+        <div id="result-rows" class="result-rows"></div>
+        <p class="sheet-desc" id="result-note"></p>
+        <div class="sheet-actions">
+          <button id="btn-next" class="big-btn" data-i18n="btnNext">下一关</button>
+          <button id="btn-retry" class="ghost-btn" data-i18n="btnRetry">再猎一次</button>
+          <button id="btn-result-levels" class="ghost-btn" data-i18n="levels">猎场图</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="toast" class="hidden"></div>
+  </div>
+
+  <noscript><p>需要启用 JavaScript 才能游玩。</p></noscript>
+  <script type="module" src="js/main.mjs?v=dev"></script>
+</body>
+</html>

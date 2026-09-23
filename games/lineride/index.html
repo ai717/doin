@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>线之骑士 · DOIN 在线小游戏</title>
+  <meta name="description" content="拿起蜡笔画出轨道，看雪橇小人在你画的山谷与回环上飞驰——每一笔都是自己的过山车。自由画布创意无限，拼图挑战 50 关解谜。">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="css/style.css?v=dev">
+</head>
+<body>
+  <div id="game-app">
+    <!-- 顶边松木控制台 -->
+    <header id="stage-bar">
+      <a href="/" id="back-home" class="bar-btn"><span id="back-label">← 门户</span></a>
+      <div class="player-info">
+        <span id="stage-title">线之骑士</span>
+        <span id="stage-subtitle">Line Ride</span>
+      </div>
+      <div class="mode-switch">
+        <button class="mode-btn active" id="mode-freestyle">自由画布</button>
+        <button class="mode-btn" id="mode-puzzle">拼图挑战</button>
+      </div>
+      <div class="stage-actions">
+        <button class="bar-btn" id="btn-sound" aria-label="音效"><span id="sound-label">音效: 开</span></button>
+        <button class="bar-btn" id="btn-lang" aria-label="切换语言"><span id="lang-label">EN</span></button>
+        <button class="bar-btn" id="btn-help" aria-label="玩法说明">?</button>
+      </div>
+    </header>
+
+    <!-- 工具栏：画笔组（仅自由画布）+ 共享播放控制 -->
+    <nav id="tool-bar">
+      <div id="brush-group">
+        <span class="tools-label" id="tools-label">画笔:</span>
+        <button class="tool-btn active" id="tool-normal" title="普通线·蓝">
+          <span class="line-swatch swatch-normal"></span>普通
+        </button>
+        <button class="tool-btn" id="tool-boost" title="加速线·橙">
+          <span class="line-swatch swatch-boost"></span>加速
+        </button>
+        <button class="tool-btn" id="tool-slow" title="减速线·绿">
+          <span class="line-swatch swatch-slow"></span>减速
+        </button>
+        <button class="tool-btn" id="tool-scenery" title="布景线·白(纯装饰，无碰撞)">
+          <span class="line-swatch swatch-scenery"></span>布景
+        </button>
+        <button class="tool-btn" id="tool-eraser">🧹 橡皮</button>
+        <div class="io-group">
+          <button class="tool-btn" id="btn-export" title="导出画布JSON到剪贴板"><span id="export-label">导出</span></button>
+          <button class="tool-btn" id="btn-import" title="从剪贴板导入JSON画布"><span id="import-label">导入</span></button>
+          <button class="tool-btn" id="btn-clear"><span id="clear-label">清空</span></button>
+        </div>
+      </div>
+      <div class="player-controls">
+        <button class="tool-btn" id="tool-undo">↩ 撤销</button>
+        <button id="btn-play" title="播放" aria-label="播放/暂停">▶</button>
+        <button class="tool-btn" id="btn-reset">重置</button>
+        <button class="tool-btn" id="btn-zoom-in">+</button>
+        <button class="tool-btn" id="btn-zoom-out">−</button>
+      </div>
+    </nav>
+
+    <!-- 拼图面板（拼图模式） -->
+    <nav id="puzzle-panel" class="hidden">
+      <span id="puzzle-chapter">第 1 章</span>
+      <button class="nav-btn" id="puzzle-prev" aria-label="上一关">◀</button>
+      <span id="puzzle-level">第 1 关</span>
+      <button class="nav-btn" id="puzzle-next" aria-label="下一关">▶</button>
+      <span id="puzzle-stars">⭐ 0/3</span>
+      <span id="puzzle-ink">墨水: 200</span>
+    </nav>
+
+    <!-- 主舞台 -->
+    <main id="stage-core">
+      <canvas id="game-canvas"></canvas>
+    </main>
+
+    <!-- 底部提示 -->
+    <div id="bottom-tip">
+      <span id="tip-text">拖动画笔开始创作 | 空格键播放/暂停 | Ctrl+Z 撤销 | 滚轮缩放</span>
+    </div>
+
+    <noscript><p id="noscript-tip">需要启用 JavaScript 才能游玩线之骑士。 / JavaScript is required to play Line Ride.</p></noscript>
+
+    <!-- 弹出层 -->
+    <div id="overlay">
+      <div class="overlay-box">
+        <div id="overlay-title"></div>
+        <div id="overlay-text"></div>
+        <button id="overlay-btn">OK</button>
+      </div>
+    </div>
+    <div id="toast" role="status" aria-live="polite"></div>
+    <div id="footer-space"></div>
+  </div>
+  <script type="module" src="js/main.mjs?v=dev"></script>
+</body>
+</html>

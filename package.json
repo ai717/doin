@@ -43,6 +43,10 @@
     "test:mole": "node --test games/mole/tests/engine.test.mjs games/mole/tests/game.test.mjs games/mole/tests/storage.test.mjs games/mole/tests/i18n.test.mjs games/mole/tests/assembly.test.mjs games/mole/tests/markup.test.mjs games/mole/tests/layout.test.mjs",
     "test:frog": "node --test games/frog/tests/engine.test.mjs games/frog/tests/storage.test.mjs games/frog/tests/i18n.test.mjs games/frog/tests/markup.test.mjs games/frog/tests/render.test.mjs",
     "smoke:devil-run": "node games/devil-run/tests/smoke.mjs",
-    "smoke:mole": "node games/mole/tests/smoke.mjs"
+    "smoke:mole": "node games/mole/tests/smoke.mjs",
+    "smoke:lineride": "node --test games/lineride/tests/smoke.mjs",
+    "test:guess": "node --test games/guess/tests/engine.test.mjs games/guess/tests/solver.test.mjs games/guess/tests/storage.test.mjs games/guess/tests/i18n.test.mjs games/guess/tests/markup.test.mjs games/guess/tests/game.test.mjs",
+    "test:lineride": "node --test games/lineride/tests/engine.test.mjs games/lineride/tests/storage.test.mjs games/lineride/tests/i18n.test.mjs games/lineride/tests/markup.test.mjs",
+    "test:calc24": "node --test games/calc24/tests/engine.test.mjs games/calc24/tests/markup.test.mjs games/calc24/tests/storage.test.mjs"
   }
 }

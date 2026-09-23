@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <title>24 点 · 灵光一闪 · DOIN 在线小游戏</title>
+    <meta name="description" content="四张数字卡，加减乘除每张用一次，算出 24。经典数字益智，40 关渐进 + 20 道业界经典难题 + 无限可解随机模式。">
+    <meta name="theme-color" content="#0D4F2E">
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <link rel="stylesheet" href="css/style.css?v=dev">
+  </head>
+  <body>
+    <div id="stage">
+      <!-- 机顶内嵌紧凑状态条 -->
+      <header class="topbar">
+        <a href="/" id="back-home" class="bar-btn">← <span data-i18n="backHome">返回门户</span></a>
+        <h1 class="bar-title" data-i18n="stageTitle">24 点 · 灵光一闪</h1>
+        <div class="top-actions">
+          <button type="button" id="btn-start" class="bar-btn" data-i18n="selectLevel">选择关卡</button>
+          <button type="button" id="btn-help" class="bar-btn" data-i18n="helpBtn">规则</button>
+          <button type="button" id="btn-lang" class="bar-btn">EN</button>
+          <button type="button" id="btn-sound" class="bar-btn" aria-label="sound">🔊</button>
+        </div>
+      </header>
+
+      <main class="desktop">
+        <!-- 左：章节账本 + 无限随机 -->
+        <aside class="wing wing-left">
+          <div class="panel panel-infinite">
+            <div class="panel-title" data-i18n="infiniteMode">🎲 无限随机</div>
+            <div class="panel-body">
+              <button type="button" id="btn-infinite" class="panel-btn">🎲 开始一道</button>
+              <div class="divider"></div>
+              <div class="hint-card">
+                <span class="hint-key">✨</span>
+                <span data-i18n="infiniteHint">可解保证 · 永不死局</span>
+              </div>
+            </div>
+          </div>
+          <div class="panel panel-chapter">
+            <div class="panel-title" data-i18n="chapterMode">📖 章节闯关</div>
+            <div class="panel-body">
+              <button type="button" id="btn-chapters" class="panel-btn">📚 40 关渐进</button>
+              <div class="divider"></div>
+              <div class="hint-card">
+                <span class="hint-key">💡</span>
+                <span data-i18n="selectTwo">点两张牌 · 选运算符</span>
+              </div>
+            </div>
+          </div>
+        </aside>
+
+        <!-- 中：游戏主舞台 -->
+        <section class="stage-center" aria-label="24 点游戏">
+          <!-- HUD 顶部 -->
+          <div class="hud">
+            <div class="hud-left">
+              <span class="hud-label" id="hud-chapter">关卡</span>
+            </div>
+            <div class="hud-right">
+              <span class="hud-chip" data-i18n="stepsLabel"><span id="hud-steps">0</span></span>
+              <span class="hud-chip" data-i18n="hintsLabel"><span id="hud-hints">0</span></span>
+            </div>
+          </div>
+
+          <!-- 桌面 + 四张牌 -->
+          <div class="felt">
+            <div id="board" class="board" role="group" aria-label="四张数字卡"></div>
+
+            <!-- 运算符浮动面板（选两张后浮出） -->
+            <div id="op-panel" class="op-panel" hidden>
+              <button type="button" id="op-+" class="op-btn">+</button>
+              <button type="button" id="op--" class="op-btn">−</button>
+              <button type="button" id="op-*" class="op-btn">×</button>
+              <button type="button" id="op-/" class="op-btn">÷</button>
+            </div>
+          </div>
+
+          <!-- 底部操作条 -->
+          <div class="bottom-bar">
+            <button type="button" id="btn-undo" class="act-btn" data-i18n="undoBtn">↶ 撤回</button>
+            <button type="button" id="btn-hint" class="act-btn primary" data-i18n="hintBtn">💡 提示</button>
+            <button type="button" id="btn-reset" class="act-btn" data-i18n="resetBtn">⟳ 重开</button>
+          </div>
+        </section>
+
+        <!-- 右：经典难题 -->
+        <aside class="wing wing-right">
+          <div class="panel panel-classic">
+            <div class="panel-title" data-i18n="classicMode">🏆 经典难题馆</div>
+            <div class="panel-body">
+              <button type="button" id="btn-classic" class="panel-btn">🔥 20 道名题</button>
+              <div class="divider"></div>
+              <p class="panel-note">收录业界公认只有 1–2 种解法的"灵光一闪"时刻：<br><code>3,3,8,8 → 8÷(3−8÷3)</code></p>
+            </div>
+          </div>
+        </aside>
+      </main>
+    </div>
+
+    <!-- 弹窗层 -->
+    <div class="overlay" id="overlay" hidden>
+      <!-- 结果弹窗 -->
+      <div class="dlg dialog-result" id="dlg-result" hidden>
+        <div class="result-head">
+          <div class="result-title" id="result-title">🎉 算出 24 了！</div>
+          <div class="result-stars" id="result-stars">★★★</div>
+        </div>
+        <div class="result-steps" id="result-steps">3 steps</div>
+        <div class="result-actions">
+          <button type="button" class="btn" id="result-map">📋 关卡</button>
+          <button type="button" class="btn primary" id="result-retry">⟳ 再来</button>
+          <button type="button" class="btn primary gold" id="result-next">下一关 →</button>
+        </div>
+      </div>
+
+      <!-- 关卡地图 -->
+      <div class="dlg dialog-map" id="dlg-map" hidden>
+        <div class="map-head">
+          <div class="map-title" data-i18n="selectLevel">选择关卡</div>
+          <button type="button" class="map-close" data-close aria-label="close">✕</button>
+        </div>
+        <div class="map-tabs">
+          <button type="button" class="map-tab active" data-mode="chapter" data-i18n="chapterMode">📖 章节闯关</button>
+          <button type="button" class="map-tab" data-mode="classic" data-i18n="classicMode">🏆 经典难题馆</button>
+          <button type="button" class="map-tab" data-mode="infinite" data-i18n="infiniteMode">🎲 无限随机</button>
+        </div>
+        <div class="map-grid" id="map-grid"></div>
+      </div>
+
+      <!-- 规则 -->
+      <div class="dlg dialog-rules" id="dlg-rules" hidden>
+        <div class="map-head">
+          <div class="map-title" id="rules-title" data-i18n="rulesTitle">规则说明</div>
+          <button type="button" class="map-close" data-close aria-label="close">✕</button>
+        </div>
+        <div class="rules-body" id="rules-body"></div>
+        <div class="result-actions"><button type="button" class="btn primary" data-close data-i18n="ok">确定</button></div>
+      </div>
+    </div>
+
+    <noscript><p class="noscript">需要启用 JavaScript 才能游玩 24 点。</p></noscript>
+    <script type="module" src="js/main.mjs?v=dev"></script>
+  </body>
+</html>
