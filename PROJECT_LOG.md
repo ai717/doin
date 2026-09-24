@@ -1431,3 +1431,14 @@ pm run build 通过（dist/sokoban/ + GA4 注入 + sitemap）；浏览器 dist �
 - **门禁**：单测 51/51 全绿（engine/storage/i18n/markup，含 2048 合并记录 first2048At、摘瓜只认 2048、上限不再合并、1500 步随机游走不变式、每日种子端到端可复现）；check-game watermelon-2048 **19 pass / 0 fail / 0 warn**；640×640 绯红渐变软胶大西瓜封面（scripts/covers/process-watermelon.py 固定 bbox inpaint 去水印，主体大西瓜居中 + 樱桃/草莓/橙点缀，零文字）；npm run build 全站通过，dist/watermelon-2048/ 与 sitemap 收录。
 - **运行时冒烟（headless Chrome）**：装配零 console 报错；ready 弹层 → 开始 → 丢弃带数字角标水果 → 落地渲染全通；?e2e 注入两颗重叠 2 → 合并得 4 分/连锁 1/图鉴"还差 9 级"/HUD 同步；注入 2048 → 点按摘瓜 → +2048 分、harvested=1、西瓜移除、金光一闪。
 - **英文残留修复（验收反馈"检查英文状态下是否还有中文残留"）**：全文扫描 games/watermelon-2048 后确认唯一硬编码残留是 danger-banner「⚠ 快超线了！」未走 i18n（其余静态中文均有 id 且 applyTexts 覆盖，title/meta 由 main 启动即刷）。修复：i18n.mjs 补 zh「⚠ 快超线了！」/ en「⚠ Over the line!」键，ui.mjs applyTexts 同步刷新 danger-banner 文本。验收：npm run test:watermelon-2048 51/51、check-game 19/0/0、npm run build 通过；浏览器 dist 实测英文态（doin.lang=en）ready 弹层 / HUD / 图鉴 / help / result（无尽+每日）/ toast / danger / document.title / meta 全英文零残留，语言切换钮英文态显示「中文」为切换目标语言的设计惯例。
+
+## 2026-09-25 · 盲盒竞拍（blind-auction）端到端上线（模式 A）
+- **玩法核心**：暗标竞价盲盒仓库，五回合对 3 个性格各异的 AI 藏家；"资金 + 估值双轨"——开箱价值 = 真值×行情系数（0.5x–1.8x 波动），价高者得、2 倍截胡（支付第二名 1.5 倍）、开箱即变现。按 docs/plans/blind-auction-prd.md 落地（拍板 1C 难度联动 / 2A 四角色技能 / 3A 立即变现）。
+- **数学保证（无死局）**：5 箱真值总和 ≥ $6000 重试生成；出价上限=现金、破产不终止、五回合必打完；mulberry32 种子 + deriveRng(state.seed, …salts) 子随机源，同种子 100% 重放一致（AI 决策与对局全部确定性）。
+- **AI 博弈层**：8 性格池（谨慎估价师/梭哈赌徒/囤积收藏家/捡漏猎手/抬价大师/情报商人/新手暴发户/市场投机客）每局随机抽 3；参数化出价模型（私密情报估值×行情系数估计×性格激进系数×资金压力修正+种子噪声）；hard 后两回合 BLUFF_TABLE「建立模式再打破」伪装（加法修正 aggression）；easy 从 4 性格子集抽取、标签直读，高手档隐藏部分性格。
+- **模式编排（拒绝三件套）**：12 关残局挑战（固定种子+手编性格+星级 1-3，首关免费）逐关解锁 + 自由对局三难度；专属评价体系——评级 S/A/B/C（S 需第一且资产≥初始×1.8）+ 趣味徽章（捡漏王/接盘侠/铁公鸡/抬轿人），非通用计分牌。
+- **角色技能（2A）**：侦探·探照灯额外 1 条私密提示（锁定线索解锁）/ 行家·老掌柜估值区间收窄 50% / 套话·包打听试探一位 AI 出价区间（estimateAiBidRange 真实区间）/ 守财奴·金掌柜被动初始资金 +20%，每回合暗标前 1 次。
+- **美学与红线**：深色仓库夜拍三栏机台（左对手牌匾/中舞台/右行情情报牌匾，max-width 1160 居中避让广告位），聚光灯呼吸 + 粉尘粒子、CSS 木箱 crate-box 径向柔光（零描边圈）、拍卖槌实体键；桌面左右/底部安全留白，移动端 padding-bottom: max(68px, calc(16px + env(safe-area-inset-bottom)))；prefers-reduced-motion 降级、零外链零 CDN、相对路径 + ?v=dev。
+- **门禁**：npm run test:blind-auction **75/75 全绿**（engine/ai/score/storage/i18n/markup/game 七文件，含 400 局×5 回合随机游走 ≥1000 步不抛错不卡死不变式、12 关挑战局确定性重放、DOM-free 契约、id 双向闭合）；node scripts/check-game.mjs blind-auction **19 pass / 0 fail / 0 warn**；npm run build 通过（dist/blind-auction/ + sitemap 收录 https://doin.win/blind-auction/）。
+- **封面**：assets/covers/blind-auction.webp，640×640 WebP，深青→靛蓝渐变（避开 sokoban 暖棕木箱撞色）+ 3D 软胶木箱溢金 + 漂浮金币粒子零文字；seedream 5.0 生成 + .workbuddy/tmp/covers/process_blind_auction.py 固定 bbox inpaint 去水印 + INTER_AREA 缩放。
+- **浏览器实测**：菜单四角色技能/三难度、对局三栏（对手牌匾+行情公告热门/冷门/平稳+公开/私密提示+线索估价+滑杆+亮价/使用技能+20s 倒计时）渲染正常，零 console 错误。

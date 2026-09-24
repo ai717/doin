@@ -739,6 +739,23 @@
         "title": "Sokoban",
         "desc": "Push wooden crates onto star pads in the classic warehouse puzzle. 50 levels across five chapters, with solver-computed optimal par pushes, three-star grading, undo, live hints and local progress, all in a warm bronze cabinet aesthetic."
       }
+    },
+    {
+      "title": "盲盒竞拍",
+      "slug": "blind-auction",
+      "desc": "仓库夜拍暗标博弈：与 3 个性格各异的 AI 藏家连战五回合暗标竞价，行情 0.5x–1.8x 双轨波动、价高者得、2 倍截胡成交。8 性格 AI 池、4 大角色技能与 12 关残局挑战，识货者笑到最后。",
+      "icon": "🎁",
+      "cover": "/assets/covers/blind-auction.webp",
+      "tags": [
+        "策略",
+        "博弈",
+        "模拟"
+      ],
+      "url": "/blind-auction/",
+      "en": {
+        "title": "Blind Auction",
+        "desc": "Warehouse night sealed-bid showdown: five rounds of blind bidding against three AI collectors with distinct personas. Dual-track price volatility from 0.5x to 1.8x, highest bid wins, and 2x sniper purchases. An 8-persona AI pool, four character skills and 12 endgame challenges await."
+      }
     }
   ]
 }
