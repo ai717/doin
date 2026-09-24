@@ -1038,6 +1038,13 @@ button {
   padding: 16px;
 }
 
+/* hidden 显式兜底：.overlay/.curtain 的 display 会覆盖 UA 的 [hidden]，导致遮罩常驻拦截点击 */
+.overlay[hidden],
+.curtain[hidden],
+.panel[hidden] {
+  display: none !important;
+}
+
 .panel {
   width: min(560px, 100%);
   max-height: 86vh;

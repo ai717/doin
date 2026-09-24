@@ -474,9 +474,11 @@ export function createUI(controller, { save, loadSave, saveRun, loadRun, clearRu
   function bindExpButtons(run) {
     $("expand-btn").addEventListener("click", () => {
       const before = run.gold;
-      controller.buyExpansion();
-      if (run.gold < before) SFX.expand();
-      else SFX.invalid();
+      const grid = controller.buyExpansion();
+      if (run.gold < before) {
+        SFX.expand();
+        if (grid) renderStage();
+      } else SFX.invalid();
     });
     $("battle-btn").addEventListener("click", () => {
       SFX.click();
@@ -1434,7 +1436,7 @@ export function createUI(controller, { save, loadSave, saveRun, loadRun, clearRu
 
   // ---------------- 顶栏与面板绑定 ----------------
   function bindStatic() {
-    const tools = document.getElementById("tools");
+    const tools = document.querySelector(".tools, #tools");
     if (tools) {
       tools.addEventListener("click", (e) => {
         const btn = e.target.closest("button");

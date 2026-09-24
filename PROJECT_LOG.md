@@ -1480,3 +1480,13 @@ pm run build 通过；浏览器英文态实测（菜单/对局/亮价/开箱/hel
 - **门禁**：单测 **34/34 全绿**（engine/game/score/storage/i18n/markup 六文件，engine 含 1200 步随机游走、Boss 前清场回血、无死局淡入/脱困断言、确定性同种子同轨迹）；`node scripts/check-game.mjs mow` **20 pass / 0 fail(T1) / 0 warn(T2)**（含 i18n-clean：engine 数据表与 main.mjs 全 ASCII——中途抓出 TEXT_MAP 8 键缺失/错名导致 pause/codex/help 面板英文态透中文、且 "pad-burst" 误映射会 textContent 覆盖按钮结构，已修复）；games.json 登记（icon 🚜 + tags 肉鸽/生存/街机/自动攻击）；package.json 注册 test:mow（显式列六文件，本 Node 不支持目录参数）；`npm run build` 通过（dist/mow/ + sitemap 收录）。
 - **封面**：assets/covers/mow.webp（640×640，明黄→橙红渐变 + 3D 软胶奶白割草机居中 + 漂浮花粉粒子 + 零文字），seedream image_gen 1024 → process_mow.py 固定 bbox inpaint 去水印 → INTER_AREA 640 → webp q90。
 - **浏览器实测**：桌面双翼机台全渲染（左翼园艺工坊/右翼战况牌匾/中央舞台），开局→运行生命周期（start 面板关闭、倒计时走动）、暂停/图鉴/帮助浮层开合、英文态面板零中文残留（Paused/Gardener's Codex/How to Play）、语言偏好持久化、控制台零报错；390px 移动视口因 CDP/桌面平面占用改静态红线审计（移动端掌机操作台 + 68px 底部避让 + touch-action 均已在 CSS 实测确认）。
+
+## 2026-09-25 · 背包竞技场（backpack）浏览器实测四连修 + 端到端上线复核（模式 A 收尾）
+- **实测方式**：CNGC 浏览器栈（bu）+ 真实鼠标路径 + 合成 PointerEvent/KeyboardEvent 驱动；发现并修复四个真 bug，全部为「纯函数测试全绿、浏览器端静默失效」类：
+  - **遮罩常驻拦截点击（最严重）**：`.overlay`/`.curtain` 的 `display:flex` 覆盖 UA 默认 `[hidden]{display:none}`，透明全屏遮罩常驻、elementFromPoint 实证命中 `DIV#overlay`，所有真实坐标点击全部被吞（此前一切“confirm 无响应/零事件”现象由此解释）。修复：`.overlay[hidden], .curtain[hidden], .panel[hidden] { display:none !important; }`（平台级 CSS 惯例，其余子游戏若中招需同类兜底，未扩散排查）。
+  - **controller.on 签名错配（全 UI 事件系统死亡）**：`on(type, fn)` 在调用方只传单回调时 `listeners.push(fn)` 推入 undefined → emit 循环 `fn is not a function` 被静默吞掉 → 控制器全部事件（update/persist/mode…）到不了 UI，游戏“能点但什么都不发生”。修复：`on` 兼容双用（`typeof fn === 'function' ? fn : type`），并临时给 emit catch 补错误上抛探针定位（已移除）。
+  - **bindStatic 选择器错配**：`getElementById('tools')` 但 HTML 用 `class="tools"` → 顶栏帮助/音效/语言/清档四旋钮全部失效。修复：`document.querySelector('.tools, #tools')`。
+  - **扩容不重绘**：`expand-btn` 点击后 `buyExpansion()` 未触发 UI 重绘，棋盘视觉停在扩容前。修复：扩容成功后 `renderStage()`。
+- **浏览器全流程复核通过**：进入长桌→选职业/背包→确认出征（localStorage `doin.backpack.run.v1` 落盘）→购买→货架拖放棋盘→开战幕布 Canvas（双血条+伤害数字+疲劳机制）→自动结算→回合推进/收入/商店刷新；选中物品 + R 旋转 + X 出售；帮助/语言（zh↔en）/音效（♪↔✕）/Esc；残局模式（30 关列表→进关→摆放→开战→三星结算面板★☆☆→下一关/重试/列表）；镜像模式（开战→胜场自动下一层 mirror-win→exit）；控制台零报错。
+- **环境事故**：Windows 下两个 `python -m http.server 8137` 进程同端口 SO_REUSEADDR 分流，连接随机命中旧进程（旧 cwd 无 backpack → 间歇 404 + 旧代码）；清理为单实例后全通。桌面 Chrome/Firefox 因本机 Clash 代理/旧缓存拿不到页面属环境问题，以沙箱浏览器直连为准。
+- **门禁复核**：`node games/backpack/tests/_smoke.mjs` 30/30 可解；`npm run test:backpack` 29/29 全绿；`node scripts/check-game.mjs backpack` **19 pass / 0 fail(T1) / 1 warn(T2)**（i18n-clean 警告为双语数据表设计项）；`npm run build` 通过（dist/backpack + sitemap 收录）；封面 assets/covers/backpack.webp 640×640 WebP 无文字无水印；games.json 第 47 款；GA 注入正常、AdSense 缺省关闭（平台本地构建预期）。

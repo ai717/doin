@@ -70,10 +70,6 @@ export function createController({ lang, savedState, savedRun }) {
   };
 
   function emit(type, payload = {}) {
-    if (typeof window !== "undefined") {
-      window.__bpEmits = window.__bpEmits || [];
-      window.__bpEmits.push(type);
-    }
     for (const fn of listeners) {
       try {
         fn(type, payload);
@@ -711,9 +707,11 @@ export function createController({ lang, savedState, savedRun }) {
   return {
     getState: () => state,
     on: (type, fn) => {
-      listeners.push(fn);
+      // 兼容两种用法：on(callback) 与 on(type, fn)，listeners 统一存完整回调
+      const handler = typeof fn === "function" ? fn : type;
+      listeners.push(handler);
       return () => {
-        const i = listeners.indexOf(fn);
+        const i = listeners.indexOf(handler);
         if (i >= 0) listeners.splice(i, 1);
       };
     },
