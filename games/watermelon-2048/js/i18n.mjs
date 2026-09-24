@@ -64,6 +64,7 @@ const DICT = {
     toastCooldown: "稍等一下，水果还在掉落",
     toastModeLocked: "对局进行中，结算后再切换模式",
     dailyDate: "{date} 每日挑战",
+    danger: "⚠ 快超线了！",
   },
   en: {
     docTitle: "Watermelon 2048 · DOIN Web Games",
@@ -124,6 +125,7 @@ const DICT = {
     toastCooldown: "Hold on — a fruit is still dropping",
     toastModeLocked: "Round in progress — switch mode after it ends",
     dailyDate: "Daily {date}",
+    danger: "⚠ Over the line!",
   },
 };
 

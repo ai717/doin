@@ -150,6 +150,7 @@ export function mountUI(t) {
       if (refs.previewCurrentCap) refs.previewCurrentCap.textContent = t.previewCurrent;
       if (refs.previewNextCap) refs.previewNextCap.textContent = t.previewNext;
       if (refs.controlHint) refs.controlHint.textContent = t.controlHint;
+      if (refs.dangerBanner) refs.dangerBanner.textContent = t.danger;
       if (refs.startBtn) refs.startBtn.textContent = t.start;
       if (refs.restartLabel) refs.restartLabel.textContent = t.restart;
       if (refs.pauseLabel) {
