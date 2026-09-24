@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>割草！ · DOIN 在线小游戏</title>
+  <meta name="description" content="割草！Mow!：操控软胶小割草机在花田里自动旋转刀片收割虫潮——走位躲怪、升级三选一构筑流派，8 分钟迎战园丁巨人。">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="css/style.css?v=dev">
+</head>
+<body>
+  <div id="game-app">
+    <header id="stage-bar">
+      <a href="/" id="back-home" class="bar-btn">
+        <span class="bar-glyph">←</span><span class="bar-text" id="back-text">返回门户</span>
+      </a>
+      <h1 id="app-title">
+        <span id="app-title-main">割草！</span>
+        <span id="app-subtitle">花田幸存割草</span>
+      </h1>
+      <div class="stage-actions">
+        <button id="btn-sound" class="bar-btn" type="button" aria-pressed="true">
+          <span class="bar-glyph">🔊</span>
+        </button>
+        <button id="btn-lang" class="bar-btn" type="button">EN</button>
+        <button id="btn-help" class="bar-btn" type="button">
+          <span class="bar-glyph">?</span>
+        </button>
+      </div>
+    </header>
+
+    <main id="stage-core">
+      <aside id="wing-left" class="wing" aria-label="园艺工坊牌匾">
+        <div class="wing-title">
+          <span class="wing-emoji">🛠️</span><span id="wing-left-title">园艺工坊</span>
+        </div>
+        <div class="plaque-block" id="block-loadout">
+          <span class="plaque-label" id="label-weapons">武器</span>
+          <ul class="loadout-list" id="list-weapons"></ul>
+          <span class="plaque-label" id="label-passives">被动</span>
+          <ul class="loadout-list" id="list-passives"></ul>
+        </div>
+        <div class="plaque-block" id="block-recipe">
+          <span class="plaque-label" id="label-recipe">进化配方</span>
+          <p class="recipe-hint" id="recipe-hint">—</p>
+        </div>
+        <div class="wing-actions">
+          <button id="btn-launch" class="key-btn key-primary" type="button">出击</button>
+          <button id="btn-codex" class="key-btn" type="button">图鉴</button>
+        </div>
+        <p class="hint-text" id="key-hint">WASD / 方向键移动 · 空格或 Shift 花粉爆发 · P 暂停 · 1/2/3 选升级</p>
+      </aside>
+
+      <section id="arena" aria-label="花田割草机台舞台">
+        <div id="meadow-bezel">
+          <canvas id="stage-canvas" role="img" aria-label="割草！：自动收割虫潮的 8 分钟生存肉鸽"></canvas>
+        </div>
+        <div id="toast" role="status" aria-live="polite"></div>
+      </section>
+
+      <aside id="wing-right" class="wing" aria-label="战况牌匾">
+        <div class="wing-title">
+          <span class="wing-emoji">📋</span><span id="wing-right-title">战况牌匾</span>
+        </div>
+        <div class="plaque-block">
+          <span class="plaque-label" id="label-timer">倒计时</span>
+          <strong class="plaque-value plaque-value-lg" id="val-timer">—</strong>
+        </div>
+        <div class="plaque-block">
+          <span class="plaque-label" id="label-hp">生命</span>
+          <div class="meter-track hp-track"><i id="hp-bar"></i></div>
+        </div>
+        <div class="plaque-block">
+          <span class="plaque-label" id="label-mow">割草槽</span>
+          <div class="meter-track mow-track"><i id="bar-mow"></i></div>
+          <span class="mow-tag" id="mow-tag">满槽 · 空格引爆</span>
+        </div>
+        <div class="gauge-row">
+          <div class="gauge">
+            <span class="plaque-label" id="label-combo">连击</span>
+            <strong class="gauge-value" id="val-combo">×1</strong>
+          </div>
+          <div class="gauge">
+            <span class="plaque-label" id="label-kills">击杀</span>
+            <strong class="gauge-value" id="val-kills">0</strong>
+          </div>
+        </div>
+        <div class="plaque-block">
+          <span class="plaque-label" id="label-level">等级</span>
+          <strong class="gauge-value" id="val-level">Lv.1</strong>
+          <div class="meter-track xp-track"><i id="bar-xp"></i></div>
+        </div>
+        <div class="scoreboard" id="block-best">
+          <span class="plaque-label" id="label-best">历史最佳</span>
+          <div class="score-line"><span id="label-best-std">标准一局最佳</span><strong id="val-best-std">—</strong></div>
+          <div class="score-line"><span id="label-best-endless">无尽深渊最佳</span><strong id="val-best-endless">—</strong></div>
+          <div class="score-line"><span id="label-codex-count">图鉴</span><strong id="val-codex-count">0</strong></div>
+        </div>
+      </aside>
+    </main>
+
+    <div id="control-deck" aria-label="触控操作台">
+      <div class="joystick-zone" id="joystick-zone">
+        <div class="joystick-base" id="joystick-base">
+          <i class="joystick-knob" id="joystick-knob"></i>
+        </div>
+        <span class="pad-label" id="joystick-label">走位</span>
+      </div>
+      <button type="button" class="pad-btn pad-burst" id="pad-burst">
+        <span class="pad-label" id="pad-burst-label">花粉</span><kbd>空格</kbd>
+      </button>
+      <button type="button" class="pad-btn pad-pause" id="pad-pause">
+        <span class="pad-label" id="pad-pause-label">暂停</span><kbd>P</kbd>
+      </button>
+    </div>
+  </div>
+
+  <div id="panel-start" class="overlay">
+    <div class="panel panel-start">
+      <span class="panel-kicker" id="start-kicker">MOW!</span>
+      <h2 class="panel-title" id="start-title">花田待割</h2>
+      <p class="panel-desc" id="start-desc">选一台机台上场：自动收割虫潮、走位躲怪、升级三选一，撑到 7:30 迎战园丁巨人。</p>
+      <div class="mode-chips" role="tablist" aria-label="选择玩法模式">
+        <button class="mode-chip is-active" id="mode-standard" type="button" role="tab" data-mode="standard" aria-selected="true">标准一局</button>
+        <button class="mode-chip" id="mode-endless" type="button" role="tab" data-mode="endless" aria-selected="false">无尽深渊</button>
+      </div>
+      <p class="mode-desc" id="mode-desc">8 分钟完整弧线 + 园丁巨人 Boss</p>
+      <div class="char-grid" id="char-grid" role="listbox" aria-label="选择机台"></div>
+      <div class="panel-actions">
+        <button id="btn-start-run" class="btn btn-primary" type="button">开工！</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="panel-upgrade" class="overlay">
+    <div class="panel panel-upgrade">
+      <span class="panel-kicker" id="upgrade-kicker">LEVEL UP</span>
+      <h2 class="panel-title" id="upgrade-title">升级！三选一</h2>
+      <div class="choice-grid" id="choice-grid"></div>
+    </div>
+  </div>
+
+  <div id="panel-pause" class="overlay">
+    <div class="panel">
+      <h2 class="panel-title" id="pause-title">暂停</h2>
+      <p class="panel-desc" id="pause-desc">花田还在，虫潮也还在。</p>
+      <div class="panel-actions">
+        <button id="btn-resume" class="btn btn-primary" type="button">继续割草</button>
+        <button id="btn-restart" class="btn" type="button">重开一局</button>
+        <button id="btn-quit" class="btn" type="button">返回花田</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="panel-result" class="overlay">
+    <div class="panel panel-result">
+      <h2 class="panel-title" id="result-title">园丁巨人倒下了！</h2>
+      <div class="result-stars" id="result-stars" aria-hidden="true">
+        <span class="star">★</span><span class="star">★</span><span class="star">★</span>
+      </div>
+      <p class="result-badge" id="result-badge"></p>
+      <div class="result-rows">
+        <div class="result-row"><span id="label-res-kills">总击杀</span><strong id="res-kills">0</strong></div>
+        <div class="result-row"><span id="label-res-combo">连击峰值</span><strong id="res-combo">0</strong></div>
+        <div class="result-row"><span id="label-res-burst">花粉爆发</span><strong id="res-burst">0</strong></div>
+        <div class="result-row"><span id="label-res-score">得分</span><strong id="res-score">0</strong></div>
+        <div class="result-row"><span id="label-res-time">存活</span><strong id="res-time">0s</strong></div>
+      </div>
+      <p class="result-hint" id="result-hint"></p>
+      <div class="panel-actions">
+        <button id="btn-again" class="btn btn-primary" type="button">再来一局</button>
+        <button id="btn-to-home" class="btn" type="button">返回花田</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="panel-codex" class="overlay">
+    <div class="panel panel-codex">
+      <span class="panel-kicker" id="codex-kicker">GARDENER'S CODEX</span>
+      <h2 class="panel-title" id="codex-title">花园图鉴</h2>
+      <p class="panel-desc" id="codex-desc">只扩池、不增强——解锁新角色与新武器池。</p>
+      <div class="codex-section">
+        <span class="plaque-label" id="codex-weapons">武器图鉴</span>
+        <div class="codex-chips" id="codex-weapons-list"></div>
+      </div>
+      <div class="codex-section">
+        <span class="plaque-label" id="codex-passives">被动图鉴</span>
+        <div class="codex-chips" id="codex-passives-list"></div>
+      </div>
+      <div class="codex-section">
+        <span class="plaque-label" id="codex-evolutions">进化图鉴</span>
+        <div class="codex-chips" id="codex-evolutions-list"></div>
+      </div>
+      <div class="panel-actions">
+        <button id="btn-codex-close" class="btn btn-primary" type="button">我知道了</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="panel-help" class="overlay">
+    <div class="panel panel-help">
+      <h2 class="panel-title" id="help-title">玩法说明</h2>
+      <ol class="help-list">
+        <li id="help1"></li>
+        <li id="help2"></li>
+        <li id="help3"></li>
+        <li id="help4"></li>
+        <li id="help5"></li>
+        <li id="help6"></li>
+      </ol>
+      <div class="panel-actions">
+        <button id="btn-help-close" class="btn btn-primary" type="button">我知道了</button>
+      </div>
+    </div>
+  </div>
+
+  <noscript><p>需要启用 JavaScript 才能游玩割草！。</p></noscript>
+  <script type="module" src="js/main.mjs?v=dev"></script>
+</body>
+</html>

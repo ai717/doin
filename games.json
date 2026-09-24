@@ -792,6 +792,24 @@
         "title": "Neon Pinball",
         "desc": "Twin-flipper pinball meets brick-break: launch the steel ball, carve brick trails that reshape the field, and set off bumpers, drop targets, sling shots, rollover lanes and the ramp. 30 three-star levels across 3 chapters plus arcade survival, with deterministic fixed-timestep physics."
       }
+    },
+    {
+      "title": "割草！",
+      "slug": "mow",
+      "desc": "花田幸存割草：自动旋转刀片收割虫潮，走位躲怪、升级三选一构筑流派，花粉爆发清屏，8 分钟迎战园丁巨人。",
+      "icon": "🚜",
+      "cover": "/assets/covers/mow.webp",
+      "tags": [
+        "肉鸽",
+        "生存",
+        "街机",
+        "自动攻击"
+      ],
+      "url": "/mow/",
+      "en": {
+        "title": "Mow!",
+        "desc": "Survivor mowing in a candy garden: auto-spinning blades reap insect swarms while you dodge, draft builds from three-way upgrades, trigger pollen bursts to clear the screen, and face the Gardener Giant at minute 8."
+      }
     }
   ]
 }
