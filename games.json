@@ -705,6 +705,23 @@
         "title": "Line Ride",
         "desc": "Draw tracks with a crayon and watch a sledder ride the valleys and loops you drew — every stroke is your own roller coaster. A freestyle canvas plus 50 gap-filling puzzle levels, with four line types, smoothed strokes, undo and eraser."
       }
+    },
+    {
+      "title": "推箱子",
+      "slug": "sokoban",
+      "desc": "把木箱推到星形目标垫上，经典仓储益智。50 关五章递进（木屋初识→仓房物语→庭院迷踪→古阁机关→大师残局），最优推数求解器实算每关 par，三星评级、撤销、实时提示与本地进度，暖棕古铜机台美学。",
+      "icon": "📦",
+      "cover": "/assets/covers/sokoban.webp",
+      "tags": [
+        "益智",
+        "经典",
+        "解谜"
+      ],
+      "url": "/sokoban/",
+      "en": {
+        "title": "Sokoban",
+        "desc": "Push wooden crates onto star pads in the classic warehouse puzzle. 50 levels across five chapters, with solver-computed optimal par pushes, three-star grading, undo, live hints and local progress, all in a warm bronze cabinet aesthetic."
+      }
     }
   ]
 }

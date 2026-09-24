@@ -1406,3 +1406,13 @@ PROJECT_LOG.md                      [修改] 本轮记录
 - 引擎、包围区推导和可解性求解器共用同一温度精度配置；补充首关投 26、目标 25 的回归断言，验证声呐保留 21–25 而非过度收窄。
 - 测试同时暴露并修复命中后声呐未收敛到单点的问题：玩家已收到命中回波，目标值已知，包围区应精确为该刻度。
 - 验收：`npm run test:guess` 49/49；`node scripts/check-game.mjs guess` 19 pass / 0 fail / 0 warn；`git diff --check` 通过。未进行浏览器视觉复验。
+
+## 2026-09-24 路 推箱子（sokoban）端到端上线（模式 A）
+- 玩法内核：经典仓储推箱，人只能推不能拉、单箱推动、终局 no-op。50 关 5 章递进（木屋初识 1-10 / 仓房物语 11-20 / 庭院迷踪 21-30 / 古阁机关 31-40 / 大师残局 41-50），暖棕古铜机台美学，六键操作台 + 四 stat HUD + 收箱进度条，桌面 1120px 双侧留白、移动端底部 76px 广告避让、prefers-reduced-motion 瞬移降级。
+- 关卡数学可解性：反向生成（目标态拉箱构造初始态，正向必可解）+ 隔断墙 + 目标曲线 ound(2+t^2*18)；求解器两套——PBD 分层 BFS（层内单锚点 + visited Set 去环 + corner/freeze 死局剪枝，推数最优精确、步数近似）与 IDA*（曼哈顿下界 + tt 表，批量验证最优推数证明），PBD 与 IDA* 交叉验证 50/50 par 一致；运行期 hintDir 走 PBD（2.5s/300k 状态预算）。
+- 本轮真实 bug 三处（均为测试/浏览器暴露）：1) applyMove 用 !res 而非 !res.action 判非法，撞墙被记为移动且 player 变 undefined——游走测试抓住，已修；2) PBD 单锚点重构 parent 链断裂与缺 pushedBoxes 回溯——按箱位布局单链重写并补被推箱位；3) index.html favicon.svg 缺 ?v=dev（T1 v-dev 门禁），已补。
+- 验收：
+pm run test:sokoban 62/62（engine/solver/levels/game/replay/score/storage/i18n/markup 九文件，含 50 关 IDA* 求解重放 == par、每关 1000 步随机游走不变式）；
+ode scripts/check-game.mjs sokoban 19 pass / 0 fail / 0 warn；
+pm run build 通过（dist/sokoban/ + GA4 注入 + sitemap）；浏览器 dist 产物验证桌面渲染、594px 移动媒体查询无溢出、底部 76px 缓冲、reduced-motion 规则存在、控制台零报错。
+- 封面：assets/covers/sokoban.webp（640×640，暖棕→古铜渐变 + 漂浮金粒 + 软胶圆木箱 3/4 等距 + 星形目标垫柔光，零文字），x/sokoban/make-cover.py 程序化生成。

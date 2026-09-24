@@ -47,6 +47,7 @@
     "smoke:lineride": "node --test games/lineride/tests/smoke.mjs",
     "test:guess": "node --test games/guess/tests/engine.test.mjs games/guess/tests/solver.test.mjs games/guess/tests/storage.test.mjs games/guess/tests/i18n.test.mjs games/guess/tests/markup.test.mjs games/guess/tests/game.test.mjs",
     "test:lineride": "node --test games/lineride/tests/engine.test.mjs games/lineride/tests/storage.test.mjs games/lineride/tests/i18n.test.mjs games/lineride/tests/markup.test.mjs",
-    "test:calc24": "node --test games/calc24/tests/engine.test.mjs games/calc24/tests/markup.test.mjs games/calc24/tests/storage.test.mjs"
+    "test:calc24": "node --test games/calc24/tests/engine.test.mjs games/calc24/tests/markup.test.mjs games/calc24/tests/storage.test.mjs",
+    "test:sokoban": "node --test games/sokoban/tests/*.test.mjs"
   }
 }

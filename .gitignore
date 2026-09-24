@@ -8,6 +8,9 @@ vibe_images/
 games/*/node_modules/
 games/*/dist/
 
+# Root dependencies
+node_modules/
+
 # Local and editor files
 .DS_Store
 Thumbs.db
