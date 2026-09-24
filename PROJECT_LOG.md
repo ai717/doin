@@ -1409,7 +1409,8 @@ PROJECT_LOG.md                      [修改] 本轮记录
 
 ## 2026-09-24 路 推箱子（sokoban）端到端上线（模式 A）
 - 玩法内核：经典仓储推箱，人只能推不能拉、单箱推动、终局 no-op。50 关 5 章递进（木屋初识 1-10 / 仓房物语 11-20 / 庭院迷踪 21-30 / 古阁机关 31-40 / 大师残局 41-50），暖棕古铜机台美学，六键操作台 + 四 stat HUD + 收箱进度条，桌面 1120px 双侧留白、移动端底部 76px 广告避让、prefers-reduced-motion 瞬移降级。
-- 关卡数学可解性：反向生成（目标态拉箱构造初始态，正向必可解）+ 隔断墙 + 目标曲线 ound(2+t^2*18)；求解器两套——PBD 分层 BFS（层内单锚点 + visited Set 去环 + corner/freeze 死局剪枝，推数最优精确、步数近似）与 IDA*（曼哈顿下界 + tt 表，批量验证最优推数证明），PBD 与 IDA* 交叉验证 50/50 par 一致；运行期 hintDir 走 PBD（2.5s/300k 状态预算）。
+- 关卡数学可解性：反向生成（目标态拉箱构造初始态，正向必可解）+ 隔断墙 + 目标曲线 
+ound(2+t^2*18)；求解器两套——PBD 分层 BFS（层内单锚点 + visited Set 去环 + corner/freeze 死局剪枝，推数最优精确、步数近似）与 IDA*（曼哈顿下界 + tt 表，批量验证最优推数证明），PBD 与 IDA* 交叉验证 50/50 par 一致；运行期 hintDir 走 PBD（2.5s/300k 状态预算）。
 - 本轮真实 bug 三处（均为测试/浏览器暴露）：1) applyMove 用 !res 而非 !res.action 判非法，撞墙被记为移动且 player 变 undefined——游走测试抓住，已修；2) PBD 单锚点重构 parent 链断裂与缺 pushedBoxes 回溯——按箱位布局单链重写并补被推箱位；3) index.html favicon.svg 缺 ?v=dev（T1 v-dev 门禁），已补。
 - 验收：
 pm run test:sokoban 62/62（engine/solver/levels/game/replay/score/storage/i18n/markup 九文件，含 50 关 IDA* 求解重放 == par、每关 1000 步随机游走不变式）；
@@ -1442,3 +1443,20 @@ pm run build 通过（dist/sokoban/ + GA4 注入 + sitemap）；浏览器 dist �
 - **门禁**：npm run test:blind-auction **75/75 全绿**（engine/ai/score/storage/i18n/markup/game 七文件，含 400 局×5 回合随机游走 ≥1000 步不抛错不卡死不变式、12 关挑战局确定性重放、DOM-free 契约、id 双向闭合）；node scripts/check-game.mjs blind-auction **19 pass / 0 fail / 0 warn**；npm run build 通过（dist/blind-auction/ + sitemap 收录 https://doin.win/blind-auction/）。
 - **封面**：assets/covers/blind-auction.webp，640×640 WebP，深青→靛蓝渐变（避开 sokoban 暖棕木箱撞色）+ 3D 软胶木箱溢金 + 漂浮金币粒子零文字；seedream 5.0 生成 + .workbuddy/tmp/covers/process_blind_auction.py 固定 bbox inpaint 去水印 + INTER_AREA 缩放。
 - **浏览器实测**：菜单四角色技能/三难度、对局三栏（对手牌匾+行情公告热门/冷门/平稳+公开/私密提示+线索估价+滑杆+亮价/使用技能+20s 倒计时）渲染正常，零 console 错误。
+
+## 2026-09-25 · blind-auction 英文态中文残留清零（验收修复）
+
+- 修复范围：games/blind-auction（index.html / js/i18n.mjs / main.mjs / render.mjs / tests/i18n.test.mjs）+ scripts/build-site.mjs。
+- 残留清单与处理：
+  - render.mjs 8 处：人类亮价卡“你”→ i18n youName；AI 名/称号 
+ameZh→按 locale 取 
+ameEn/titleEn；rival 情绪气泡、开箱情绪 emotionText(...,zh)→传真实 locale；gossip 提示与终局排行 AI 名→按 locale。
+  - i18n.mjs：新增 youName/docTitle/metaDesc 双语键；en 表 subtitle:盲盒竞拍→“Blind Auction”；en 表零中文由新回归测试强制。
+  - main.mjs：启动按 locale 同步 document.title、meta description、顶栏 aria-label（返回门户/音效/语言/规则）、back-home span、h1 标题牌（en 态不再显示中文副标题）。
+  - index.html：noscript 改中英双语。
+  - build-site.mjs：removeOutput 在 dist 目录被本地预览服务占用时降级为清空内容（vite emptyOutDir 完整重建），修复 build 死锁（预览服务 serve dist 即触发）。
+- 验证：
+pm run test:blind-auction 77/77（新增 en 零中文 + 文档级键回归）；
+pm run test:home 5/5；
+pm run build 通过；浏览器英文态实测（菜单/对局/亮价/开箱/help 弹层/终局）全视图零中文（唯一保留：语言切换钮“中文”= 切换目标语言设计惯例）、console 零错误。
+- 提交：e15bf6 fix: blind-auction en locale cleanup and build-site dist lock tolerance（追加于 ca7c6ea 之后，均未 push）。
