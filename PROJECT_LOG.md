@@ -1460,3 +1460,12 @@ npm run test:blind-auction 77/77（新增 en 零中文 + 文档级键回归）�
 npm run test:home 5/5；
 pm run build 通过；浏览器英文态实测（菜单/对局/亮价/开箱/help 弹层/终局）全视图零中文（唯一保留：语言切换钮“中文”= 切换目标语言设计惯例）、console 零错误。
 - 提交：e15bf6 fix: blind-auction en locale cleanup and build-site dist lock tolerance（追加于 ca7c6ea 之后，均未 push）。
+
+## 2026-09-25 · 霓虹弹珠台（pinball）端到端上线（模式 A）
+- **玩法核心**：经典双挡板弹珠台 × 打砖重塑弹道——拉簧发射弹珠，双挡板兜底救球，球路撞砖清砖、机关特效全开。按 docs/plans/pinball-prd.md 落地（拍板 A 机关高能爆发全开 / A 章节三星制 3 章×30 关 + 街机生存 / A 打砖重塑弹道）。
+- **核心规则**：3 球/局；G/S/A 砖 = 1/2/3 击；风暴砖（A 砖）必须清；滚道转盘随机产出双球乱舞 / 缓冲狂潮（5s 得分×2）/ 救球罩；三星 = 剩余弹珠★ + 用时★★ + 最高连击★★★；连击定义 3s 窗口内连续命中砖/机关（碰挡板与侧墙即重置）；5 连击点燃侧弹射器 ×1.5（430→645）；10 连击砖块风暴（整行清）；斜坡首次返还 1 球；摇机每球限 3 次；街机生存无限清砖、速度逐关爬升。
+- **确定性物理（点名硬约束）**：engine.mjs 纯函数 stepFrame(FIXED_DT=1/120) 固定步长 + CCD（单步位移 ≤4px）逐帧重放一致；GRAVITY 900 / 弹射 880 / 挡板 96px 枢轴 84 / REST 0.9 排水 V 口 / RAISED -0.62 护中 / 活踢 1120（按压一次一踢，横向 ±30）/ 三根出球口挡柱定向斜抛救球（漏球从沟槽大幅压低）；同种子 2000 步逐帧重放、1500 步随机游走不变式测试护航。
+- **模式编排（拒绝三件套）**：3 章 × 10 关三星关卡制（第 1 章玻璃砖墙双挡板入门 / 第 2 章钢铁堡垒双缓冲+三翻靶 / 第 3 章黄金纪元三缓冲+翻靶+转盘+斜坡+滚道），用时与连击目标随章严格递增（L1 75s/8 … L30 200s/30）；专属评价体系 = 三星评级（非通用计分），另设街机生存模式。
+- **美学与红线**：暗夜霓虹弹珠机台双栏舞台（左机关牌匾/中央弹珠机+四浮层/右 LCD，机顶边内嵌状态条收纳门户/音效/语言/帮助），实体底座操作台（左板/发射/右板/摇机四道具键 + 键盘 A/D·空格·S）；径向柔光渐隐托出主体零描边圈；桌面 ≤1100px 居中避让左右广告位，移动端 padding-bottom: max(68px, calc(16px + env(safe-area-inset-bottom)))；prefers-reduced-motion 全量降级；touch-action:none；零外链零 CDN、相对路径 + ?v=dev。
+- **门禁**：单测 67/67 全绿（engine 20 / levels 8 / storage 8 / i18n 7 / markup 20，含 30 关每列通道可解双校验、星级递增、同种子逐帧重放、随机游走不变量、存储损坏降级、engine DOM-free 契约）；check-game pinball **19 pass / 0 fail / 0 warn**；games.json 登记第 46 款；package.json 注册 test:pinball；640×640 明黄渐变软胶弹珠机封面（image_gen 1024 → .workbuddy/tmp/covers/process_pinball.py 固定 bbox inpaint 去水印 → INTER_AREA 640 → webp q90，零文字）；npm run build 通过（dist/pinball/ + sitemap 收录）。
+- **运行时修复（headless Chrome 实测发现）**：render.mjs drawParticles 在 flipper_hit 事件缺 x/y 坐标时产生 NaN 粒子导致 createRadialGradient 抛错——修复为按 side 推导挡板枢轴位置撒碎屑 + drawParticles 加 Number.isFinite 守卫；修复后源码与 dist 实测零 console 错误（发射/挡板/缓冲得分 30/弹珠扣减/中英切换 zh↔en 全通）。

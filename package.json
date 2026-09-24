@@ -51,6 +51,7 @@
     "test:calc24": "node --test games/calc24/tests/engine.test.mjs games/calc24/tests/markup.test.mjs games/calc24/tests/storage.test.mjs",
     "test:sokoban": "node --test games/sokoban/tests/*.test.mjs",
     "test:blind-auction": "node --test games/blind-auction/tests/*.test.mjs",
-    "test:backpack": "node --test games/backpack/tests/engine.test.mjs games/backpack/tests/storage.test.mjs games/backpack/tests/i18n.test.mjs games/backpack/tests/markup.test.mjs"
+    "test:backpack": "node --test games/backpack/tests/engine.test.mjs games/backpack/tests/storage.test.mjs games/backpack/tests/i18n.test.mjs games/backpack/tests/markup.test.mjs",
+    "test:pinball": "node --test games/pinball/tests/*.test.mjs"
   }
 }

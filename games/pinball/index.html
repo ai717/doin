@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>霓虹弹珠台 · DOIN 在线小游戏</title>
+  <meta name="description" content="双挡板兜底接球弹射、打砖重塑弹道、连击与机关特效全开的霓虹弹珠台！3 章 30 关三星评级与街机生存双模式，固定步长物理可重放。">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="css/style.css?v=dev">
+</head>
+<body>
+  <div id="game-app">
+    <header id="stage-bar">
+      <a href="/" id="back-home">← 门户</a>
+      <h1 id="stage-title">霓虹弹珠台</h1>
+      <div class="stage-actions">
+        <button id="btn-sound" class="bar-btn" aria-label="音效">🔊</button>
+        <button id="btn-lang" class="bar-btn" aria-label="语言">EN</button>
+        <button id="btn-help" class="bar-btn" aria-label="玩法说明">?</button>
+      </div>
+    </header>
+
+    <main id="stage-core">
+      <aside id="panel-left">
+        <div class="panel-chunk">
+          <h3 id="chpt-label">第一章 · 玻璃砖墙</h3>
+          <p id="chpt-progress" class="dim">1 / 30</p>
+        </div>
+        <div class="panel-chunk">
+          <span class="p-label">弹珠</span>
+          <span id="balls-dots" class="lcd">●●●</span>
+        </div>
+        <div class="panel-chunk">
+          <span class="p-label">剩余砖块</span>
+          <span id="bricks-left" class="lcd">0</span>
+        </div>
+        <div class="panel-chunk">
+          <p id="goal-line">用时目标 75s</p>
+          <p id="goal-combo-line" class="dim">连击目标 8</p>
+        </div>
+        <div class="panel-chunk" id="mech-lamps">
+          <span class="lamp" id="lamp-bumper">缓冲</span>
+          <span class="lamp" id="lamp-target">翻靶</span>
+          <span class="lamp" id="lamp-sling">弹射</span>
+          <span class="lamp" id="lamp-spinner">转盘</span>
+          <span class="lamp" id="lamp-rollover">滚道</span>
+          <span class="lamp" id="lamp-ramp">斜坡</span>
+        </div>
+        <div class="panel-chunk">
+          <p id="status-label" class="dim">请发射弹珠</p>
+        </div>
+      </aside>
+
+      <section id="stage-cabinet">
+        <div id="mobile-hud">
+          <span class="mh-item"><b id="mh-score">0</b><i>得分</i></span>
+          <span class="mh-item"><b id="mh-combo">0</b><i>连击</i></span>
+          <span class="mh-item"><b id="mh-balls">●●●</b><i>弹珠</i></span>
+          <span class="mh-item"><b id="mh-bricks">0</b><i>剩余砖</i></span>
+        </div>
+
+        <div class="board-wrap">
+          <canvas id="board" width="600" height="800" aria-label="霓虹弹珠台舞台"></canvas>
+
+          <div id="toast"></div>
+
+          <div id="screen-start" class="overlay">
+            <h2 id="start-title">霓虹弹珠台</h2>
+            <p id="start-sub" class="dim">双挡板兜底 · 打砖重塑弹道 · 机关特效全开</p>
+            <div class="mode-row">
+              <button id="btn-stage-mode" class="btn btn-primary">章节闯关</button>
+              <button id="btn-survival-mode" class="btn">街机生存</button>
+            </div>
+            <p id="chapter-theme" class="dim"></p>
+            <div id="level-grid"></div>
+            <div class="start-footer">
+              <span id="stars-total">总星数 0</span>
+              <button id="btn-reset-save" class="bar-btn">重置存档</button>
+            </div>
+          </div>
+
+          <div id="screen-help" class="overlay hidden">
+            <h2 id="help-title">玩法说明</h2>
+            <p id="help-body-1"></p>
+            <p id="help-body-2"></p>
+            <p id="help-body-3"></p>
+            <p id="help-body-4"></p>
+            <p id="help-body-5"></p>
+            <button id="btn-help-close" class="btn btn-primary">知道了</button>
+          </div>
+
+          <div id="screen-clear" class="overlay hidden">
+            <h2 id="clear-title">过关！</h2>
+            <p id="clear-line1"></p>
+            <p id="clear-stars" class="stars-line"></p>
+            <div class="btn-row">
+              <button id="btn-next-level" class="btn btn-primary">下一关</button>
+              <button id="btn-retry" class="btn">再战本关</button>
+              <button id="btn-to-select" class="btn">返回选关</button>
+            </div>
+          </div>
+
+          <div id="screen-over" class="overlay hidden">
+            <h2 id="over-title">本局结束</h2>
+            <p id="over-line"></p>
+            <div class="btn-row">
+              <button id="btn-again" class="btn btn-primary">再来一局</button>
+              <button id="btn-over-back" class="btn">返回主菜单</button>
+            </div>
+          </div>
+        </div>
+
+        <div id="deck">
+          <button id="btn-flip-l" class="flip-btn" aria-label="左挡板">左板</button>
+          <button id="btn-launch" class="launch-btn" aria-label="发射">发射</button>
+          <button id="btn-flip-r" class="flip-btn" aria-label="右挡板">右板</button>
+          <button id="btn-nudge" class="nudge-btn" aria-label="摇机">摇机</button>
+        </div>
+        <p id="key-tip" class="dim">A/D 或 ←/→ 双挡板 · 空格发射 · S 摇机</p>
+        <p id="touch-tip" class="dim">双挡板触控 · 向上滑发射</p>
+      </section>
+
+      <aside id="panel-right">
+        <div class="panel-chunk score-chunk">
+          <span class="p-label">得分</span>
+          <span id="score-lcd" class="lcd big">0</span>
+        </div>
+        <div class="panel-chunk">
+          <span class="p-label">连击 <b id="combo-count">0</b></span>
+          <div id="combo-meter"><div id="combo-meter-bar"></div></div>
+          <span id="combo-mult" class="mult">×1</span>
+        </div>
+        <div class="panel-chunk">
+          <span class="p-label">用时</span>
+          <span id="time-val" class="lcd">0:00</span>
+          <span class="p-label">最高连击</span>
+          <span id="max-combo-val" class="lcd">0</span>
+        </div>
+        <div class="panel-chunk">
+          <span class="p-label">特效</span>
+          <span id="effect-lamp" class="lcd small">-</span>
+        </div>
+        <div class="panel-chunk">
+          <span class="p-label">生存最高分</span>
+          <span id="best-score" class="lcd">0</span>
+        </div>
+      </aside>
+    </main>
+  </div>
+  <noscript><p>需要启用 JavaScript 才能游玩。</p></noscript>
+  <script type="module" src="js/main.mjs?v=dev"></script>
+</body>
+</html>

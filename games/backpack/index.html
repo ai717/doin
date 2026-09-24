@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <title>背包竞技场 · DOIN 在线小游戏</title>
+    <meta name="description" content="背包竞技场在线玩：像俄罗斯方块一样把战利品塞进背包，摆出联动羁绊，自动战斗按布局结算。3 职业 × 2 初始背包，远征天梯 18 回合、布局残局 30 关三星挑战、镜像斗技场，支持种子码复现远征。">
+    <link rel="canonical" href="https://doin.win/backpack/">
+    <meta name="theme-color" content="#1e4d3a">
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="DOIN">
+    <meta property="og:title" content="背包竞技场 · DOIN 在线小游戏">
+    <meta property="og:description" content="像俄罗斯方块一样排布战利品，自动对战按布局结算。远征天梯、布局残局、镜像斗技场，种子码可复现。">
+    <meta property="og:url" content="https://doin.win/backpack/">
+    <meta property="og:locale" content="zh_CN">
+    <meta property="og:image" content="https://doin.win/assets/og-image.png">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="背包竞技场 · DOIN 在线小游戏">
+    <meta name="twitter:description" content="把战利品像俄罗斯方块一样塞进背包，摆出联动羁绊，自动开打。">
+    <meta name="twitter:image" content="https://doin.win/assets/og-image.png">
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <link rel="stylesheet" href="css/style.css?v=dev">
+  </head>
+  <body>
+    <!-- 酒馆背景氛围：墨绿呢绒 + 烛光光晕 + 漂浮尘粒，纯 CSS 景深 -->
+    <div class="tavern" aria-hidden="true">
+      <span class="glow glow-a"></span>
+      <span class="glow glow-b"></span>
+      <span class="glow glow-c"></span>
+      <div class="dust">
+        <i style="--x:12%;--d:0s;--s:3px;--t:14s"></i>
+        <i style="--x:23%;--d:3s;--s:2px;--t:18s"></i>
+        <i style="--x:38%;--d:6s;--s:3px;--t:12s"></i>
+        <i style="--x:52%;--d:1.5s;--s:2px;--t:20s"></i>
+        <i style="--x:66%;--d:8s;--s:3px;--t:16s"></i>
+        <i style="--x:78%;--d:4s;--s:2px;--t:22s"></i>
+        <i style="--x:90%;--d:9s;--s:3px;--t:15s"></i>
+      </div>
+    </div>
+
+    <main class="cabinet">
+      <section class="table">
+        <!-- 机顶黄铜状态条：返回 / 标题 / 系统控制全部内嵌 -->
+        <header class="brass-bar" id="brass-bar">
+          <a id="back-home" href="/">返回门户</a>
+          <p class="plate"><span class="plate-name">背包竞技场</span><span class="plate-sub">BACKPACK ARENA</span></p>
+          <div class="tools">
+            <button type="button" class="knob" id="help-btn" aria-label="玩法" title="玩法">?</button>
+            <button type="button" class="knob" id="sound-btn" aria-label="音效" title="音效"><span>♪</span></button>
+            <button type="button" class="knob knob-wide" id="lang-btn" aria-label="切换语言" title="切换语言">EN</button>
+            <button type="button" class="knob" id="reset-btn" aria-label="清空存档" title="清空存档">🗑</button>
+          </div>
+        </header>
+
+        <!-- 长桌主舞台：按模式渲染（远征棋盘+柜台 / 残局 / 镜像） -->
+        <div class="stage" id="stage"></div>
+
+        <!-- 战斗幕布 -->
+        <div class="curtain" id="curtain" hidden>
+          <canvas id="battle-canvas" role="img" aria-label="自动对战幕布"></canvas>
+        </div>
+
+        <!-- 提示气泡 -->
+        <div class="toasts" id="toasts" aria-live="polite"></div>
+      </section>
+    </main>
+
+    <!-- ---------- 覆盖面板 ---------- -->
+    <div class="overlay" id="overlay" hidden>
+      <!-- 玩法说明 -->
+      <section class="panel panel-help" id="help-panel" role="dialog" aria-modal="true" aria-labelledby="help-title" hidden>
+        <h2 class="panel-title" id="help-title">玩法说明</h2>
+        <ul class="help-list" id="help-list"></ul>
+        <div class="panel-actions">
+          <button type="button" class="key key-primary" id="help-close">看懂了</button>
+        </div>
+      </section>
+
+      <!-- 清空存档 -->
+      <section class="panel panel-reset" id="reset-panel" role="dialog" aria-modal="true" aria-labelledby="reset-title" hidden>
+        <h2 class="panel-title" id="reset-title">清空存档</h2>
+        <p class="panel-lede" id="reset-desc"></p>
+        <div class="panel-actions">
+          <button type="button" class="key key-danger" id="reset-btn-go">再点一次确认清空</button>
+          <button type="button" class="key" id="reset-cancel">取消</button>
+        </div>
+      </section>
+
+      <!-- 残局提示 -->
+      <section class="panel panel-hint" id="hint-panel" role="dialog" aria-modal="true" aria-labelledby="hint-title" hidden>
+        <h2 class="panel-title" id="hint-title">参考摆法</h2>
+        <ul class="hint-list" id="hint-list"></ul>
+        <div class="panel-actions">
+          <button type="button" class="key key-primary" id="hint-close">照着摆</button>
+        </div>
+      </section>
+
+      <!-- 残局结算 -->
+      <section class="panel panel-puzzle-end" id="puzzle-end-panel" role="dialog" aria-modal="true" aria-labelledby="puzzle-end-title" hidden>
+        <p class="panel-kicker" id="puzzle-end-badge">★</p>
+        <h2 class="panel-title" id="puzzle-end-title">残局破解！</h2>
+        <p class="panel-lede" id="puzzle-end-desc"></p>
+        <p class="stars-big" id="puzzle-end-stars"></p>
+        <p class="panel-lede" id="puzzle-end-got"></p>
+        <div class="panel-actions">
+          <button type="button" class="key key-primary" id="puzzle-end-next">下一关</button>
+          <button type="button" class="key" id="puzzle-end-retry">再试一次</button>
+          <button type="button" class="key" id="puzzle-end-list">残局列表</button>
+        </div>
+      </section>
+
+      <!-- 远征结算 -->
+      <section class="panel panel-expedition-end" id="expedition-end-panel" role="dialog" aria-modal="true" aria-labelledby="expedition-end-title" hidden>
+        <p class="panel-kicker" id="expedition-end-badge">🏆</p>
+        <h2 class="panel-title" id="expedition-end-title">远征胜利！</h2>
+        <p class="panel-lede" id="expedition-end-desc"></p>
+        <div class="tally" id="expedition-end-stats"></div>
+        <p class="seed-line" id="expedition-end-seed"></p>
+        <div class="panel-actions">
+          <button type="button" class="key key-primary" id="expedition-end-retry">再战一次</button>
+          <button type="button" class="key" id="expedition-end-copy">复制种子码</button>
+          <button type="button" class="key" id="expedition-end-menu">返回菜单</button>
+        </div>
+      </section>
+
+      <!-- 镜像结算 -->
+      <section class="panel panel-mirror-end" id="mirror-end-panel" role="dialog" aria-modal="true" aria-labelledby="mirror-end-title" hidden>
+        <p class="panel-kicker" id="mirror-end-badge">🪞</p>
+        <h2 class="panel-title" id="mirror-end-title">镜像更胜一筹</h2>
+        <p class="panel-lede" id="mirror-end-desc"></p>
+        <p class="seed-line" id="mirror-end-best"></p>
+        <div class="panel-actions">
+          <button type="button" class="key key-primary" id="mirror-end-retry">再战镜像</button>
+          <button type="button" class="key" id="mirror-end-exit">离开镜像</button>
+        </div>
+      </section>
+    </div>
+
+    <noscript><p class="noscript">需要启用 JavaScript 才能游玩背包竞技场。</p></noscript>
+    <script type="module" src="js/main.mjs?v=dev"></script>
+  </body>
+</html>

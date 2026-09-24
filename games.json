@@ -756,6 +756,42 @@
         "title": "Blind Auction",
         "desc": "Warehouse night sealed-bid showdown: five rounds of blind bidding against three AI collectors with distinct personas. Dual-track price volatility from 0.5x to 1.8x, highest bid wins, and 2x sniper purchases. An 8-persona AI pool, four character skills and 12 endgame challenges await."
       }
+    },
+    {
+      "title": "背包竞技场",
+      "slug": "backpack",
+      "desc": "像俄罗斯方块一样规划背包，让勇士们按你的布局自动对战。55 件物品、7 条配方、三大职业双背包，18 回合远征天梯 + 30 关三星残局 + 镜像深渊，种子码一键复现整场远征。",
+      "icon": "🎒",
+      "cover": "/assets/covers/backpack.webp",
+      "tags": [
+        "策略",
+        "对战",
+        "自走棋",
+        "空间规划"
+      ],
+      "url": "/backpack/",
+      "en": {
+        "title": "Backpack Arena",
+        "desc": "Plan your backpack like Tetris and let your heroes fight automatically from your layout. 55 items, 7 recipes, three classes with dual bags: an 18-round expedition ladder, 30 three-star endgame puzzles, a mirror abyss, and seed codes to replay any run."
+      }
+    },
+    {
+      "title": "霓虹弹珠台",
+      "slug": "pinball",
+      "desc": "双挡板兜底救球、拉簧发射弹珠，在霓虹弹珠台上打砖重塑弹道！3 章 30 关三星评级 + 街机生存双模式，缓冲/翻靶/侧弹射/滚道转盘/斜坡机关全开，固定步长确定性物理可重放。",
+      "icon": "🔴",
+      "cover": "/assets/covers/pinball.webp",
+      "tags": [
+        "街机",
+        "物理",
+        "打砖",
+        "弹珠"
+      ],
+      "url": "/pinball/",
+      "en": {
+        "title": "Neon Pinball",
+        "desc": "Twin-flipper pinball meets brick-break: launch the steel ball, carve brick trails that reshape the field, and set off bumpers, drop targets, sling shots, rollover lanes and the ramp. 30 three-star levels across 3 chapters plus arcade survival, with deterministic fixed-timestep physics."
+      }
     }
   ]
 }
