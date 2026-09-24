@@ -20,6 +20,11 @@ const PLAYER_A = "#e8c080";
 const PLAYER_B = "#b98a4e";
 const PLAYER_CAP = "#2b1a0c";
 
+/** 关卡名称随当前语言取 zh/en 字段 */
+function levelName(lv) {
+  return lv ? (getLocale() === "zh" ? lv.nameZh : lv.nameEn) : "—";
+}
+
 // ---------- 渲染器 ----------
 
 export function createRenderer(canvas) {
@@ -301,7 +306,7 @@ export function createUI(handlers = {}) {
     q("hud-level").textContent = String(view.index + 1);
     q("hud-moves").textContent = String(view.moves);
     q("hud-par").textContent = view.par > 0 ? String(view.par) : "--";
-    q("level-name").textContent = view.meta ? view.meta.nameZh : "—";
+    q("level-name").textContent = levelName(view.meta);
     q("level-diff").textContent = `${view.meta.chapter} · ${String(view.meta.id).toUpperCase()}`;
     const done = view.boxesOnGoal;
     const total = view.totalBoxes;
@@ -358,7 +363,7 @@ export function createUI(handlers = {}) {
         const cell = document.createElement("button");
         cell.type = "button";
         cell.className = "level-cell";
-        cell.setAttribute("aria-label", t("aria.levelCard", { n: i + 1, name: lv.nameZh }));
+        cell.setAttribute("aria-label", t("aria.levelCard", { n: i + 1, name: levelName(lv) }));
         const unlocked = i < data.unlocked;
         if (!unlocked) {
           cell.classList.add("locked");

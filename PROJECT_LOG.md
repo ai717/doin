@@ -1416,3 +1416,9 @@ pm run test:sokoban 62/62（engine/solver/levels/game/replay/score/storage/i18n/
 ode scripts/check-game.mjs sokoban 19 pass / 0 fail / 0 warn；
 pm run build 通过（dist/sokoban/ + GA4 注入 + sitemap）；浏览器 dist 产物验证桌面渲染、594px 移动媒体查询无溢出、底部 76px 缓冲、reduced-motion 规则存在、控制台零报错。
 - 封面：assets/covers/sokoban.webp（640×640，暖棕→古铜渐变 + 漂浮金粒 + 软胶圆木箱 3/4 等距 + 星形目标垫柔光，零文字），x/sokoban/make-cover.py 程序化生成。
+
+## 2026-09-24 · 推箱子（sokoban）难度曲线提升与英文态残留修复
+- 英文残留（验收反馈"检查英文状态下是否还有中文残留"）：定位三处——ui.mjs syncHud 关卡名与选关 aria 硬编码 nameZh、页面静态 title 中文。修复：ui.mjs 新增 levelName(lv) 按 getLocale() 取 nameZh/nameEn；main.mjs 语言切换同步 document.title（zh「推箱子 · Sokoban · DOIN」/ en「Sokoban · DOIN」）。i18n.en 字典逐 key 审计干净；浏览器 dist 实测英文态标题/关卡名/章节/aria 零中文残留、控制台零报错。
+- 难度提升（验收反馈"貌似太简单了！！"）：目标曲线 2+t²*18 → 3+t^1.7*24；早期 s2-s5 同箱数提高推数（s3 2 箱 4 推、s4 2 箱 5 推、s5 2 箱 4 推）；s28 手动加竖墙分隔后 par 7→16（六箱交错）；s29 12→14、s46 15→14、s49 16（保留高难）、s50 6 箱 17 推；紧凑骨架 8 关（s22/24/26/28 6-7、s36-39 10-11）保留原难度，gen-levels 写回逻辑改为"失败关保留原值"。全序列相邻回落 ≥-3、后 10 关 max 18 ≥ 前 10 关 min 2 + 8。
+- replay 测试适配：新难度下 6 箱密集关"证 par-1 无解"需约 30s，IDA* 上限 20s/20M → 45s/50M。
+- 验收：npm run test:sokoban 62/62（约 113s）；node scripts/check-game.mjs sokoban 19 pass / 0 fail / 0 warn；npm run build 通过；浏览器 dist 实测英文态第 3 关 HUD 目标推数 4、进度 0/2、六键全英文。

@@ -46,13 +46,13 @@ export const LEVELS = [
     "chapter": 1,
     "nameZh": "L 形走廊",
     "nameEn": "L-Shape",
-    "parPushes": 2,
+    "parPushes": 4,
     "map": [
       "######",
-      "#.   #",
+      "#.$ .#",
       "#    #",
-      "#$   #",
-      "#@   #",
+      "#  $@#",
+      "#    #",
       "######"
     ]
   },
@@ -61,13 +61,13 @@ export const LEVELS = [
     "chapter": 1,
     "nameZh": "左右开工",
     "nameEn": "Two Errands",
-    "parPushes": 2,
+    "parPushes": 5,
     "map": [
       "#######",
       "#.  . #",
-      "#$  $@#",
-      "#     #",
-      "#     #",
+      "# $   #",
+      "#  $  #",
+      "#  @  #",
       "#######"
     ]
   },
@@ -76,12 +76,12 @@ export const LEVELS = [
     "chapter": 1,
     "nameZh": "前后接力",
     "nameEn": "Relay",
-    "parPushes": 2,
+    "parPushes": 4,
     "map": [
       "#######",
       "#.  . #",
-      "#$  $@#",
-      "#     #",
+      "# $$  #",
+      "# @   #",
       "#######"
     ]
   },
@@ -90,11 +90,11 @@ export const LEVELS = [
     "chapter": 1,
     "nameZh": "斜向归位",
     "nameEn": "Corner Job",
-    "parPushes": 3,
+    "parPushes": 4,
     "map": [
       "#######",
-      "#.  $+#",
-      "# $   #",
+      "#.   .#",
+      "#@$ $ #",
       "#     #",
       "#######"
     ]
@@ -118,11 +118,11 @@ export const LEVELS = [
     "chapter": 1,
     "nameZh": "三箱初聚",
     "nameEn": "Trio",
-    "parPushes": 3,
+    "parPushes": 4,
     "map": [
       "#########",
-      "#.$  .$+#",
-      "#      $#",
+      "#.   .$.#",
+      "#$    $@#",
       "#       #",
       "#       #",
       "#########"
@@ -133,11 +133,11 @@ export const LEVELS = [
     "chapter": 1,
     "nameZh": "右路长途",
     "nameEn": "Right Run",
-    "parPushes": 3,
+    "parPushes": 4,
     "map": [
       "#########",
-      "#.$  .$+#",
-      "#      $#",
+      "#.   + .#",
+      "#$   $$ #",
       "#       #",
       "#       #",
       "#########"
@@ -162,11 +162,11 @@ export const LEVELS = [
     "chapter": 2,
     "nameZh": "三人成行",
     "nameEn": "Three in a Row",
-    "parPushes": 4,
+    "parPushes": 5,
     "map": [
       "##########",
-      "# +$ .  .#",
-      "#   $   $#",
+      "# .  .  .#",
+      "# $@$  $ #",
       "#        #",
       "##########"
     ]
@@ -176,12 +176,12 @@ export const LEVELS = [
     "chapter": 2,
     "nameZh": "折角走廊",
     "nameEn": "Kink",
-    "parPushes": 4,
+    "parPushes": 6,
     "map": [
       "#########",
-      "#.   .. #",
-      "#$ @$ $ #",
-      "#       #",
+      "#. $ .. #",
+      "#     $ #",
+      "#@$     #",
       "#       #",
       "#########"
     ]
@@ -191,12 +191,12 @@ export const LEVELS = [
     "chapter": 2,
     "nameZh": "同列双星",
     "nameEn": "Twin Columns",
-    "parPushes": 4,
+    "parPushes": 6,
     "map": [
       "########",
-      "#.   ..#",
-      "#@$  $$#",
-      "#      #",
+      "#. $ ..#",
+      "#     $#",
+      "#@$    #",
       "#      #",
       "########"
     ]
@@ -206,12 +206,12 @@ export const LEVELS = [
     "chapter": 2,
     "nameZh": "各回各家",
     "nameEn": "Go Home",
-    "parPushes": 3,
+    "parPushes": 6,
     "map": [
       "##########",
-      "#.$ +$.  #",
-      "#   $    #",
+      "#. $. .  #",
       "#        #",
+      "# $  @$  #",
       "#        #",
       "##########"
     ]
@@ -221,12 +221,12 @@ export const LEVELS = [
     "chapter": 2,
     "nameZh": "四角呼应",
     "nameEn": "Four Corners",
-    "parPushes": 4,
+    "parPushes": 6,
     "map": [
       "##########",
-      "#.$ .$+.##",
-      "#   $  $##",
-      "#       ##",
+      "#.  .$..##",
+      "#@$    $##",
+      "#     $ ##",
       "#       ##",
       "##########"
     ]
@@ -236,12 +236,12 @@ export const LEVELS = [
     "chapter": 2,
     "nameZh": "斜线客串",
     "nameEn": "Diagonals",
-    "parPushes": 5,
+    "parPushes": 6,
     "map": [
       "##########",
-      "#.   . ..#",
-      "#$ @$  $$#",
-      "#        #",
+      "#.$  . ..#",
+      "#     $@$#",
+      "#    $   #",
       "#        #",
       "##########"
     ]
@@ -251,12 +251,12 @@ export const LEVELS = [
     "chapter": 2,
     "nameZh": "错位入位",
     "nameEn": "Off-Goal",
-    "parPushes": 4,
+    "parPushes": 7,
     "map": [
       "##########",
-      "#..$ . $+#",
-      "#$   $   #",
-      "#        #",
+      "#..$ .  .#",
+      "#$    $  #",
+      "#   @$   #",
       "#        #",
       "##########"
     ]
@@ -266,11 +266,11 @@ export const LEVELS = [
     "chapter": 2,
     "nameZh": "四箱分工",
     "nameEn": "Quartet",
-    "parPushes": 6,
+    "parPushes": 7,
     "map": [
       "#########",
-      "#. $+$..#",
-      "#$   $ ##",
+      "#.@$. ..#",
+      "# $  $$##",
       "#       #",
       "#       #",
       "#########"
@@ -281,11 +281,11 @@ export const LEVELS = [
     "chapter": 2,
     "nameZh": "品字三箱",
     "nameEn": "Triangle",
-    "parPushes": 4,
+    "parPushes": 7,
     "map": [
       "#########",
-      "#+$. $..#",
-      "#  $   $#",
+      "#+$.  ..#",
+      "#$  $ $ #",
       "#       #",
       "#########"
     ]
@@ -295,13 +295,13 @@ export const LEVELS = [
     "chapter": 2,
     "nameZh": "十字路口",
     "nameEn": "Crossroads",
-    "parPushes": 5,
+    "parPushes": 8,
     "map": [
       "###########",
-      "#+$ .$. . #",
-      "#$      $##",
-      "#        ##",
-      "#        ##",
+      "#.  . . . #",
+      "#     $$ ##",
+      "# $ $    ##",
+      "#   @    ##",
       "###########"
     ]
   },
@@ -310,13 +310,13 @@ export const LEVELS = [
     "chapter": 3,
     "nameZh": "四角巡礼",
     "nameEn": "Perimeter",
-    "parPushes": 7,
+    "parPushes": 9,
     "map": [
       "###########",
-      "#. $ .  ..#",
-      "####  $ $ #",
-      "#        $#",
-      "#        @#",
+      "#.  $+$ ..#",
+      "#### $   $#",
+      "#  ####   #",
+      "#         #",
       "###########"
     ]
   },
@@ -340,12 +340,12 @@ export const LEVELS = [
     "chapter": 3,
     "nameZh": "回廊内推",
     "nameEn": "Inner Loop",
-    "parPushes": 5,
+    "parPushes": 9,
     "map": [
       "###########",
-      "#.$ . $..##",
-      "####$     #",
-      "#       $@#",
+      "#. $.# ..##",
+      "#### # $  #",
+      "#  $@# $  #",
       "#         #",
       "###########"
     ]
@@ -373,10 +373,10 @@ export const LEVELS = [
     "parPushes": 6,
     "map": [
       "##########",
-      "#.$ .  ..#",
-      "####$  $@#",
-      "#      $ #",
-      "#        #",
+      "#.$ .$ ..#",
+      "####     #",
+      "#  ####$$#",
+      "#       @#",
       "##########"
     ]
   },
@@ -400,12 +400,12 @@ export const LEVELS = [
     "chapter": 3,
     "nameZh": "中央仓库",
     "nameEn": "Storehouse",
-    "parPushes": 7,
+    "parPushes": 11,
     "map": [
       "###########",
-      "#.$ . ...##",
-      "####$ @$  #",
-      "#     $ $ #",
+      "#. $.#..+##",
+      "#### #$$$ #",
+      "# $  #    #",
       "#         #",
       "###########"
     ]
@@ -415,13 +415,13 @@ export const LEVELS = [
     "chapter": 3,
     "nameZh": "六箱交错",
     "nameEn": "Six Shuffle",
-    "parPushes": 7,
+    "parPushes": 16,
     "map": [
       "############",
-      "#.$ ..$..$+#",
-      "####$   $ $#",
-      "#          #",
-      "#          #",
+      "#. $.. .. .#",
+      "####@$  $ $#",
+      "#    #$ $  #",
+      "# ## #     #",
       "############"
     ]
   },
@@ -430,14 +430,14 @@ export const LEVELS = [
     "chapter": 3,
     "nameZh": "环线绕行",
     "nameEn": "Ring Road",
-    "parPushes": 9,
+    "parPushes": 14,
     "map": [
       "#############",
-      "#.$ $. ....##",
-      "#     $ $$  #",
-      "#       @$  #",
-      "#     #     #",
-      "#     #     #",
+      "#. $ . ....##",
+      "#### #$ $ $ #",
+      "#    #@$    #",
+      "#    ## $   #",
+      "#    ##     #",
       "#############"
     ]
   },
@@ -446,13 +446,13 @@ export const LEVELS = [
     "chapter": 3,
     "nameZh": "长廊竞速",
     "nameEn": "Long Hall",
-    "parPushes": 8,
+    "parPushes": 12,
     "map": [
       "###########",
-      "#.   .@ ..#",
-      "# $   $ $ #",
-      "#       $ #",
-      "# ###     #",
+      "#.   .  ..#",
+      "# $ $  $  #",
+      "#    $#   #",
+      "# ###@#   #",
       "###########"
     ]
   },
@@ -461,13 +461,13 @@ export const LEVELS = [
     "chapter": 4,
     "nameZh": "密库首钥",
     "nameEn": "Vault Key",
-    "parPushes": 9,
+    "parPushes": 13,
     "map": [
       "###########",
       "#.   .$...#",
-      "#   $  $$ #",
-      "#$        #",
-      "#@###     #",
+      "#    $@$  #",
+      "#     #$$ #",
+      "# ### #   #",
       "###########"
     ]
   },
@@ -476,14 +476,14 @@ export const LEVELS = [
     "chapter": 4,
     "nameZh": "双重让路",
     "nameEn": "Double Yield",
-    "parPushes": 9,
+    "parPushes": 14,
     "map": [
       "############",
-      "#.. $. ... #",
-      "#$    $ $$ #",
-      "#  $@      #",
-      "#          #",
-      "# ####     #",
+      "#..  . ... #",
+      "#$ $ $   $ #",
+      "#   ###$   #",
+      "#       $  #",
+      "# ####  @  #",
       "############"
     ]
   },
@@ -492,13 +492,13 @@ export const LEVELS = [
     "chapter": 4,
     "nameZh": "隔墙有耳",
     "nameEn": "Through Wall",
-    "parPushes": 10,
+    "parPushes": 12,
     "map": [
       "###########",
-      "#.   . .. #",
-      "#  $ #  $ #",
-      "#    @$ $ #",
-      "# ###     #",
+      "#.  $. .. #",
+      "#  $@#    #",
+      "#     #$$ #",
+      "# ### #   #",
       "###########"
     ]
   },
@@ -507,13 +507,13 @@ export const LEVELS = [
     "chapter": 4,
     "nameZh": "暂存中转",
     "nameEn": "Staging",
-    "parPushes": 10,
+    "parPushes": 11,
     "map": [
       "###########",
-      "#. . ...$.#",
-      "# $$$  $  #",
-      "#     @$  #",
-      "# ###     #",
+      "#. . ... .#",
+      "#$ $$     #",
+      "#    $#$ $#",
+      "# ###@#   #",
       "###########"
     ]
   },
@@ -522,13 +522,13 @@ export const LEVELS = [
     "chapter": 4,
     "nameZh": "三列长廊",
     "nameEn": "Three Lanes",
-    "parPushes": 11,
+    "parPushes": 12,
     "map": [
       "###########",
-      "#.  .$. ..#",
-      "#    $    #",
-      "#$     $$ #",
-      "#@###     #",
+      "#.  . .$..#",
+      "# $       #",
+      "#    $#$$ #",
+      "# ###@#   #",
       "###########"
     ]
   },
@@ -612,12 +612,12 @@ export const LEVELS = [
     "chapter": 5,
     "nameZh": "残局初试",
     "nameEn": "First Endgame",
-    "parPushes": 12,
+    "parPushes": 13,
     "map": [
       "##############",
-      "#.  .  . ..$@#",
-      "#  $     $ ###",
-      "# $   ### $###",
+      "#. $.  . ..$@#",
+      "#    $     ###",
+      "#  $  ###$ ###",
       "#          ###",
       "##############"
     ]
@@ -627,12 +627,12 @@ export const LEVELS = [
     "chapter": 5,
     "nameZh": "七箱阵列",
     "nameEn": "Sevens",
-    "parPushes": 14,
+    "parPushes": 18,
     "map": [
       "###########",
       "#. .  ..$+#",
-      "#   $  $###",
-      "#$  ### $ #",
+      "#   $   ###",
+      "# $$### $ #",
       "#         #",
       "###########"
     ]
@@ -642,11 +642,11 @@ export const LEVELS = [
     "chapter": 5,
     "nameZh": "双环互锁",
     "nameEn": "Interlock",
-    "parPushes": 14,
+    "parPushes": 15,
     "map": [
       "############",
-      "#.  .$ .@..#",
-      "#  $    $###",
+      "#.  .@$. ..#",
+      "# $    $ ###",
       "# $  ### $ #",
       "#          #",
       "############"
@@ -657,12 +657,12 @@ export const LEVELS = [
     "chapter": 5,
     "nameZh": "死角诱惑",
     "nameEn": "Dead End Bait",
-    "parPushes": 14,
+    "parPushes": 15,
     "map": [
       "###########",
-      "#.$+$..  .#",
-      "#  $    ###",
-      "# $ ### $ #",
+      "#. .$..$ .#",
+      "#  $@$  ###",
+      "# $ ###   #",
       "#         #",
       "###########"
     ]
@@ -687,12 +687,12 @@ export const LEVELS = [
     "chapter": 5,
     "nameZh": "八箱方阵",
     "nameEn": "Octet",
-    "parPushes": 15,
+    "parPushes": 14,
     "map": [
       "##############",
-      "#.  . $.$.. ##",
-      "#  $@$      ##",
-      "# $   ########",
+      "#.  . $+$.. ##",
+      "#  $        ##",
+      "# $  $########",
       "#            #",
       "##############"
     ]
@@ -702,13 +702,13 @@ export const LEVELS = [
     "chapter": 5,
     "nameZh": "迷宫中心",
     "nameEn": "Maze Heart",
-    "parPushes": 13,
+    "parPushes": 14,
     "map": [
       "##############",
       "#. . .  .#. ##",
-      "# $  $   #  ##",
-      "#  $$ ####$ ##",
-      "#   @       ##",
+      "# $ $ $@ #  ##",
+      "#   $ ####$ ##",
+      "#           ##",
       "##############"
     ]
   },
@@ -717,13 +717,13 @@ export const LEVELS = [
     "chapter": 5,
     "nameZh": "环形剧场",
     "nameEn": "Ring Stage",
-    "parPushes": 16,
+    "parPushes": 17,
     "map": [
       "############",
-      "#.  .  .$+.#",
-      "#     $ $###",
-      "# $  ### $ #",
-      "#          #",
+      "#. $.  . ..#",
+      "#  $     ###",
+      "# $  ###$$ #",
+      "#       @  #",
       "############"
     ]
   },
@@ -732,12 +732,12 @@ export const LEVELS = [
     "chapter": 5,
     "nameZh": "回文残局",
     "nameEn": "Palindrome",
-    "parPushes": 13,
+    "parPushes": 16,
     "map": [
       "##############",
-      "#.. .  .$.. ##",
-      "#       $  ###",
-      "#$$$  ###  $@#",
+      "#.. . $.$.. ##",
+      "# $  $@    ###",
+      "# $ $ ########",
       "#            #",
       "##############"
     ]
@@ -747,11 +747,11 @@ export const LEVELS = [
     "chapter": 5,
     "nameZh": "终局大师",
     "nameEn": "Grand Finale",
-    "parPushes": 13,
+    "parPushes": 17,
     "map": [
       "##############",
-      "#.  $. $. . ##",
-      "#  $@$      ##",
+      "#.$@$.  . . ##",
+      "#  $      $ ##",
       "# $.#  .$#####",
       "#   #       ##",
       "##############"

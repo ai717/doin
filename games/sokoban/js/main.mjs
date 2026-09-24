@@ -127,6 +127,7 @@ function boot() {
     toggleLocale();
     applyI18n(document);
     syncLangButton();
+    updateTitle();
     ui.syncHud(game.getView());
     ui.renderLevels(game.getView(), storage.current());
     audio.play("click");
@@ -458,8 +459,13 @@ function boot() {
     if (btn) btn.textContent = getLocale() === "zh" ? "EN" : "中";
   }
 
+  function updateTitle() {
+    document.title = getLocale() === "zh" ? "推箱子 · Sokoban · DOIN" : "Sokoban · DOIN";
+  }
+
   applyI18n(document);
   syncLangButton();
+  updateTitle();
   ui.setSoundState(muted);
   game.loadLevel(storage.current().current);
   afterLevelChange();
