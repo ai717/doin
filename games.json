@@ -357,6 +357,23 @@
       }
     },
     {
+      "title": "数字合成大西瓜",
+      "slug": "watermelon-2048",
+      "desc": "把带数字的水果丢进果园，相同数字一碰翻倍合并（2+2=4 … 1024+1024=2048），连锁倍率逐级提高；合出 2048 大西瓜点它「摘瓜」爆分清场，继续合第二个。无尽冲分与每日挑战双模式，最高分与最快 2048 用时本机保存。",
+      "icon": "🍉",
+      "cover": "/assets/covers/watermelon-2048.webp",
+      "tags": [
+        "休闲",
+        "合成",
+        "物理"
+      ],
+      "url": "/watermelon-2048/",
+      "en": {
+        "title": "Watermelon 2048",
+        "desc": "Drop numbered fruits into the orchard; matching numbers merge and double (2+2=4 … 1024+1024=2048) with growing chain multipliers. Harvest the 2048 watermelon for bonus score and cleared space, then build the next one. Endless and daily modes, best score and fastest 2048 saved locally."
+      }
+    },
+    {
       "title": "合成泡泡",
       "slug": "bubble-bloom",
       "desc": "深海炼金舱合成泡泡：同阶相触晋级高阶，连锁引爆倍率；首击公平候选袋无猜可解，极限模式与每日挑战，十阶图鉴与最高分本机保存。",

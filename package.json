@@ -25,6 +25,7 @@
     "test:link-up": "node --test games/link-up/tests/*.test.mjs",
     "test:bubble-bloom": "node --test games/bubble-bloom/tests/engine.test.mjs games/bubble-bloom/tests/storage.test.mjs games/bubble-bloom/tests/i18n.test.mjs games/bubble-bloom/tests/markup.test.mjs",
     "test:bubble-merge": "node --test games/bubble-merge/tests/engine.test.mjs games/bubble-merge/tests/storage.test.mjs games/bubble-merge/tests/i18n.test.mjs games/bubble-merge/tests/markup.test.mjs",
+    "test:watermelon-2048": "node --test games/watermelon-2048/tests/engine.test.mjs games/watermelon-2048/tests/storage.test.mjs games/watermelon-2048/tests/i18n.test.mjs games/watermelon-2048/tests/markup.test.mjs",
     "test:cloud-merge": "node --test games/cloud-merge/tests/engine.test.mjs games/cloud-merge/tests/storage.test.mjs games/cloud-merge/tests/i18n.test.mjs games/cloud-merge/tests/markup.test.mjs",
     "test:water-sort": "node --test games/water-sort/tests/engine.test.mjs games/water-sort/tests/storage.test.mjs games/water-sort/tests/i18n.test.mjs games/water-sort/tests/markup.test.mjs",
     "test:piano-tiles": "node --test games/piano-tiles/tests/engine.test.mjs games/piano-tiles/tests/storage.test.mjs games/piano-tiles/tests/i18n.test.mjs games/piano-tiles/tests/markup.test.mjs",
