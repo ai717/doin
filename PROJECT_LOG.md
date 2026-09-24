@@ -33,7 +33,7 @@
   - **模块分层**：`engine`(DOM-free 规则权威) / `score`(计分唯一口径，`BASE_POINTS` 不反向 import engine 以避循环依赖) / `storage`(`doin.mole.v1`) / `game`(DOM-free 控制器) / `ui`(唯一碰 DOM) / `i18n`(约 50 键双表) / `audio`(WebAudio 程序化木质闷响、金光、铁盔铛、爆炸、狂热号角) / `main`(装配 + rAF 主循环)。
   - **美学**：木质机台 + 暖阳莓园主题。木梁顶栏收纳返回/音效/语言/规则（避开四角散落按钮），左翼难度牌+纪录、中央草地土台舞台、右翼得分/连击/沙漏、底部木质操作台（开始/暂停/每日），**移动端 `padding-bottom: max(68px, …)` 广告安全避让**，`prefers-reduced-motion` 全量降级，`touch-action: none` + `overscroll-behavior: none` 防移动端滚动误触。
   - **无浏览器冒烟（`npm run smoke:mole`）**：自研 `tests/dom-stub.mjs` + 受控 rAF，**3 视口（1280 / 390 / 834）各 33 断言全通过**；断言口径是"业务可观测量在推进"（剩余时间真的减少、命中后得分/连击增长、HUD 与引擎一致）而非仅"不抛异常"，因此抓出 3 个真 bug：① `main.mjs` 误从 `i18n` 导入实际定义在 `engine` 的 `todayKey`；② 弹层双真相源（产品用 `classList.toggle("hidden")`、桩读 `el.hidden`）——已在 `ui.mjs` 抽出 `modalEl` + `isModalOpen` 统一为 classList 单一真相源；③ 视口切换后 DOM 网格与引擎洞位失同步——`main.mjs` 的 `applyGrid` 改为同步重建 DOM + `G.setGrid`，并同时监听 `resize` 与 `orientationchange`。
-  - **全套门禁**：单测 **131/131 全绿**（engine / game / storage / i18n / assembly / markup 六文件，含 5000 步随机游走）、`node scripts/check-game.mjs mole` **19 pass / 0 fail(T1) / 0 warn(T2)**、640×640 莓粉系 3D 软胶封面（cv2.inpaint 固定 bbox 去水印）、`npm run test:home` 5/5、`npm run build` 通过且 `dist/mole/` 正常发布、sitemap 收录 `https://doin.win/mole/`。
+  - **全套门禁**：单测 **131/131 全绿**（engine / game / storage / i18n / assembly / markup 六文件，含 5000 步随机游走）、`node scripts/check-game.mjs mole` **19 pass / 0 fail(T1) / 0 warn(T2)**、640×640 莓粉系 3D 软胶封面（cv2.inpaint 固定 bbox 去水印）、`nnpm run test:home` 5/5、`npm run build` 通过且 `dist/mole/` 正常发布、sitemap 收录 `https://doin.win/mole/`。
   - **视觉回归 5 轮（用户逐轮目视验收驱动）**：
     1. *洞的形状*（"地鼠默认在外面 / 洞有个盖子"）→ 定论经典模型 = 洞口椭圆永远可见 + 地鼠活动区底边压在"地平线"向上生长；新建 `tests/layout.mjs` 纯函数布局模拟器，在 6 个真实视口实算几何（**桩量不到像素，视觉契约必须靠 CSS 解析 + 数学实算**）。
     2. *头被削平* → `.mole-clip` 的 `bottom+height` 曾为 `27%+78%=105%` 越出洞位，`overflow:hidden` 从头顶横切；收紧到 73%，并入护栏 `bottom + height <= 100%`。
@@ -120,7 +120,7 @@
     - ② **视效与建模重磅升级**：重构 Canvas 回廊立体雕凿质感与流光古符文、深渊传送漩涡吸积盘与星云环、3D 多面旋转水晶与神圣光环、阶梯玄武岩石基与四系多面浮石核心、生动多节与熔岩怪物建模、电影级拖尾弹道与分支分形闪电；
     - ③ **章节选关与进度自救（Chapter Select & Run Resume）**：新增「📜 章节选关」弹窗与四大章节梯度推进（第一章远古林地波次 1-5、第二章熔岩裂隙 6-10、第三章极寒冻土 11-15、第四章虚空王座 16-20），通关前章自动解锁下一章并附带初始法力与初始自选遗物配给；每波通关自动生成局内检查点（`savedRun`），重进游戏支持一键断点续玩；
     - ④ **全局暂停与战术暂歇（Pause Menu）**：新增顶部与控制台双入口「⏸ 暂停」按钮（支持键盘 `P` / `Esc` 唤出），支持继续游戏、章节切换与重开新局，配齐 `[hidden]{display:none !important}` 防穿透守卫；
-  - **全套门禁**：四类测试（`engine`/`storage`/`i18n`/`markup` 18 项用例）**全绿**，`node scripts/check-game.mjs rune-tower` **19 pass / 0 fail / 0 warn**，640×640 3D 软胶符文方石 WebP 封面到位，`npm run test:home` 及 `npm run build` 全站构建通过。
+  - **全套门禁**：四类测试（`engine`/`storage`/`i18n`/`markup` 18 项用例）**全绿**，`node scripts/check-game.mjs rune-tower` **19 pass / 0 fail / 0 warn**，640×640 3D 软胶符文方石 WebP 封面到位，`nnpm run test:home` 及 `npm run build` 全站构建通过。
 
 - **Fire-Ice 森林冰火人**（新增）：**双人合作解谜平台跳跃**，按 `docs/plans/fire-ice-prd.md` 本地端到端落地（拍板 1B 元素火花流 / 2A 宽容容错 / 3B 双人为主·单人双控）。
   - **玩法与模式**：火人（W/A/D 跳+左右）免疫岩浆、怕水，冰人（方向键）免疫寒水、怕岩浆；**K 冻结**给脚下危格铺薄冰桥（3s 承重，火人可安全踩岩浆水面）、火人**点燃藤墙**（3s 燃烧通行）、红蓝**传送门成对合璧**（同色同开、1.2s 承留）、**双出口同步踩板**（同刻抵达才算过）。40 关五章递进（森林神庙→寒冰回廊→灼热熔窟→冰火迷城→永恒圣堂），章节解锁+三星评级+最佳用时；单人模式 Tab 切换当前角色双控。评价体系为星级/死亡数/同步踩板，**不做无尽冲分**。
@@ -252,7 +252,7 @@
   - 原生 `node --test` 4 套测试套件（24/24 全部通过），含 1000 步随机游走不变式测试；
   - 修复双语动态绑定：`ui.mjs` 支持动态 `extra.t` 全链路重绘，实现中英文无刷新实时原地切换（通过 Chrome CDP 自动化验证）；
   - `check-game.mjs cloud-merge`：19 项检查全部 PASS（0 FAIL, 0 WARN, 0 WAIVED）；
-  - `npm run test:home`：5/5 pass；
+  - `nnpm run test:home`：5/5 pass；
   - `npm run build`：整站成功构建生成。
 - **门户组装**：
   - 纯明黄系 640×640 3D 软胶质感彩虹云封面 `assets/covers/cloud-merge.webp`；
@@ -281,7 +281,7 @@
 - `npm run test:link-up` → **54 pass / 0 fail**。
 - `node scripts/check-game.mjs link-up` → **19 pass / 0 fail / 0 warn / 0 waived**。
 - `node x/link-up/cdp-smoke.mjs` → **23 pass / 0 fail**：真实启动、选关、提示点击消除、暂停 / 恢复、帮助 Escape、选关滚动、1440 / 1280 / 900 / 390 视口、reduced motion、控制台与资源错误检查全绿。
-- `npm run test:home` → **5 pass / 0 fail**；`npm run build` → 成功，生成 `dist/link-up/`、封面与 sitemap。
+- `nnpm run test:home` → **5 pass / 0 fail**；`npm run build` → 成功，生成 `dist/link-up/`、封面与 sitemap。
 
 ### 本轮用户反馈后的自动优化（2026-09-13）
 
@@ -631,7 +631,7 @@ games/jump-jump/
 | --- | --- | --- |
 | 单元 | `npm run test:jump-jump` | **44 / 0** |
 | 子游戏合规 | `node scripts/check-game.mjs jump-jump` | **19 pass / 0 fail / 0 warn / 0 waived** |
-| 门户级 | `npm run test:home` | **5 / 0** |
+| 门户级 | `nnpm run test:home` | **5 / 0** |
 | 构建 | `npm run build` | ✓ 成功，dist/jump-jump/ 扁平化 + sitemap 收录 |
 | 真浏览器 1440/1280/390 三档 + 起跳动作链 + 像素抽样 | `x/jump-jump/cdp-smoke.mjs` | **14 / 0** |
 | 算法可解性（25 关全部） | `tests/engine.test.mjs` | ✓ 全数通过 `isGapSolvable` |
@@ -735,7 +735,7 @@ x/jump-jump/                           [gitignored scratch] sim / dbg / probe / 
 |---|---|---|
 | 单元 | `npm run test:pair-link` | **101 / 0** |
 | 子游戏合规 | `node scripts/check-game.mjs pair-link` | **19 / 0** |
-| 门户级 | `npm run test:home` | **5 / 0** |
+| 门户级 | `nnpm run test:home` | **5 / 0** |
 | 构建 | `npm run build` | ✓ |
 | 真浏览器 zh + en | `cdp-dist.mjs` | **40 / 0** |
 | 真浏览器 布局 / 冰封+每日 / 母题 | smoke / features / motifs | **53 + 32 + 6 / 0** |
@@ -1203,7 +1203,7 @@ PROJECT_LOG.md                      [修改] 本轮记录
 - 新增引擎导出 `popTargetAt(state,x,y)`，供指针在「戳破 L10 / 丢弃」间分流，复用同一权威判定，避免 UI 自造规则。
 - 门户组装（已获用户授权、**不提交不推送**）：`games.json` 登记 bubble-merge（icon 🫧、封面 /assets/covers/bubble-merge.webp）；
   根 `package.json` 增 `test:bubble-merge`；生成 640×640 靛蓝-亮青渐变 3D 软胶封面（ImageGen → cv2 去水印 → INTER_AREA → WebP q90）。
-- 门禁：`check-game.mjs bubble-merge` 19/19 全过（T1 零 fail）；`npm run test:bubble-merge` 49/49；`npm run test:home` 5/5；`npm run build` 通过。
+- 门禁：`check-game.mjs bubble-merge` 19/19 全过（T1 零 fail）；`npm run test:bubble-merge` 49/49；`nnpm run test:home` 5/5；`npm run build` 通过。
 - 本地构建 buildId 为 "dev"（无 CI 时），故 dist 保留 `?v=dev` 属预期；CI 注入真 BUILD_ID 做缓存失效。
 - **残影缺陷修复**：`prefers-reduced-motion` 降级路径原先调用 `updateFx(0)`，涟漪/粒子寿命冻结致特效永久累积成「圈圈残影」；
   改为降级时清空 `particles`/`ripples`、`shake=0` 并跳过 `drawFx()`（`render.mjs`）。
@@ -1419,7 +1419,7 @@ pm run build 通过（dist/sokoban/ + GA4 注入 + sitemap）；浏览器 dist �
 - 封面：assets/covers/sokoban.webp（640×640，暖棕→古铜渐变 + 漂浮金粒 + 软胶圆木箱 3/4 等距 + 星形目标垫柔光，零文字），x/sokoban/make-cover.py 程序化生成。
 
 ## 2026-09-24 · 推箱子（sokoban）难度曲线提升与英文态残留修复
-- 英文残留（验收反馈"检查英文状态下是否还有中文残留"）：定位三处——ui.mjs syncHud 关卡名与选关 aria 硬编码 nameZh、页面静态 title 中文。修复：ui.mjs 新增 levelName(lv) 按 getLocale() 取 nameZh/nameEn；main.mjs 语言切换同步 document.title（zh「推箱子 · Sokoban · DOIN」/ en「Sokoban · DOIN」）。i18n.en 字典逐 key 审计干净；浏览器 dist 实测英文态标题/关卡名/章节/aria 零中文残留、控制台零报错。
+- 英文残留（验收反馈"检查英文状态下是否还有中文残留"）：定位三处——ui.mjs syncHud 关卡名与选关 aria 硬编码 nnameZh、页面静态 title 中文。修复：ui.mjs 新增 levelName(lv) 按 getLocale() 取 nnameZh/nnameEn；main.mjs 语言切换同步 document.title（zh「推箱子 · Sokoban · DOIN」/ en「Sokoban · DOIN」）。i18n.en 字典逐 key 审计干净；浏览器 dist 实测英文态标题/关卡名/章节/aria 零中文残留、控制台零报错。
 - 难度提升（验收反馈"貌似太简单了！！"）：目标曲线 2+t²*18 → 3+t^1.7*24；早期 s2-s5 同箱数提高推数（s3 2 箱 4 推、s4 2 箱 5 推、s5 2 箱 4 推）；s28 手动加竖墙分隔后 par 7→16（六箱交错）；s29 12→14、s46 15→14、s49 16（保留高难）、s50 6 箱 17 推；紧凑骨架 8 关（s22/24/26/28 6-7、s36-39 10-11）保留原难度，gen-levels 写回逻辑改为"失败关保留原值"。全序列相邻回落 ≥-3、后 10 关 max 18 ≥ 前 10 关 min 2 + 8。
 - replay 测试适配：新难度下 6 箱密集关"证 par-1 无解"需约 30s，IDA* 上限 20s/20M → 45s/50M。
 - 验收：npm run test:sokoban 62/62（约 113s）；node scripts/check-game.mjs sokoban 19 pass / 0 fail / 0 warn；npm run build 通过；浏览器 dist 实测英文态第 3 关 HUD 目标推数 4、进度 0/2、六键全英文。
@@ -1440,7 +1440,7 @@ pm run build 通过（dist/sokoban/ + GA4 注入 + sitemap）；浏览器 dist �
 - **模式编排（拒绝三件套）**：12 关残局挑战（固定种子+手编性格+星级 1-3，首关免费）逐关解锁 + 自由对局三难度；专属评价体系——评级 S/A/B/C（S 需第一且资产≥初始×1.8）+ 趣味徽章（捡漏王/接盘侠/铁公鸡/抬轿人），非通用计分牌。
 - **角色技能（2A）**：侦探·探照灯额外 1 条私密提示（锁定线索解锁）/ 行家·老掌柜估值区间收窄 50% / 套话·包打听试探一位 AI 出价区间（estimateAiBidRange 真实区间）/ 守财奴·金掌柜被动初始资金 +20%，每回合暗标前 1 次。
 - **美学与红线**：深色仓库夜拍三栏机台（左对手牌匾/中舞台/右行情情报牌匾，max-width 1160 居中避让广告位），聚光灯呼吸 + 粉尘粒子、CSS 木箱 crate-box 径向柔光（零描边圈）、拍卖槌实体键；桌面左右/底部安全留白，移动端 padding-bottom: max(68px, calc(16px + env(safe-area-inset-bottom)))；prefers-reduced-motion 降级、零外链零 CDN、相对路径 + ?v=dev。
-- **门禁**：npm run test:blind-auction **75/75 全绿**（engine/ai/score/storage/i18n/markup/game 七文件，含 400 局×5 回合随机游走 ≥1000 步不抛错不卡死不变式、12 关挑战局确定性重放、DOM-free 契约、id 双向闭合）；node scripts/check-game.mjs blind-auction **19 pass / 0 fail / 0 warn**；npm run build 通过（dist/blind-auction/ + sitemap 收录 https://doin.win/blind-auction/）。
+- **门禁**：nnpm run test:blind-auction **75/75 全绿**（engine/ai/score/storage/i18n/markup/game 七文件，含 400 局×5 回合随机游走 ≥1000 步不抛错不卡死不变式、12 关挑战局确定性重放、DOM-free 契约、id 双向闭合）；node scripts/check-game.mjs blind-auction **19 pass / 0 fail / 0 warn**；npm run build 通过（dist/blind-auction/ + sitemap 收录 https://doin.win/blind-auction/）。
 - **封面**：assets/covers/blind-auction.webp，640×640 WebP，深青→靛蓝渐变（避开 sokoban 暖棕木箱撞色）+ 3D 软胶木箱溢金 + 漂浮金币粒子零文字；seedream 5.0 生成 + .workbuddy/tmp/covers/process_blind_auction.py 固定 bbox inpaint 去水印 + INTER_AREA 缩放。
 - **浏览器实测**：菜单四角色技能/三难度、对局三栏（对手牌匾+行情公告热门/冷门/平稳+公开/私密提示+线索估价+滑杆+亮价/使用技能+20s 倒计时）渲染正常，零 console 错误。
 
@@ -1449,14 +1449,14 @@ pm run build 通过（dist/sokoban/ + GA4 注入 + sitemap）；浏览器 dist �
 - 修复范围：games/blind-auction（index.html / js/i18n.mjs / main.mjs / render.mjs / tests/i18n.test.mjs）+ scripts/build-site.mjs。
 - 残留清单与处理：
   - render.mjs 8 处：人类亮价卡“你”→ i18n youName；AI 名/称号 
-ameZh→按 locale 取 
-ameEn/titleEn；rival 情绪气泡、开箱情绪 emotionText(...,zh)→传真实 locale；gossip 提示与终局排行 AI 名→按 locale。
+nameZh→按 locale 取 
+nameEn/titleEn；rival 情绪气泡、开箱情绪 emotionText(...,zh)→传真实 locale；gossip 提示与终局排行 AI 名→按 locale。
   - i18n.mjs：新增 youName/docTitle/metaDesc 双语键；en 表 subtitle:盲盒竞拍→“Blind Auction”；en 表零中文由新回归测试强制。
   - main.mjs：启动按 locale 同步 document.title、meta description、顶栏 aria-label（返回门户/音效/语言/规则）、back-home span、h1 标题牌（en 态不再显示中文副标题）。
   - index.html：noscript 改中英双语。
   - build-site.mjs：removeOutput 在 dist 目录被本地预览服务占用时降级为清空内容（vite emptyOutDir 完整重建），修复 build 死锁（预览服务 serve dist 即触发）。
 - 验证：
-pm run test:blind-auction 77/77（新增 en 零中文 + 文档级键回归）；
-pm run test:home 5/5；
+npm run test:blind-auction 77/77（新增 en 零中文 + 文档级键回归）；
+npm run test:home 5/5；
 pm run build 通过；浏览器英文态实测（菜单/对局/亮价/开箱/help 弹层/终局）全视图零中文（唯一保留：语言切换钮“中文”= 切换目标语言设计惯例）、console 零错误。
 - 提交：e15bf6 fix: blind-auction en locale cleanup and build-site dist lock tolerance（追加于 ca7c6ea 之后，均未 push）。
