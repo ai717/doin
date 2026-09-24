@@ -40,3 +40,24 @@ test("关键文案覆盖（回合/行情/截胡/评级/徽章）", () => {
     assert.ok(zh[key], `缺键 ${key}`);
   }
 });
+
+test("英文表零中文残留（en 全部文案不得含 CJK）", () => {
+  const en = strings("en");
+  const cjk = /[\u4e00-\u9fff]/;
+  const offenders = Object.entries(en)
+    .filter(([, v]) => cjk.test(String(v)))
+    .map(([k]) => k);
+  assert.deepEqual(offenders, [], `en 表含中文残留键: ${offenders.join(", ")}`);
+});
+
+test("文档级语言键齐备且对齐（docTitle/metaDesc/youName）", () => {
+  const zh = strings("zh");
+  const en = strings("en");
+  for (const key of ["docTitle", "metaDesc", "youName"]) {
+    assert.ok(zh[key] && en[key], `缺键 ${key}`);
+    assert.ok(!/[\u4e00-\u9fff]/.test(en[key]), `en.${key} 含中文`);
+  }
+  assert.ok(zh.docTitle.includes("盲盒竞拍") && en.docTitle.includes("Blind Auction"));
+  assert.equal(zh.youName, "你");
+  assert.equal(en.youName, "You");
+});

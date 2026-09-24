@@ -1,4 +1,4 @@
-import { cpSync, existsSync, mkdirSync, readFileSync, readdirSync, statSync, writeFileSync } from "node:fs";
+import { cpSync, existsSync, mkdirSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync } from "node:fs";
 import { execFileSync } from "node:child_process";
 import { dirname, relative, resolve, sep } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -14,7 +14,15 @@ let spaFallback;
 function removeOutput(path) {
   if (!existsSync(path)) return;
   if (process.platform === "win32") {
-    execFileSync("cmd", ["/c", "if", "exist", path, "rd", "/s", "/q", path], { stdio: "ignore" });
+    try {
+      execFileSync("cmd", ["/c", "if", "exist", path, "rd", "/s", "/q", path], { stdio: "ignore" });
+    } catch {
+      // dist 目录本身被外部进程占用（如本地预览服务的工作目录/句柄）时降级：
+      // 清空全部内容而保留目录本身，vite emptyOutDir 随后会再清空并完整重建，产物正确性不受影响。
+      for (const entry of readdirSync(path)) {
+        rmSync(resolve(path, entry), { recursive: true, force: true });
+      }
+    }
   } else {
     execFileSync("rm", ["-rf", path], { stdio: "ignore" });
   }

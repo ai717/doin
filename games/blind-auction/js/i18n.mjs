@@ -10,6 +10,9 @@ const STRINGS = {
   zh: {
     title: "盲盒竞拍",
     subtitle: "Blind Auction",
+    youName: "你",
+    docTitle: "盲盒竞拍 · DOIN 在线小游戏",
+    metaDesc: "四人围桌暗标竞拍仓库盲盒：情报估值 × 读人心理战，价高者得，五回合后总资产最高者称王。8 性格 AI 池，单机也有牌桌众生相。",
     backHome: "返回门户",
     sound: "音效",
     language: "语言",
@@ -152,7 +155,10 @@ const STRINGS = {
   },
   en: {
     title: "Blind Auction",
-    subtitle: "盲盒竞拍",
+    subtitle: "Blind Auction",
+    youName: "You",
+    docTitle: "Blind Auction · DOIN Online Games",
+    metaDesc: "Sealed-bid warehouse crate auctions: value your intel, read your rivals — highest bid wins, and the richest collector after five rounds takes it all. An 8-persona AI pool brings a full table to a solo game.",
     backHome: "Back to portal",
     sound: "Sound",
     language: "Language",

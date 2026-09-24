@@ -25,6 +25,21 @@ let timeLeft = ROUND_SECONDS;
 document.documentElement.lang = htmlLang(locale);
 audio.setMuted(saved.prefs.muted);
 
+// 文档级语言应用：title / meta description / 顶栏 aria-label / 标题牌（静态中文由本处按 locale 覆盖）
+const t0 = strings(locale);
+document.title = t0.docTitle;
+const metaDesc = document.querySelector('meta[name="description"]');
+if (metaDesc) metaDesc.content = t0.metaDesc;
+const ariaMap = { "back-home": t0.backHome, "btn-sound": t0.sound, "btn-lang": t0.language, "btn-help": t0.rules };
+for (const [id, label] of Object.entries(ariaMap)) {
+  const el = document.getElementById(id);
+  if (el) el.setAttribute("aria-label", label);
+}
+const backSpan = document.querySelector('#back-home [data-i18n="backHome"]');
+if (backSpan) backSpan.textContent = t0.backHome;
+const stageTitle = document.getElementById("stage-title");
+if (stageTitle) stageTitle.innerHTML = esc(t0.title) + (locale === "zh" ? ' <small>Blind Auction</small>' : "");
+
 function paint() {
   const t = strings(locale);
   const challengeCleared = saved.challenges && Object.keys(saved.challenges.stars).length > 0;

@@ -144,28 +144,28 @@ function renderGame(data) {
   const rnd = state.roundIndex + 1;
   return `
   <div class="arena" data-phase="${state.phase}">
-    ${renderRivals(state, t)}
-    ${renderStage(state, t)}
+    ${renderRivals(state, t, locale)}
+    ${renderStage(state, t, locale)}
     ${renderIntel(data)}
   </div>
   ${renderOverlay(data)}`;
 }
 
-function renderRivals(state, t) {
+function renderRivals(state, t, locale) {
   const human = humanIndex(state);
   const cards = state.players.map((p, i) => {
     if (i === human) return "";
     const persona = PERSONAS[p.personaId];
     const summary = dossierSummary(p);
     const tend = summary.rounds === 0 ? "" : summary.spent / (p.initialCash || 1) > 0.5 ? t.tendHigh : summary.spent / (p.initialCash || 1) > 0.2 ? t.tendMid : t.tendLow;
-    const emotion = p.emotion ? `<div class="emo-bubble">${esc(emotionText(p.personaId, p.emotion.kind, "zh"))}</div>` : "";
+    const emotion = p.emotion ? `<div class="emo-bubble">${esc(emotionText(p.personaId, p.emotion.kind, locale))}</div>` : "";
     return `<div class="rival-card" data-rival="${i}">
       <div class="rival-head">
         <span class="rival-icon">${persona.icon}</span>
-        <span class="rival-name">${esc(persona.nameZh)}</span>
+        <span class="rival-name">${esc(locale === "en" ? persona.nameEn : persona.nameZh)}</span>
         <span class="rival-cash">${coin(p.cash)}</span>
       </div>
-      <div class="rival-tag">${esc(persona.titleZh)}</div>
+      <div class="rival-tag">${esc(locale === "en" ? persona.titleEn : persona.titleZh)}</div>
       <div class="rival-tend"><span>${esc(t.tendLabel)}</span><b>${esc(tend)}</b></div>
       <div class="rival-meter"><span class="fill" style="width:${Math.min(100, Math.round((summary.spent / (p.initialCash || 1)) * 100))}%"></span></div>
       ${emotion}
@@ -177,7 +177,7 @@ function renderRivals(state, t) {
   </aside>`;
 }
 
-function renderStage(state, t) {
+function renderStage(state, t, locale) {
   const crate = currentCrate(state);
   const rnd = state.roundIndex + 1;
   const reveal = state.reveal;
@@ -199,9 +199,9 @@ function renderStage(state, t) {
     const ranked = reveal.ranked.map((r) => {
       const p = state.players[r.i];
       const persona = p.kind === "ai" ? PERSONAS[p.personaId] : null;
-      const label = p.kind === "human" ? t.emoHumanWin.replace("这波血赚！", "你") : persona.nameZh;
+      const label = p.kind === "human" ? t.youName : (locale === "en" ? persona.nameEn : persona.nameZh);
       return `<div class="bid-card${r.i === reveal.winner ? " winner" : ""}">
-        <span class="bid-name">${r.i === human ? esc("你") : esc(label)}</span>
+        <span class="bid-name">${r.i === human ? esc(t.youName) : esc(label)}</span>
         <span class="bid-amount">${coin(r.amount)}</span>
         ${r.i === reveal.winner ? `<span class="bid-mark">${reveal.snipe ? esc(t.snipeLabel) : "🥇"}</span>` : ""}
       </div>`;
@@ -216,7 +216,7 @@ function renderStage(state, t) {
     const isHuman = open.winner === human;
     const emo = isHuman
       ? (open.profit >= 0 ? t.emoHumanWin : t.emoHumanLose)
-      : emotionText(p.personaId, open.profit >= 0 ? "win" : "lose", "zh");
+      : emotionText(p.personaId, open.profit >= 0 ? "win" : "lose", locale);
     const winClass = open.profit >= 0 ? "profit" : "loss";
     stageInner = `<div class="open-board ${winClass}">
       <div class="open-flash ${winClass}"></div>
@@ -301,12 +301,13 @@ function renderIntel(data) {
 }
 
 function gossipTipHtml(data, targetIndex) {
-  const { state, t } = data;
+  const { state, t, locale } = data;
   const target = state.players[targetIndex];
   if (!target || target.kind !== "ai") return "";
   const range = estimateAiBidRange(state, targetIndex);
   if (!range) return "";
-  return `<div class="gossip-tip">${esc(format(t.gossipRange, { name: PERSONAS[target.personaId].nameZh, lo: coin(range.lo), hi: coin(range.hi) }))}</div>`;
+  const persona = PERSONAS[target.personaId];
+  return `<div class="gossip-tip">${esc(format(t.gossipRange, { name: locale === "en" ? persona.nameEn : persona.nameZh, lo: coin(range.lo), hi: coin(range.hi) }))}</div>`;
 }
 
 function renderOverlay(data) {
@@ -336,7 +337,7 @@ function renderResult({ state, t, locale, saved }) {
   const rows = result.assets.map((a) => {
     const p = state.players[a.i];
     const isHuman = a.i === human;
-    const label = isHuman ? t.title : PERSONAS[p.personaId].nameZh;
+    const label = isHuman ? t.title : (locale === "en" ? PERSONAS[p.personaId].nameEn : PERSONAS[p.personaId].nameZh);
     return `<div class="rank-row${isHuman ? " me" : ""}">
       <span class="rank-no">${result.rank.indexOf(a.i) + 1}</span>
       <span class="rank-name">${esc(label)}</span>
