@@ -3,6 +3,7 @@
 // 背景静态缓存 + 预渲染辉光精灵，保证 220 敌同屏下 60fps。
 
 import { ARENA_W, ARENA_H, PLAYER_R, CHARACTERS, WEAPONS, ENEMIES } from "./engine.mjs";
+import * as i18n from "./i18n.mjs";
 
 const GLOW_COLORS = {
   gold: [255, 214, 90],
@@ -193,7 +194,7 @@ export class MowRenderer {
       } else if (ev.type === "evolve") {
         this.ring(640, 360, 200, "gold");
         this.burstParticles(640, 360, "gold", 30, 260);
-        this.floaters.push({ x: 640, y: 320, vy: -46, life: 1.4, maxLife: 1.4, text: "EVOLVE!", color: "#ffd34d", size: 30 });
+        this.floaters.push({ x: 640, y: 320, vy: -46, life: 1.4, maxLife: 1.4, text: i18n.strings(i18n.loadLocale()).evolveFloater, color: "#ffd34d", size: 30 });
       } else if (ev.type === "strike" || ev.type === "bomb") {
         this.ring(ev.x, ev.y, ev.r, "orange");
         this.burstParticles(ev.x, ev.y, "orange", 16, 220);

@@ -1490,3 +1490,18 @@ pm run build 通过；浏览器英文态实测（菜单/对局/亮价/开箱/hel
 - **浏览器全流程复核通过**：进入长桌→选职业/背包→确认出征（localStorage `doin.backpack.run.v1` 落盘）→购买→货架拖放棋盘→开战幕布 Canvas（双血条+伤害数字+疲劳机制）→自动结算→回合推进/收入/商店刷新；选中物品 + R 旋转 + X 出售；帮助/语言（zh↔en）/音效（♪↔✕）/Esc；残局模式（30 关列表→进关→摆放→开战→三星结算面板★☆☆→下一关/重试/列表）；镜像模式（开战→胜场自动下一层 mirror-win→exit）；控制台零报错。
 - **环境事故**：Windows 下两个 `python -m http.server 8137` 进程同端口 SO_REUSEADDR 分流，连接随机命中旧进程（旧 cwd 无 backpack → 间歇 404 + 旧代码）；清理为单实例后全通。桌面 Chrome/Firefox 因本机 Clash 代理/旧缓存拿不到页面属环境问题，以沙箱浏览器直连为准。
 - **门禁复核**：`node games/backpack/tests/_smoke.mjs` 30/30 可解；`npm run test:backpack` 29/29 全绿；`node scripts/check-game.mjs backpack` **19 pass / 0 fail(T1) / 1 warn(T2)**（i18n-clean 警告为双语数据表设计项）；`npm run build` 通过（dist/backpack + sitemap 收录）；封面 assets/covers/backpack.webp 640×640 WebP 无文字无水印；games.json 第 47 款；GA 注入正常、AdSense 缺省关闭（平台本地构建预期）。
+
+## 2026-09-25 · 割草！（mow）验收优化：语言纯净度加固 + UI 形象化（i18n/图标/可交互性）
+- **背景**：用户验收提出两项：① 检查中英文状态下是否夹杂对方语言（AGENTS.md 已把英文纯净度红线 + i18n 自动化断言升格为硬性要求）；② UI 更加形象清晰。
+- **语言纯净度修复（①）**：
+  - zh 态残留：升级/图鉴面板 kicker LEVEL UP/GARDENER'S CODEX → zh 改为 升级！/收集图鉴（en 保持 LEVEL UP/GARDENER'S CODEX）；倒计时 Boss 战硬编码 "BOSS!" → 新增 i18n 键 ossBadge；Canvas 进化飘字硬编码 "EVOLVE!"（render.mjs feedEvents）→ 新增 evolveFloater 键（zh 进化！/en EVOLVE!），render.mjs 引入 i18n 查询；
+  - aria-label 静态中文残留（en 态读屏会听到中文）：新增 wingLeftAria/wingRightAria/deckAria/charGridAria/modeChipsAria 双表键 + main.mjs ARIA_MAP，pplyTexts() 启动即刷新 7 处 aria-label（含既有 stageAria/canvasAria）；
+  - noscript 单中文 → 中英双语；
+  - 图鉴既有 bug：武器/被动 chip 因 kind 复数键漏映射显示英文原始 id（blade-ring 等）→ enderCodex 统一映射 weapons/evolutions→weapon、passives→passive，中文名恢复；
+  - en 表唯一汉字 = langSwitch「中文」（切换钮显示目标语言惯例）；zh 表仅剩品牌/键位/占位允许项（MOW!、WASD/Shift/P、BOSS、Boss、DOIN、JavaScript、{base}）。
+- **i18n 测试断言固化（AGENTS.md 硬性要求）**：	ests/i18n.test.mjs 新增两条——strings.en 除 langSwitch 外绝无汉字、strings.zh 除 allowlist（langSwitch/docTitle/metaDesc/keyHint/panelStartKicker/bossBadge/modeStandardDesc/noscript）外无拉丁字母（先剥离 {占位}）。
+- **UI 形象化（②）**：main.mjs 新增 EMOJI 映射（14 武器+进化、8 被动、4 机台、xp）+ RES_EMOJI（结算五行）——构筑清单 li 前插 loadout-icon、三选一卡顶置 choice-icon、图鉴已拥有 chip 前置 codex-chip-ico、结算行 label 前缀 emoji（💥/🔥/🌼/🏆/⏱️）、模式 chip 内嵌 🏁/🌌；CSS 配套（.loadout-icon/.choice-icon/.mode-emoji/.codex-chip-ico + 移动端 choice-card 横排图标/名称防溢出）；emoji 双语言通用不触 i18n-clean。
+- **可交互性修复（实测发现）**：开局面板全屏遮罩（z-60）盖住顶部栏，开局前无法点语言/音效/帮助钮（此前依赖 JS 绕过）→ #stage-bar 提升 z-index:70，浮层打开时顶栏保持可点。
+- **门禁**：单测 **36/36 全绿**（+2 纯净断言）；
+ode scripts/check-game.mjs mow **20 pass / 0 fail / 0 warn**；
+pm run build 通过；浏览器实测：en 态全文零中文（OCR 复核）、zh 态开局面板/运行中构筑清单（🌀旋转刀片 Lv.1）/图鉴（kicker 收集图鉴、已拥有 chip 🌀旋转刀片/🧲花蜜磁铁/🪙黄金割草盘 全中文+图标）/结算面板纯中文；测试注入存档已清理还原。

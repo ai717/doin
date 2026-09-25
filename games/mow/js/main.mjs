@@ -43,8 +43,8 @@ const TEXT_MAP = {
   "pad-burst-label": "padBurst",
   "pad-pause-label": "padPause",
   "joystick-label": "joystickLabel",
-  "mode-standard": "modeStandard",
-  "mode-endless": "modeEndless",
+  "mode-standard-label": "modeStandard",
+  "mode-endless-label": "modeEndless",
   "start-kicker": "panelStartKicker",
   "start-title": "panelStartTitle",
   "start-desc": "panelStartDesc",
@@ -83,10 +83,24 @@ const TEXT_MAP = {
   "btn-help-close": "btnHelpClose",
 };
 
+const ARIA_MAP = {
+  "wing-left": "wingLeftAria",
+  "wing-right": "wingRightAria",
+  arena: "stageAria",
+  "stage-canvas": "canvasAria",
+  "control-deck": "deckAria",
+  "char-grid": "charGridAria",
+  "mode-chips": "modeChipsAria",
+};
+
 function applyTexts() {
   for (const [id, key] of Object.entries(TEXT_MAP)) {
     const el = $(id);
     if (el && T[key]) el.textContent = T[key];
+  }
+  for (const [id, key] of Object.entries(ARIA_MAP)) {
+    const el = $(id);
+    if (el && T[key]) el.setAttribute("aria-label", T[key]);
   }
   document.title = T.docTitle;
   document.documentElement.lang = i18n.htmlLang(i18n.loadLocale());
@@ -106,6 +120,39 @@ function nameOf(kind, id) {
   if (kind === "passive") return T["p" + pascal(id)] || PASSIVES[id]?.name || id;
   return id;
 }
+
+/* 图标映射：让构筑清单 / 三选一 / 图鉴 / 结算一眼可辨（双语言通用） */
+const EMOJI = {
+  "blade-ring": "🌀",
+  "pollen-spray": "🌼",
+  "bouncy-pod": "🌱",
+  "thorn-vine": "🌿",
+  sunbeam: "🌻",
+  "ladybug-strike": "🐞",
+  "bee-swarm": "🐝",
+  "dandelion-bomb": "🌾",
+  "gold-disk": "🪙",
+  "toxic-mist": "💨",
+  "harvest-rain": "🌧️",
+  "rainbow-bloom": "🌈",
+  maneater: "🌺",
+  "ladybug-queen": "👑",
+  magnet: "🧲",
+  herbicide: "🧪",
+  windbell: "🎐",
+  flowerpot: "🪴",
+  compost: "🍂",
+  "steel-disk": "⚙️",
+  clover: "🍀",
+  thorn: "🌹",
+  mower: "🚜",
+  sprinkler: "🚿",
+  ladybug: "🐞",
+  rabbit: "🐰",
+  xp: "✨",
+};
+
+const RES_EMOJI = { kills: "💥", combo: "🔥", burst: "🌼", score: "🏆", time: "⏱️" };
 
 /* ------------------------------------------------------------ 音效路由 */
 
@@ -309,7 +356,9 @@ function showUpgradePanel(choices) {
             ? (choice.level === 1 ? T.choicePassive : T.choicePassiveUp)
             : "";
     const name = choice.kind === "xp" ? T.choiceXp : nameOf(choice.kind, choice.id);
+    const icon = choice.kind === "xp" ? EMOJI.xp : EMOJI[choice.id] || "🎁";
     card.innerHTML = `
+      <span class="choice-icon">${icon}</span>
       <span class="choice-tag">${tag}</span>
       <strong class="choice-name">${name}</strong>
       <span class="choice-level">${choice.level ? `Lv.${choice.level}` : `+${choice.value} XP`}</span>
@@ -373,6 +422,14 @@ function showResultPanel(payload) {
   $("res-time").textContent = `${Math.floor(r.time / 60)}:${String(Math.floor(r.time % 60)).padStart(2, "0")}`;
   $("result-hint").textContent = r.won ? T.resultHintWin : T.resultHintLose;
   const badges = [];
+  const labels = [
+    ["label-res-kills", RES_EMOJI.kills, T.labelResKills],
+    ["label-res-combo", RES_EMOJI.combo, T.labelResCombo],
+    ["label-res-burst", RES_EMOJI.burst, T.labelResBurst],
+    ["label-res-score", RES_EMOJI.score, T.labelResScore],
+    ["label-res-time", RES_EMOJI.time, T.labelResTime],
+  ];
+  for (const [id, emoji, text] of labels) $(id).textContent = `${emoji} ${text}`;
   if (payload.improved) badges.push(`✨ ${T.labelResNewBest}`);
   if (payload.newUnlock) badges.push(`🐰 ${T.labelResUnlock}`);
   $("result-badge").textContent = badges.join("  ");
@@ -388,9 +445,13 @@ function renderCodex() {
     el.innerHTML = "";
     for (const itemId of Object.keys(list)) {
       const owned = save.codex[kind].includes(itemId);
+      const kk = kind === "evolutions" || kind === "weapons" ? "weapon" : "passive";
       const chip = document.createElement("span");
       chip.className = "codex-chip" + (owned ? " is-owned" : "");
-      chip.textContent = owned ? nameOf(kind === "evolutions" ? "weapon" : kind, itemId) : "?";
+      chip.textContent = owned ? nameOf(kk, itemId) : "?";
+      if (owned && EMOJI[itemId]) {
+        chip.innerHTML = `<span class="codex-chip-ico">${EMOJI[itemId]}</span>${chip.textContent}`;
+      }
       el.appendChild(chip);
     }
   };
@@ -415,7 +476,7 @@ function updateHud(now) {
   // 倒计时
   if (snap.mode === "standard") {
     if (snap.bossSpawned) {
-      $("val-timer").textContent = "BOSS!";
+      $("val-timer").textContent = T.bossBadge;
     } else {
       const remain = Math.max(0, BOSS_TIME - snap.time);
       $("val-timer").textContent = fmtTime(remain);
@@ -447,14 +508,14 @@ function renderLoadout(snap) {
   for (const w of snap.weapons) {
     const li = document.createElement("li");
     const evolved = w.evolved ? `<em class="evolved-tag">${T.evolvedTag}</em>` : "";
-    li.innerHTML = `<span class="loadout-name">${nameOf("weapon", w.id)}</span><span class="loadout-level">${evolved ? "★" : `Lv.${w.level}`}</span>${evolved}`;
+    li.innerHTML = `<span class="loadout-icon">${EMOJI[w.id] || "⚔️"}</span><span class="loadout-name">${nameOf("weapon", w.id)}</span><span class="loadout-level">${evolved ? "★" : `Lv.${w.level}`}</span>${evolved}`;
     wl.appendChild(li);
   }
   if (!snap.weapons.length) wl.innerHTML = "<li class='loadout-empty'>—</li>";
   pl.innerHTML = "";
   for (const p of snap.passives) {
     const li = document.createElement("li");
-    li.innerHTML = `<span class="loadout-name">${nameOf("passive", p.id)}</span><span class="loadout-level">Lv.${p.level}</span>`;
+    li.innerHTML = `<span class="loadout-icon">${EMOJI[p.id] || "🎁"}</span><span class="loadout-name">${nameOf("passive", p.id)}</span><span class="loadout-level">Lv.${p.level}</span>`;
     pl.appendChild(li);
   }
   if (!snap.passives.length) pl.innerHTML = "<li class='loadout-empty'>—</li>";
