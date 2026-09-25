@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-D67E3XTNSS"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-D67E3XTNSS');
+  </script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>深海合珠 · DOIN 在线小游戏</title>
+  <meta name="description" content="深海合珠 Bubble Merge：把泡泡丢进深海水缸，同级一碰即合成更大一号，连锁爆分，戳破终极泡泡清场，别堆过安全线。">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="css/style.css?v=79c518024932">
+</head>
+<body>
+  <div class="ambient" aria-hidden="true"></div>
+
+  <header class="topbar">
+    <a href="/" id="back-home" class="back-home">
+      <svg class="back-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <span id="back-label">返回</span>
+    </a>
+    <h1 class="title" id="title-text">深海合珠</h1>
+    <div class="tools">
+      <button type="button" id="sound-btn" class="tool-btn" aria-pressed="true">
+        <span class="tool-ico" id="sound-ico" aria-hidden="true">🔊</span>
+        <span class="tool-label" id="sound-label">音效</span>
+      </button>
+      <button type="button" id="lang-btn" class="tool-btn">
+        <span class="tool-ico" aria-hidden="true">🌐</span>
+        <span class="tool-label" id="lang-label">EN</span>
+      </button>
+      <button type="button" id="help-btn" class="tool-btn">
+        <span class="tool-ico" aria-hidden="true">?</span>
+        <span class="tool-label" id="help-label">说明</span>
+      </button>
+    </div>
+  </header>
+
+  <main class="stage">
+    <section class="tank-wrap" id="tank-wrap">
+      <canvas id="game-canvas" role="img" aria-label="深海合珠水缸"></canvas>
+      <div class="danger-banner" id="danger-banner" aria-hidden="true"></div>
+
+      <div class="overlay ready" id="ready-modal" role="dialog" aria-modal="true" aria-labelledby="ready-title">
+        <div class="overlay-card">
+          <div class="overlay-kicker" id="ready-kicker">BUBBLE MERGE</div>
+          <h2 class="overlay-title" id="ready-title">深海合珠</h2>
+          <p class="overlay-desc" id="ready-desc">丢下泡泡，同级相碰即合成更大一号。合出终极泡泡后点它“啪”地戳破爆分清场，别让泡泡堆过安全线。</p>
+          <div class="overlay-modes" id="ready-modes">
+            <span class="mode-chip" id="ready-mode-endless">无尽冲分</span>
+            <span class="mode-chip" id="ready-mode-daily">每日挑战</span>
+          </div>
+          <button type="button" class="primary-btn" id="ready-start-btn">开始游戏</button>
+        </div>
+      </div>
+
+      <div class="overlay pause" id="pause-modal" role="dialog" aria-modal="true" aria-labelledby="pause-title" hidden>
+        <div class="overlay-card">
+          <h2 class="overlay-title" id="pause-title">已暂停</h2>
+          <p class="overlay-desc" id="pause-desc">点“继续”回到水缸。</p>
+          <button type="button" class="primary-btn" id="resume-btn">继续</button>
+        </div>
+      </div>
+
+      <div class="overlay result" id="result-modal" role="dialog" aria-modal="true" aria-labelledby="result-title" hidden>
+        <div class="overlay-card">
+          <div class="newbest" id="result-newbest" hidden>🏆 新高分</div>
+          <h2 class="overlay-title" id="result-title">本局结算</h2>
+          <div class="result-grid">
+            <div class="result-cell"><span class="result-num" id="result-score">0</span><span class="result-cap" id="result-score-cap">得分</span></div>
+            <div class="result-cell"><span class="result-num" id="result-level">0</span><span class="result-cap" id="result-level-cap">最大合成级</span></div>
+            <div class="result-cell"><span class="result-num" id="result-chain">0</span><span class="result-cap" id="result-chain-cap">最长连锁</span></div>
+          </div>
+          <p class="result-best" id="result-best">最高分 0</p>
+          <p class="result-tip" id="result-mode-tip"></p>
+          <button type="button" class="primary-btn" id="result-restart-btn">再来一局</button>
+        </div>
+      </div>
+    </section>
+
+    <aside class="hud" aria-label="游戏信息面板">
+      <div class="mode-tabs" role="tablist" aria-label="模式">
+        <button type="button" role="tab" id="mode-endless" class="mode-tab is-active" aria-selected="true">无尽冲分</button>
+        <button type="button" role="tab" id="mode-daily" class="mode-tab" aria-selected="false">每日挑战</button>
+      </div>
+
+      <section class="card codex-card">
+        <h2 class="card-title" id="codex-title">合成图鉴</h2>
+        <ol class="codex" id="codex" aria-label="十级泡泡链"></ol>
+      </section>
+
+      <section class="card score-card">
+        <div class="badge badge-score">
+          <span class="badge-cap" id="score-cap">得分</span>
+          <span class="badge-val" id="hud-score" aria-live="polite">0</span>
+        </div>
+        <div class="badge-row">
+          <div class="badge badge-mini">
+            <span class="badge-cap" id="chain-cap">最长连锁</span>
+            <span class="badge-val" id="hud-chain" aria-live="polite">0</span>
+          </div>
+          <div class="badge badge-mini">
+            <span class="badge-cap" id="level-cap">最大级</span>
+            <span class="badge-val" id="hud-level" aria-live="polite">0</span>
+          </div>
+        </div>
+        <div class="best-line" id="hud-best">最高分 0</div>
+      </section>
+
+      <section class="card preview-card">
+        <h2 class="card-title" id="preview-title">下一颗珍珠</h2>
+        <div class="preview-row">
+          <div class="preview-slot">
+            <span class="preview-pearl" id="preview-current" aria-hidden="true"></span>
+            <span class="preview-cap" id="preview-current-cap">当前</span>
+          </div>
+          <div class="preview-arrow" aria-hidden="true">›</div>
+          <div class="preview-slot">
+            <span class="preview-pearl is-next" id="preview-next" aria-hidden="true"></span>
+            <span class="preview-cap" id="preview-next-cap">下一个</span>
+          </div>
+        </div>
+        <p class="preview-hint" id="preview-hint">当前 L1 · 下一个 L2</p>
+      </section>
+
+      <section class="card control-card">
+        <button type="button" class="ctrl-btn primary" id="start-btn">开始游戏</button>
+        <div class="ctrl-row">
+          <button type="button" class="ctrl-btn" id="pause-btn">
+            <span id="pause-label">暂停</span>
+          </button>
+          <button type="button" class="ctrl-btn" id="restart-btn">
+            <span id="restart-label">重玩</span>
+          </button>
+        </div>
+        <p class="control-hint" id="control-hint">← → 瞄准 · 空格释放 · 点 L10 戳破</p>
+      </section>
+    </aside>
+  </main>
+
+  <div class="overlay help" id="help-modal" role="dialog" aria-modal="true" aria-labelledby="help-title" hidden>
+    <div class="overlay-card help-card">
+      <h2 class="overlay-title" id="help-title">玩法说明</h2>
+      <div class="help-body" id="help-body">
+        <p>1. 移动鼠标 / 手指拖动瞄准，松手或点击释放当前泡泡；键盘 ← → 微调、空格释放。</p>
+        <p>2. 两个同级泡泡一碰即合成高一级，可能引发连锁，连锁越多倍率越高（每多一级 ×1.5）。</p>
+        <p>3. 合成出终极泡泡 L10 后，点它“啪”地戳破：+100 分并清空所占空间。</p>
+        <p>4. 泡泡堆过顶部安全线会先红色预警，约 2 秒后结算本局；靠连锁与戳破清场自救。</p>
+        <p>5. 每日挑战当天掉落序列固定，全球同题，比谁合得更大、分更高。</p>
+      </div>
+      <button type="button" class="primary-btn" id="help-close-btn">我知道了</button>
+    </div>
+  </div>
+
+  <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+
+  <noscript><p class="noscript">需要启用 JavaScript 才能游玩《深海合珠》。</p></noscript>
+
+  <script type="module" src="js/main.mjs?v=79c518024932"></script>
+</body>
+</html>

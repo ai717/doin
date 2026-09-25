@@ -1,0 +1,194 @@
+<!-- filepath: games/sokoban/index.html -->
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-D67E3XTNSS"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-D67E3XTNSS');
+  </script>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="推箱子 Sokoban — 把木箱推进星点，整座庭院重归安然。50 关递进关卡、最优目标推数、撤销、提示、计时计分与中英双语。">
+<meta name="theme-color" content="#201409">
+<meta name="color-scheme" content="dark">
+<title>推箱子 · Sokoban · DOIN</title>
+<link rel="icon" href="favicon.svg?v=79c518024932" type="image/svg+xml">
+<link rel="stylesheet" href="css/style.css?v=79c518024932">
+</head>
+<body>
+<div id="app">
+  <header id="topbar">
+    <a id="btn-home" class="home-link" href="/">
+      <span class="home-arrow" aria-hidden="true">&#8592;</span>
+      <span data-i18n="home">返回门户</span>
+    </a>
+
+    <div class="brand">
+      <h1 id="game-title" data-i18n="app.title">推箱子</h1>
+      <p id="game-sub" data-i18n="app.subtitle">Sokoban · 归位木箱</p>
+    </div>
+
+    <div class="top-actions">
+      <button id="btn-lang" type="button" class="icon-btn" data-i18n-aria="aria.lang" aria-label="切换语言">EN</button>
+      <button id="btn-sound" type="button" class="icon-btn" data-i18n-aria="aria.sound" aria-label="音效开关" aria-pressed="true">
+        <svg id="icon-sound-on" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9v6h3.5L12 19V5L7.5 9H4z"/><path d="M15.5 8.5a4.5 4.5 0 0 1 0 7" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M18 6a8 8 0 0 1 0 12" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+        <svg id="icon-sound-off" viewBox="0 0 24 24" aria-hidden="true" hidden><path d="M4 9v6h3.5L12 19V5L7.5 9H4z"/><path d="M16 9.5l5 5M21 9.5l-5 5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <main id="stage">
+    <section id="hud" aria-label="游戏状态">
+      <div class="stat"><span class="stat-val" id="hud-level">1</span><span class="stat-key" data-i18n="hud.level">关卡</span></div>
+      <div class="stat"><span class="stat-val" id="hud-moves">0</span><span class="stat-key" data-i18n="hud.moves">步数</span></div>
+      <div class="stat"><span class="stat-val" id="hud-par">--</span><span class="stat-key" data-i18n="hud.par">目标推数</span></div>
+      <div class="stat"><span class="stat-val" id="hud-time">00:00</span><span class="stat-key" data-i18n="hud.time">时间</span></div>
+    </section>
+
+    <div id="level-badge">
+      <span id="level-name">—</span>
+      <span id="level-diff" class="diff">—</span>
+    </div>
+
+    <div id="progress-wrap" aria-label="收箱进度">
+      <div class="progress-track">
+        <div id="progress-fill" class="progress-fill" style="width:0%"></div>
+      </div>
+      <span id="progress-label">0/0</span>
+    </div>
+
+    <div id="board-wrap">
+      <canvas id="board" tabindex="0" role="application" data-i18n-aria="aria.board" aria-label="推箱子货场，使用方向键或滑动移动"></canvas>
+      <div id="toast" role="status" aria-live="polite"></div>
+    </div>
+
+    <nav id="toolbar" aria-label="游戏操作">
+      <button id="btn-undo" type="button" class="tool-btn">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 7H15a5 5 0 0 1 0 10H8" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M12 4L8.5 7.5 12 11" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <span data-i18n="btn.undo">撤销</span>
+      </button>
+      <button id="btn-hint" type="button" class="tool-btn">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l7 5-7 13L5 7l7-5z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M12 8.5v4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="12" cy="15.6" r="1" fill="currentColor"/></svg>
+        <span data-i18n="btn.hint">提示</span>
+      </button>
+      <button id="btn-restart" type="button" class="tool-btn">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 12a8 8 0 1 1-2.6-5.9" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M20 4v4h-4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <span data-i18n="btn.restart">重玩</span>
+      </button>
+      <button id="btn-pause" type="button" class="tool-btn">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5v14M15 5v14" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg>
+        <span data-i18n="btn.pause">暂停</span>
+      </button>
+      <button id="btn-levels" type="button" class="tool-btn">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h7v7H4zM13 5h7v4h-7zM13 11h7v8h-7zM4 14h7v5H4z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>
+        <span data-i18n="btn.levels">关卡</span>
+      </button>
+      <button id="btn-help" type="button" class="tool-btn">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9.2 9a2.9 2.9 0 1 1 4.3 2.5c-.9.6-1.5 1-1.5 2" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="12" cy="17.4" r="1.2"/><circle cx="12" cy="12" r="9.2" fill="none" stroke="currentColor" stroke-width="1.6"/></svg>
+        <span data-i18n="btn.help">玩法</span>
+      </button>
+    </nav>
+
+    <p id="sr-status" class="sr-only" role="status" aria-live="polite"></p>
+  </main>
+
+  <!-- 开始 / 首屏 -->
+  <div id="ov-start" class="overlay" role="dialog" aria-modal="true" aria-labelledby="ov-start-title">
+    <div class="panel">
+      <h2 id="ov-start-title" data-i18n="start.title">推箱子</h2>
+      <p id="ov-start-desc" class="panel-desc" data-i18n="start.desc">把货场里的每只木箱都推进发光的星点。人只能推、不能拉；一旦推错角落，就再也回不来了。</p>
+      <div class="panel-actions">
+        <button id="btn-start" type="button" class="primary-btn" data-i18n="start.cta">开始游戏</button>
+        <button id="btn-start-levels" type="button" class="ghost-btn" data-i18n="start.levels">选择关卡</button>
+        <button id="btn-start-help" type="button" class="ghost-btn" data-i18n="btn.help">玩法说明</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 暂停 -->
+  <div id="ov-pause" class="overlay" role="dialog" aria-modal="true" aria-labelledby="ov-pause-title" hidden>
+    <div class="panel">
+      <h2 id="ov-pause-title" data-i18n="pause.title">已暂停</h2>
+      <p id="ov-pause-desc" class="panel-desc" data-i18n="pause.desc">计时已停止，随时可以继续。</p>
+      <div class="panel-actions">
+        <button id="btn-resume" type="button" class="primary-btn" data-i18n="btn.resume">继续</button>
+        <button id="btn-pause-restart" type="button" class="ghost-btn" data-i18n="btn.restart">重玩</button>
+        <button id="btn-pause-levels" type="button" class="ghost-btn" data-i18n="btn.levels">选关</button>
+        <button id="btn-pause-help" type="button" class="ghost-btn" data-i18n="btn.help">玩法</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 结算 -->
+  <div id="ov-win" class="overlay" role="dialog" aria-modal="true" aria-labelledby="win-title" hidden>
+    <div class="panel win-panel">
+      <h2 id="win-title" data-i18n="win.title">归位！</h2>
+      <div id="win-stars" class="stars" aria-hidden="true">
+        <span class="star">&#9733;</span><span class="star">&#9733;</span><span class="star">&#9733;</span>
+      </div>
+      <p id="win-newbest" class="win-flag" data-i18n="win.newbest" hidden>新纪录！</p>
+      <dl class="win-grid">
+        <div><dt data-i18n="win.pushes">推数</dt><dd id="win-pushes">0</dd></div>
+        <div><dt data-i18n="win.par">目标</dt><dd id="win-par">0</dd></div>
+        <div><dt data-i18n="win.time">用时</dt><dd id="win-time">00:00</dd></div>
+        <div><dt data-i18n="win.score">得分</dt><dd id="win-score">0</dd></div>
+      </dl>
+      <p id="win-best" class="win-best"></p>
+      <div class="panel-actions">
+        <button id="btn-next" type="button" class="primary-btn" data-i18n="win.next">下一关</button>
+        <button id="btn-replay" type="button" class="ghost-btn" data-i18n="win.replay">再来一次</button>
+        <button id="btn-win-levels" type="button" class="ghost-btn" data-i18n="btn.levels">选关</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 选关 -->
+  <div id="ov-levels" class="overlay" role="dialog" aria-modal="true" aria-labelledby="levels-title" hidden>
+    <div class="panel levels-panel">
+      <h2 id="levels-title" data-i18n="levels.title">选择关卡</h2>
+      <p id="levels-total" class="panel-desc"></p>
+      <div id="levels-grid" class="levels-grid"></div>
+      <div class="panel-actions">
+        <button id="btn-levels-close" type="button" class="ghost-btn" data-i18n="btn.close">返回</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 玩法说明 -->
+  <div id="ov-help" class="overlay" role="dialog" aria-modal="true" aria-labelledby="help-title" hidden>
+    <div class="panel help-panel">
+      <h2 id="help-title" data-i18n="help.title">玩法说明</h2>
+      <div class="help-body">
+        <h3 data-i18n="help.goalTitle">目标</h3>
+        <p data-i18n="help.goal">把货场里每一只木箱都推到发光的星点上，全部就位即过关。没有时间限制，但推错的箱子可能永远推不回来。</p>
+        <h3 data-i18n="help.rulesTitle">规则</h3>
+        <ul data-i18n-list="help.rulesList"></ul>
+        <h3 data-i18n="help.ctrlTitle">操作</h3>
+        <ul data-i18n-list="help.ctrlList"></ul>
+        <h3 data-i18n="help.scoreTitle">计分</h3>
+        <p data-i18n="help.score">基础分 + 推数分 + 时间分。推数不超过本关目标推数得满分，每多推一次扣分；用时越短分越高。三星 = 达到满分的 90%。</p>
+        <h3 data-i18n="help.keysTitle">快捷键</h3>
+        <ul data-i18n-list="help.keysList"></ul>
+      </div>
+      <div class="panel-actions">
+        <button id="btn-help-close" type="button" class="primary-btn" data-i18n="btn.close">知道了</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<noscript>
+  <div class="noscript">
+    <h1>推箱子 · Sokoban</h1>
+    <p>本游戏需要启用 JavaScript 才能运行。请开启后刷新页面。</p>
+    <p>This game requires JavaScript. Please enable it and reload.</p>
+  </div>
+</noscript>
+
+<script type="module" src="js/main.mjs?v=79c518024932"></script>
+</body>
+</html>

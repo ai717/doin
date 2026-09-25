@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-D67E3XTNSS"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-D67E3XTNSS');
+  </script>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <title>经典扫雷 · DOIN 在线小游戏</title>
+    <meta name="description" content="复刻 Windows 原版扫雷：灰底浮雕、红色 LED 计数、俏皮笑脸，初级/中级/高级/自定义四档，右键插旗问号循环，随时冲最快纪录。">
+    <meta name="theme-color" content="#008080">
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <link rel="stylesheet" href="css/style.css?v=79c518024932">
+  </head>
+  <body>
+    <div id="stage">
+      <!-- 机顶内嵌紧凑状态条：返回 / 音效 / 语言 / 规则，收纳而非四角散落 -->
+      <header class="topbar">
+        <a href="/" id="back-home" class="bar-btn">← <span data-i18n="backHome">返回门户</span></a>
+        <h1 id="stage-title" class="bar-title" data-i18n="stageTitle">经典扫雷 · WinMine</h1>
+        <div class="top-actions">
+          <button type="button" id="btn-help" class="bar-btn" aria-label="规则说明" data-i18n="helpBtn">规则</button>
+          <button type="button" id="btn-lang" class="bar-btn" aria-label="切换语言" data-i18n="langSwitch">EN</button>
+          <button type="button" id="btn-sound" class="bar-btn" aria-label="音效">🔊</button>
+        </div>
+      </header>
+
+      <!-- Win95 桌面：中央拟真窗口 + 左右两翼对话框小窗 -->
+      <main class="desktop">
+        <aside class="wing wing-left" aria-label="难度设置">
+          <div class="dlg">
+            <div class="dlg-title" data-i18n="difficultyLabel">难度</div>
+            <div class="dlg-body wing-difficulty" role="radiogroup" aria-label="难度">
+              <button type="button" id="diff-beginner" class="wing-opt" role="radio" data-difficulty="beginner" data-i18n="diffBeginner">初级 · 9×9 / 10</button>
+              <button type="button" id="diff-intermediate" class="wing-opt" role="radio" data-difficulty="intermediate" data-i18n="diffIntermediate">中级 · 16×16 / 40</button>
+              <button type="button" id="diff-expert" class="wing-opt" role="radio" data-difficulty="expert" data-i18n="diffExpert">高级 · 30×16 / 99</button>
+              <button type="button" id="diff-custom" class="wing-opt" data-difficulty="custom" data-i18n="custom">自定义…</button>
+            </div>
+            <div class="dlg-tip" id="status" role="status" aria-live="polite" data-i18n="statusReady">左键翻开 · 右键插旗 · 点数字速开</div>
+          </div>
+        </aside>
+
+        <section class="stage-center" aria-label="扫雷游戏窗口">
+          <div class="window">
+            <div class="titlebar">
+              <span class="titlebar-text" data-i18n="windowTitle">扫雷</span>
+              <span class="titlebar-btns" aria-hidden="true">
+                <span class="tb-min"></span><span class="tb-max"></span><span class="tb-close"></span>
+              </span>
+            </div>
+            <div class="menubar">
+              <button type="button" class="menu-item" id="menu-game" aria-haspopup="true" data-i18n="menuGame">游戏(G)</button>
+              <button type="button" class="menu-item" id="menu-help" aria-haspopup="true" data-i18n="menuHelp">帮助(H)</button>
+            </div>
+            <div class="statusbar">
+              <div class="led" id="led-mines" role="status" aria-label="剩余雷数">000</div>
+              <button type="button" class="smiley" id="smiley" aria-label="新游戏"></button>
+              <div class="led" id="led-time" role="status" aria-label="用时">000</div>
+            </div>
+            <div class="board-wrap">
+              <div class="board" id="board" role="grid" aria-label="扫雷棋盘"></div>
+            </div>
+          </div>
+        </section>
+
+        <aside class="wing wing-right" aria-label="最快成绩">
+          <div class="dlg">
+            <div class="dlg-title" id="best-title" data-i18n="bestTimesTitle">最快成绩</div>
+            <div class="dlg-body">
+              <ol class="best-list" id="best-list"></ol>
+              <p class="best-empty" id="best-empty" hidden></p>
+            </div>
+          </div>
+        </aside>
+      </main>
+    </div>
+
+    <!-- 下拉菜单 -->
+    <div class="menu-drop" id="menu-game-drop" role="menu" hidden>
+      <button type="button" class="menu-row" id="menu-new" role="menuitem"><span data-i18n="newGame">新游戏</span>&nbsp;&nbsp;F2</button>
+      <div class="menu-sep"></div>
+      <button type="button" class="menu-row" id="menu-beginner" role="menuitemcheckbox" aria-checked="true" data-i18n="beginner">初级</button>
+      <button type="button" class="menu-row" id="menu-intermediate" role="menuitemcheckbox" aria-checked="false" data-i18n="intermediate">中级</button>
+      <button type="button" class="menu-row" id="menu-expert" role="menuitemcheckbox" aria-checked="false" data-i18n="expert">高级</button>
+      <button type="button" class="menu-row" id="menu-custom" role="menuitem" data-i18n="custom">自定义...</button>
+      <div class="menu-sep"></div>
+      <button type="button" class="menu-row" id="menu-best" role="menuitem" data-i18n="bestTimes">最快成绩...</button>
+    </div>
+    <div class="menu-drop" id="menu-help-drop" role="menu" hidden>
+      <button type="button" class="menu-row" id="menu-rules" role="menuitem" data-i18n="rulesTitle">规则说明</button>
+      <button type="button" class="menu-row" id="menu-about" role="menuitem" data-i18n="aboutTitle">关于</button>
+    </div>
+
+    <!-- 弹窗层 -->
+    <div class="overlay" id="overlay" hidden>
+      <div class="dlg dialog" id="dlg-rules" hidden>
+        <div class="dlg-title" data-i18n="rulesTitle">规则说明</div>
+        <div class="dlg-body dialog-body" id="rules-body"></div>
+        <div class="dlg-actions"><button type="button" class="btn btn-ok" data-close data-i18n="ok">确定</button></div>
+      </div>
+      <div class="dlg dialog" id="dlg-about" hidden>
+        <div class="dlg-title" data-i18n="aboutTitle">关于</div>
+        <div class="dlg-body dialog-body" id="about-body"></div>
+        <div class="dlg-actions"><button type="button" class="btn btn-ok" data-close data-i18n="ok">确定</button></div>
+      </div>
+      <div class="dlg dialog" id="dlg-custom" hidden>
+        <div class="dlg-title" data-i18n="customTitle">自定义雷区</div>
+        <div class="dlg-body dialog-body">
+          <label class="field"><span data-i18n="customWidth">宽 (9-30)</span><input type="number" id="custom-width" min="9" max="30" value="9"></label>
+          <label class="field"><span data-i18n="customHeight">高 (9-24)</span><input type="number" id="custom-height" min="9" max="24" value="9"></label>
+          <label class="field"><span data-i18n="customMines">雷数</span><input type="number" id="custom-mines" min="10" value="10"></label>
+          <p class="form-err" id="custom-err" hidden></p>
+        </div>
+        <div class="dlg-actions">
+          <button type="button" class="btn btn-ok" id="custom-ok" data-i18n="ok">确定</button>
+          <button type="button" class="btn" data-close data-i18n="cancel">取消</button>
+        </div>
+      </div>
+      <div class="dlg dialog" id="dlg-record" hidden>
+        <div class="dlg-title" data-i18n="recordTitle">新纪录！</div>
+        <div class="dlg-body dialog-body">
+          <p id="record-body"></p>
+          <label class="field"><span id="record-name-label" data-i18n="recordNameLabel">请输入你的名字</span><input type="text" id="record-name" maxlength="20"></label>
+        </div>
+        <div class="dlg-actions">
+          <button type="button" class="btn btn-ok" id="record-save" data-i18n="ok">确定</button>
+          <button type="button" class="btn" id="record-skip" data-i18n="recordSkip">跳过</button>
+        </div>
+      </div>
+    </div>
+
+    <noscript><p class="noscript">需要启用 JavaScript 才能游玩经典扫雷。</p></noscript>
+    <script type="module" src="js/main.mjs?v=79c518024932"></script>
+  </body>
+</html>

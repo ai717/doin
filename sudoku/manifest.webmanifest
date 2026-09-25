@@ -1,0 +1,13 @@
+{
+  "name": "九宫 · 数独",
+  "short_name": "九宫数独",
+  "description": "打开就能玩的数独，提示会讲为什么。",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#F3EEE4",
+  "theme_color": "#F3EEE4",
+  "icons": [
+    { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/favicon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }
+  ]
+}

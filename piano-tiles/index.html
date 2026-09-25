@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-D67E3XTNSS"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-D67E3XTNSS');
+  </script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>别踩白块儿 · Piano Tiles | DOIN 在线小游戏</title>
+  <meta name="description" content="四列黑白琴键从屏幕上方滚落，只准点黑色格，点白或漏黑就掉血。三段容错、速度爬升、键盘 1-4 / D-F-J-K 同支持，挑战你的手速极限！">
+  <link rel="icon" href="favicon.svg?v=79c518024932" type="image/svg+xml">
+  <link rel="stylesheet" href="css/style.css?v=79c518024932">
+</head>
+<body>
+  <noscript>
+    <div class="noscript-banner">
+      <p data-i18n="noscript">需要启用 JavaScript 才能游玩。</p>
+    </div>
+  </noscript>
+
+  <div id="game-app">
+    <!-- 机身顶栏：返回 / 音效 / 语言 / 说明（内嵌紧凑栏，拒绝四角散落） -->
+    <header class="cabinet-topbar">
+      <a href="/" id="back-home" class="cab-btn" title="返回门户">←</a>
+      <h1 class="cab-title" data-i18n="gameTitle">别踩白块儿</h1>
+      <div class="cab-tools">
+        <button id="btn-sound" class="cab-btn" title="音效" aria-label="音效">🔊</button>
+        <button id="btn-lang" class="cab-btn" title="语言" aria-label="语言">EN</button>
+        <button id="btn-help" class="cab-btn" title="玩法说明" aria-label="玩法说明">?</button>
+      </div>
+    </header>
+
+    <!-- 街机掌机机身主体 -->
+    <div class="cabinet-body">
+      <!-- 左侧机身面板：连击 + 段位徽章 -->
+      <aside class="side-panel side-left" aria-label="连击与段位">
+        <div class="panel-block">
+          <span class="panel-label" data-i18n="combo">连击</span>
+          <span class="panel-value combo-num" id="hud-combo">0</span>
+        </div>
+        <div class="panel-block">
+          <span class="panel-label" data-i18n="rank">段位</span>
+          <span class="panel-value rank-name" id="hud-rank">—</span>
+        </div>
+        <div class="panel-block">
+          <span class="panel-label" data-i18n="bestCombo">最长连击</span>
+          <span class="panel-value" id="hud-best-combo">0</span>
+        </div>
+      </aside>
+
+      <!-- 中央主舞台：4 列轨道下落区 -->
+      <main class="stage-core">
+        <div class="tracks-wrap">
+          <canvas id="game-canvas" width="400" height="720" aria-label="钢琴块游戏画面" role="img"></canvas>
+
+          <!-- 判定线 -->
+          <div class="judge-line" aria-hidden="true"></div>
+
+          <!-- 开始弹窗 -->
+          <div id="modal-welcome" class="modal-layer">
+            <div class="modal-card">
+              <div class="modal-badge">🎹</div>
+              <h2 data-i18n="welcomeTitle">准备好了吗？</h2>
+              <p class="modal-text" data-i18n="welcomeDesc">只点黑色琴键，别踩白色。手速越快，音乐越美！</p>
+              <div class="modal-btn-row">
+                <button id="btn-start" class="arcade-btn" data-i18n="btnStart">开始游戏</button>
+                <button id="btn-mode-classic" class="arcade-btn arcade-btn--alt" data-mode="classic" data-i18n="modeClassic">经典模式</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- 暂停弹窗 -->
+          <div id="modal-pause" class="modal-layer hidden" aria-hidden="true">
+            <div class="modal-card">
+              <div class="modal-badge">⏸</div>
+              <h2 data-i18n="pauseTitle">游戏暂停</h2>
+              <p class="modal-text" data-i18n="pauseDesc">按 P 或回车键继续</p>
+              <div class="modal-btn-row">
+                <button id="btn-resume" class="arcade-btn" data-i18n="btnResume">继续</button>
+                <button id="btn-restart-pause" class="arcade-btn arcade-btn--alt" data-i18n="btnRestart">重新开始</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- 结算弹窗 -->
+          <div id="modal-gameover" class="modal-layer hidden" aria-hidden="true">
+            <div class="modal-card">
+              <div class="modal-badge" id="settle-rank-icon">🏆</div>
+              <h2 id="settle-title" data-i18n="gameoverTitle">游戏结束</h2>
+              <div class="score-summary">
+                <div class="summary-line">
+                  <span data-i18n="finalScore">本局得分</span>
+                  <strong id="settle-score" class="text-highlight">0</strong>
+                </div>
+                <div class="summary-line">
+                  <span data-i18n="finalCombo">本局最长连击</span>
+                  <strong id="settle-combo">0</strong>
+                </div>
+                <div class="summary-line">
+                  <span data-i18n="rankLabel">段位</span>
+                  <strong id="settle-rank">—</strong>
+                </div>
+                <div class="summary-line">
+                  <span data-i18n="bestScore">历史最高</span>
+                  <strong id="settle-best">0</strong>
+                </div>
+              </div>
+              <div class="modal-btn-row">
+                <button id="btn-replay" class="arcade-btn" data-i18n="btnReplay">再来一局</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- 规则弹窗 -->
+          <div id="modal-rules" class="modal-layer hidden" aria-hidden="true">
+            <div class="modal-card rules-card">
+              <div class="modal-badge">📖</div>
+              <h2 data-i18n="rulesTitle">玩法说明</h2>
+              <div class="rules-body">
+                <h3 data-i18n="ruleControlHeader">操作方式</h3>
+                <ul>
+                  <li data-i18n="ruleTap">点击/触摸屏幕上的黑块</li>
+                  <li data-i18n="ruleKeys">键盘：1 / 2 / 3 / 4 或 D / F / J / K 对应四列</li>
+                  <li data-i18n="rulePause">P 键或回车键暂停/继续</li>
+                </ul>
+                <h3 data-i18n="ruleScoreHeader">得分与段位</h3>
+                <ul>
+                  <li data-i18n="ruleHit">命中黑块得分，连击越多倍率越高</li>
+                  <li data-i18n="ruleMiss">3 次失误即结算（点白或漏黑）</li>
+                  <li data-i18n="ruleRank">最长连击决定段位：新秀 10 / 快手 25 / 手速大师 50 / 指尖传说 100</li>
+                </ul>
+              </div>
+              <div class="modal-btn-row">
+                <button id="btn-close-rules" class="arcade-btn" data-i18n="btnClose">返回</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </main>
+
+      <!-- 右侧机身面板：得分 + 剩余失误 -->
+      <aside class="side-panel side-right" aria-label="得分与失误">
+        <div class="panel-block">
+          <span class="panel-label" data-i18n="score">得分</span>
+          <span class="panel-value score-num" id="hud-score">0</span>
+        </div>
+        <div class="panel-block">
+          <span class="panel-label" data-i18n="misses">剩余机会</span>
+          <div class="hearts-row" id="hud-hearts">
+            <span class="heart heart-on" aria-hidden="true">♥</span>
+            <span class="heart heart-on" aria-hidden="true">♥</span>
+            <span class="heart heart-on" aria-hidden="true">♥</span>
+          </div>
+        </div>
+        <div class="panel-block">
+          <span class="panel-label" data-i18n="bestScore">最高分</span>
+          <span class="panel-value" id="hud-best">0</span>
+        </div>
+      </aside>
+    </div>
+
+    <!-- 底部操作台：掌机实体键 -->
+    <footer class="cabinet-controls">
+      <button id="btn-pause" class="arcade-btn arcade-btn--wide" data-i18n="btnPause">暂停</button>
+      <button id="btn-restart" class="arcade-btn arcade-btn--wide arcade-btn--alt" data-i18n="btnRestart">重开</button>
+    </footer>
+  </div>
+
+  <script type="module" src="js/main.mjs?v=79c518024932"></script>
+</body>
+</html>

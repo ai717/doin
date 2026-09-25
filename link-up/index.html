@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-D67E3XTNSS"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-D67E3XTNSS');
+  </script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="description" content="喜福连连看 (Fortune Link) - 民俗年味配对消除小游戏，点击两个相同图案，用最多拐两弯的通路连起它们，清空整盘。">
+  <title>喜福连连看 · DOIN.WIN</title>
+  <link rel="icon" href="favicon.svg?v=79c518024932" type="image/svg+xml">
+  <link rel="stylesheet" type="text/css" href="css/style.css?v=79c518024932">
+</head>
+<body>
+  <noscript>
+    <div class="noscript-tip">喜福连连看需要启用 JavaScript 才能运行，请在浏览器设置中开启后刷新页面。</div>
+  </noscript>
+
+  <div id="game-app" class="game-viewport">
+    <!-- 顶部仪式栏 -->
+    <header class="stage-top">
+      <div class="top-left">
+        <a href="/" id="back-home" class="btn-tool" aria-label="返回门户首页" title="返回门户首页" data-i18n-aria-label="home" data-i18n-title="home">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden="true">
+            <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/>
+          </svg>
+        </a>
+        <h1 class="game-logo" id="txt-title" data-i18n="appTitle">喜福连连看</h1>
+      </div>
+
+      <div class="top-center">
+        <div class="level-plaque">
+          <span class="plaque-chapter" id="val-chapter">第一章 · 初识</span>
+          <span class="plaque-level" id="val-level">第 1 / 50 关</span>
+        </div>
+      </div>
+
+      <div class="top-right">
+        <button id="btn-audio-toggle" class="btn-tool" aria-label="音效开关" title="音效开关" data-i18n-aria-label="soundToggle" data-i18n-title="soundToggle">
+          <svg id="icon-sound-on" viewBox="0 0 24 24" width="17" height="17" fill="currentColor" aria-hidden="true">
+            <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/>
+          </svg>
+          <svg id="icon-sound-off" class="hidden" viewBox="0 0 24 24" width="17" height="17" fill="currentColor" aria-hidden="true">
+            <path d="M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.2.05-.41.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51C20.63 14.91 21 13.5 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06c1.38-.31 2.63-.95 3.69-1.81L19.73 21 21 19.73 4.27 3zM12 4L9.91 6.09 12 8.18V4z"/>
+          </svg>
+        </button>
+        <button id="btn-lang-toggle" class="btn-tool lang-text" aria-label="切换语言" title="切换语言" data-i18n-aria-label="languageToggle" data-i18n-title="languageToggle">EN</button>
+        <button id="btn-help" class="btn-tool" aria-label="玩法说明" title="玩法说明" data-i18n-aria-label="help" data-i18n-title="help">
+          <svg viewBox="0 0 24 24" width="17" height="17" fill="currentColor" aria-hidden="true">
+            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 16h-2v-2h2v2zm1.07-7.75l-.9.92C12.45 11.9 12 12.5 12 14h-2v-.5c0-1.1.45-2.1 1.17-2.83l1.24-1.26c.37-.36.59-.86.59-1.41 0-1.1-.9-2-2-2s-2 .9-2 2H7c0-2.76 2.24-5 5-5s5 2.24 5 5c0 1.04-.42 1.99-1.07 2.75z"/>
+          </svg>
+        </button>
+        <button id="btn-levels" class="btn-tool" aria-label="选择关卡" title="选择关卡" data-i18n-aria-label="selectLevel" data-i18n-title="selectLevel">
+          <svg viewBox="0 0 24 24" width="17" height="17" fill="currentColor" aria-hidden="true">
+            <path d="M4 11h5V5H4v6zm0 7h5v-6H4v6zm6 0h5v-6h-5v6zm6 0h5v-6h-5v6zm-6-7h5V5h-5v6zm6-6v6h5V5h-5z"/>
+          </svg>
+        </button>
+      </div>
+    </header>
+
+    <!-- 主舞台：左棋盘 + 右侧牌匾 HUD -->
+    <main class="stage-body">
+      <section class="board-panel">
+        <div class="board-frame">
+          <div id="board" class="board-grid" role="grid" aria-label="连连看棋盘"></div>
+          <div id="pause-overlay" class="pause-overlay hidden" role="status" aria-live="polite" aria-hidden="true">
+            <span class="pause-mark" aria-hidden="true">Ⅱ</span>
+            <strong data-i18n="paused">已暂停</strong>
+            <span data-i18n="pauseHint">点击“继续”恢复游戏</span>
+          </div>
+          <canvas id="fx-layer" class="fx-layer" aria-hidden="true"></canvas>
+          <div id="status-hint" class="status-hint hidden" role="status"></div>
+        </div>
+      </section>
+
+      <aside class="hud-panel">
+        <div class="hud-card score-card">
+          <span class="hud-k" id="lbl-score" data-i18n="score">得分</span>
+          <span class="hud-v score-bump" id="val-score">0</span>
+          <span class="hud-max" id="val-score-max">/800</span>
+        </div>
+
+        <div class="hud-card stat-strip">
+          <div class="stat-item">
+            <span class="hud-k" id="lbl-steps" data-i18n="steps">步数</span>
+            <strong class="hud-v" id="val-steps">0</strong>
+          </div>
+          <div class="stat-item">
+            <span class="hud-k" id="lbl-combo" data-i18n="combo">连击</span>
+            <strong class="hud-v combo-bump" id="val-combo">×0</strong>
+          </div>
+          <div class="stat-item">
+            <span class="hud-k" id="lbl-time" data-i18n="time">时间</span>
+            <strong class="hud-v" id="val-time">00:00</strong>
+          </div>
+        </div>
+
+        <div class="tool-dock">
+          <button id="btn-hint" class="tool-btn" data-i18n="hint">提示</button>
+          <button id="btn-shuffle" class="tool-btn" data-i18n="shuffle">洗牌</button>
+        </div>
+
+        <div class="action-dock">
+          <button id="btn-restart" class="tool-btn" data-i18n="restart">重玩</button>
+          <button id="btn-pause" class="tool-btn" data-i18n="pause">暂停</button>
+        </div>
+
+        <button id="btn-help-2" class="text-link" data-i18n="howToPlayTitle">玩法说明</button>
+      </aside>
+    </main>
+  </div>
+
+  <!-- 弹窗：玩法说明 -->
+  <div id="modal-help" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="help-title">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h2 id="help-title" data-i18n="howToPlayTitle">玩法说明</h2>
+        <button class="modal-close" id="btn-close-help" aria-label="关闭" title="关闭" data-i18n-aria-label="close" data-i18n-title="close">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p data-i18n="help1">1. 点击选中一个图案，再点击另一个相同图案发起连线。</p>
+        <p data-i18n="help2">2. 通路最多拐两个弯，途中格子必须为空，允许从棋盘外绕行。</p>
+        <p data-i18n="help3">3. 连线成功即消除一对；清空整盘即过关，绝不失败、只赢不输。</p>
+        <p data-i18n="help4">4. 卡壳时点“提示”点亮一对，点“洗牌”重新铺盘；连续消除攒连击加分。</p>
+      </div>
+      <div class="modal-footer">
+        <button id="btn-confirm-help" class="modal-btn-primary" data-i18n="gotIt">我知道了</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 弹窗：选关 -->
+  <div id="modal-levels" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="levels-title">
+    <div class="modal-card modal-card-wide">
+      <div class="modal-header">
+        <h2 id="levels-title" data-i18n="selectLevel">选择关卡</h2>
+        <button class="modal-close" id="btn-close-levels" aria-label="关闭" title="关闭" data-i18n-aria-label="close" data-i18n-title="close">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="level-grid" id="level-list"></div>
+        <button class="daily-card" id="btn-daily">
+          <span class="daily-title" data-i18n="daily">每日挑战</span>
+          <span class="daily-sub" id="val-daily-best">最高分 0</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 弹窗：通关结算 -->
+  <div id="modal-win" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="win-title">
+    <div class="modal-card modal-card-accent">
+      <div class="modal-header victory-header">
+        <div class="victory-heading">
+          <span class="victory-kicker" data-i18n="victoryKicker">LUCKY CLEAR</span>
+          <h2 id="win-title" data-i18n="winTitle">清盘成功！</h2>
+          <p id="win-subtitle" data-i18n="winSubtitle">这一局，连得漂亮。</p>
+        </div>
+        <div class="badge-newbest hidden" id="badge-newbest" data-i18n="newBest">🎉 新高分！</div>
+      </div>
+      <div class="modal-body victory-body">
+        <div class="victory-rank" aria-label="rating">
+          <span class="rank-star" data-star="1">✦</span><span class="rank-star" data-star="2">✦</span><span class="rank-star" data-star="3">✦</span>
+        </div>
+        <div class="win-score-line">
+          <span id="lbl-win-score" data-i18n="winScore">得分</span>
+          <strong id="val-win-score">0</strong><span class="win-max">/800</span>
+        </div>
+        <div class="victory-stats">
+          <div class="stat-row"><span id="lbl-win-steps" data-i18n="winSteps">步数</span><strong id="val-win-steps">0</strong></div>
+          <div class="stat-row"><span id="lbl-win-combo" data-i18n="winCombo">最长连击</span><strong id="val-win-combo">0</strong></div>
+          <div class="stat-row"><span id="lbl-win-time" data-i18n="winTime">用时</span><strong id="val-win-time">00:00</strong></div>
+        </div>
+        <div class="victory-award"><span class="award-mark" aria-hidden="true">✹</span><span data-i18n="victoryAward">福运已点亮 · 下一局继续加成</span></div>
+      </div>
+      <div class="modal-footer victory-footer">
+        <button id="btn-win-replay" class="modal-btn-secondary" data-i18n="replay">重玩本关</button>
+        <button id="btn-win-next" class="modal-btn-primary" data-i18n="next">下一关</button>
+        <button id="btn-win-levels" class="modal-btn-ghost" data-i18n="backToLevels">返回选关</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast" class="toast hidden" role="status"></div>
+
+  <script type="module" src="js/main.mjs?v=79c518024932"></script>
+</body>
+</html>

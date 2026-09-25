@@ -1,0 +1,516 @@
+:root {
+  /* 薄荷绿品识别保留，整体降饱和：顶部浅、底部深，带一点向青蓝过渡的纵深 */
+  --bg-top: #96f3de;
+  --bg-mid: #6fe4cb;
+  --bg-deep: #55d3d0;
+  --bg: var(--bg-mid); /* 兼容旧引用（soon 徽章等） */
+  --mint: #8af0db;
+  --ink: #05384a;
+  --ink-soft: rgba(5, 56, 74, 0.64);
+  --surface: #ffffff;
+  --accent: #009cff;
+  --radius: 16px;
+  --gap: 16px;
+  --shadow-tile: 0 10px 24px rgba(4, 68, 77, 0.18), 0 3px 8px rgba(4, 68, 77, 0.1);
+  --shadow-chip: 0 4px 12px rgba(4, 68, 77, 0.14), 0 1px 3px rgba(4, 68, 77, 0.08);
+  --ease: cubic-bezier(0.25, 0.1, 0.25, 1);
+  --font-body: "Proxima Nova", "Open Sans", -apple-system, BlinkMacSystemFont,
+    "Segoe UI", "PingFang SC", "Microsoft YaHei", "Noto Sans SC", Arial, sans-serif;
+}
+
+* { box-sizing: border-box; margin: 0; }
+
+/* overscroll 露出的底色取渐变中值 */
+html { background: var(--bg-mid); }
+
+body {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  overflow-x: hidden;
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-size: 16px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Fixed texture layer, mirroring Poki's bg-diamante backdrop. */
+.bg-pattern {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background-image: url("../assets/bg-diamante.svg"),
+    linear-gradient(175deg, var(--bg-top) 0%, var(--bg-mid) 52%, var(--bg-deep) 100%);
+  background-size: 60px 60px, 100% 100%;
+}
+
+.site-nav, .page, .site-footer { position: relative; z-index: 1; }
+
+.page {
+  flex: 1;
+  width: min(100%, 1280px);
+  margin: 0 auto;
+  padding: 24px var(--gap) 80px;
+}
+
+.page-head {
+  position: relative;
+  margin-bottom: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* 第一行：品牌字标、搜索栏与语言按钮同行 */
+.head-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--gap);
+}
+
+/* Brand chip: white 3D tile, text "Doin.win", home link. */
+.site-title {
+  display: inline-block;
+  padding: 10px 20px;
+  color: var(--ink);
+  font-size: clamp(22px, 3.6vw, 28px);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+  text-decoration: none;
+  background: var(--surface);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-chip);
+  flex-shrink: 0;
+  transition: transform 0.6s var(--ease);
+}
+
+.site-title:hover, .site-title:focus-visible { transform: scale(1.04) translateY(-3px); transition-duration: 0.3s; }
+
+/* ".win" 用品牌蓝→薄荷青渐变文字，与页面底色的渐变同语 */
+.site-title-tld {
+  background: linear-gradient(120deg, var(--accent), #23cfc0);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  letter-spacing: -0.01em;
+}
+
+/* 实时搜索栏：居中自适应胶囊 */
+.search-bar {
+  flex: 1;
+  max-width: 440px;
+  position: relative;
+  display: flex;
+  align-items: center;
+  margin: 0 4px;
+}
+
+.search-icon {
+  position: absolute;
+  left: 14px;
+  color: var(--ink-soft);
+  pointer-events: none;
+}
+
+.search-input {
+  width: 100%;
+  height: 44px;
+  padding: 0 38px 0 38px;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--ink);
+  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid rgba(255, 255, 255, 0.8);
+  border-radius: 999px;
+  box-shadow: var(--shadow-chip);
+  outline: none;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  transition: all 0.25s var(--ease);
+}
+
+.search-input::placeholder {
+  color: var(--ink-soft);
+  font-weight: 500;
+}
+
+.search-input:focus {
+  background: var(--surface);
+  box-shadow: 0 6px 18px rgba(4, 68, 77, 0.16), 0 0 0 2px var(--accent);
+  transform: translateY(-1px);
+}
+
+.search-clear {
+  position: absolute;
+  right: 10px;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  background: rgba(5, 56, 74, 0.08);
+  color: var(--ink);
+  font-size: 18px;
+  line-height: 1;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.search-clear:hover {
+  background: rgba(5, 56, 74, 0.16);
+}
+
+/* 语言选择器：圆形地球按钮 + 下拉面板 */
+.lang-picker { position: relative; flex-shrink: 0; }
+
+.lang-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 42px;
+  height: 42px;
+  color: var(--ink);
+  background: var(--surface);
+  border: 0;
+  border-radius: 999px;
+  box-shadow: var(--shadow-chip);
+  cursor: pointer;
+  transition: transform 0.6s var(--ease);
+}
+
+.lang-toggle:hover, .lang-toggle:focus-visible { transform: scale(1.05); transition-duration: 0.3s; }
+
+.lang-menu {
+  position: absolute;
+  top: calc(100% + 10px);
+  right: 0;
+  z-index: 20;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 132px;
+  padding: 8px;
+  background: var(--surface);
+  border-radius: 20px;
+  box-shadow: 0 12px 32px rgba(4, 68, 77, 0.22), 0 2px 8px rgba(4, 68, 77, 0.12);
+  transform-origin: top right;
+  animation: lang-pop 0.25s var(--ease);
+}
+
+.lang-menu[hidden] { display: none; }
+
+@keyframes lang-pop {
+  from { opacity: 0; transform: scale(0.92) translateY(-4px); }
+}
+
+.lang-option {
+  padding: 9px 14px;
+  color: var(--ink);
+  font: inherit;
+  font-weight: 700;
+  text-align: left;
+  background: transparent;
+  border: 0;
+  border-radius: 999px;
+  cursor: pointer;
+}
+
+.lang-option:hover { background: rgba(5, 56, 74, 0.08); }
+
+.lang-option.is-active { color: #fff; background: var(--ink); }
+
+/* 次级标题行与游戏统计 */
+.sub-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 4px;
+}
+
+.sub-head h1 {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  font-size: clamp(18px, 3vw, 24px);
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.head-chip {
+  padding: 5px 12px;
+  font-size: clamp(12px, 2.2vw, 14px);
+  font-weight: 700;
+  color: var(--ink);
+  background: var(--surface);
+  border-radius: 999px;
+  box-shadow: var(--shadow-chip);
+  white-space: nowrap;
+}
+
+.games-counter {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--ink-soft);
+  background: rgba(255, 255, 255, 0.6);
+  padding: 4px 12px;
+  border-radius: 999px;
+  backdrop-filter: blur(4px);
+}
+
+/* 分类标签栏：水平滑动胶囊导航 */
+.category-tabs {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  overflow-x: auto;
+  padding: 4px 2px 8px;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+}
+
+.category-tabs::-webkit-scrollbar {
+  display: none;
+}
+
+.tab-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--ink);
+  background: rgba(255, 255, 255, 0.72);
+  border: 1px solid rgba(255, 255, 255, 0.9);
+  border-radius: 999px;
+  box-shadow: var(--shadow-chip);
+  cursor: pointer;
+  white-space: nowrap;
+  flex-shrink: 0;
+  transition: all 0.25s var(--ease);
+}
+
+.tab-btn:hover {
+  background: var(--surface);
+  transform: translateY(-2px);
+}
+
+.tab-btn.is-active {
+  background: var(--ink);
+  color: #ffffff;
+  box-shadow: 0 4px 14px rgba(5, 56, 74, 0.24);
+  transform: translateY(-2px);
+}
+
+/* 核心游戏网格：现代自适应流式网格，大屏多列 */
+.game-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 188px), 1fr));
+  gap: var(--gap);
+  grid-auto-flow: dense;
+}
+
+/* 基础游戏卡片 */
+.game-card {
+  position: relative;
+  display: block;
+  aspect-ratio: 1 / 1;
+  overflow: hidden;
+  container-type: inline-size;
+  background: var(--surface);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-tile);
+  text-decoration: none;
+  transition: transform 0.6s var(--ease), box-shadow 0.3s ease;
+}
+
+.game-card:not(.is-soon):hover,
+.game-card:not(.is-soon):focus-visible {
+  z-index: 2;
+  transform: scale(1.04) translateY(-4px);
+  box-shadow: 0 16px 36px rgba(4, 68, 77, 0.24), 0 4px 12px rgba(4, 68, 77, 0.12);
+  transition-duration: 0.3s;
+}
+
+.game-card:focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; }
+
+/* Bento 大卡：在默认全部视图中，重点推荐款跨 2x2 列 */
+@media (min-width: 680px) {
+  .game-card.is-featured {
+    grid-column: span 2;
+    grid-row: span 2;
+  }
+}
+
+.game-card__cover {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: var(--radius);
+  transition: transform 0.5s ease;
+}
+
+.game-card:not(.is-soon):hover .game-card__cover {
+  transform: scale(1.03);
+}
+
+/* 游戏名称：左下角常驻白瓷药丸 */
+.game-card__title {
+  position: absolute;
+  bottom: 6%;
+  left: 6%;
+  z-index: 6;
+  max-width: 88%;
+  padding: 5px 12px;
+  overflow: hidden;
+  color: var(--ink);
+  font-size: clamp(11px, 6.8cqi, 15px);
+  font-weight: 750;
+  line-height: 1.3;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  background: rgba(255, 255, 255, 0.94);
+  border-radius: 999px;
+  box-shadow: 0 2px 8px rgba(0, 27, 50, 0.18);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+}
+
+.game-card.is-featured .game-card__title {
+  font-size: clamp(14px, 5.5cqi, 18px);
+  padding: 7px 16px;
+}
+
+/* 质感角标：精选 HOT / NEW / 敬请期待 */
+.badge-tag {
+  position: absolute;
+  top: 6%;
+  right: 6%;
+  z-index: 7;
+  padding: 4px 10px;
+  font-size: clamp(10px, 5cqi, 12px);
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  border-radius: 999px;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.18);
+  pointer-events: none;
+}
+
+.badge-featured {
+  background: linear-gradient(135deg, #ff5e62, #ff9966);
+  color: #ffffff;
+}
+
+.badge-new {
+  background: linear-gradient(135deg, #10b981, #059669);
+  color: #ffffff;
+}
+
+.badge-soon {
+  background: var(--bg);
+  color: var(--ink);
+}
+
+.game-card.is-soon { cursor: default; }
+.game-card.is-soon .game-card__cover { filter: saturate(0.6); }
+
+/* 空状态设计 */
+.empty-state {
+  margin: 40px auto;
+  max-width: 420px;
+  padding: 48px 24px;
+  background: var(--surface);
+  border-radius: 24px;
+  box-shadow: var(--shadow-tile);
+  text-align: center;
+}
+
+.empty-icon {
+  font-size: 48px;
+  margin-bottom: 12px;
+}
+
+.empty-title {
+  font-size: 18px;
+  font-weight: 800;
+  color: var(--ink);
+  margin-bottom: 6px;
+}
+
+.empty-hint {
+  font-size: 14px;
+  color: var(--ink-soft);
+}
+
+.noscript-msg, .load-err {
+  grid-column: 1 / -1;
+  padding: 40px 16px;
+  color: var(--ink-soft);
+  font-size: 16px;
+  text-align: center;
+  background: var(--surface);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-chip);
+}
+
+.site-footer {
+  padding: 0 var(--gap) 40px;
+  color: var(--ink-soft);
+  font-size: 14px;
+  text-align: center;
+}
+
+/* 响应式适配 */
+@media (max-width: 768px) {
+  .page { padding: 18px var(--gap) 60px; }
+  .head-row {
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  .site-title {
+    order: 1;
+  }
+  .lang-picker {
+    order: 2;
+  }
+  .search-bar {
+    order: 3;
+    max-width: 100%;
+    width: 100%;
+    margin: 4px 0 0;
+  }
+  .game-grid {
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 150px), 1fr));
+    gap: 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  .game-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+  }
+  .tab-btn {
+    padding: 6px 12px;
+    font-size: 12px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .game-card, .site-title, .tab-btn, .search-input { transition-duration: 0.01s; }
+  .lang-menu { animation: none; }
+  .game-card:not(.is-soon):hover .game-card__cover { transform: none; }
+}
+

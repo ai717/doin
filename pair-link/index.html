@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-D67E3XTNSS"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-D67E3XTNSS');
+  </script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="description" content="琉璃灯市·连连看 (Pair Link) —— 点选两枚相同琉璃瓷片，用不超过两折的折线连上即消。36 关主线 + 无尽冲分，支持鼠标、触摸与键盘。">
+  <title>琉璃灯市·连连看 - DOIN.WIN</title>
+  <link rel="icon" href="favicon.svg?v=79c518024932" type="image/svg+xml">
+  <link rel="stylesheet" href="css/style.css?v=79c518024932">
+</head>
+<body>
+  <noscript>
+    <div class="noscript-tip">琉璃灯市需要启用 JavaScript 才能运行，请在浏览器设置中开启后刷新页面。</div>
+  </noscript>
+
+  <div id="app">
+    <header id="topbar">
+      <a href="/" id="back-home" aria-label="返回门户首页" title="返回门户首页">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden="true">
+          <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/>
+        </svg>
+      </a>
+      <span id="app-title" data-i18n="appTitle">琉璃灯市</span>
+      <span id="app-subtitle" data-i18n="appSubtitle">连连看</span>
+      <div id="topbar-actions">
+        <button id="btn-lang" class="icon-btn" type="button" data-i18n-label="switchLang" aria-label="切换语言">EN</button>
+        <button id="btn-sound" class="icon-btn" type="button" data-i18n-label="toggleSound" aria-label="音效开关" aria-pressed="false">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" aria-hidden="true">
+            <path d="M4 9v6h4l5 4V5L8 9H4zm12.5 3a3.5 3.5 0 0 0-2-3.16v6.32A3.5 3.5 0 0 0 16.5 12z"/>
+          </svg>
+        </button>
+        <button id="btn-help" class="icon-btn" type="button" data-i18n-label="howToPlayTitle" aria-label="玩法说明">?</button>
+      </div>
+    </header>
+
+    <main id="stage">
+      <section id="board-col">
+        <div id="board-wrap" aria-label="棋盘区">
+          <div id="board" role="grid" aria-label="琉璃灯市棋盘">
+            <canvas id="fx" aria-hidden="true"></canvas>
+          </div>
+        </div>
+
+        <!-- 操作台紧贴棋盘下缘：功能按钮必须离棋盘近，不能塞到侧栏最底部 -->
+        <div id="console">
+          <div class="tool-dock">
+            <button id="btn-hint" class="btn btn-tool" type="button">
+              <span data-i18n="hint">提示</span>
+              <span class="seal" id="hint-count">3</span>
+            </button>
+            <button id="btn-shuffle" class="btn btn-tool" type="button">
+              <span data-i18n="shuffle">洗牌</span>
+              <span class="seal" id="shuffle-count">2</span>
+            </button>
+          </div>
+          <div class="ctrl-dock">
+            <button id="btn-pause" class="btn" type="button" data-i18n="pause">暂停</button>
+            <button id="btn-restart" class="btn" type="button" data-i18n="restart">重玩</button>
+          </div>
+        </div>
+      </section>
+
+      <aside id="hud">
+        <div class="plaque plaque-level">
+          <span class="plaque-label" data-i18n="level">关卡</span>
+          <span id="level-plaque" class="plaque-value">1</span>
+          <span id="level-name" class="plaque-sub">灯市初开</span>
+        </div>
+
+        <div id="timer" class="plaque plaque-timer">
+          <span class="plaque-label" data-i18n="time">时间</span>
+          <div class="timer-body">
+            <svg id="timer-ring" viewBox="0 0 72 72" aria-hidden="true">
+              <circle class="ring-track" cx="36" cy="36" r="30"/>
+              <circle class="ring-fill" cx="36" cy="36" r="30"/>
+            </svg>
+            <span id="timer-text">02:04</span>
+          </div>
+        </div>
+
+        <div class="plaque plaque-combo">
+          <span class="plaque-label" data-i18n="combo">连击</span>
+          <div class="combo-body">
+            <svg id="combo-ring" viewBox="0 0 40 40" aria-hidden="true">
+              <circle class="ring-track" cx="20" cy="20" r="16"/>
+              <circle class="ring-fill" cx="20" cy="20" r="16"/>
+            </svg>
+            <span id="combo-lamp" class="combo-lamp"><span id="combo-count">0</span></span>
+          </div>
+        </div>
+
+        <div class="plaque plaque-score">
+          <span class="plaque-label" data-i18n="score">得分</span>
+          <span id="score-value" class="plaque-value big">0</span>
+          <span class="plaque-sub"><span data-i18n="best">最高</span> <span id="best-value">0</span></span>
+        </div>
+
+        <div class="plaque plaque-stars">
+          <span class="plaque-label" data-i18n="stars">星级</span>
+          <div id="stars" class="star-row" role="img" aria-label="星级 0 / 3">
+            <span class="star"></span><span class="star"></span><span class="star"></span>
+          </div>
+        </div>
+
+        <!-- 剩余对数：配合棋盘方格线，方便玩家心算还剩多少可消 -->
+        <div class="plaque plaque-progress">
+          <span class="plaque-label" data-i18n="pairsLeft">剩余对数</span>
+          <div class="progress-body">
+            <span id="pairs-left" class="plaque-value">0</span>
+            <div class="progress-track"><span id="progress-fill" class="progress-fill"></span></div>
+          </div>
+        </div>
+      </aside>
+    </main>
+
+    <div id="board-live" class="sr-only" aria-live="polite"></div>
+    <div id="toast" role="status" aria-live="polite" hidden></div>
+
+    <div id="overlay" hidden>
+      <section id="panel-start" class="panel" role="dialog" aria-modal="true" aria-labelledby="start-title" hidden>
+        <h2 id="start-title" data-i18n="startTitle">琉璃灯市·连连看</h2>
+        <p class="panel-sub" data-i18n="startSub">点两枚相同瓷片，用不超过两折的折线连上，清空整盘过关。</p>
+        <div class="panel-progress"><span data-i18n="unlocked">已解锁</span> <strong id="start-progress">1 / 36</strong></div>
+        <div class="panel-daily">
+          <span class="daily-label" data-i18n="daily">今日一盘</span>
+          <span class="daily-sub" data-i18n="dailySub">每天一盘，全服同一副盘面</span>
+          <span class="daily-best"><span data-i18n="dailyBest">今日最佳</span> <strong id="daily-best">0</strong></span>
+        </div>
+        <div class="panel-actions">
+          <button id="btn-continue" class="btn btn-primary" type="button" data-i18n="continueGame">继续游戏</button>
+          <button id="btn-open-levels" class="btn" type="button" data-i18n="selectLevel">选择关卡</button>
+          <button id="btn-endless" class="btn" type="button" data-i18n="endless">无尽冲分</button>
+          <button id="btn-daily" class="btn" type="button" data-i18n="daily">今日一盘</button>
+        </div>
+      </section>
+
+      <section id="panel-pause" class="panel" role="dialog" aria-modal="true" aria-labelledby="pause-title" hidden>
+        <h2 id="pause-title" data-i18n="paused">已暂停</h2>
+        <p class="panel-sub" data-i18n="pauseSub">倒计时已冻结，随时回来继续。</p>
+        <div class="panel-actions">
+          <button id="btn-resume" class="btn btn-primary" type="button" data-i18n="resume">继续</button>
+          <button id="btn-pause-restart" class="btn" type="button" data-i18n="restart">重玩</button>
+          <button id="btn-pause-levels" class="btn" type="button" data-i18n="selectLevel">选择关卡</button>
+        </div>
+      </section>
+
+      <section id="panel-result" class="panel" role="dialog" aria-modal="true" aria-labelledby="result-title" hidden>
+        <div class="burst" id="result-burst" aria-hidden="true"></div>
+        <h2 id="result-title" data-i18n="levelClear">灯市通明</h2>
+        <div id="result-stars" class="star-row big" role="img" aria-label="星级">
+          <span class="star"></span><span class="star"></span><span class="star"></span>
+        </div>
+        <dl id="result-lines" class="result-lines"></dl>
+        <div class="result-total">
+          <span data-i18n="totalScore">总分</span>
+          <strong id="result-score">0</strong>
+        </div>
+        <div id="result-best-badge" class="best-badge" hidden data-i18n="newRecord">新纪录</div>
+        <div class="panel-actions">
+          <button id="btn-next" class="btn btn-primary" type="button" data-i18n="nextLevel">下一关</button>
+          <button id="btn-retry" class="btn" type="button" data-i18n="restart">重玩</button>
+          <button id="btn-result-levels" class="btn" type="button" data-i18n="selectLevel">选择关卡</button>
+        </div>
+      </section>
+
+      <section id="panel-help" class="panel panel-wide" role="dialog" aria-modal="true" aria-labelledby="help-title" hidden>
+        <h2 id="help-title" data-i18n="howToPlayTitle">游戏玩法</h2>
+        <ol class="help-list">
+          <li data-i18n="help1">点选两枚图案相同的瓷片，再用一条水平或垂直的折线把它们连起来。</li>
+          <li data-i18n="help2">折线最多拐两次弯（0 折直连 / 1 折 / 2 折），不能走斜线。</li>
+          <li data-i18n="help3">折线经过的格子必须是空的；棋盘四周留有一圈虚空通道，可以绕出盘外连通。</li>
+          <li data-i18n="help4">连通成功即消除并得分；3 秒内连续消除可累积连击。</li>
+          <li data-i18n="help5">限时清空整盘过关。若盘面无解会自动洗牌，不消耗你的洗牌次数。</li>
+          <li data-i18n="help6">带冰封壳的瓷片点不动：先消掉它周围一圈（含斜向）的瓷片，壳就会被震碎。</li>
+        </ol>
+        <table class="help-keys">
+          <tbody>
+            <tr><th data-i18n="keyMove">方向键 / WASD</th><td data-i18n="keyMoveDesc">移动焦点格</td></tr>
+            <tr><th>Enter / Space</th><td data-i18n="keyPickDesc">选中或配对</td></tr>
+            <tr><th>Esc</th><td data-i18n="keyCancelDesc">取消选中</td></tr>
+            <tr><th>H</th><td data-i18n="keyHintDesc">提示一对可消</td></tr>
+            <tr><th>R</th><td data-i18n="keyShuffleDesc">主动洗牌</td></tr>
+            <tr><th>P</th><td data-i18n="keyPauseDesc">暂停 / 继续</td></tr>
+          </tbody>
+        </table>
+        <div class="panel-actions">
+          <button id="btn-help-close" class="btn btn-primary" type="button" data-i18n="gotIt">我知道了</button>
+        </div>
+      </section>
+
+      <section id="panel-levels" class="panel panel-wide" role="dialog" aria-modal="true" aria-labelledby="levels-title" hidden>
+        <h2 id="levels-title" data-i18n="selectLevel">选择关卡</h2>
+        <div id="level-grid" class="level-grid"></div>
+        <div class="panel-actions">
+          <button id="btn-levels-close" class="btn" type="button" data-i18n="close">关闭</button>
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <script type="module" src="js/main.mjs?v=79c518024932"></script>
+</body>
+</html>

@@ -1,0 +1,160 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-D67E3XTNSS"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-D67E3XTNSS');
+  </script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>街机乒乓 · DOIN 在线小游戏</title>
+  <meta name="description" content="街机乒乓（Pong Neo）：经典上下挡板对决，丝滑切角切削、球速递增对攻心流、阶梯AI与同屏双人对战，即点即玩！">
+  <link rel="icon" href="favicon.svg?v=79c518024932" type="image/svg+xml">
+  <link rel="stylesheet" href="css/style.css?v=79c518024932">
+</head>
+<body>
+  <noscript>
+    <div style="padding: 24px; text-align: center; color: #fff; background: #111;">
+      需要启用 JavaScript 才能游玩街机乒乓。 / JavaScript is required to play Pong Neo.
+    </div>
+  </noscript>
+
+  <!-- 顶部内嵌街机机顶状态栏 -->
+  <header class="arcade-topbar">
+    <div class="topbar-left">
+      <a href="/" id="back-home" class="btn-nav" data-i18n="backHome">返回首页</a>
+      <button type="button" id="btn-rules" class="btn-nav" data-i18n="rules">规则说明</button>
+    </div>
+    <div class="topbar-title">
+      <h1 data-i18n="title">街机乒乓</h1>
+      <span class="tagline" data-i18n="tagline">上下对决 · 极速对攻 · 经典街机重燃</span>
+    </div>
+    <div class="topbar-right">
+      <button type="button" id="btn-sound" class="btn-nav" aria-label="音效">🔊 音效</button>
+      <button type="button" id="btn-lang" class="btn-nav" aria-label="切换语言">EN</button>
+    </div>
+  </header>
+
+  <!-- 主容器：桌面端对称双翼机台 -->
+  <main class="arcade-container">
+    <!-- 左翼信息与配置牌匾 -->
+    <aside class="arcade-wing wing-left">
+      <div class="wing-card">
+        <h2 class="wing-title" data-i18n="modeLabel">对战模式</h2>
+        <div class="chip-group" role="group">
+          <button type="button" class="chip-btn active" data-mode="pve" data-i18n="modePve">人机对战</button>
+          <button type="button" class="chip-btn" data-mode="pvp" data-i18n="modePvp">同屏双人</button>
+          <button type="button" class="chip-btn" data-mode="wall" data-i18n="modeWall">单人击墙</button>
+        </div>
+
+        <h2 class="wing-title" data-i18n="diffLabel">AI 难度</h2>
+        <div class="chip-group" role="group">
+          <button type="button" class="chip-btn" data-diff="easy" data-i18n="diffEasy">菜鸟机</button>
+          <button type="button" class="chip-btn active" data-diff="normal" data-i18n="diffNormal">俱乐部</button>
+          <button type="button" class="chip-btn" data-diff="hard" data-i18n="diffHard">魔王级</button>
+        </div>
+
+        <h2 class="wing-title" data-i18n="targetScoreLabel">局制</h2>
+        <div class="chip-group" role="group">
+          <button type="button" class="chip-btn" data-target="3">3 分制</button>
+          <button type="button" class="chip-btn active" data-target="5">5 分制</button>
+          <button type="button" class="chip-btn" data-target="7">7 分制</button>
+        </div>
+
+        <div style="display: flex; gap: 8px; margin-top: 16px;">
+          <button type="button" id="btn-serve" class="arcade-btn primary" style="flex: 1;" data-i18n="btnRestart">发球</button>
+          <button type="button" id="btn-pause" class="arcade-btn" style="flex: 1;" data-i18n="btnPause">暂停</button>
+        </div>
+      </div>
+    </aside>
+
+    <!-- 中央街机球台 -->
+    <section class="arcade-court-wrapper">
+      <div class="court-frame">
+        <canvas id="court-canvas" width="600" height="800" aria-label="街机乒乓球台"></canvas>
+      </div>
+      <div id="status-banner" class="status-banner" data-i18n="statusServing">准备发球...</div>
+    </section>
+
+    <!-- 右翼战况与战绩看板 -->
+    <aside class="arcade-wing wing-right">
+      <div class="wing-card">
+        <h2 class="wing-title" data-i18n="scoreTitle">比分看板</h2>
+        <div class="score-display">
+          <div class="score-box">
+            <div id="player-top-label" class="score-player pink">AI 机器人</div>
+            <div id="score-top-num" class="score-num pink">0</div>
+          </div>
+          <div class="score-divider">:</div>
+          <div class="score-box">
+            <div id="player-bottom-label" class="score-player cyan">你 (下方 1P)</div>
+            <div id="score-bottom-num" class="score-num cyan">0</div>
+          </div>
+        </div>
+
+        <div class="stat-item">
+          <span class="stat-label" data-i18n="currentRally">当前连拍</span>
+          <span id="val-rallies" class="stat-val">0</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-label" data-i18n="maxRally">最长对轰</span>
+          <span id="val-max-rally" class="stat-val">0</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-label" data-i18n="ballSpeed">球体时速</span>
+          <span id="val-ball-speed" class="stat-val">320 px/s</span>
+        </div>
+
+        <h2 class="wing-title" style="margin-top: 14px;" data-i18n="pveRecord">人机战绩</h2>
+        <div class="stat-item">
+          <span class="stat-label">历史战绩</span>
+          <span id="val-pve-record" class="stat-val">胜 0 / 负 0</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-label" data-i18n="bestRallyRecord">历史最佳连拍</span>
+          <span id="val-best-rally-record" class="stat-val">0</span>
+        </div>
+
+        <button type="button" id="btn-new-match" class="arcade-btn" style="width: 100%; margin-top: 12px;" data-i18n="btnNewMatch">新比赛</button>
+      </div>
+    </aside>
+  </main>
+
+  <!-- 规则说明模态弹窗 -->
+  <div id="modal-rules" class="arcade-modal hidden" role="dialog" aria-modal="true">
+    <div class="modal-content">
+      <h2 data-i18n="ruleTitle">游戏玩法与操作指南</h2>
+      <div class="modal-body">
+        <p data-i18n="ruleGoal">【目标】操控底端球板横向拦截弹射球，将球打入对方底线得分。率先达到目标分的一方夺得整场胜利！</p>
+        <p data-i18n="ruleSpin">【切角与切削】击中球板中心垂直回弹；击中两翼边缘大角度急折；在击球瞬间横移球板可给球施加【旋球加塞】，走出致命弧线！</p>
+        <p data-i18n="ruleSpeed">【球速递增】每一拍回击都会提升球速，连续对轰超 10 拍以上时小球进入超光速状态！</p>
+        <p data-i18n="ruleControlDesktop">【桌面操作】鼠标在球台内水平滑动控板；下方 1P 支持键盘 A/D 或 ←/→ 移动；双人模式下上方 2P 使用 J/L 键！</p>
+        <p data-i18n="ruleControlMobile">【移动操作】手指在半场区域左右滑动即可自如拉板接球。</p>
+      </div>
+      <div class="modal-actions">
+        <button type="button" id="btn-rules-close" class="arcade-btn primary" data-i18n="ruleClose">我知道了</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 胜负结算模态弹窗 -->
+  <div id="modal-result" class="arcade-modal hidden" role="dialog" aria-modal="true">
+    <div class="modal-content">
+      <h2 id="result-title">胜利时刻</h2>
+      <div class="modal-body" style="text-align: center;">
+        <p id="result-score" style="font-size: 1.2rem; font-weight: 700; color: #fff;">最终比分：5 - 2</p>
+        <p id="result-rally" style="color: var(--cyan);">本局最高连拍：14 拍</p>
+      </div>
+      <div class="modal-actions">
+        <button type="button" id="btn-result-again" class="arcade-btn primary" data-i18n="modalBtnAgain">再来一局</button>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="js/main.mjs?v=79c518024932"></script>
+</body>
+</html>

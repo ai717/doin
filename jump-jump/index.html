@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-D67E3XTNSS"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-D67E3XTNSS');
+  </script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>跳一跳 · DOIN 在线小游戏</title>
+  <meta name="description" content="跳一跳：按住蓄力、松手起跳，划出抛物线落向下一座浮岛。正中靶心触发连击暴击，跳床腾空、黑胶打碟、漂移浮岛与极窄薄块轮番登场。旅途关卡 25 关 + 经典无尽跳 + 靶心试炼三模式。">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="css/style.css?v=79c518024932">
+</head>
+<body>
+  <div id="game-app">
+    <!-- 机顶一体化控制条：返回 / 品牌 / 系统键全部内嵌，拒绝四角散落 -->
+    <header id="stage-bar">
+      <a href="/" id="back-home" class="bar-btn" data-i18n-title="back">
+        <span class="bar-glyph">←</span><span class="bar-text" id="back-text">返回门户</span>
+      </a>
+      <h1 id="app-title">
+        <span id="app-title-main">跳一跳</span>
+        <span id="app-subtitle">微缩软胶跳台</span>
+      </h1>
+      <div class="stage-actions">
+        <button id="btn-sound" class="bar-btn" type="button" aria-pressed="true" data-i18n-title="sound" data-i18n-aria="sound">
+          <span class="bar-glyph">🔊</span>
+        </button>
+        <button id="btn-lang" class="bar-btn" type="button" data-i18n-title="langSwitch">EN</button>
+        <button id="btn-help" class="bar-btn" type="button" data-i18n-title="help" data-i18n-aria="help">
+          <span class="bar-glyph">?</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- 模式切换：机顶吊牌式滑道 -->
+    <nav id="mode-bar" role="tablist" data-i18n-aria="modeAria" aria-label="选择玩法模式">
+      <button class="mode-chip is-active" id="mode-odyssey" type="button" role="tab" data-mode="odyssey" aria-selected="true">旅途关卡</button>
+      <button class="mode-chip" id="mode-endless" type="button" role="tab" data-mode="endless" aria-selected="false">经典无尽跳</button>
+      <button class="mode-chip" id="mode-sniper" type="button" role="tab" data-mode="sniper" aria-selected="false">靶心试炼</button>
+    </nav>
+
+    <main id="stage-core">
+      <!-- 左侧数据翼栏 -->
+      <aside id="wing-left" class="wing" aria-label="对局数据">
+        <div class="plaque plaque-score">
+          <span class="plaque-label" id="label-score">得分</span>
+          <strong class="plaque-value" id="val-score">0</strong>
+        </div>
+        <div class="plaque plaque-combo" id="plaque-combo">
+          <span class="plaque-label" id="label-combo">靶心连击</span>
+          <strong class="plaque-value" id="val-combo">×0</strong>
+          <span class="combo-flame" aria-hidden="true"></span>
+        </div>
+        <div class="plaque">
+          <span class="plaque-label" id="label-extra">关卡</span>
+          <strong class="plaque-value plaque-value-sm" id="val-extra">第 1 关</strong>
+        </div>
+        <div class="plaque">
+          <span class="plaque-label" id="label-best">最高分</span>
+          <strong class="plaque-value plaque-value-sm" id="val-best">0</strong>
+        </div>
+      </aside>
+
+      <!-- 中央主舞台 -->
+      <section id="arena" data-i18n-aria="stageAria" aria-label="跳一跳微缩机台舞台">
+        <canvas id="stage-canvas" role="img" aria-label="等轴测微缩跳台：棋子在各浮岛平台间蓄力跳跃"></canvas>
+        <div id="toast" role="status" aria-live="polite"></div>
+      </section>
+
+      <!-- 右侧雷达与辅助翼栏 -->
+      <aside id="wing-right" class="wing" aria-label="蓄力与下一平台">
+        <div class="plaque plaque-gauge" id="plaque-gauge">
+          <span class="plaque-label" id="label-gauge">蓄力仪表</span>
+          <svg class="gauge" viewBox="0 0 120 70" aria-hidden="true">
+            <path class="gauge-bg" d="M12 62 A48 48 0 0 1 108 62" />
+            <path class="gauge-fill" id="gauge-fill" d="M12 62 A48 48 0 0 1 108 62" />
+          </svg>
+          <span class="gauge-hint" id="gauge-hint">长按蓄力 · 松手起跳</span>
+        </div>
+        <div class="plaque plaque-next">
+          <span class="plaque-label" id="label-next">下一平台</span>
+          <div class="next-row">
+            <span class="next-icon" id="next-icon" aria-hidden="true">■</span>
+            <strong class="next-name" id="next-name">基础台</strong>
+          </div>
+        </div>
+        <div class="plaque plaque-hint">
+          <span class="hint-text" id="key-hint">【空格】或鼠标长按蓄力，松手起跳</span>
+        </div>
+      </aside>
+    </main>
+
+    <!-- 浮层 -->
+    <div id="panel-ready" class="overlay is-open">
+      <div class="panel panel-ready">
+        <span class="panel-kicker" id="ready-kicker">JUMP JUMP</span>
+        <h2 class="panel-title" id="ready-title">跳一跳</h2>
+        <p class="panel-desc" id="ready-desc">按住蓄力，松手让软胶小人划出抛物线跳向下一座浮岛。</p>
+        <div class="panel-actions">
+          <button id="btn-start" class="btn btn-primary" type="button">开始跳跃</button>
+          <button id="btn-levels" class="btn" type="button">选择关卡</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="panel-levels" class="overlay">
+      <div class="panel panel-levels">
+        <h2 class="panel-title" id="levels-title">选择关卡</h2>
+        <p class="panel-sub" id="levels-progress">0 / 75 星</p>
+        <div class="levels-scroll">
+          <div class="levels-grid" id="levels-grid"></div>
+        </div>
+        <div class="panel-actions">
+          <button id="btn-levels-close" class="btn" type="button">返回</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="panel-result" class="overlay">
+      <div class="panel panel-result">
+        <h2 class="panel-title" id="result-title">抵达终点旗台！</h2>
+        <div class="result-stars" id="result-stars" aria-hidden="true">
+          <span class="star">★</span><span class="star">★</span><span class="star">★</span>
+        </div>
+        <div class="result-score">
+          <span class="result-score-label" id="label-result-score">最终得分</span>
+          <strong class="result-score-value" id="res-score">0</strong>
+          <span class="result-badge" id="result-badge" hidden>🏆 新纪录！</span>
+        </div>
+        <div class="result-rows">
+          <div class="result-row" id="row-combo"><span id="label-res-combo">最长连击</span><strong id="res-combo">0</strong></div>
+          <div class="result-row" id="row-accuracy"><span id="label-res-accuracy">靶心率</span><strong id="res-accuracy">0%</strong></div>
+          <div class="result-row" id="row-jumps"><span id="label-res-jumps">跳跃次数</span><strong id="res-jumps">0</strong></div>
+          <div class="result-row" id="row-longest"><span id="label-res-longest">最远一跳</span><strong id="res-longest">0 米</strong></div>
+          <div class="result-row" id="row-rank"><span id="label-res-rank">精准评级</span><strong id="res-rank">—</strong></div>
+        </div>
+        <p class="result-hint" id="result-hint">★ 通关</p>
+        <div class="panel-actions">
+          <button id="btn-retry" class="btn btn-primary" type="button">再挑战一次</button>
+          <button id="btn-next" class="btn" type="button">下一关</button>
+          <button id="btn-again" class="btn" type="button">再来一局</button>
+          <button id="btn-back-levels" class="btn" type="button">返回关卡</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="panel-help" class="overlay">
+      <div class="panel panel-help">
+        <h2 class="panel-title" id="help-title">玩法说明</h2>
+        <ol class="help-list" id="help-list">
+          <li id="help1"></li>
+          <li id="help2"></li>
+          <li id="help3"></li>
+          <li id="help4"></li>
+          <li id="help5"></li>
+          <li id="help6"></li>
+        </ol>
+        <div class="panel-actions">
+          <button id="btn-help-close" class="btn btn-primary" type="button">我知道了</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <noscript><p>需要启用 JavaScript 才能游玩跳一跳。</p></noscript>
+  <script type="module" src="js/main.mjs?v=79c518024932"></script>
+</body>
+</html>
