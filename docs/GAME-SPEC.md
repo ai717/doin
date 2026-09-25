@@ -65,6 +65,7 @@ games/<slug>/
 | module-script | 入口 `<script type="module">` | 测试能直接 import 复用核心代码 |
 | noscript / meta-desc / icon-link / html-lang | 无 JS 兜底、SEO、favicon、lang 属性 | 体验与可访问性细节 |
 | i18n-module | `js/i18n.mjs` 集中中英双表（键对齐非空） | 文案不散落 |
+| i18n-clean | 英文词典 `strings.en` 绝无汉字，且 JS 源码零未封装硬编码中文 | 保证英文模式纯净，杜绝英文版夹杂中文 |
 | engine-module | `js/engine.mjs` 承载纯规则，不碰 document/window/localStorage | 规则可被 node:test 直接验证 |
 | reduced-motion | 动效带 `prefers-reduced-motion` 降级 | 动效可降级 |
 | tests-dir | tests/ 覆盖 engine / storage / i18n / markup（≥3 文件） | 门禁厚度 |
@@ -76,6 +77,10 @@ games/<slug>/
 - 页面/渲染层直接改规则状态或自建 rule action（规则只在 engine；UI 只发"意图"）。
 - 裸读裸写 localStorage（必须走 storage.mjs；读到的任何值都要 normalize，坏值回默认）。
 - 私有语言偏好 key（如 `xxx_lang`）——必须 `doin.lang`。
+- **严禁英文环境界面夹杂中文（硬性红线）**：
+  - 英文模式下，网页标题、返回键、所有按钮、HUD 徽章、关卡/道具名称、AI 等级、说明弹窗、Canvas 绘制文字绝对严禁出现任何汉字（`[\u4e00-\u9fa5]`）；
+  - 严禁在关卡数据（`levels.mjs`）、道具表（`data.mjs`）、AI 称号或 UI 逻辑中硬编码中文字符串，所有文本必须由 `i18n.mjs` 统一管理并动态映射；
+  - `strings.en` 英文词典除切换按钮自身标识外绝无汉字。
 - 代码内绝对路径（`/games/...` 或 `/slug/...`）。
 - 提交 `dist/`、`node_modules/`、构建产物。
 - `alert()` 做游戏内反馈（用页面内 toast/浮层；`confirm()` 仅限重置存档这类破坏性操作）。
@@ -194,7 +199,7 @@ detectLocale / loadLocale / saveLocale / htmlLang`。切换语言 = `saveLocale(
 
 - 你只需写出 `tests/*.test.mjs` 本身，按 `node --test` **显式列文件**的形式组织
   （Node 22 不给目录递归）；根 package.json 的 `test:<slug>` 由门户方注册。
-- 最少四类：engine 纯函数用例；storage normalize/降级用例；i18n 中英键对齐用例；
+- 最少四类：engine 纯函数用例；storage normalize/降级用例；i18n 中英键对齐与**纯净英文（`strings.en` 绝无汉字且 JS 源码零未封装中文）**用例；
   markup 装配契约用例（index.html 的 id 与 main 的引用表互相闭合、`?v=dev` 在位、
   移动端与 reduced-motion 样式在位）。
 - 有随机性的生成/发牌逻辑必须支持注入 `rng`，测试里用固定种子。
@@ -226,7 +231,7 @@ detectLocale / loadLocale / saveLocale / htmlLang`。切换语言 = `saveLocale(
 2. 所有 `import` 的相对路径与文件名真实存在，无循环依赖。
 3. JS 里引用的每个 `id` 在 `index.html` 中都存在，装配表双向闭合。
 4. 本地 script/link 全部带 `?v=dev`；零 CDN、零外链字体、零外链图片、零 npm 依赖。
-5. 语言偏好读写 `doin.lang`；中英字符串表的键完全对齐且非空。
+5. 语言偏好读写 `doin.lang`；中英双表键完全对齐且非空；**`strings.en` 英文表除语言切换自身提示外绝无任何汉字**；关卡/道具/AI 等数据层无硬编码中文字符串；英文环境下加载时界面无任何中文残留。
 6. localStorage 集中一处封装并包 try/catch；读到的每个值都 normalize，坏值回默认；
    存档 key 用 `doin.<slug>.v1`，不自造前缀。
 7. 有 `<a href="/">` 返回首页、`<noscript>` 兜底，动效带 `prefers-reduced-motion` 降级。

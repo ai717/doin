@@ -135,16 +135,20 @@ DOIN 是**游戏门户**，不是企业管理后台或工具网站。用户打�
 - `js/ui.mjs` 或 `js/render.mjs`：唯一碰 DOM 或 Canvas 绘制的层。
 - `js/score.mjs`：计分唯一口径（UI 不得自算分），上限钳制，永不显示 `得分 > 总分`。
 - `js/storage.mjs`：存档唯一口径，Key 统一为 `doin.<slug>.v1`，集中 try/catch，损坏自动 normalize 退回默认，静默降级内存。
-- `js/i18n.mjs`：统一读写全站共享偏好 `localStorage["doin.lang"]`，双语表严格对齐非空。
+- `js/i18n.mjs`：统一读写全站共享偏好 `localStorage["doin.lang"]`，双语表严格对齐非空；**纯净英文红线**：`strings.en` 除语言切换标识外绝无汉字，界面所有文案、关卡名、道具名、AI 称号与 Canvas 文本必须 100% 走 i18n，数据层（`levels.mjs`/`data.mjs`）严禁硬编码中文字符串。
 - `js/audio.mjs`：WebAudio 程序化合成音效（零外部音频文件），手势解锁，静音或不支持时静默降级。
-- `js/main.mjs`：装配入口，绑定事件，协调全局。
-- `tests/*.test.mjs`：原生 `node:test`，覆盖规则、存储、i18n 与标记装配契约。
+- `js/main.mjs`：装配入口，绑定事件，协调全局；初始化时必须按当前语言全量刷新页面内所有文本节点（包含 `<title>`、返回键、aria-label 与说明弹窗），严禁英文态残留 HTML 原生中文。
+- `tests/*.test.mjs`：原生 `node:test`，覆盖规则、存储、i18n（含英文无汉字与源码零裸写中文）与标记装配契约。
 
 ### 5.2 八大不可违背不变量（Invariants）
 1. **合法操作铁律**：凡满足合法性判定的操作**必须执行**，任何层不得拦截或伪装失败；无效意图返回 `action: null` 静默忽略，**严禁使用 `alert()` 报错**。
 2. **DOM-Free 规则隔离**：页面或 UI 层不得自造 action、不得直接改动 engine 内部状态；终局（won/lost）操作一律 no-op。
 3. **存储稳健性**：localStorage 不可用或数据损坏时静默降级，读取数据严格归一化校验，绝不白屏。
-4. **全站 i18n 共享偏好**：统一使用 `localStorage["doin.lang"]`（zh/en），禁止私有语言 key。
+4. **全站 i18n 共享偏好与纯净语言铁律（硬性红线：严禁英文界面夹杂中文）**：
+   - 统一使用 `localStorage["doin.lang"]`（zh/en），禁止私有语言 key；
+   - **英文纯净度**：英文模式下，网页标题、返回键、所有按钮、HUD 徽章、关卡/道具名称、AI 等级、玩法说明弹窗、Canvas 绘制字样 100% 呈现纯英文，绝对禁止出现任何汉字（`[\u4e00-\u9fa5]`）；
+   - **数据与源码零硬编码中文**：关卡（`levels.mjs`）、道具（`data.mjs`）等数据配置必须存 key/id，展示文本由 UI/Render 统一查 i18n，严禁在 js/ 代码中裸写中文字符串；
+   - `tests/i18n.test.mjs` 必须包含对 `strings.en` 无汉字与 JS 源码零未封装中文的自动化断言。
 5. **零外部网络依赖**：零 CDN、零 webfont、零外链音视频与图片，仅使用系统 sans-serif 字体栈。
 6. **路径与缓存占位**：代码内一律相对路径；本地资源一律附加 `?v=dev` 占位符。
 7. **体验兜底**：必须含返回首页链接、`<noscript>` 提示、动效降级支持、适配桌面大屏与 390px 移动视口。

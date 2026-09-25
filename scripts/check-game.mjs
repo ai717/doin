@@ -137,16 +137,47 @@ check("tests-root-script", Boolean(rootScripts[`test:${slug}`]), `根 package.js
 
 check("structure", existsSync(resolve(gameDir, "js")) && existsSync(resolve(gameDir, "css")), "建议 js/ 与 css/ 目录");
 check("module-script", /<script[^>]+type="module"/.test(indexHtml ?? ""), "建议入口脚本用 ES module（测试才能直接 import 复用）");
+function stripComments(source) {
+  return source.replace(/\/\*[\s\S]*?\*\//g, "").replace(/(^|[^:])\/\/.*$/gm, "$1");
+}
+
 check("noscript", /<noscript/.test(indexHtml ?? ""), "建议 <noscript> 兜底");
 check("meta-desc", /<meta[^>]+name="description"/.test(indexHtml ?? ""), "建议 meta description");
 check("icon-link", /rel="icon"/.test(indexHtml ?? ""), "建议 favicon");
 check("html-lang", /<html[^>]+lang="/.test(indexHtml ?? ""), "建议 html lang");
 check("i18n-module", read(resolve(gameDir, "js", "i18n.mjs")) !== null, "建议 js/i18n.mjs 集中双表");
 
-// 判"规则层是否碰 DOM/存储"前先剥注释：说明性注释里提到 document/localStorage 不算违规。
-function stripComments(source) {
-  return source.replace(/\/\*[\s\S]*?\*\//g, "").replace(/(^|[^:])\/\/.*$/gm, "$1");
+// 检查多语言纯净性（en 英文词典绝无汉字，且除 i18n.mjs 外的运行源码不包含硬编码中文字符串）
+const i18nCleanIssues = [];
+for (const file of jsSources) {
+  if (file.path.includes(`${gameDir}/tests`) || file.path.includes(`${gameDir}\\tests`)) continue;
+  const isI18n = file.path.endsWith("i18n.mjs") || file.path.endsWith("i18n.js") || file.path.endsWith("i18n.ts");
+  const code = stripComments(file.src);
+  if (!isI18n) {
+    const matches = code.match(/(["'`])[^"'`\r\n]*[\u4e00-\u9fa5]+[^"'`\r\n]*\1/g);
+    if (matches && matches.length > 0) {
+      const relPath = file.path.slice(gameDir.length + 1).replace(/\\/g, "/");
+      i18nCleanIssues.push(`${relPath} 硬编码中文 (${matches.slice(0, 2).join(", ")}${matches.length > 2 ? " 等" : ""})`);
+    }
+  } else {
+    const enMatch = code.match(/(?:const|let|var)?\s*en\s*=\s*\{([\s\S]*?)\n\s*\};?|en\s*:\s*\{([\s\S]*?)\n\s*\}/);
+    if (enMatch) {
+      const enContent = enMatch[1] || enMatch[2] || "";
+      const lines = enContent.split("\n");
+      const badLines = [];
+      const whitelist = /switchLang|langSwitch|langOther|langBtn|btnLang|langName|langLabel|langShort/i;
+      for (const line of lines) {
+        if (/[\u4e00-\u9fa5]/.test(line) && !whitelist.test(line)) {
+          badLines.push(line.trim());
+        }
+      }
+      if (badLines.length > 0) {
+        i18nCleanIssues.push(`i18n 英文表含中文: ${badLines.slice(0, 2).join("; ")}`);
+      }
+    }
+  }
 }
+check("i18n-clean", i18nCleanIssues.length === 0, i18nCleanIssues.join(" | "));
 
 const engineSource = read(resolve(gameDir, "js", "engine.mjs"));
 const engineCode = engineSource === null ? "" : stripComments(engineSource);
