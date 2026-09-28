@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-D67E3XTNSS"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-D67E3XTNSS');
+  </script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>数织 · 像素画谜</title>
+  <meta name="description" content="看行列数字提示，推理涂黑标叉，一幅隐藏像素画跃然眼前。纯确定性逻辑推理，零死局，收纳精美印章画册。">
+  <link rel="icon" href="favicon.svg?v=d493500955ea" type="image/svg+xml">
+  <link rel="stylesheet" href="css/style.css?v=d493500955ea">
+</head>
+<body>
+  <noscript>
+    <div style="padding: 24px; text-align: center; color: #fff; background: #0f172a;">
+      <h2>请启用 JavaScript 以畅玩《数织》</h2>
+      <p>Please enable JavaScript to play Picross.</p>
+    </div>
+  </noscript>
+
+  <div id="game-app" class="game-container">
+    <!-- Top System Tray -->
+    <header class="system-tray">
+      <div class="tray-left">
+        <a href="/" id="back-home" class="tray-btn home-link" data-i18n="back_home" title="返回首页">← 首页</a>
+        <div class="game-brand">
+          <span class="brand-icon">🧩</span>
+          <h1 class="brand-title" data-i18n="game_title">数织</h1>
+        </div>
+      </div>
+      <div class="tray-right">
+        <button type="button" id="btn-sound" class="tray-btn icon-btn" aria-label="音效开关" title="音效">
+          <span class="icon-sound">🔊</span>
+        </button>
+        <button type="button" id="btn-lang" class="tray-btn text-btn" aria-label="切换语言" title="Language">EN</button>
+        <button type="button" id="btn-help" class="tray-btn icon-btn" aria-label="玩法说明" title="帮助">❓</button>
+      </div>
+    </header>
+
+    <!-- Main Game Area -->
+    <main class="game-stage">
+      <!-- Left Wing: Stamp Album & Progress -->
+      <aside class="side-wing left-wing">
+        <div class="wing-card stamp-shelf">
+          <div class="wing-header">
+            <span class="wing-title" data-i18n="album_title">印章画册</span>
+            <button type="button" id="btn-album" class="wing-action-btn" data-i18n="album_collected">全集 ➔</button>
+          </div>
+          <div id="wing-stamps" class="wing-stamps-grid">
+            <!-- Populated dynamically -->
+          </div>
+          <div class="chapter-badges-row">
+            <span class="badge-label" data-i18n="album_chapter_stars">章节勋章</span>
+            <div id="wing-chapter-badges" class="badges-container">
+              <!-- Populated dynamically -->
+            </div>
+          </div>
+          <button type="button" id="btn-custom" class="workshop-btn" data-i18n="btn_custom">✨ 自定义画板</button>
+        </div>
+      </aside>
+
+      <!-- Center Console: The Handheld Stage -->
+      <section class="center-console">
+        <!-- Level Info Banner -->
+        <div class="level-banner">
+          <button type="button" id="btn-prev" class="nav-arrow-btn" aria-label="上一关" title="上一关">◀</button>
+          <div class="level-meta">
+            <span id="chapter-title" class="chapter-label">序章・入门教学</span>
+            <button type="button" id="btn-levels" class="level-selector-trigger">
+              <span id="level-title" class="level-name">爱心印记 (5×5)</span>
+              <span class="down-arrow">▼</span>
+            </button>
+          </div>
+          <button type="button" id="btn-next" class="nav-arrow-btn" aria-label="下一关" title="下一关">▶</button>
+        </div>
+
+        <!-- The Picross Board Frame -->
+        <div class="board-frame">
+          <div id="picross-board" class="picross-board-layout">
+            <div class="board-corner"></div>
+            <div id="col-clues" class="board-col-clues">
+              <!-- Column clues -->
+            </div>
+            <div id="row-clues" class="board-row-clues">
+              <!-- Row clues -->
+            </div>
+            <div id="grid-cells" class="board-grid-cells">
+              <!-- Interactive cells -->
+            </div>
+          </div>
+        </div>
+
+        <!-- Bottom Handheld Action Bar -->
+        <div class="console-actions">
+          <div class="tools-toggle-group">
+            <button type="button" id="tool-paint" class="tool-btn tool-active" data-tool="paint" aria-pressed="true" title="涂黑 (左键/空格)">
+              <span class="tool-icon">⬛</span>
+              <span class="tool-text" data-i18n="btn_paint">涂黑</span>
+            </button>
+            <button type="button" id="tool-cross" class="tool-btn" data-tool="cross" aria-pressed="false" title="打叉 (右键/X)">
+              <span class="tool-icon">✕</span>
+              <span class="tool-text" data-i18n="btn_cross">打叉</span>
+            </button>
+          </div>
+
+          <div class="stat-pills">
+            <div class="stat-pill" title="失误次数">
+              <span class="stat-label" data-i18n="hud_mistakes">失误</span>
+              <span id="stat-mistakes" class="stat-value">0</span>
+            </div>
+            <div class="stat-pill" title="用时">
+              <span class="stat-label" data-i18n="hud_time">用时</span>
+              <span id="stat-timer" class="stat-value">00:00</span>
+            </div>
+          </div>
+
+          <div class="aux-actions">
+            <button type="button" id="btn-undo" class="aux-btn" data-i18n="btn_undo" title="撤销 (Z)">↩ 撤销</button>
+            <button type="button" id="btn-hint" class="aux-btn" data-i18n="btn_hint" title="智能提示 (H)">💡 提示</button>
+            <button type="button" id="btn-restart" class="aux-btn" data-i18n="btn_restart" title="重开 (R)">🔄 重开</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- Right Wing: Desktop Guide & Quick Shortcuts -->
+      <aside class="side-wing right-wing">
+        <div class="wing-card quick-guide">
+          <h2 class="wing-guide-title" data-i18n="help_title">快速指引</h2>
+          <ul class="guide-bullets">
+            <li><strong data-i18n="btn_paint">涂黑</strong>：左键点击 / 空格键</li>
+            <li><strong data-i18n="btn_cross">打叉</strong>：右键点击 / 键盘 X</li>
+            <li data-i18n="guide_drag">拖动：按住拖拽连续涂格</li>
+            <li><strong data-i18n="btn_undo">撤销</strong>：键盘 Z 或 Ctrl+Z</li>
+            <li><strong data-i18n="btn_hint">提示</strong>：键盘 H 智能推导</li>
+          </ul>
+          <div class="star-rating-hint">
+            <div class="star-rule" data-i18n="rule_star3">⭐⭐⭐ 0 失误</div>
+            <div class="star-rule" data-i18n="rule_star2">⭐⭐ ≤3 失误</div>
+            <div class="star-rule" data-i18n="rule_star1">⭐ 通关即可</div>
+          </div>
+        </div>
+      </aside>
+    </main>
+
+    <!-- Safe buffer area for mobile banner ads -->
+    <div class="ad-safe-buffer" aria-hidden="true"></div>
+  </div>
+
+  <!-- Win Fanfare Modal -->
+  <div id="modal-win" class="modal-overlay" aria-hidden="true" role="dialog" aria-modal="true">
+    <div class="modal-content win-card">
+      <div class="win-sparkles">✨</div>
+      <h2 id="win-title" class="win-heading" data-i18n="modal_win_title">印章揭晓！</h2>
+      <div id="win-stamp-container" class="win-stamp-box">
+        <!-- Rendered stamp canvas -->
+      </div>
+      <div id="win-level-name" class="win-level-name">爱心印记</div>
+      <div id="win-stars" class="win-stars-row">
+        <!-- Earned stars -->
+      </div>
+      <p id="win-rating-text" class="win-rating-summary">完美！零失误三星通关</p>
+      <div class="win-stats-grid">
+        <div class="win-stat-item">
+          <span class="win-stat-lbl" data-i18n="hud_time">用时</span>
+          <span id="win-time" class="win-stat-val">00:42</span>
+        </div>
+        <div class="win-stat-item">
+          <span class="win-stat-lbl" data-i18n="hud_mistakes">失误</span>
+          <span id="win-mistakes" class="win-stat-val">0</span>
+        </div>
+      </div>
+      <div class="win-btn-row">
+        <button type="button" id="btn-win-replay" class="modal-secondary-btn" data-i18n="modal_win_btn_replay">重玩</button>
+        <button type="button" id="btn-win-album" class="modal-secondary-btn" data-i18n="modal_win_btn_album">印章画册</button>
+        <button type="button" id="btn-win-next" class="modal-primary-btn" data-i18n="modal_win_btn_next">下一关 ➔</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Stamp Album Modal -->
+  <div id="modal-album" class="modal-overlay" aria-hidden="true" role="dialog" aria-modal="true">
+    <div class="modal-content album-dialog">
+      <div class="modal-header">
+        <h2 data-i18n="album_title">像素印章画册</h2>
+        <button type="button" class="modal-close-btn" data-close-modal="true" aria-label="关闭">✕</button>
+      </div>
+      <p class="modal-subtitle" data-i18n="album_subtitle">每解开一关即可盖上一枚专属像素印章</p>
+      <div id="album-stamp-grid" class="album-content-scroll">
+        <!-- Chapters and stamps -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Level Select Modal -->
+  <div id="modal-levels" class="modal-overlay" aria-hidden="true" role="dialog" aria-modal="true">
+    <div class="modal-content levels-dialog">
+      <div class="modal-header">
+        <h2 data-i18n="btn_select_level">关卡列表</h2>
+        <button type="button" class="modal-close-btn" data-close-modal="true" aria-label="关闭">✕</button>
+      </div>
+      <div id="levels-select-grid" class="levels-content-scroll">
+        <!-- Grouped level buttons -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Custom Board Modal -->
+  <div id="modal-custom" class="modal-overlay" aria-hidden="true" role="dialog" aria-modal="true">
+    <div class="modal-content custom-dialog">
+      <div class="modal-header">
+        <h2 data-i18n="custom_title">自定义像素创作</h2>
+        <button type="button" class="modal-close-btn" data-close-modal="true" aria-label="关闭">✕</button>
+      </div>
+      <p class="modal-subtitle" data-i18n="custom_desc">在网格上自由画出你的像素图案，系统将校验是否有唯一解并生成挑战题！</p>
+      <div class="custom-toolbar">
+        <label for="custom-size-select" data-i18n="custom_size">画板尺寸</label>
+        <select id="custom-size-select" class="custom-select">
+          <option value="5">5 × 5</option>
+          <option value="8">8 × 8</option>
+          <option value="10">10 × 10</option>
+        </select>
+        <button type="button" id="custom-clear-btn" class="modal-secondary-btn" data-i18n="custom_btn_clear">清空</button>
+      </div>
+      <div class="custom-grid-wrapper">
+        <div id="custom-grid" class="custom-editor-grid">
+          <!-- Pixel drawing cells -->
+        </div>
+      </div>
+      <div id="custom-status-msg" class="custom-msg"></div>
+      <div class="custom-footer">
+        <button type="button" id="custom-verify-btn" class="modal-primary-btn" data-i18n="custom_btn_verify">校验唯一解并出题</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Help / How to Play Modal -->
+  <div id="modal-help" class="modal-overlay" aria-hidden="true" role="dialog" aria-modal="true">
+    <div class="modal-content help-dialog">
+      <div class="modal-header">
+        <h2 data-i18n="help_title">数织玩法教学</h2>
+        <button type="button" class="modal-close-btn" data-close-modal="true" aria-label="关闭">✕</button>
+      </div>
+      <div class="help-scroll-content">
+        <section class="help-section">
+          <h3 data-i18n="help_rule1_title">1. 读懂行列数字</h3>
+          <p data-i18n="help_rule1_text">每行左侧与每列上方的数字串表示该行/列拥有的连续涂黑块长度。例如「3 1」表示先有一段3格连黑，至少隔1格空格，再有一段1格黑。</p>
+        </section>
+        <section class="help-section">
+          <h3 data-i18n="help_rule2_title">2. 逻辑涂黑与标叉</h3>
+          <p data-i18n="help_rule2_text">确定必黑的格子涂黑（左键/空格），确定不能涂黑的格子打叉（右键/X）。行列达标后数字会自动划线折叠。</p>
+        </section>
+        <section class="help-section">
+          <h3 data-i18n="help_rule3_title">3. 巧妙运用重叠法</h3>
+          <p data-i18n="help_rule3_text">5格长度要求涂4格时，不管从左排还是从右排，中间3格必然涂黑！这就是逻辑确定的落笔点，永不靠猜。</p>
+        </section>
+        <section class="help-section">
+          <h3 data-i18n="help_rule4_title">4. 印章画册与三星</h3>
+          <p data-i18n="help_rule4_text">零失误通关可获专属3星。收集每章所有三星将点亮章节荣耀徽章，并收入印章画册！</p>
+        </section>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="js/main.mjs?v=d493500955ea"></script>
+</body>
+</html>

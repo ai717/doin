@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-D67E3XTNSS"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-D67E3XTNSS');
+  </script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>迷你猫咖掌柜 · DOIN 游戏</title>
+  <meta name="description" content="迷你猫咖掌柜：治愈系午后猫咖放置经营。操控喵掌柜冲咖啡擦桌子，解锁喵咪伙伴与屋顶花园。">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="css/style.css?v=d493500955ea">
+</head>
+<body>
+  <div id="game-app">
+    <header id="stage-bar">
+      <a href="/" id="back-home" class="bar-btn">
+        <span class="bar-glyph">←</span><span class="bar-text" data-i18n="backHome">返回大厅</span>
+      </a>
+      <h1 id="app-title">
+        <span id="app-title-main" data-i18n="gameTitle">迷你猫咖掌柜</span>
+        <span id="app-subtitle" data-i18n="appSubtitle">午后治愈经营</span>
+      </h1>
+      <div class="stage-actions">
+        <button id="btn-sound" class="bar-btn" type="button" aria-label="音效切换">
+          <span id="sound-icon">🔊</span>
+        </button>
+        <button id="btn-lang" class="bar-btn" type="button" data-i18n="langSwitch">English</button>
+        <button id="btn-help" class="bar-btn" type="button" aria-label="经营指南">
+          <span class="bar-glyph">?</span>
+        </button>
+      </div>
+    </header>
+
+    <main id="stage-core">
+      <!-- Left / Top: Cafe cross-section stage -->
+      <section id="cafe-stall" aria-label="迷你猫咖舞台">
+        <div id="cafe-visual">
+          <div class="cafe-sky" aria-hidden="true">
+            <span class="sky-sun">☀️</span>
+            <span class="sky-cloud cloud-1">☁️</span>
+            <span class="sky-cloud cloud-2">☁️</span>
+            <span class="sky-cloud cloud-3">☁️</span>
+          </div>
+          <div class="cafe-roof">
+            <span class="cafe-sign" data-i18n="gameTitle">迷你猫咖掌柜</span>
+          </div>
+          <div class="cafe-window">
+            <div class="window-decor window-pane window-pane-1"></div>
+            <div class="window-decor window-pane window-pane-2"></div>
+            <div class="window-decor window-pane window-pane-3"></div>
+          </div>
+          <div class="cafe-counter">
+            <div class="station-slot" data-station="roast">
+              <span class="station-steam" aria-hidden="true"></span>
+              <span class="station-coin" aria-hidden="true">🪙</span>
+              <span class="station-glyph">🔥</span>
+              <span class="station-name" data-i18n="station_roast">烘焙机</span>
+            </div>
+            <div class="station-slot" data-station="grind">
+              <span class="station-steam" aria-hidden="true"></span>
+              <span class="station-coin" aria-hidden="true">🪙</span>
+              <span class="station-glyph">⚙️</span>
+              <span class="station-name" data-i18n="station_grind">研磨机</span>
+            </div>
+            <div class="station-slot" data-station="extract">
+              <span class="station-steam" aria-hidden="true"></span>
+              <span class="station-coin" aria-hidden="true">🪙</span>
+              <span class="station-glyph">☕</span>
+              <span class="station-name" data-i18n="station_extract">萃取机</span>
+            </div>
+            <div class="station-slot" data-station="latte">
+              <span class="station-steam" aria-hidden="true"></span>
+              <span class="station-coin" aria-hidden="true">🪙</span>
+              <span class="station-glyph">🥛</span>
+              <span class="station-name" data-i18n="station_latte">拉花杯</span>
+            </div>
+            <div class="station-slot" data-station="serve">
+              <span class="station-steam" aria-hidden="true"></span>
+              <span class="station-coin" aria-hidden="true">🪙</span>
+              <span class="station-glyph">🪟</span>
+              <span class="station-name" data-i18n="station_serve">出杯窗</span>
+            </div>
+          </div>
+          <div class="cafe-customer-zone">
+            <div class="customer-spot" data-window="window_takeout">
+              <span class="spot-guest g1" aria-hidden="true">💼</span>
+              <span class="spot-guest g2" aria-hidden="true">🐈</span>
+              <span class="window-glyph">🥡</span>
+              <span class="window-name" data-i18n="window_takeout">外带窗</span>
+            </div>
+            <div class="customer-spot" data-window="window_terrace">
+              <span class="spot-guest g1" aria-hidden="true">✍️</span>
+              <span class="spot-guest g2" aria-hidden="true">🐱</span>
+              <span class="window-glyph">🪑</span>
+              <span class="window-name" data-i18n="window_terrace">露台卡座</span>
+            </div>
+            <div class="customer-spot" data-window="window_garden">
+              <span class="spot-guest g1" aria-hidden="true">🧘</span>
+              <span class="spot-guest g2" aria-hidden="true">😺</span>
+              <span class="window-glyph">🌿</span>
+              <span class="window-name" data-i18n="window_garden">屋顶花园</span>
+            </div>
+          </div>
+          <div class="cafe-active-cat" id="active-cat-zone">
+            <span id="active-cat-glyph">🐱</span>
+            <span id="active-cat-name" data-i18n="cat_orange">橘猫阿橘</span>
+          </div>
+          <span class="cafe-runner" aria-hidden="true">☕</span>
+          <span class="cafe-runner runner-2" aria-hidden="true">🧋</span>
+        </div>
+      </section>
+
+      <!-- Right / Bottom: Cafe Operations Console -->
+      <aside id="console-wing" aria-label="猫咖经营仪表盘">
+        <div class="finance-board">
+          <div class="finance-item coins-box">
+            <span class="finance-label" data-i18n="labelCoins">金币</span>
+            <div class="coins-display"><span id="coins-val">0</span></div>
+          </div>
+          <div class="finance-item rps-box">
+            <span class="finance-label" data-i18n="labelRps">秒收益</span>
+            <div class="rps-display"><span id="rps-val">0</span><span class="rps-unit" data-i18n="perSec">/秒</span></div>
+          </div>
+          <div class="finance-item stars-box">
+            <span class="finance-label" data-i18n="labelStars">星标</span>
+            <div class="stars-display"><span id="stars-val">0</span></div>
+          </div>
+          <div class="finance-item stage-box">
+            <span class="finance-label" data-i18n="labelStage">声誉</span>
+            <div class="stage-badge" id="stage-badge-val" data-i18n="reputation_local">街边小店</div>
+          </div>
+          <div class="finance-item bowls-box">
+            <span class="finance-label" data-i18n="labelBowls">累计出杯</span>
+            <div class="bowls-display"><span id="bowls-val">0</span></div>
+          </div>
+        </div>
+
+        <nav class="console-tabs" role="tablist">
+          <button class="tab-btn active" role="tab" id="tab-btn-stations" data-tab="stations" data-i18n="station_roast">烘焙机</button>
+          <button class="tab-btn" role="tab" id="tab-btn-drinks" data-tab="drinks" data-i18n="drink_espresso">浓缩</button>
+          <button class="tab-btn" role="tab" id="tab-btn-cats" data-tab="cats" data-i18n="cat_orange">喵掌柜</button>
+          <button class="tab-btn" role="tab" id="tab-btn-guests" data-tab="guests" data-i18n="guest_officecat">常客</button>
+          <button class="tab-btn" role="tab" id="tab-btn-shop" data-tab="shop" data-i18n="reputation_popular">扩建</button>
+        </nav>
+
+        <div class="tab-panels">
+          <div class="tab-panel active" id="panel-stations" role="tabpanel">
+            <div class="stations-grid" id="stations-list"></div>
+          </div>
+          <div class="tab-panel" id="panel-drinks" role="tabpanel">
+            <div class="drinks-grid" id="drinks-list"></div>
+          </div>
+          <div class="tab-panel" id="panel-cats" role="tabpanel">
+            <div class="cats-grid" id="cats-list"></div>
+          </div>
+          <div class="tab-panel" id="panel-guests" role="tabpanel">
+            <div class="guests-grid" id="guests-list"></div>
+          </div>
+          <div class="tab-panel" id="panel-shop" role="tabpanel">
+            <div class="shop-upgrades-section" id="shop-controls"></div>
+          </div>
+        </div>
+      </aside>
+    </main>
+
+    <!-- Modals -->
+    <div id="modal-guide" class="modal-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="guide-title">
+      <div class="modal-card">
+        <div class="modal-header">
+          <h2 id="guide-title" data-i18n="rulesBtn">经营指南</h2>
+          <button id="btn-close-guide" type="button" class="modal-close-btn" aria-label="关闭">✕</button>
+        </div>
+        <div class="modal-body">
+          <p id="guide-text" class="guide-text-content"></p>
+        </div>
+      </div>
+    </div>
+
+    <div id="modal-offline" class="modal-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="offline-title">
+      <div class="modal-card offline-card">
+        <div class="modal-header">
+          <h2 id="offline-title" data-i18n="offlineTitle">猫咪想念桶</h2>
+        </div>
+        <div class="modal-body offline-body">
+          <div class="offline-icon">🐱</div>
+          <p id="offline-greeting" class="offline-greeting-text" data-i18n="offlineGreeting">店里暖黄灯光还亮着……</p>
+          <p id="offline-message" class="offline-story-text" data-i18n="offlineMessage">喵掌柜们帮你收了这段时间的客人小费：</p>
+          <div id="offline-buckets" class="offline-buckets"></div>
+          <div class="offline-numbers">
+            <div id="offline-earned-text" class="offline-big-number">+0 金币</div>
+            <div id="offline-eff-text" class="offline-sub-info" data-i18n="offlineEfficiency">想念效率：50%</div>
+            <div id="offline-milestone-text" class="offline-sub-info" data-i18n="offlineMilestones">想念倍率：×1</div>
+          </div>
+          <button id="btn-claim-offline" type="button" class="action-btn primary-btn claim-btn" data-i18n="claimBtn">收下想念并开张</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Toast message popup -->
+    <div id="toast" role="status" aria-live="polite"></div>
+
+    <noscript>
+      <div class="noscript-banner" data-i18n="noscript">请开启 JavaScript 以体验迷你猫咖掌柜。</div>
+    </noscript>
+  </div>
+
+  <script type="module" src="js/main.mjs?v=d493500955ea"></script>
+</body>
+</html>

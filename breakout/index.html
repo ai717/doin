@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-D67E3XTNSS"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-D67E3XTNSS');
+  </script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>弹球肉鸽防线 · DOIN 在线小游戏</title>
+  <meta name="description" content="弹球肉鸽防线：操控魔法底板弹射能量球击碎符文砖阵，每清空一层从三枚神秘核心中择一升级，构筑独属于你的弹球毁灭流派，一路轰穿至远古守护者。">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="css/style.css?v=d493500955ea">
+</head>
+<body>
+  <div id="game-app">
+    <header id="stage-bar">
+      <a href="/" id="back-home" class="bar-btn">
+        <span class="bar-glyph">←</span><span class="bar-text" id="back-text">返回门户</span>
+      </a>
+      <h1 id="app-title">
+        <span id="app-title-main">弹球肉鸽防线</span>
+        <span id="app-subtitle">Breakout Relic</span>
+      </h1>
+      <div class="stage-actions">
+        <button id="btn-sound" class="bar-btn" type="button" aria-pressed="true">
+          <span class="bar-glyph">🔊</span>
+        </button>
+        <button id="btn-lang" class="bar-btn" type="button">EN</button>
+        <button id="btn-help" class="bar-btn" type="button">
+          <span class="bar-glyph">?</span>
+        </button>
+      </div>
+    </header>
+
+    <nav id="mode-bar" role="tablist" aria-label="选择玩法模式">
+      <button class="mode-chip is-active" id="mode-rogue" type="button" role="tab" data-mode="rogue" aria-selected="true">肉鸽征程</button>
+      <button class="mode-chip" id="mode-endless" type="button" role="tab" data-mode="endless" aria-selected="false">无尽深渊</button>
+      <button class="mode-chip" id="mode-daily" type="button" role="tab" data-mode="daily" aria-selected="false">每日遗迹</button>
+    </nav>
+
+    <main id="stage-core">
+      <aside id="wing-left" class="wing" aria-label="祭坛状态">
+        <div class="plaque-block">
+          <span class="plaque-label" id="label-layer">层数</span>
+          <strong class="plaque-value" id="val-layer">1 / 15</strong>
+        </div>
+        <div class="plaque-block">
+          <span class="plaque-label" id="label-lives">生命</span>
+          <div class="life-cells" id="life-cells"></div>
+        </div>
+        <div class="plaque-block">
+          <span class="plaque-label" id="label-combo">连击</span>
+          <strong class="plaque-value" id="val-combo">×1</strong>
+        </div>
+        <div class="plaque-block">
+          <span class="plaque-label" id="label-balls">球数</span>
+          <strong class="plaque-value" id="val-balls">1</strong>
+        </div>
+        <div class="wing-actions">
+          <button id="btn-launch" class="key-btn key-primary" type="button">发球</button>
+          <button id="btn-retry" class="key-btn" type="button">重开本局</button>
+        </div>
+        <p class="hint-text" id="key-hint">← → / A D 移动 · 空格发球 · P 暂停 · R 重开</p>
+      </aside>
+
+      <section id="arena" aria-label="炼金舞台">
+        <div id="crt-bezel">
+          <canvas id="stage-canvas" role="img" aria-label="弹球肉鸽防线：魔法底板弹射能量球击碎符文砖阵"></canvas>
+        </div>
+        <div id="toast" role="status" aria-live="polite"></div>
+      </section>
+
+      <aside id="wing-right" class="wing" aria-label="核心图鉴">
+        <div class="plaque-block">
+          <span class="plaque-label" id="label-relics">本局核心</span>
+          <div class="relic-grid" id="relic-grid"></div>
+        </div>
+        <div class="plaque-block">
+          <span class="plaque-label" id="label-score">得分</span>
+          <strong class="plaque-value" id="val-score">0</strong>
+        </div>
+        <div class="scoreboard">
+          <span class="plaque-label" id="label-best">历史最佳</span>
+          <div class="score-line"><span id="label-best-score">最高分</span><strong id="val-best-score">0</strong></div>
+          <div class="score-line"><span id="label-best-layer">最远层数</span><strong id="val-best-layer">1</strong></div>
+        </div>
+      </aside>
+    </main>
+
+    <div id="control-deck">
+      <div class="pad pad-move">
+        <button type="button" class="pad-btn" id="pad-left" data-hold="left">
+          <span class="pad-label" id="pad-left-label">左移</span><kbd>←</kbd>
+        </button>
+        <button type="button" class="pad-btn" id="pad-right" data-hold="right">
+          <span class="pad-label" id="pad-right-label">右移</span><kbd>→</kbd>
+        </button>
+      </div>
+      <div class="pad pad-fire">
+        <button type="button" class="pad-btn pad-primary" id="pad-launch" data-action="launch">
+          <span class="pad-label" id="pad-launch-label">发球</span><kbd>Space</kbd>
+        </button>
+        <button type="button" class="pad-btn pad-pause" id="pad-pause">
+          <span class="pad-label" id="pad-pause-label">暂停</span><kbd>P</kbd>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div id="panel-relic" class="overlay">
+    <div class="panel panel-relic">
+      <span class="panel-kicker" id="relic-kicker">LAYER CLEAR</span>
+      <h2 class="panel-title" id="relic-title">选择一枚核心</h2>
+      <p class="panel-desc" id="relic-desc">三枚神秘核心浮现，择一永久强化本局构筑。</p>
+      <div id="relic-choices" class="relic-choices"></div>
+    </div>
+  </div>
+
+  <div id="panel-pause" class="overlay">
+    <div class="panel">
+      <h2 class="panel-title" id="pause-title">暂停</h2>
+      <p class="panel-desc" id="pause-desc">符文阵静悬，能量球静待。</p>
+      <div class="panel-actions">
+        <button id="btn-resume" class="btn btn-primary" type="button">继续</button>
+        <button id="btn-retry-pause" class="btn" type="button">重开本局</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="panel-result" class="overlay">
+    <div class="panel panel-result">
+      <h2 class="panel-title" id="result-title">征程结束</h2>
+      <div class="result-rows">
+        <div class="result-row"><span id="label-res-score">得分</span><strong id="res-score">0</strong></div>
+        <div class="result-row"><span id="label-res-layer">到达层数</span><strong id="res-layer">1</strong></div>
+        <div class="result-row"><span id="label-res-relics">核心数</span><strong id="res-relics">0</strong></div>
+        <div class="result-row"><span id="label-res-time">用时</span><strong id="res-time">0s</strong></div>
+      </div>
+      <p class="result-hint" id="result-hint"></p>
+      <div class="panel-actions">
+        <button id="btn-retry-result" class="btn btn-primary" type="button">再来一局</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="panel-help" class="overlay">
+    <div class="panel panel-help">
+      <h2 class="panel-title" id="help-title">玩法说明</h2>
+      <ol class="help-list">
+        <li id="help1"></li>
+        <li id="help2"></li>
+        <li id="help3"></li>
+        <li id="help4"></li>
+        <li id="help5"></li>
+        <li id="help6"></li>
+      </ol>
+      <div class="panel-actions">
+        <button id="btn-help-close" class="btn btn-primary" type="button">我知道了</button>
+      </div>
+    </div>
+  </div>
+
+  <noscript><p>需要启用 JavaScript 才能游玩弹球肉鸽防线。</p></noscript>
+  <script type="module" src="js/main.mjs?v=d493500955ea"></script>
+</body>
+</html>

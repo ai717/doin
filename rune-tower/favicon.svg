@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32">
+  <defs>
+    <linearGradient id="runeGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#00f5d4"/>
+      <stop offset="50%" stop-color="#7b2cbf"/>
+      <stop offset="100%" stop-color="#ff5400"/>
+    </linearGradient>
+  </defs>
+  <rect width="32" height="32" rx="7" fill="#0d1117"/>
+  <polygon points="16,4 25,12 21,26 11,26 7,12" fill="#161b22" stroke="url(#runeGrad)" stroke-width="1.8"/>
+  <path d="M16,8 L16,22 M12,13 L20,17 M20,13 L12,17" stroke="#00f5d4" stroke-width="1.5" stroke-linecap="round"/>
+  <circle cx="16" cy="15" r="2" fill="#ff9e00"/>
+</svg>

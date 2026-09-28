@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-D67E3XTNSS"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-D67E3XTNSS');
+  </script>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>霓虹吃豆 · Neon Chomp</title>
+    <meta name="description" content="暗室霓虹招牌里的正统幽灵 AI 吃豆：四盏灯各有算法，节拍一换全体掉头。七张主题迷宫、街机无尽与十张残局。" />
+    <!-- 内联 SVG favicon：一枚柠檬黄张嘴吃豆人，零外部文件 -->
+    <link
+      rel="icon"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%230c2732'/%3E%3Cpath d='M16 7a9 9 0 1 1-9 9h4.5L16 16z' fill='%23ffd94a'/%3E%3Ccircle cx='21' cy='11' r='2' fill='%23fff0c8'/%3E%3C/svg%3E"
+    />
+    <link rel="stylesheet" href="css/style.css?v=d493500955ea" />
+  </head>
+  <body>
+    <noscript>
+      <p class="noscript" data-i18n="noscriptText">这台霓虹招牌需要 JavaScript 才能点亮，请在浏览器里启用后重试。</p>
+    </noscript>
+
+    <!-- 整机：压印铭牌条 + 霓虹招牌 + 镇流器控制台，三者锁在同一副钢架上 -->
+    <div class="machine">
+      <header class="nameplate">
+        <a class="rivet-back" id="back-home" href="/" data-i18n-aria="back" title="返回门户">
+          <svg class="rivet-arrow" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+            <path
+              d="M6 10.6 12 5.4l6 5.2M8.2 9.6V18h7.6v-8.4"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.9"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            />
+          </svg>
+        </a>
+
+        <div class="brand">
+          <span class="brand-zh" data-i18n="appTitle">霓虹吃豆</span>
+          <span class="brand-en" data-i18n="appKicker">NEON CHOMP</span>
+        </div>
+
+        <div class="plate-tools">
+          <button class="tool tool-knife" id="btn-sound" type="button" data-i18n-aria="sound" data-i18n-title="soundOn">
+            <span class="knife-lever" aria-hidden="true"></span>
+            <span class="tool-text" data-i18n="soundOn">音效已开</span>
+          </button>
+          <button class="tool tool-lang" id="btn-lang" type="button" data-i18n="langSwitch">EN</button>
+          <button class="tool tool-card" id="btn-help" type="button" data-i18n="help">玩法说明</button>
+        </div>
+      </header>
+
+      <section class="sign">
+        <div class="sign-frame">
+          <canvas id="stage" class="stage" aria-label="Neon Chomp maze"></canvas>
+
+          <!-- 覆盖层：全部以内嵌帘幕形式落在招牌框内，绝不浮空四散 -->
+          <div class="curtain" id="ov-ready">
+            <div class="curtain-inner">
+              <p class="curtain-kicker" data-i18n="readyKicker">暗室 · 霓虹招牌</p>
+              <h2 class="curtain-title" data-i18n="readyTitle">霓虹吃豆</h2>
+              <p class="curtain-desc" data-i18n="readyDesc"></p>
+
+              <div class="mode-row" id="mode-row">
+                <button class="mode-card" type="button" data-mode="campaign">
+                  <span class="mode-name" data-i18n="modeCampaign">招牌战役</span>
+                  <span class="mode-note" data-i18n="modeIntroCampaign"></span>
+                </button>
+                <button class="mode-card" type="button" data-mode="arcade">
+                  <span class="mode-name" data-i18n="modeArcade">街机无尽</span>
+                  <span class="mode-note" data-i18n="modeIntroArcade"></span>
+                </button>
+                <button class="mode-card" type="button" data-mode="setpiece">
+                  <span class="mode-name" data-i18n="modeSetpiece">残局十张</span>
+                  <span class="mode-note" data-i18n="modeIntroSetpiece"></span>
+                </button>
+              </div>
+
+              <div class="curtain-actions">
+                <button class="btn btn-primary" id="btn-start" type="button" data-i18n="btnStart">合闸开局</button>
+                <button class="btn" id="btn-pick-level" type="button" data-i18n="btnLevels">选择迷宫</button>
+              </div>
+
+              <p class="tour-head" data-i18n="tourHead">老师傅的三句话</p>
+              <ul class="tour-list">
+                <li data-i18n="tour1"></li>
+                <li data-i18n="tour2"></li>
+                <li data-i18n="tour3"></li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="curtain" id="ov-pause" hidden>
+            <div class="curtain-inner">
+              <p class="curtain-kicker" data-i18n="statusPaused">镇流器断电 · 暂停</p>
+              <div class="curtain-actions">
+                <button class="btn btn-primary" id="btn-resume" type="button" data-i18n="btnResume">继续</button>
+                <button class="btn" id="btn-restart" type="button" data-i18n="btnRetry">再点一次</button>
+                <button class="btn" id="btn-stage" type="button" data-i18n="btnBackStage">回到控制台</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="curtain" id="ov-result" hidden>
+            <div class="curtain-inner">
+              <p class="curtain-kicker" id="result-kicker" data-i18n="resultOver">这一轮结束</p>
+              <h2 class="curtain-title" id="result-title" data-i18n="resultCleared">招牌全亮</h2>
+
+              <div class="star-row" id="star-row">
+                <span class="star" data-star="clear"><i></i><b data-i18n="tallyClear">清盘</b></span>
+                <span class="star" data-star="time"><i></i><b data-i18n="tallyTime">限时</b></span>
+                <span class="star" data-star="noDeath"><i></i><b data-i18n="tallyNoDeath">零死亡</b></span>
+              </div>
+              <p class="curtain-hint" data-i18n="tallyHint"></p>
+
+              <dl class="result-grid">
+                <div><dt data-i18n="resultScore">本关分数</dt><dd id="res-score">0</dd></div>
+                <div><dt data-i18n="resultTime">用时</dt><dd id="res-time">00:00</dd></div>
+                <div><dt data-i18n="resultDots">豆</dt><dd id="res-dots">0</dd></div>
+                <div><dt data-i18n="resultGhosts">吞灯</dt><dd id="res-ghosts">0</dd></div>
+                <div><dt data-i18n="resultChain">最长豆链</dt><dd id="res-chain">0</dd></div>
+                <div><dt data-i18n="resultDeaths">掉命</dt><dd id="res-deaths">0</dd></div>
+              </dl>
+              <p class="new-best" id="res-best" hidden data-i18n="newBest">新纪录</p>
+
+              <div class="curtain-actions">
+                <button class="btn btn-primary" id="btn-next" type="button" data-i18n="btnNext">下一关</button>
+                <button class="btn" id="btn-again" type="button" data-i18n="btnRetry">再点一次</button>
+                <button class="btn" id="btn-result-stage" type="button" data-i18n="btnBackStage">回到控制台</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="curtain" id="ov-levels" hidden>
+            <div class="curtain-inner curtain-wide">
+              <p class="curtain-kicker" data-i18n="levelsTitle">选择迷宫</p>
+              <p class="curtain-hint" data-i18n="levelsNote"></p>
+              <div class="pick-grid" id="level-grid"></div>
+              <div class="curtain-actions">
+                <button class="btn" id="btn-levels-close" type="button" data-i18n="btnBackStage">回到控制台</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="curtain" id="ov-setpieces" hidden>
+            <div class="curtain-inner curtain-wide">
+              <p class="curtain-kicker" data-i18n="setpieceTitle">残局十张</p>
+              <p class="curtain-hint" data-i18n="setpieceNote"></p>
+              <div class="pick-grid" id="setpiece-grid"></div>
+              <div class="curtain-actions">
+                <button class="btn" id="btn-setpieces-close" type="button" data-i18n="btnBackStage">回到控制台</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="curtain" id="ov-help" hidden>
+            <div class="curtain-inner curtain-wide">
+              <p class="curtain-kicker" data-i18n="helpTitle">玩法说明</p>
+              <ol class="help-list">
+                <li data-i18n="help1"></li>
+                <li data-i18n="help2"></li>
+                <li data-i18n="help3"></li>
+                <li data-i18n="help4"></li>
+                <li data-i18n="help5"></li>
+                <li data-i18n="help6"></li>
+                <li data-i18n="help7"></li>
+                <li data-i18n="help8"></li>
+              </ol>
+              <p class="tour-head" data-i18n="ghostRoster">灯谱</p>
+              <ul class="tour-list">
+                <li data-i18n="ghostBlinky"></li>
+                <li data-i18n="ghostPinky"></li>
+                <li data-i18n="ghostInky"></li>
+                <li data-i18n="ghostClyde"></li>
+              </ul>
+              <div class="curtain-actions">
+                <button class="btn btn-primary" id="btn-help-close" type="button" data-i18n="helpClose">我知道了</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="curtain" id="ov-settings" hidden>
+            <div class="curtain-inner">
+              <p class="curtain-kicker" data-i18n="settingsTitle">控制台</p>
+              <label class="switch-row">
+                <input type="checkbox" id="opt-ai-read" checked />
+                <span class="switch-name" data-i18n="settingsAiRead">AI 可读化</span>
+                <span class="switch-note" id="opt-ai-note" data-i18n="settingsAiReadOn"></span>
+              </label>
+              <label class="switch-row">
+                <input type="checkbox" id="opt-sound" checked />
+                <span class="switch-name" data-i18n="settingsSound">音效</span>
+              </label>
+              <div class="switch-row switch-row--stack">
+                <div class="switch-head">
+                  <span class="switch-name" data-i18n="settingsSpeed">速度档</span>
+                  <span class="switch-note" data-i18n="settingsSpeedNote"></span>
+                </div>
+                <div class="seg" id="opt-speed" role="radiogroup" data-i18n-aria="settingsSpeed">
+                  <button class="seg-key" type="button" role="radio" aria-checked="false" data-speed="calm" data-i18n="speedCalm">悠闲</button>
+                  <button class="seg-key" type="button" role="radio" aria-checked="true" data-speed="standard" data-i18n="speedStandard">标准</button>
+                  <button class="seg-key" type="button" role="radio" aria-checked="false" data-speed="surge" data-i18n="speedSurge">极速</button>
+                </div>
+              </div>
+              <div class="curtain-actions">
+                <button class="btn btn-danger" id="btn-reset" type="button" data-i18n="settingsReset">清空本机进度</button>
+                <button class="btn btn-primary" id="btn-settings-close" type="button" data-i18n="helpClose">我知道了</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="console">
+        <div class="console-row console-row--main">
+          <div class="gauges">
+            <div class="digit">
+              <span class="digit-cap">1UP</span>
+              <span class="digit-val" id="score-val">000000</span>
+            </div>
+            <div class="digit">
+              <span class="digit-cap" data-i18n="hudBest">最高分</span>
+              <span class="digit-val" id="best-val">000000</span>
+            </div>
+            <div class="digit digit--small">
+              <span class="digit-cap" data-i18n="hudMaze">迷宫</span>
+              <span class="digit-val" id="level-val">01</span>
+            </div>
+          </div>
+
+          <div class="beat" id="beat">
+            <span class="beat-cap" data-i18n="hudBeats">节拍轨</span>
+            <span class="beat-name" id="beat-name" data-i18n="hudPhaseScatter">巡游</span>
+            <span class="beat-track"><i class="beat-fill" id="beat-fill"></i></span>
+            <span class="beat-left" id="beat-left">7.0s</span>
+          </div>
+
+          <div class="credits">
+            <span class="credits-cap">CREDIT</span>
+            <span class="credits-lamps" id="credit-lamps"></span>
+          </div>
+        </div>
+
+        <div class="console-row console-row--ctrl">
+          <div class="pad" id="pad" data-i18n-aria="handHint">
+            <button class="pad-key pad-up" type="button" data-dir="0" aria-label="up">&#9650;</button>
+            <button class="pad-key pad-left" type="button" data-dir="2" aria-label="left">&#9664;</button>
+            <span class="pad-knob" aria-hidden="true"></span>
+            <button class="pad-key pad-right" type="button" data-dir="3" aria-label="right">&#9654;</button>
+            <button class="pad-key pad-down" type="button" data-dir="1" aria-label="down">&#9660;</button>
+          </div>
+
+          <div class="side-read">
+            <span class="read-line" id="read-phase" data-i18n="beatHintScatter"></span>
+            <span class="read-line read-line--dim" id="read-chain" data-i18n="hudChainOff">豆链断了</span>
+          </div>
+
+          <div class="actions">
+            <button class="knob knob--go" id="btn-start-2" type="button" data-i18n="btnStart">合闸开局</button>
+            <button class="knob knob--hold" id="btn-pause" type="button" data-i18n="btnPause">暂停</button>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <script type="module" src="js/main.mjs?v=d493500955ea"></script>
+  </body>
+</html>

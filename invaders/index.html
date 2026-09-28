@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-D67E3XTNSS"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-D67E3XTNSS');
+  </script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>舷窗防线 · DOIN 在线小游戏</title>
+  <meta name="description" content="太空侵略者现代重制：在观测舱舷窗后左右走位，迎击横移下压、越打越快的外星阵列。过热槽点射节奏、蓄力轨道炮贯穿整列、俯冲刺阶段正面迎击双倍分，12 关战役 + 生存演习 + 战术训练场。">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="css/style.css?v=d493500955ea">
+</head>
+<body>
+  <div id="game-app" class="deck">
+
+    <!-- 顶部：舱门铭牌条 -->
+    <header id="stage-bar" class="topbar">
+      <a href="/" id="back-home" class="bar-btn" data-i18n="backHome">返回首页</a>
+      <h1 id="stage-title" class="topbar-title" data-i18n="appTitle">舷窗防线</h1>
+      <div class="topbar-actions">
+        <button id="btn-sound" class="bar-btn" type="button" data-i18n-aria="btnSound">♪</button>
+        <button id="btn-lang" class="bar-btn" type="button">EN</button>
+        <button id="btn-help" class="bar-btn" type="button" data-i18n-aria="btnHelp">?</button>
+      </div>
+    </header>
+
+    <main id="stage-core">
+      <!-- 中央：深空观测舱舷窗 -->
+      <section id="porthole" class="porthole">
+        <div id="porthole-frame" class="porthole-frame">
+          <div id="radar-strip" class="radar-strip">
+            <span class="radar-cell">
+              <span class="radar-label" data-i18n="radarWave">波次</span>
+              <span id="radar-wave" class="radar-value">1/3</span>
+            </span>
+            <span class="radar-cell">
+              <span class="radar-label" data-i18n="radarAlive">残敌</span>
+              <span id="radar-alive" class="radar-value">55</span>
+            </span>
+            <span id="radar-alert" class="radar-alert" data-i18n="radarCalm">空域平静</span>
+          </div>
+
+          <div id="glass-wrap" class="glass-wrap">
+            <canvas id="stage-canvas" width="1000" height="750" aria-hidden="true"></canvas>
+            <div id="glass" class="glass" aria-hidden="true"></div>
+            <div id="vignette" class="vignette" aria-hidden="true"></div>
+            <div id="hint-strip" class="hint-strip hidden"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 底部：舰载火控台 -->
+      <section id="console" class="console">
+        <div class="gauge gauge-heat">
+          <span class="gauge-label" data-i18n="heat">过热</span>
+          <div class="gauge-track"><div id="heat-fill" class="gauge-fill"></div></div>
+        </div>
+        <div class="gauge">
+          <span class="gauge-label" data-i18n="hull">船体</span>
+          <div id="hull-cells" class="hull-cells"></div>
+        </div>
+        <div class="gauge">
+          <span class="gauge-label" data-i18n="combo">连击</span>
+          <span id="combo-val" class="gauge-num">x1.0</span>
+        </div>
+        <div class="gauge">
+          <span class="gauge-label" data-i18n="score">得分</span>
+          <span id="score-val" class="gauge-num">0</span>
+        </div>
+        <div id="mod-chip" class="mod-chip hidden">
+          <span id="mod-name">--</span>
+          <span id="mod-timer">0.0s</span>
+        </div>
+        <div class="console-actions">
+          <button id="btn-pause" class="ctrl-btn" type="button" data-i18n="btnPause">暂停</button>
+          <button id="btn-menu" class="ctrl-btn" type="button" data-i18n="btnMenu">返回舱门</button>
+        </div>
+      </section>
+    </main>
+
+    <!-- 舱门：模式与选关 -->
+    <div id="menu-layer" class="overlay" role="dialog" aria-modal="true">
+      <div class="hangar">
+        <h2 id="menu-title" class="hangar-title" data-i18n="appTitle">舷窗防线</h2>
+        <div class="mode-grid">
+          <button id="btn-mode-campaign" class="mode-card" type="button">
+            <span class="mode-name" data-i18n="modeCampaign">战役 · 星港围城</span>
+            <span class="mode-desc" data-i18n="modeCampaignDesc"></span>
+          </button>
+          <button id="btn-mode-survival" class="mode-card" type="button">
+            <span class="mode-name" data-i18n="modeSurvival">生存演习</span>
+            <span class="mode-desc" data-i18n="modeSurvivalDesc"></span>
+          </button>
+          <button id="btn-mode-training" class="mode-card" type="button">
+            <span class="mode-name" data-i18n="modeTraining">战术训练场</span>
+            <span class="mode-desc" data-i18n="modeTrainingDesc"></span>
+          </button>
+        </div>
+        <div id="level-panel" class="level-panel"></div>
+        <button id="btn-continue" class="ctrl-btn ctrl-accent menu-continue hidden" type="button" data-i18n="btnContinue">继续当前出击</button>
+        <div id="menu-stats" class="menu-stats"></div>
+      </div>
+    </div>
+
+    <!-- 战报便签 -->
+    <div id="report-layer" class="overlay hidden" role="dialog" aria-modal="true">
+      <div class="report-card">
+        <h2 id="report-title" class="report-title" data-i18n="reportTitle">战报</h2>
+        <div id="report-stars" class="report-stars">☆☆☆</div>
+        <dl id="report-stats" class="report-stats"></dl>
+        <div class="report-actions">
+          <button id="btn-next" class="ctrl-btn ctrl-accent" type="button" data-i18n="btnNext">下一关</button>
+          <button id="btn-retry" class="ctrl-btn" type="button" data-i18n="btnRetry">重新出击</button>
+          <button id="btn-report-menu" class="ctrl-btn" type="button" data-i18n="btnMenu">返回舱门</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 玩法说明 -->
+    <div id="help-layer" class="overlay hidden" role="dialog" aria-modal="true">
+      <div class="help-card">
+        <h2 id="help-title" class="report-title" data-i18n="helpTitle">怎么玩</h2>
+        <p id="help-body" class="help-body" data-i18n="helpBody"></p>
+        <p id="help-keys" class="help-keys" data-i18n="helpKeys"></p>
+        <button id="btn-help-close" class="ctrl-btn ctrl-accent" type="button" data-i18n="btnClose">关闭</button>
+      </div>
+    </div>
+
+    <!-- 暂停 -->
+    <div id="pause-layer" class="overlay hidden" role="dialog" aria-modal="true">
+      <div class="pause-card">
+        <h2 id="pause-title" class="report-title" data-i18n="statusPaused">暂停</h2>
+        <div class="report-actions">
+          <button id="btn-resume" class="ctrl-btn ctrl-accent" type="button" data-i18n="btnResume">继续</button>
+          <button id="btn-pause-menu" class="ctrl-btn" type="button" data-i18n="btnMenu">返回舱门</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <noscript><p>需要启用 JavaScript 才能游玩舷窗防线。</p></noscript>
+  <script type="module" src="js/main.mjs?v=d493500955ea"></script>
+</body>
+</html>

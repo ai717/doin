@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-D67E3XTNSS"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-D67E3XTNSS');
+  </script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>坦克巷战 · DOIN 在线小游戏</title>
+  <meta name="description" content="驾驶俯视坦克在街巷沙盘里拆砖开路，借钢壁跳弹打拐角，守住司令部鹰标并全歼来犯装甲。6 章 24 关战役 + 死守波次 + 8 张残局推演，三星评级与战区勋章。">
+  <link rel="icon" href="favicon.svg?v=d493500955ea" type="image/svg+xml">
+  <link rel="stylesheet" href="css/style.css?v=d493500955ea">
+</head>
+<body>
+  <noscript>
+    <div class="noscript-banner">
+      <p data-i18n="noscript">需要启用 JavaScript 才能游玩。</p>
+    </div>
+  </noscript>
+
+  <div id="game-app">
+    <!-- 黄铜铭牌条：返回 / 标题 / 音效 / 语言 / 作战命令（静态骨架，热更新走 data-i18n） -->
+    <header class="nameplate">
+      <a href="/" id="back-home" class="plate-btn" data-i18n-attr="title,aria-label" data-i18n="backHome" title="返回门户" aria-label="返回门户">⌂</a>
+      <h1 class="plate-title" id="game-title" data-i18n="gameTitle">坦克巷战</h1>
+      <div class="plate-tools">
+        <button id="btn-sound" class="plate-btn knob" type="button" data-i18n-attr="title,aria-label" data-i18n="btnSound" title="音效" aria-label="音效">🔊</button>
+        <button id="btn-lang" class="plate-btn" type="button">EN</button>
+        <button id="btn-help" class="plate-btn envelope" type="button" data-i18n-attr="title,aria-label" data-i18n="btnHelp" title="作战命令" aria-label="作战命令">✉</button>
+      </div>
+    </header>
+
+    <main class="sandbox" id="game-root">
+      <!-- 沙盘推演台与操作台由 ui.mjs 装配 -->
+    </main>
+  </div>
+
+  <script type="module" src="js/main.mjs?v=d493500955ea"></script>
+</body>
+</html>
