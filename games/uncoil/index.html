@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>倒退贪吃蛇 · DOIN 在线小游戏</title>
+  <meta name="description" content="开局就是一条盘踞全屏的百节长蛇，每吃一颗蜕身丸缩短一截，赶在困毙前把全身走完。5 章 40 关主线 + 12 道残局比步 + 每日缠局，纯回合制空间解谜，无限撤销。">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="css/style.css?v=dev">
+</head>
+<body>
+  <div id="game-app">
+    <header id="stage-bar">
+      <a href="/" id="back-home" data-i18n="back">← 门户</a>
+      <h1 id="stage-title" data-i18n="title">倒退贪吃蛇</h1>
+      <div class="stage-actions">
+        <button id="btn-sound" class="bar-btn" type="button" aria-label="sound" data-i18n="soundOn">🔊 音效开</button>
+        <button id="btn-lang" class="bar-btn" type="button" aria-label="language" data-i18n="langBtn">EN</button>
+        <button id="btn-help" class="bar-btn" type="button" aria-label="help" data-i18n="help">?</button>
+      </div>
+    </header>
+
+    <main id="stage-core">
+      <aside id="panel-left">
+        <div class="panel-chunk">
+          <h3 id="chapter-label" data-i18n="chapter1">第一章 · 初蜕</h3>
+          <p id="level-progress" class="dim">1 / 40</p>
+        </div>
+        <div class="panel-chunk">
+          <span class="p-label" data-i18n="lenLabel">蛇身长度</span>
+          <span id="len-val" class="lcd big">0</span>
+        </div>
+        <div class="panel-chunk">
+          <span class="p-label" data-i18n="pelletsLabel">蜕身丸</span>
+          <span id="pellets-val" class="lcd">0</span>
+        </div>
+        <div class="panel-chunk">
+          <span class="p-label" data-i18n="stepsLabel">步数</span>
+          <span id="steps-val" class="lcd">0</span>
+        </div>
+        <div class="panel-chunk">
+          <span class="p-label" data-i18n="parLabel">参考步数</span>
+          <span id="par-val" class="lcd">0</span>
+        </div>
+        <div class="panel-chunk">
+          <button id="btn-replay" class="chip" type="button" data-i18n="btnReplay">演示解法</button>
+        </div>
+      </aside>
+
+      <section id="stage-cabinet">
+        <div id="mobile-hud">
+          <span class="mh-item"><b id="mh-len">0</b><i data-i18n="lenLabel">蛇身长度</i></span>
+          <span class="mh-item"><b id="mh-steps">0</b><i data-i18n="stepsLabel">步数</i></span>
+          <span class="mh-item"><b id="mh-pellets">0</b><i data-i18n="pelletsLabel">蜕身丸</i></span>
+        </div>
+
+        <div class="board-wrap">
+          <canvas id="board" width="520" height="520" aria-label="Uncoil board"></canvas>
+          <div id="toast"></div>
+
+          <div id="stuck-bar" class="hidden">
+            <p id="stuck-line" class="stuck-title" data-i18n="stuckLine">头四周被自己的身体封死了</p>
+            <p id="stuck-hint" class="dim" data-i18n="stuckHint">撤销一步换条路，或重开本关</p>
+            <div class="btn-row">
+              <button id="btn-stuck-undo" class="btn btn-primary" type="button" data-i18n="btnUndo">撤销</button>
+              <button id="btn-stuck-reset" class="btn" type="button" data-i18n="btnReset">重开</button>
+            </div>
+          </div>
+
+          <div id="screen-start" class="overlay">
+            <h2 id="start-title" data-i18n="startTitle">倒退贪吃蛇 · 糖霜蜕皮</h2>
+            <p id="start-sub" class="dim" data-i18n="startSub">开局即百节长蛇 · 吃丸缩身 · 别把自己困死</p>
+            <div class="mode-row">
+              <button id="btn-mode-stage" class="btn btn-primary" type="button" data-i18n="modeStage">蜕皮闯关</button>
+              <button id="btn-mode-endgame" class="btn" type="button" data-i18n="modeEndgame">残局比步</button>
+              <button id="btn-mode-daily" class="btn" type="button" data-i18n="modeDaily">每日缠局</button>
+            </div>
+            <div id="level-grid"></div>
+            <div class="start-footer">
+              <span id="stars-total" data-i18n="starsTotal">总星数 0</span>
+              <button id="btn-reset-save" class="bar-btn" type="button" data-i18n="saveReset">重置存档</button>
+            </div>
+          </div>
+
+          <div id="screen-help" class="overlay hidden">
+            <h2 id="help-title" data-i18n="helpTitle">玩法说明</h2>
+            <p id="help-body-1"></p>
+            <p id="help-body-2"></p>
+            <p id="help-body-3"></p>
+            <p id="help-body-4"></p>
+            <p id="help-body-5"></p>
+            <p id="help-body-6"></p>
+            <button id="btn-help-close" class="btn btn-primary" type="button" data-i18n="helpClose">知道了</button>
+          </div>
+
+          <div id="screen-clear" class="overlay hidden">
+            <h2 id="clear-title" data-i18n="clearTitle">蜕皮完成！</h2>
+            <p id="clear-stars" class="stars-line"></p>
+            <p id="clear-line" class="dim"></p>
+            <p id="clear-record" class="record-line"></p>
+            <div class="btn-row">
+              <button id="btn-next-level" class="btn btn-primary" type="button" data-i18n="nextLevel">下一关</button>
+              <button id="btn-retry" class="btn" type="button" data-i18n="retry">再战本关</button>
+              <button id="btn-to-select" class="btn" type="button" data-i18n="toSelect">返回选关</button>
+            </div>
+          </div>
+        </div>
+
+        <div id="deck">
+          <div id="dpad">
+            <button id="btn-up" class="pad pad-up" type="button" aria-label="up">▲</button>
+            <button id="btn-left" class="pad pad-left" type="button" aria-label="left">◀</button>
+            <button id="btn-right" class="pad pad-right" type="button" aria-label="right">▶</button>
+            <button id="btn-down" class="pad pad-down" type="button" aria-label="down">▼</button>
+          </div>
+          <div id="deck-actions">
+            <button id="btn-undo" class="deck-btn" type="button" data-i18n="btnUndo">撤销</button>
+            <button id="btn-reset" class="deck-btn" type="button" data-i18n="btnReset">重开</button>
+            <button id="btn-menu" class="deck-btn" type="button" data-i18n="btnMenu">选关</button>
+          </div>
+        </div>
+        <p id="key-tip" class="dim" data-i18n="keyTip">方向键 / WASD 走一格 · Z 撤销 · R 重开</p>
+        <p id="touch-tip" class="dim" data-i18n="touchTip">点相邻格或滑动走一格 · 摇杆同样可用</p>
+      </section>
+
+      <aside id="panel-right">
+        <div class="panel-chunk score-chunk">
+          <span class="p-label" data-i18n="progressLabel">蜕皮进度</span>
+          <div id="progress-track"><div id="progress-fill"></div></div>
+          <span id="progress-val" class="lcd">0%</span>
+        </div>
+        <div class="panel-chunk">
+          <span class="p-label" data-i18n="statusLabel">状态</span>
+          <span id="status-val" class="lcd">—</span>
+        </div>
+        <div class="panel-chunk">
+          <span class="p-label" data-i18n="bestLabel">最佳步数</span>
+          <span id="best-val" class="lcd">-</span>
+        </div>
+        <div class="panel-chunk">
+          <span class="p-label" data-i18n="undosLabel">撤销次数</span>
+          <span id="undos-val" class="lcd">0</span>
+        </div>
+        <div class="panel-chunk">
+          <span class="p-label" data-i18n="dailyBest">今日最佳</span>
+          <span id="daily-line" class="lcd small">-</span>
+        </div>
+        <div class="panel-chunk">
+          <span class="p-label" data-i18n="endgameProgress">已解 0 / 12</span>
+          <span id="endgame-line" class="lcd small">0 / 12</span>
+        </div>
+      </aside>
+    </main>
+  </div>
+  <noscript><p>需要启用 JavaScript 才能游玩。</p></noscript>
+  <script type="module" src="js/main.mjs?v=dev"></script>
+</body>
+</html>

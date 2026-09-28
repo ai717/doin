@@ -810,6 +810,24 @@
         "title": "Mow!",
         "desc": "Survivor mowing in a candy garden: auto-spinning blades reap insect swarms while you dodge, draft builds from three-way upgrades, trigger pollen bursts to clear the screen, and face the Gardener Giant at minute 8."
       }
+    },
+    {
+      "title": "倒退贪吃蛇",
+      "slug": "uncoil",
+      "desc": "开局就是一条盘踞满屏的百节长蛇，每吞一颗缩身丸就短一截——在被自己的身体困死之前，把全身整条走完。5 章 40 关 + 12 残局 + 每日缠局，纯回合制零手速，无限撤销。",
+      "icon": "🐍",
+      "cover": "/assets/covers/uncoil.webp",
+      "tags": [
+        "益智",
+        "解谜",
+        "贪吃蛇",
+        "空间"
+      ],
+      "url": "/uncoil/",
+      "en": {
+        "title": "Uncoil",
+        "desc": "You start as a hundred-segment snake coiled wall to wall. Every pellet you swallow sheds a few segments off your tail — walk your whole body off the board before your own coils box you in. 40 levels across 5 chapters, 12 endgame puzzles and a daily coil. Pure turn-based, zero reflex, unlimited undo."
+      }
     }
   ]
 }

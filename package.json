@@ -53,6 +53,8 @@
     "test:blind-auction": "node --test games/blind-auction/tests/*.test.mjs",
     "test:backpack": "node --test games/backpack/tests/engine.test.mjs games/backpack/tests/storage.test.mjs games/backpack/tests/i18n.test.mjs games/backpack/tests/markup.test.mjs",
     "test:pinball": "node --test games/pinball/tests/*.test.mjs",
-    "test:mow": "node --test games/mow/tests/engine.test.mjs games/mow/tests/game.test.mjs games/mow/tests/score.test.mjs games/mow/tests/storage.test.mjs games/mow/tests/i18n.test.mjs games/mow/tests/markup.test.mjs"
+    "test:mow": "node --test games/mow/tests/engine.test.mjs games/mow/tests/game.test.mjs games/mow/tests/score.test.mjs games/mow/tests/storage.test.mjs games/mow/tests/i18n.test.mjs games/mow/tests/markup.test.mjs",
+    "test:uncoil": "node --test games/uncoil/tests/engine.test.mjs games/uncoil/tests/solvable.test.mjs games/uncoil/tests/score.test.mjs games/uncoil/tests/storage.test.mjs games/uncoil/tests/game.test.mjs games/uncoil/tests/i18n.test.mjs games/uncoil/tests/markup.test.mjs",
+    "smoke:uncoil": "node games/uncoil/tests/smoke.mjs"
   }
 }

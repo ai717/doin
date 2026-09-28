@@ -1,0 +1,431 @@
+// dom-stub.mjs — 极简 DOM 桩（供无浏览器冒烟测试）
+// 相比 mole 版本新增：Canvas 2D context 桩（Uncoil 用 Canvas 渲染）。
+//   · ctx 是 Proxy：任意绘制方法 no-op，create*Gradient 返回带 addColorStop 的对象
+//   · 颜色类赋值（fillStyle / strokeStyle / shadowColor）会被登记，
+//     出现 NaN / undefined 时记进 ctx.__badColors，冒烟里断言为空（专抓插值算出 NaN）
+//   · <canvas width=... height=...> 会同步成实例属性（renderer 直接读 canvas.width）
+//   · #board 的 rect 固定为 {left:0, top:0, 520, 520}，让"点击相邻格"的坐标换算可断言
+// 关键硬约束（踩过的坑）：
+//  1. 必须还原 HTML 初始 hidden，否则 UI 层会把弹层当"已打开"，游戏被判定为永久暂停
+//  2. appendChild 必须摊平 DocumentFragment（插的是子节点，不是 fragment 本身）
+//  3. className setter 必须联动 classList
+//  4. navigator 在 Node 24 是只读 getter，必须用 defineProperty
+//  5. style.setProperty 必须真的存值，否则内联自定义属性（如 --duck-ms）在桩里凭空消失
+//  5b. 直接属性赋值（el.style.left = "10px"）也必须能存 —— 用 Proxy 实现，见 makeInlineStyle
+//  6. 没有真实动画引擎：animationend 不会自己产生，依赖它的代码必须有 setTimeout 兜底
+
+import { readFileSync } from "node:fs";
+
+/** 内联样式桩：把自定义属性与普通属性都真实记录下来，供断言读取 */
+function makeInlineStyle() {
+  const props = new Map();
+  const api = {
+    setProperty(name, value) {
+      props.set(String(name), String(value));
+    },
+    removeProperty(name) {
+      props.delete(String(name));
+    },
+    getPropertyValue(name) {
+      return props.get(String(name)) ?? "";
+    },
+    /** 供测试用：拿到全部内联属性 */
+    _all() {
+      return Object.fromEntries(props);
+    },
+  };
+  // 真实 CSSStyleDeclaration 支持 `el.style.left = "10px"` 这种直接赋值。
+  // 只实现 setProperty 会漏掉直接赋值路径 —— 曾经 moveHammer 用的就是
+  // `style.left=...`，桩里读到的却是空字符串，导致"木槌定位"完全测不到。
+  // 用 Proxy 把任意属性读写都映射到同一份 props。
+  return new Proxy(api, {
+    get(target, key) {
+      if (key in target) return target[key];
+      if (typeof key !== "string") return undefined;
+      return props.get(key) ?? "";
+    },
+    set(target, key, value) {
+      if (typeof key === "string" && !(key in target)) {
+        props.set(key, String(value));
+        return true;
+      }
+      target[key] = value;
+      return true;
+    },
+  });
+}
+
+// Canvas 2D context 桩：绘制方法全部 no-op，但会把颜色类赋值登记下来，
+// 供冒烟断言"没有 NaN / undefined 混进颜色字符串"（插值算错的典型症状）。
+function makeCtx() {
+  const grad = { addColorStop() {} };
+  const bad = [];
+  const base = {
+    __badColors: bad,
+    __calls: 0,
+    createLinearGradient: () => grad,
+    createRadialGradient: () => grad,
+    createPattern: () => null,
+    measureText: () => ({ width: 10 })
+  };
+  return new Proxy(base, {
+    get(t, k) {
+      if (k in t) return t[k];
+      if (typeof k !== "string") return undefined;
+      return () => {
+        t.__calls += 1;
+      };
+    },
+    set(t, k, v) {
+      if (typeof v === "string" && /NaN|undefined|null/.test(v) &&
+          (k === "fillStyle" || k === "strokeStyle" || k === "shadowColor")) {
+        bad.push(`${k}=${v}`);
+      }
+      t[k] = v;
+      return true;
+    }
+  });
+}
+
+const HIDDEN_RE = /<[^>]*\bid="([^"]+)"[^>]*\bhidden\b[^>]*>|<[^>]*\bhidden\b[^>]*\bid="([^"]+)"[^>]*>/g;
+
+function parseHiddenIds(html) {
+  const ids = new Set();
+  for (const m of html.matchAll(HIDDEN_RE)) {
+    if (m[1]) ids.add(m[1]);
+    if (m[2]) ids.add(m[2]);
+  }
+  // 兼容 class="modal-layer hidden" 这类写法
+  for (const m of html.matchAll(/id="([^"]+)"[^>]*class="([^"]*)"/g)) {
+    if (/\bhidden\b/.test(m[2])) ids.add(m[1]);
+  }
+  for (const m of html.matchAll(/class="([^"]*)"[^>]*id="([^"]+)"/g)) {
+    if (/\bhidden\b/.test(m[1])) ids.add(m[2]);
+  }
+  return ids;
+}
+
+export function installDom(html) {
+  const hiddenIds = parseHiddenIds(html);
+  const byId = new Map();
+  const listeners = new Map();
+  let idSeq = 0;
+
+  class ClassList {
+    constructor(el) { this.el = el; this.set = new Set(); }
+    add(...names) { for (const n of names) if (n) this.set.add(n); this.sync(); }
+    remove(...names) { for (const n of names) this.set.delete(n); this.sync(); }
+    toggle(name, force) {
+      const on = force === undefined ? !this.set.has(name) : Boolean(force);
+      if (on) this.set.add(name); else this.set.delete(name);
+      this.sync();
+      return on;
+    }
+    contains(name) { return this.set.has(name); }
+    sync() { this.el._className = [...this.set].join(" "); }
+  }
+
+  class El {
+    constructor(tag = "div") {
+      this.tagName = String(tag).toUpperCase();
+      this.children = [];
+      this.childNodes = this.children;
+      this.parentNode = null;
+      this.attributes = {};
+      this.dataset = {};
+      // 内联样式：必须真的存下来。曾经 setProperty 是 no-op，
+      // 于是 ui.mjs 写的 `--duck-ms` 在桩里凭空消失、断言全看不到 ——
+      // 又一个"桩量不到所以测不出来"的盲区。
+      this.style = makeInlineStyle();
+      this._className = "";
+      this._textContent = "";
+      this._id = "";
+      this._listeners = new Map();
+      this.classList = new ClassList(this);
+      this.hidden = false;
+      if (this.tagName === "CANVAS") {
+        this.width = 300;
+        this.height = 150;
+        this.getContext = () => {
+          if (!this.__ctx) this.__ctx = makeCtx();
+          return this.__ctx;
+        };
+      }
+    }
+
+    get id() { return this._id; }
+    set id(value) {
+      this._id = String(value);
+      if (this._id) byId.set(this._id, this);
+    }
+
+    get className() { return this._className; }
+    set className(value) {
+      this._className = String(value);
+      this.classList.set = new Set(this._className.split(/\s+/).filter(Boolean));
+    }
+
+    get textContent() { return this._textContent; }
+    set textContent(value) {
+      this._textContent = String(value);
+      this.children.length = 0;
+    }
+
+    get offsetWidth() { return 100; }
+
+    setAttribute(k, v) {
+      this.attributes[k] = String(v);
+      if (k === "id") this.id = v;
+    }
+    getAttribute(k) { return this.attributes[k] ?? null; }
+    removeAttribute(k) { delete this.attributes[k]; }
+    hasAttribute(k) { return k in this.attributes; }
+
+    appendChild(node) {
+      if (!node) return node;
+      if (node.__isFragment) {
+        for (const child of [...node.children]) this.appendChild(child);
+        node.children.length = 0;
+        return node;
+      }
+      node.parentNode = this;
+      this.children.push(node);
+      return node;
+    }
+
+    append(...nodes) { for (const n of nodes) this.appendChild(n); }
+    replaceChildren(...nodes) {
+      this.children.length = 0;
+      for (const n of nodes) this.appendChild(n);
+    }
+    removeChild(node) {
+      const i = this.children.indexOf(node);
+      if (i >= 0) this.children.splice(i, 1);
+      return node;
+    }
+    remove() { this.parentNode?.removeChild(this); }
+
+    addEventListener(type, fn) {
+      const key = `${type}`;
+      if (!this._listeners.has(key)) this._listeners.set(key, new Set());
+      this._listeners.get(key).add(fn);
+    }
+    removeEventListener(type, fn) { this._listeners.get(type)?.delete(fn); }
+
+    /**
+     * 派发合成事件（不冒泡，测试里显式逐级调用）。
+     *
+     * 注意 animationend 不会自动产生 —— 桩里没有真实动画引擎。任何依赖
+     * animationend 收尾的代码，测试要自己 `el.dispatch("animationend")` 把它推完。
+     * 反过来说：**不要在业务层把 animationend 当成唯一收尾手段**，
+     * 必须配一个 setTimeout 兜底（见 ui.mjs 的 swingHammer），
+     * 否则测试环境与"动画被系统关掉"的真实场景都会把它卡住。
+     */
+    dispatch(type, extra = {}) {
+      const ev = {
+        type,
+        target: this,
+        currentTarget: this,
+        defaultPrevented: false,
+        preventDefault() { this.defaultPrevented = true; },
+        ...extra,
+      };
+      for (const fn of this._listeners.get(type) ?? []) fn(ev);
+      return ev;
+    }
+
+    closest(selector) {
+      let node = this;
+      const match = (el) => {
+        if (selector.startsWith(".")) return el.classList.contains(selector.slice(1));
+        if (selector.startsWith("#")) return el.id === selector.slice(1);
+        return el.tagName === selector.toUpperCase();
+      };
+      while (node) {
+        if (match(node)) return node;
+        node = node.parentNode;
+      }
+      return null;
+    }
+
+    querySelector(selector) {
+      return this.querySelectorAll(selector)[0] ?? null;
+    }
+
+    querySelectorAll(selector) {
+      const out = [];
+      const match = (el) => {
+        if (selector.startsWith(".")) return el.classList.contains(selector.slice(1));
+        if (selector.startsWith("#")) return el.id === selector.slice(1);
+        if (selector.startsWith("[") && selector.includes("data-mode=")) {
+          const want = selector.match(/data-mode="([^"]+)"/)?.[1];
+          return el.dataset.mode === want;
+        }
+        if (selector === "[data-i18n]") return "data-i18n" in el.attributes;
+        return el.tagName === selector.toUpperCase();
+      };
+      const walk = (el) => {
+        for (const child of el.children) {
+          if (match(child)) out.push(child);
+          walk(child);
+        }
+      };
+      walk(this);
+      return out;
+    }
+
+    // 桩没有真实排版引擎，rect 只能是常量 —— 但可以按元素类型给一个"像样"的值，
+    // 让依赖 rect 的坐标换算至少能算出稳定、可断言的数。
+    // 注意 #garden 故意给非零 left/top：若代码用 `x - rect.left` 做换算，
+    // 桩里就会得到与视口坐标不同的结果，断言能立刻发现换算被改回去了。
+    getBoundingClientRect() {
+      if (this.id === "board") {
+        // 舞台：正方形且与 renderer 的布局尺寸对齐，让 cellAt() 的坐标换算可断言
+        const w = this.width || 520;
+        const h = this.height || 520;
+        return { left: 0, top: 0, width: w, height: h, right: w, bottom: h };
+      }
+      return { left: 0, top: 0, width: 640, height: 480, right: 640, bottom: 480 };
+    }
+
+    /* eslint-disable no-unused-vars */
+    get innerHTML() { return ""; }
+    set innerHTML(value) { if (value === "") this.children.length = 0; }
+    /* eslint-enable no-unused-vars */
+
+    focus() {}
+    blur() {}
+  }
+
+  class Fragment extends El {
+    constructor() {
+      super("#fragment");
+      this.__isFragment = true;
+    }
+  }
+
+  const root = new El("html");
+  const body = new El("body");
+  root.appendChild(body);
+
+  const idElements = new Map();
+  for (const m of html.matchAll(/<(\w+)([^>]*\bid="([^"]+)"[^>]*)>/g)) {
+    const tag = m[1];
+    const id = m[3];
+    if (idElements.has(id)) continue;
+    const el = new El(tag);
+    el.id = id;
+    const attrsBlob = m[2];
+    for (const a of attrsBlob.matchAll(/(\w[\w-]*)="([^"]*)"/g)) {
+      el.attributes[a[1]] = a[2];
+      if (a[1].startsWith("data-")) {
+        const camel = a[1].slice(5).replace(/-([a-z])/g, (_, c) => c.toUpperCase());
+        el.dataset[camel] = a[2];
+      }
+    }
+    if (/\bhidden\b/.test(attrsBlob)) el.hidden = true;
+    if (tag === "canvas") {
+      el.width = Number(el.attributes.width) || 300;
+      el.height = Number(el.attributes.height) || 150;
+    }
+    // class 解析
+    const cls = attrsBlob.match(/class="([^"]*)"/)?.[1];
+    if (cls) el.className = cls;
+    idElements.set(id, el);
+    body.appendChild(el);
+  }
+
+  // 文本节点里带 data-i18n 的也建出来
+  for (const m of html.matchAll(/<(\w+)([^>]*\bdata-i18n="([^"]+)"[^>]*)>/g)) {
+    const id = `i18n-${idSeq++}`;
+    const el = new El(m[1]);
+    el.id = id;
+    el.attributes["data-i18n"] = m[3];
+    el.dataset.i18n = m[3];
+    const cls = m[2].match(/class="([^"]*)"/)?.[1];
+    if (cls) el.className = cls;
+    body.appendChild(el);
+  }
+
+  // 弹层初始 hidden
+  for (const id of hiddenIds) {
+    const el = idElements.get(id);
+    if (el) el.hidden = true;
+  }
+
+  const document = {
+    documentElement: root,
+    body,
+    hidden: false,
+    createElement: (tag) => new El(tag),
+    createDocumentFragment: () => new Fragment(),
+    getElementById: (id) => byId.get(id) ?? null,
+    querySelector: (sel) => body.querySelector(sel),
+    querySelectorAll: (sel) => body.querySelectorAll(sel),
+    addEventListener(type, fn) {
+      if (!listeners.has(type)) listeners.set(type, new Set());
+      listeners.get(type).add(fn);
+    },
+    removeEventListener(type, fn) { listeners.get(type)?.delete(fn); },
+    dispatch(type, extra = {}) {
+      const ev = { type, target: document, preventDefault() {}, ...extra };
+      for (const fn of listeners.get(type) ?? []) fn(ev);
+      return ev;
+    },
+  };
+
+  // rAF 受控队列
+  let rafQueue = [];
+  let rafSeq = 1;
+  const requestAnimationFrame = (cb) => {
+    const id = rafSeq++;
+    rafQueue.push({ id, cb });
+    return id;
+  };
+  const cancelAnimationFrame = (id) => { rafQueue = rafQueue.filter((t) => t.id !== id); };
+
+  /** 手动步进 n 帧：每帧给一个递增的高精度时间戳 */
+  let clock = 0;
+  const step = (frames = 1, dtMs = 16) => {
+    for (let i = 0; i < frames; i += 1) {
+      clock += dtMs;
+      const pending = rafQueue;
+      rafQueue = [];
+      for (const task of pending) task.cb(clock);
+    }
+  };
+
+  const localStorage = (() => {
+    const map = new Map();
+    return {
+      getItem: (k) => (map.has(String(k)) ? map.get(String(k)) : null),
+      setItem: (k, v) => map.set(String(k), String(v)),
+      removeItem: (k) => map.delete(String(k)),
+      clear: () => map.clear(),
+      get length() { return map.size; },
+    };
+  })();
+
+  const navigatorStub = { language: "zh-CN", userAgent: "node-smoke" };
+  Object.defineProperty(globalThis, "navigator", {
+    value: navigatorStub, configurable: true, writable: true,
+  });
+
+  globalThis.window = {
+    innerWidth: 1280,
+    innerHeight: 800,
+    addEventListener: (type, fn) => document.addEventListener(type, fn),
+    removeEventListener: (type, fn) => document.removeEventListener(type, fn),
+    requestAnimationFrame,
+    cancelAnimationFrame,
+    matchMedia: () => ({ matches: false, addEventListener() {}, removeEventListener() {} }),
+  };
+  globalThis.document = document;
+  globalThis.localStorage = localStorage;
+  globalThis.requestAnimationFrame = requestAnimationFrame;
+  globalThis.cancelAnimationFrame = cancelAnimationFrame;
+  globalThis.setTimeout = globalThis.setTimeout;
+  globalThis.location = { reload() { globalThis.__reloaded = true; }, href: "http://127.0.0.1/" };
+
+  return { document, root, body, byId, step, localStorage, clock: () => clock, hiddenIds };
+}
