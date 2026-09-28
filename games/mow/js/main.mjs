@@ -41,6 +41,7 @@ const TEXT_MAP = {
   "label-best-endless": "bestEndless",
   "label-codex-count": "labelCodex",
   "pad-burst-label": "padBurst",
+  "pad-burst-kbd": "keySpace",
   "pad-pause-label": "padPause",
   "joystick-label": "joystickLabel",
   "mode-standard-label": "modeStandard",
@@ -684,7 +685,10 @@ $("btn-sound").addEventListener("click", () => {
 $("btn-lang").addEventListener("click", () => {
   const next = i18n.loadLocale() === "zh" ? "en" : "zh";
   i18n.saveLocale(next);
-  window.location.reload();
+  T = i18n.strings[next];
+  applyTexts();
+  updateHud();
+  renderLoadout();
 });
 
 $("btn-help").addEventListener("click", () => {

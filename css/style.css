@@ -345,11 +345,19 @@ body {
 
 .game-card:focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; }
 
-/* Bento 大卡：在默认全部视图中，重点推荐款跨 2x2 列 */
+/* Bento 错落网格：大卡 2x2，宽卡 2x1，标准卡 1x1 */
 @media (min-width: 680px) {
   .game-card.is-featured {
     grid-column: span 2;
     grid-row: span 2;
+    aspect-ratio: 1 / 1;
+    box-shadow: 0 12px 30px rgba(4, 68, 77, 0.22), 0 3px 10px rgba(4, 68, 77, 0.12);
+  }
+  .game-card.is-wide {
+    grid-column: span 2;
+    grid-row: span 1;
+    aspect-ratio: 2 / 1;
+    box-shadow: 0 10px 24px rgba(4, 68, 77, 0.18), 0 3px 8px rgba(4, 68, 77, 0.1);
   }
 }
 
@@ -358,12 +366,13 @@ body {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  object-position: center;
   border-radius: var(--radius);
   transition: transform 0.5s ease;
 }
 
 .game-card:not(.is-soon):hover .game-card__cover {
-  transform: scale(1.03);
+  transform: scale(1.035);
 }
 
 /* 游戏名称：左下角常驻白瓷药丸 */
@@ -389,18 +398,42 @@ body {
 }
 
 .game-card.is-featured .game-card__title {
-  font-size: clamp(14px, 5.5cqi, 18px);
+  font-size: clamp(13px, 5.5cqi, 18px);
   padding: 7px 16px;
 }
 
-/* 质感角标：精选 HOT / NEW / 敬请期待 */
+.game-card.is-wide .game-card__title {
+  font-size: clamp(12px, 4.8cqi, 16px);
+  padding: 6px 14px;
+}
+
+/* 特色卡品类徽章：左上角半透明小芯片 */
+.game-card__genre {
+  position: absolute;
+  top: 6%;
+  left: 6%;
+  z-index: 6;
+  padding: 3px 9px;
+  font-size: clamp(10px, 4cqi, 12px);
+  font-weight: 700;
+  color: var(--ink);
+  background: rgba(255, 255, 255, 0.9);
+  border-radius: 999px;
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  box-shadow: 0 2px 6px rgba(0, 27, 50, 0.12);
+  letter-spacing: 0.02em;
+  pointer-events: none;
+}
+
+/* 质感角标：HOT / NEW / 精选 / 敬请期待 */
 .badge-tag {
   position: absolute;
   top: 6%;
   right: 6%;
   z-index: 7;
   padding: 4px 10px;
-  font-size: clamp(10px, 5cqi, 12px);
+  font-size: clamp(10px, 4.8cqi, 12px);
   font-weight: 800;
   letter-spacing: 0.04em;
   border-radius: 999px;
@@ -409,12 +442,22 @@ body {
 }
 
 .badge-featured {
-  background: linear-gradient(135deg, #ff5e62, #ff9966);
+  background: linear-gradient(135deg, #8b5cf6, #ec4899);
   color: #ffffff;
 }
 
 .badge-new {
   background: linear-gradient(135deg, #10b981, #059669);
+  color: #ffffff;
+}
+
+.badge-hot {
+  background: linear-gradient(135deg, #ff416c, #ff4b2b);
+  color: #ffffff;
+}
+
+.badge-top {
+  background: linear-gradient(135deg, #f59e0b, #d97706);
   color: #ffffff;
 }
 
@@ -494,6 +537,17 @@ body {
   .game-grid {
     grid-template-columns: repeat(auto-fill, minmax(min(100%, 150px), 1fr));
     gap: 12px;
+  }
+}
+
+@media (max-width: 679px) {
+  .game-card.is-wide {
+    grid-column: span 2;
+    aspect-ratio: 16 / 9;
+  }
+  .game-card.is-featured {
+    grid-column: span 2;
+    aspect-ratio: 16 / 11;
   }
 }
 

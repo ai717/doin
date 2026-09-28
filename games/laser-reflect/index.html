@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>光束折射镜 · DOIN 在线小游戏</title>
+  <meta name="description" content="光学折射解谜：转动平面镜与分光棱镜，把一束白光折射成多路彩色光，点亮所有感光核。40 关纯确定性关卡，零手速纯脑力。">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="css/style.css?v=dev">
+</head>
+<body>
+  <div id="game-app" class="bench">
+
+    <!-- 顶部：精密仪表条（光学读数条） -->
+    <header id="stage-bar" class="instrument-bar">
+      <a href="/" id="back-home" class="bar-btn" data-i18n="backHome">返回首页</a>
+      <h1 id="stage-title" class="stage-title" data-i18n="appTitle">光束折射镜</h1>
+      <div class="stage-actions">
+        <button id="btn-sound" class="bar-btn" type="button" aria-label="音效">♪</button>
+        <button id="btn-lang" class="bar-btn" type="button">EN</button>
+        <button id="btn-help" class="bar-btn" type="button" aria-label="玩法说明">?</button>
+      </div>
+    </header>
+
+    <!-- 中央：光学实验台（遮光罩暗房） -->
+    <main id="stage-core">
+      <div id="bench-frame" class="bench-frame">
+        <div id="bench-lid" class="bench-lid">
+          <!-- 元件托盘（左侧立式收纳） -->
+          <aside id="tray" class="tray" aria-hidden="true">
+            <span class="tray-chip tray-mirror" title="平面镜">╱</span>
+            <span class="tray-chip tray-splitter" title="分光棱镜">✛</span>
+            <span class="tray-chip tray-spectro" title="分色棱镜">▽</span>
+          </aside>
+
+          <!-- 光学读数条（关卡/步数/目标） -->
+          <div id="readout" class="readout">
+            <div class="readout-cell">
+              <span class="readout-label" data-i18n="level">第 1 关</span>
+              <span id="readout-level" class="readout-value">1</span>
+            </div>
+            <div class="readout-cell">
+              <span class="readout-label" data-i18n="moves">步数</span>
+              <span id="readout-moves" class="readout-value">0</span>
+            </div>
+            <div class="readout-cell">
+              <span class="readout-label" data-i18n="par">目标</span>
+              <span id="readout-par" class="readout-value">1</span>
+            </div>
+            <div class="readout-cell">
+              <span class="readout-label" data-i18n="stars">星级</span>
+              <span id="readout-stars" class="readout-stars" aria-hidden="true">☆☆☆</span>
+            </div>
+          </div>
+
+          <!-- 光学台面（网格盘面 + 光路 SVG 覆盖层） -->
+          <div id="board-wrap" class="board-wrap">
+            <div id="board" class="board" role="grid" data-i18n-aria="boardAria"></div>
+            <svg id="rays-layer" class="rays-layer" aria-hidden="true"></svg>
+          </div>
+
+          <!-- 右下角仪器按钮组 -->
+          <div id="controls" class="controls">
+            <button id="btn-undo" class="ctrl-btn" type="button" data-i18n="undo">撤销</button>
+            <button id="btn-reset" class="ctrl-btn" type="button" data-i18n="reset">重置</button>
+            <button id="btn-select" class="ctrl-btn ctrl-accent" type="button" data-i18n="levelSelect">选关</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 章节/选关抽屉 -->
+      <nav id="level-panel" class="level-panel hidden" aria-label="选关">
+        <div id="level-grid" class="level-grid"></div>
+        <button id="btn-panel-close" class="ctrl-btn" type="button" data-i18n="helpClose">开始</button>
+      </nav>
+    </main>
+
+    <!-- 胜利结算条（非遮挡：固定底部、不盖盘面，用户全程看得见光路与靶点） -->
+    <div id="result-layer" class="result-layer hidden" role="status" aria-live="polite">
+      <div class="result-card">
+        <div id="result-stars" class="result-stars" aria-hidden="true">☆☆☆</div>
+        <div class="result-text">
+          <h2 id="result-title" class="result-title" data-i18n="winTitle">全部点亮！</h2>
+          <p id="result-sub" class="result-sub"></p>
+        </div>
+        <div class="result-actions">
+          <button id="btn-next" class="ctrl-btn ctrl-accent" type="button" data-i18n="nextLevel">下一关</button>
+          <button id="btn-replay" class="ctrl-btn" type="button" data-i18n="replay">再来一次</button>
+          <button id="btn-close-result" class="ctrl-btn" type="button" data-i18n="levelSelect">选关</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 玩法说明弹层 -->
+    <div id="help-layer" class="help-layer hidden" role="dialog" aria-modal="true">
+      <div class="help-card">
+        <h2 id="help-title" class="result-title" data-i18n="helpTitle">怎么玩</h2>
+        <p id="help-body" class="help-body" data-i18n="helpBody"></p>
+        <button id="btn-help-close" class="ctrl-btn ctrl-accent" type="button" data-i18n="helpClose">开始</button>
+      </div>
+    </div>
+  </div>
+
+  <noscript><p>需要启用 JavaScript 才能游玩光束折射镜。</p></noscript>
+  <script type="module" src="js/main.mjs?v=dev"></script>
+</body>
+</html>

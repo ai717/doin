@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>盲盒记忆牌 · DOIN 在线小游戏</title>
+  <meta name="description" content="翻开两张盲盒找配对，配不中时四周相邻的盒子会咯哒一声顺时针轮转一格——记死位置在这里行不通。22 关 5 章递进 + 每日盲盒 + 沙盒模式，潮玩盲盒工坊车间美学。">
+  <link rel="icon" href="favicon.svg?v=dev" type="image/svg+xml">
+  <link rel="stylesheet" href="css/style.css?v=dev">
+</head>
+<body>
+  <noscript>
+    <div class="noscript-banner">
+      <p data-i18n="noscript">需要启用 JavaScript 才能游玩。</p>
+    </div>
+  </noscript>
+
+  <div id="game-app">
+    <!-- 工坊顶栏：返回 / 音效 / 语言 / 玩法（静态骨架，热更新走 data-i18n） -->
+    <header class="workshop-topbar">
+      <a href="/" id="back-home" class="topbar-btn" data-i18n-aria="backHome" title="门户" aria-label="门户">←</a>
+      <h1 class="topbar-title" data-i18n="gameTitle">盲盒记忆牌</h1>
+      <div class="topbar-tools">
+        <button id="btn-sound" class="topbar-btn" type="button" data-i18n-aria="btnSound" aria-label="音效">🔊</button>
+        <button id="btn-lang" class="topbar-btn" type="button">EN</button>
+        <button id="btn-help" class="topbar-btn" type="button" data-i18n-aria="btnHelp" aria-label="玩法">?</button>
+      </div>
+    </header>
+
+    <main class="workshop-body" id="game-root">
+      <!-- 主体由 render.mjs 动态填充 -->
+    </main>
+  </div>
+
+  <script type="module" src="js/main.mjs?v=dev"></script>
+</body>
+</html>

@@ -118,7 +118,7 @@ const STRINGS = {
   },
   en: {
     title: "Gomoku Master",
-    subtitle: "五子连珠",
+    subtitle: "Five in a Row",
     backHome: "Back to portal",
     newGame: "New game",
     undo: "Undo",

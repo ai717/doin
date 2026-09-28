@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>泡泡射手 · DOIN 在线小游戏</title>
+  <meta name="description" content="转动冰窟底部的棱镜炮台发射彩泡，打支撑柱让整片冰塔雪崩坠落！30 关三星闯关 + 24 道断柱残局 + 无尽寒潮 + 每日残局，墙面反弹预测线与确定性物理。">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="css/style.css?v=dev">
+</head>
+<body>
+  <div id="game-app">
+    <header id="stage-bar">
+      <a href="/" id="back-home" data-i18n="back">← 门户</a>
+      <h1 id="stage-title" data-i18n="title">泡泡射手</h1>
+      <div class="stage-actions">
+        <button id="btn-sound" class="bar-btn" type="button" aria-label="音效" data-i18n-aria="soundOn" data-i18n="soundOn">🔊 音效开</button>
+        <button id="btn-lang" class="bar-btn" type="button" aria-label="语言" data-i18n-aria="langBtn" data-i18n="langBtn">EN</button>
+        <button id="btn-pause" class="bar-btn" type="button" aria-label="暂停" data-i18n-aria="pause" data-i18n="pause">暂停</button>
+        <button id="btn-help" class="bar-btn" type="button" aria-label="玩法说明" data-i18n-aria="help" data-i18n="help">?</button>
+      </div>
+    </header>
+
+    <main id="stage-core">
+      <aside id="panel-left">
+        <div class="panel-chunk">
+          <h3 id="chapter-label" data-i18n="chapter1">第一章 · 浅冰层</h3>
+          <p id="level-progress" class="dim">1 / 30</p>
+        </div>
+        <div class="panel-chunk">
+          <span class="p-label" data-i18n="goalClear">清空全盘</span>
+          <p id="goal-line" class="dim">目标发数 20</p>
+        </div>
+        <div class="panel-chunk">
+          <span class="p-label" data-i18n="statusAim">瞄准中</span>
+          <p id="status-label" class="dim">—</p>
+        </div>
+        <div class="panel-chunk">
+          <span class="p-label" data-i18n="aim">瞄准档位</span>
+          <div id="aim-row">
+            <button id="btn-aim-classic" class="chip" type="button" data-i18n="aimClassic">经典</button>
+            <button id="btn-aim-extended" class="chip is-on" type="button" data-i18n="aimExtended">完整</button>
+            <button id="btn-aim-pro" class="chip" type="button" data-i18n="aimPro">硬核</button>
+          </div>
+        </div>
+        <div class="panel-chunk">
+          <button id="btn-assist" class="chip" type="button" data-i18n="assist">色盲符号</button>
+          <button id="btn-restart" class="chip" type="button" data-i18n="restart">重开本关</button>
+        </div>
+      </aside>
+
+      <section id="stage-cabinet">
+        <div id="mobile-hud">
+          <span class="mh-item"><b id="mh-shots">0</b><i data-i18n="shots">用弹数</i></span>
+          <span class="mh-item"><b id="mh-chain">0</b><i data-i18n="chain">连锁</i></span>
+          <span class="mh-item"><b id="mh-left">0</b><i data-i18n="bubblesLeft">剩余冰泡</i></span>
+          <span class="mh-item"><b id="mh-press">8</b><i data-i18n="pressIn">冰压下压</i></span>
+        </div>
+
+        <div class="board-wrap">
+          <canvas id="board" width="360" height="640" aria-label="泡泡射手冰窟舞台"></canvas>
+          <div id="toast"></div>
+
+          <div id="screen-start" class="overlay">
+            <h2 id="start-title" data-i18n="startTitle">泡泡射手 · 极光冰窟</h2>
+            <p id="start-sub" class="dim" data-i18n="startSub">打支撑柱 · 墙面反弹 · 冰层下压 · 雪崩连锁</p>
+            <div class="mode-row">
+              <button id="btn-mode-stage" class="btn btn-primary" type="button" data-i18n="modeStage">冰层攀登</button>
+              <button id="btn-mode-puzzle" class="btn" type="button" data-i18n="modePuzzle">断柱残局</button>
+              <button id="btn-mode-endless" class="btn" type="button" data-i18n="modeEndless">无尽寒潮</button>
+              <button id="btn-mode-daily" class="btn" type="button" data-i18n="modeDaily">每日残局</button>
+            </div>
+            <div id="level-grid"></div>
+            <div class="start-footer">
+              <span id="stars-total" data-i18n="starsTotal">总星数 0</span>
+              <button id="btn-reset-save" class="bar-btn" type="button" data-i18n="saveReset">重置存档</button>
+            </div>
+          </div>
+
+          <div id="screen-help" class="overlay hidden">
+            <h2 id="help-title" data-i18n="helpTitle">玩法说明</h2>
+            <p id="help-body-1"></p>
+            <p id="help-body-2"></p>
+            <p id="help-body-3"></p>
+            <p id="help-body-4"></p>
+            <p id="help-body-5"></p>
+            <p id="help-body-6"></p>
+            <button id="btn-help-close" class="btn btn-primary" type="button" data-i18n="helpClose">知道了</button>
+          </div>
+
+          <div id="screen-clear" class="overlay hidden">
+            <h2 id="clear-title" data-i18n="cleared">通关！</h2>
+            <p id="clear-line"></p>
+            <p id="clear-stars" class="stars-line"></p>
+            <div class="btn-row">
+              <button id="btn-next-level" class="btn btn-primary" type="button" data-i18n="nextLevel">下一关</button>
+              <button id="btn-retry" class="btn" type="button" data-i18n="retry">再战本关</button>
+              <button id="btn-to-select" class="btn" type="button" data-i18n="toSelect">返回选关</button>
+            </div>
+          </div>
+
+          <div id="screen-over" class="overlay hidden">
+            <h2 id="over-title" data-i18n="over">本局结束</h2>
+            <p id="over-line"></p>
+            <div class="btn-row">
+              <button id="btn-again" class="btn btn-primary" type="button" data-i18n="again">再来一局</button>
+              <button id="btn-over-back" class="btn" type="button" data-i18n="backMenu">返回主菜单</button>
+            </div>
+          </div>
+
+          <div id="screen-pause" class="overlay hidden">
+            <h2 id="pause-title" data-i18n="pauseTitle">已暂停</h2>
+            <p id="pause-hint" class="dim" data-i18n="pauseHint">冰窟已冻结 · 随时继续</p>
+            <div class="btn-row">
+              <button id="btn-resume" class="btn btn-primary" type="button" data-i18n="resume">继续</button>
+              <button id="btn-pause-restart" class="btn" type="button" data-i18n="restart">重开本关</button>
+              <button id="btn-pause-help" class="btn" type="button" data-i18n="help">玩法说明</button>
+              <button id="btn-pause-select" class="btn" type="button" data-i18n="toSelect">返回选关</button>
+            </div>
+          </div>
+        </div>
+
+        <div id="deck">
+          <button id="btn-swap" class="deck-btn" type="button" data-i18n="swap">换弹</button>
+          <button id="btn-pick" class="deck-btn" type="button" data-i18n="icePick">冰镐弹</button>
+          <button id="btn-fire" class="deck-btn fire" type="button" data-i18n="statusFlying">发射</button>
+        </div>
+        <p id="key-tip" class="dim" data-i18n="keyTip">←/→ 微调角度 · Shift 精调 · 空格发射 · S 换弹 · K 冰镐弹</p>
+        <p id="touch-tip" class="dim" data-i18n="touchTip">拖拽瞄准 · 松手发射</p>
+      </section>
+
+      <aside id="panel-right">
+        <div class="panel-chunk score-chunk">
+          <span class="p-label" data-i18n="chain">连锁</span>
+          <span id="chain-val" class="lcd big">0</span>
+          <span class="p-label" data-i18n="maxChain">最大连锁</span>
+          <span id="max-chain-val" class="lcd">0</span>
+        </div>
+        <div class="panel-chunk">
+          <span class="p-label" data-i18n="shots">用弹数</span>
+          <span id="shots-val" class="lcd">0</span>
+          <span class="p-label" data-i18n="targetShots">目标发数</span>
+          <span id="target-val" class="lcd">0</span>
+        </div>
+        <div class="panel-chunk">
+          <span class="p-label" data-i18n="bubblesLeft">剩余冰泡</span>
+          <span id="left-val" class="lcd">0</span>
+          <span class="p-label" data-i18n="pressIn">冰压下压</span>
+          <span id="press-val" class="lcd">8</span>
+        </div>
+        <div class="panel-chunk">
+          <span class="p-label" data-i18n="icePick">冰镐弹</span>
+          <span id="pick-val" class="lcd">0</span>
+          <span class="p-label" data-i18n="prism">棱镜泡</span>
+          <span id="prism-val" class="lcd">-</span>
+        </div>
+        <div class="panel-chunk">
+          <span class="p-label" data-i18n="bestEndless">生存最佳</span>
+          <span id="best-line" class="lcd small">-</span>
+        </div>
+        <div class="panel-chunk">
+          <span class="p-label" data-i18n="dailyBest">今日最佳</span>
+          <span id="daily-line" class="lcd small">-</span>
+        </div>
+      </aside>
+    </main>
+  </div>
+  <noscript><p>需要启用 JavaScript 才能游玩。</p></noscript>
+  <script type="module" src="js/main.mjs?v=dev"></script>
+</body>
+</html>

@@ -39,12 +39,16 @@ export const DICTIONARY = {
     // 章节描述
     chapter1Name: "第一章 · 远古林地",
     chapter1Desc: "波次 1-5 · 击退影行者与晶岩傀儡，直面巨石领主泰坦努斯。",
+    chapter1Bonus: "初始法力: 220",
     chapter2Name: "第二章 · 熔岩裂隙",
     chapter2Desc: "波次 6-10 · 灼热熔岩回廊，迎战自爆熔甲虫与霜火双子。",
+    chapter2Bonus: "初始法力: 550 · 随机遗物 ×2",
     chapter3Name: "第三章 · 极寒冻土",
     chapter3Desc: "波次 11-15 · 极度严寒降临，抵御虚空女妖与虚空织行者。",
+    chapter3Bonus: "初始法力: 950 · 随机遗物 ×4",
     chapter4Name: "第四章 · 虚空王座",
     chapter4Desc: "波次 16-20 · 深渊终极浩劫，向湮灭始祖奥布里温发起决战！",
+    chapter4Bonus: "初始法力: 1500 · 随机遗物 ×6",
 
     selectTarget: "点击魔物优先集火",
     clearTarget: "取消集火",
@@ -202,12 +206,16 @@ export const DICTIONARY = {
     // Chapter Descriptions
     chapter1Name: "Chapter 1 · Ancient Grove",
     chapter1Desc: "Waves 1-5 · Repel Night Crawlers & Golems; face Titanus the Stone Lord.",
+    chapter1Bonus: "Starting Mana: 220",
     chapter2Name: "Chapter 2 · Magma Chasm",
     chapter2Desc: "Waves 6-10 · Scorching path; face Boom Beetles & Frost-Flame Twin Phantoms.",
+    chapter2Bonus: "Starting Mana: 550 · Random Relics ×2",
     chapter3Name: "Chapter 3 · Frozen Expanse",
     chapter3Desc: "Waves 11-15 · Sub-zero realm; withstand Void Banshees & Void Weaver.",
+    chapter3Bonus: "Starting Mana: 950 · Random Relics ×4",
     chapter4Name: "Chapter 4 · Void Throne",
     chapter4Desc: "Waves 16-20 · Abyssal cataclysm; final showdown with Oblivion Prime!",
+    chapter4Bonus: "Starting Mana: 1500 · Random Relics ×6",
 
     selectTarget: "Click monster to Focus Fire",
     clearTarget: "Cancel Focus",

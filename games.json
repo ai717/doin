@@ -1,6 +1,125 @@
 {
   "games": [
     {
+      "title": "舷窗防线",
+      "slug": "invaders",
+      "desc": "太空侵略者现代重制：在观测舱舷窗后左右走位，迎击横移下压、越打越快的外星阵列。点射管理过热槽、长按蓄力轨道炮贯穿整列，俯冲转入冲刺直段时正面迎击拿双倍分。12 关战役 + 生存演习 + 战术训练场。",
+      "icon": "👾",
+      "cover": "/assets/covers/invaders.webp",
+      "tags": [
+        "街机",
+        "射击",
+        "经典"
+      ],
+      "url": "/invaders/",
+      "en": {
+        "title": "Starport Siege",
+        "desc": "A modern Space Invaders: slide your turret behind the observation porthole and break a formation that marches sideways, presses closer and speeds up as it thins out. Tap-fire against the heat gauge, hold to charge a column-piercing railgun, and meet divers head-on during their dash for double score. 12-stage campaign, survival drill and training range."
+      }
+    },
+    {
+      "title": "数织",
+      "slug": "picross",
+      "desc": "看行列数字提示，推理涂黑标叉，一幅隐藏像素画跃然眼前。纯确定性逻辑推理，零死局，收纳精美印章画册。",
+      "icon": "🧩",
+      "cover": "/assets/covers/picross.webp",
+      "tags": [
+        "益智",
+        "经典",
+        "逻辑"
+      ],
+      "url": "/picross/",
+      "en": {
+        "title": "Picross",
+        "desc": "Deduce rows and columns to paint and mark. Watch the pixel art unveil with 100% logical solvability and collect exclusive stamps."
+      }
+    },
+    {
+      "title": "记忆对决",
+      "slug": "memory-duel",
+      "desc": "与 AI 抢配对打记忆翻牌战——看穿牌背、抢先配对、偷走对手的牌，融合记忆、情报与攻防的博弈对决。",
+      "icon": "🔮",
+      "cover": "/assets/covers/memory-duel.webp",
+      "tags": [
+        "益智",
+        "对战",
+        "策略"
+      ],
+      "url": "/memory-duel/",
+      "en": {
+        "title": "Memory Duel",
+        "desc": "Clash against AI in a tactical memory showdown: peek behind cards, snatch pairs, and steal your rival's loot in this battle of memory, intel, and combat."
+      }
+    },
+    {
+      "title": "盲盒记忆牌",
+      "slug": "memory-flip",
+      "desc": "翻开两张盲盒找配对，配不中时四周相邻的盒子会咯哒一声顺时针轮转一格——记死位置在这里行不通。22 关 5 章递进 + 每日盲盒 + 沙盒模式。",
+      "icon": "🎁",
+      "cover": "/assets/covers/memory-flip.webp",
+      "tags": [
+        "益智",
+        "记忆",
+        "解谜"
+      ],
+      "url": "/memory-flip/",
+      "en": {
+        "title": "Memory Flip",
+        "desc": "Flip two blind boxes to find a pair. On a mismatch the neighbors tick clockwise by one slot — dead-reckoning positions won't work. 22 levels, daily pop and sandbox."
+      }
+    },
+    {
+      "title": "蜘蛛纸牌",
+      "slug": "spider",
+      "desc": "在十列牌桌上排成同花顺，收齐八副同花顺通关，体验移形换位的沉思策略与连环清盘的畅快。",
+      "icon": "🕷️",
+      "cover": "/assets/covers/spider.webp",
+      "tags": [
+        "纸牌",
+        "经典",
+        "策略"
+      ],
+      "url": "/spider/",
+      "en": {
+        "title": "Spider Solitaire",
+        "desc": "Build complete same-suit sequences from King to Ace across ten tableau columns to clear all eight runs and weave your victory."
+      }
+    },
+    {
+      "title": "迷你猫咖掌柜",
+      "slug": "catcafe",
+      "desc": "午后治愈猫咖放置经营：移动喵掌柜到工位旁自动冲咖啡擦桌子，星标领养橘猫/三花/英短/布偶四只喵咪伙伴，8 款咖啡研制与 12 位常客图鉴喂养，外带窗/露台卡座/屋顶花园三个窗口扩张，离线挂机 4/4/4/218 里程碑倍率回归想念桶。",
+      "icon": "🐱",
+      "cover": "/assets/covers/catcafe.webp",
+      "tags": [
+        "经营",
+        "放置",
+        "治愈"
+      ],
+      "url": "/catcafe/",
+      "en": {
+        "title": "Mini Cat Cafe",
+        "desc": "Cozy afternoon cat cafe idle tycoon. Walk your cat baristas to stations to auto-brew and wipe tables, adopt 4 feline friends (Tabby/Calico/British/Ragdoll) with stars, research 8 coffee recipes and feed 12 guest cats, expand three windows (Takeout/Terrace/Garden), offline 4/4/4/218 milestone multipliers with longing buckets on return."
+      }
+    },
+    {
+      "title": "深夜拉面屋",
+      "slug": "ramen-idle",
+      "desc": "深夜街角开拉面摊，备料出餐自动赚钱，扩店解锁配方与暖心常客故事滚雪球。",
+      "icon": "🍜",
+      "cover": "/assets/covers/ramen-idle.webp",
+      "tags": [
+        "经营",
+        "放置",
+        "治愈"
+      ],
+      "url": "/ramen-idle/",
+      "en": {
+        "title": "Midnight Ramen",
+        "desc": "Run a cozy midnight ramen stall, automate prep and serving to scale your shop, unlock secret recipes and heartwarming stories."
+      }
+    },
+    {
       "title": "五子连珠",
       "slug": "gomoku",
       "desc": "15×15 经典五子棋：黑方 Renju 禁手规则、四档阶梯 Minimax AI、30 道残局死活题，从启蒙到大师的渐进式修行。",
@@ -30,7 +149,8 @@
       "url": "/sudoku/",
       "spa": true,
       "en": {
-        "title": "Sudoku"
+        "title": "Sudoku",
+        "desc": "Classic 9x9 Sudoku puzzle with pure logical deduction, notes, and hint assistance."
       }
     },
     {
@@ -46,7 +166,8 @@
       ],
       "url": "/2048/",
       "en": {
-        "title": "2048"
+        "title": "2048",
+        "desc": "Slide and merge matching number tiles to reach the legendary 2048 tile and beyond."
       }
     },
     {
@@ -79,7 +200,8 @@
       ],
       "url": "/tic-tac-toe/",
       "en": {
-        "title": "Tic-Tac-Toe"
+        "title": "Tic-Tac-Toe",
+        "desc": "Classic Tic-Tac-Toe duel: test your wits against tactical AI difficulty tiers."
       }
     },
     {
@@ -115,7 +237,8 @@
         "scripts"
       ],
       "en": {
-        "title": "Minesweeper"
+        "title": "Minesweeper",
+        "desc": "Classic retro Minesweeper: clear the minefield with deduction, flags, and quick reveals."
       }
     },
     {
@@ -148,7 +271,8 @@
       ],
       "url": "/orbit-sort/",
       "en": {
-        "title": "Orbit Sort"
+        "title": "Orbit Sort",
+        "desc": "Rotate orbital rings to sort and match vibrant colored balls into designated zones."
       }
     },
     {
@@ -164,7 +288,8 @@
       ],
       "url": "/gold-miner/",
       "en": {
-        "title": "Gold Miner"
+        "title": "Gold Miner",
+        "desc": "Aim your hook to reel in gold nuggets, gems, and bags of cash in this arcade classic."
       }
     },
     {
@@ -183,7 +308,8 @@
         "scripts"
       ],
       "en": {
-        "title": "Tetris Neo"
+        "title": "Tetris Neo",
+        "desc": "Fast-paced falling block puzzle featuring classic 7-bag mechanics and neon visuals."
       }
     },
     {
@@ -812,6 +938,59 @@
       }
     },
     {
+      "title": "弹球肉鸽防线",
+      "slug": "breakout",
+      "desc": "操控魔法底板弹射能量球击碎符文砖阵，每清空一层从三枚神秘核心中择一升级——多球分裂、火球贯穿、磁吸底板等 12 枚核心构筑流派，一路轰穿至远古守护者 Boss。",
+      "icon": "🔮",
+      "cover": "/assets/covers/breakout.webp",
+      "tags": [
+        "街机",
+        "打砖",
+        "肉鸽",
+        "构筑"
+      ],
+      "url": "/breakout/",
+      "en": {
+        "title": "Breakout Relic",
+        "desc": "Pilot a magic paddle to launch energy orbs and shatter rune brick arrays. Pick one of three relics after each cleared layer — multiball, fireball pierce, magnet paddle and 9 more — to forge your own orb-destruction build and blast through to the Ancient Guardian boss."
+      }
+    },
+    {
+      "title": "泡泡射手",
+      "slug": "bobble",
+      "desc": "转动冰窟底部的棱镜炮台发射彩泡，三连爆开、斩断支撑柱让整片冰塔雪崩坠落！30 关三星闯关 + 24 道断柱残局 + 无尽寒潮 + 每日残局，墙面反弹预测线三档可调、冰镐弹开路与绝境棱镜补给，确定性反弹物理。",
+      "icon": "🫧",
+      "cover": "/assets/covers/bobble.webp",
+      "tags": [
+        "消除",
+        "射击",
+        "泡泡",
+        "街机"
+      ],
+      "url": "/bobble/",
+      "en": {
+        "title": "Bubble Shooter",
+        "desc": "Rotate the prism cannon at the ice-cavern floor, match three bubbles to burst them and cut the stem to avalanche whole towers! 30 three-star levels, 24 one-shot stem-cutting puzzles, endless Deep Freeze and a daily board, with tiered bounce-preview aiming and deterministic physics."
+      }
+    },
+    {
+      "title": "光束折射镜",
+      "slug": "laser-reflect",
+      "desc": "在光学实验台转动平面镜与分光棱镜，把一束白光折射、分光成多路彩色光，点亮所有感光核。40 关纯确定性关卡，零手速纯脑力。",
+      "icon": "🔦",
+      "cover": "/assets/covers/laser-reflect.webp",
+      "tags": [
+        "益智",
+        "解谜",
+        "光学"
+      ],
+      "url": "/laser-reflect/",
+      "en": {
+        "title": "Laser Reflect",
+        "desc": "Rotate mirrors and beam splitters on an optical bench to bend a white beam into colored light and light every sensor core. 40 deterministic levels, pure logic."
+      }
+    },
+    {
       "title": "倒退贪吃蛇",
       "slug": "uncoil",
       "desc": "开局就是一条盘踞满屏的百节长蛇，每吞一颗缩身丸就短一截——在被自己的身体困死之前，把全身整条走完。5 章 40 关 + 12 残局 + 每日缠局，纯回合制零手速，无限撤销。",
@@ -827,6 +1006,75 @@
       "en": {
         "title": "Uncoil",
         "desc": "You start as a hundred-segment snake coiled wall to wall. Every pellet you swallow sheds a few segments off your tail — walk your whole body off the board before your own coils box you in. 40 levels across 5 chapters, 12 endgame puzzles and a daily coil. Pure turn-based, zero reflex, unlimited undo."
+      }
+    },
+    {
+      "title": "炸弹人",
+      "slug": "bomber",
+      "desc": "在软胶街区沙盘里放定时炸弹，十字爆风炸砖、烧道具、连锁引爆，也会炸死你自己。把会算危险格的气球怪堵进死胡同，清光后从砖下钻出口门。5 章 40 关道具成长 + 24 道限弹连锁爆破解谜，爆风预警与点格寻路，评级看星级、拆迁率与单连锁。",
+      "icon": "💣",
+      "cover": "/assets/covers/bomber.webp",
+      "tags": [
+        "街机",
+        "动作",
+        "解谜",
+        "爆破"
+      ],
+      "url": "/bomber/",
+      "en": {
+        "title": "Bomber",
+        "desc": "Drop timed bombs on a gummy block sandbox: crosses of blast clear bricks, burn power-ups and chain into each other - they kill you too. Corner dodging balloons into dead ends, then walk out the exit door. 40 stages across 5 chapters plus 24 bomb-budget chain puzzles, with blast warnings and tap-to-walk."
+      }
+    },
+    {
+      "title": "黑白翻转",
+      "slug": "reversi",
+      "desc": "8×8 经典黑白棋：落子夹住对手，两端包夹整条线全翻成你的颜色，终局比谁子多。见习 / 棋手 / 名手 / 无谬四档 AI、本地双人、五种开局与闪电战，另附 60 道求解器校验残局和翻转冲刺街机。空位 ≤ 14 时横梁直接报出精确终局分差。",
+      "icon": "◐",
+      "cover": "/assets/covers/reversi.webp",
+      "tags": [
+        "益智",
+        "对战",
+        "经典"
+      ],
+      "url": "/reversi/",
+      "en": {
+        "title": "Reversi · Flip Chess",
+        "desc": "Classic 8×8 Reversi: bracket your opponent and flip the whole line to your color, then finish with the most discs. Four-tier Minimax AI, local 2-player, five openings, blitz mode, 60 solver-verified endgame puzzles and a flip rush arcade. The exact final score is revealed once 14 or fewer squares remain."
+      }
+    },
+    {
+      "title": "霓虹吃豆",
+      "slug": "pacman",
+      "desc": "暗室里一整墙弯制霓虹灯管。四盏灯各有算法：赤灯直取、粉灯抄你前方四格、青灯夹击反射、橘灯怯场；节拍一换全体掉头。七张主题迷宫逐张点亮新机关（风道 / 闸门 / 糖浆 / 结霜 / 双巢 / 永不巡游），另有街机无尽与十张一命残局。",
+      "icon": "◔",
+      "cover": "/assets/covers/pacman.webp",
+      "tags": [
+        "街机",
+        "经典",
+        "迷宫"
+      ],
+      "url": "/pacman/",
+      "en": {
+        "title": "Neon Chomp",
+        "desc": "A whole wall of bent neon tube in a dark room. Four lamps, four algorithms: Crimson walks straight at you, Rose aims four tiles ahead, Teal reflects a pincer around Crimson, Amber retreats when it closes in — and when the beat flips, every lamp reverses on the spot. Seven themed mazes add a new fitting each (ducts, tide gates, syrup, frost, a second nest, never-scatters), plus endless arcade and ten one-life endgames."
+      }
+    },
+    {
+      "title": "坦克巷战",
+      "slug": "tank",
+      "desc": "野战指挥沙盘里的俯视坦克巷战：拆砖开路、借钢壁跳弹打拐角（反弹会打中你自己），守住耐久 3 点的司令部鹰标并全歼来犯装甲。6 章 24 关三星战役 + 无尽死守波次 + 8 张限弹残局，另有击杀充能的覆盖炮击 / 紧急筑垒 / 电子干扰三指令轮换。",
+      "icon": "⛨",
+      "cover": "/assets/covers/tank.webp",
+      "tags": [
+        "射击",
+        "动作",
+        "策略"
+      ],
+      "url": "/tank/",
+      "en": {
+        "title": "Tank Assault",
+        "desc": "Top-down tank warfare on a field-command sand table: blast bricks open, bank shells off steel walls to hit around corners (the bounce can hit you too), and hold the 3-point eagle HQ while wiping out every hostile tank. A 24-stage three-star campaign across 6 chapters, endless last-stand waves, 8 limited-ammo breakthrough boards, plus kill-charged orders: Artillery, Fortify and Jamming."
       }
     }
   ]

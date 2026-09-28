@@ -43,7 +43,7 @@
         <!-- 机顶黄铜状态条：返回 / 标题 / 系统控制全部内嵌 -->
         <header class="brass-bar" id="brass-bar">
           <a id="back-home" href="/">返回门户</a>
-          <p class="plate"><span class="plate-name">背包竞技场</span><span class="plate-sub">BACKPACK ARENA</span></p>
+          <p class="plate"><span class="plate-name" data-i18n="appTitle">背包竞技场</span><span class="plate-sub">BACKPACK ARENA</span></p>
           <div class="tools">
             <button type="button" class="knob" id="help-btn" aria-label="玩法" title="玩法">?</button>
             <button type="button" class="knob" id="sound-btn" aria-label="音效" title="音效"><span>♪</span></button>
@@ -69,43 +69,43 @@
     <div class="overlay" id="overlay" hidden>
       <!-- 玩法说明 -->
       <section class="panel panel-help" id="help-panel" role="dialog" aria-modal="true" aria-labelledby="help-title" hidden>
-        <h2 class="panel-title" id="help-title">玩法说明</h2>
+        <h2 class="panel-title" id="help-title" data-i18n="helpTitle">玩法说明</h2>
         <ul class="help-list" id="help-list"></ul>
         <div class="panel-actions">
-          <button type="button" class="key key-primary" id="help-close">看懂了</button>
+          <button type="button" class="key key-primary" id="help-close" data-i18n="helpClose">看懂了</button>
         </div>
       </section>
 
       <!-- 清空存档 -->
       <section class="panel panel-reset" id="reset-panel" role="dialog" aria-modal="true" aria-labelledby="reset-title" hidden>
-        <h2 class="panel-title" id="reset-title">清空存档</h2>
+        <h2 class="panel-title" id="reset-title" data-i18n="resetBtn">清空存档</h2>
         <p class="panel-lede" id="reset-desc"></p>
         <div class="panel-actions">
-          <button type="button" class="key key-danger" id="reset-btn-go">再点一次确认清空</button>
-          <button type="button" class="key" id="reset-cancel">取消</button>
+          <button type="button" class="key key-danger" id="reset-btn-go" data-i18n="resetConfirmBtn">再点一次确认清空</button>
+          <button type="button" class="key" id="reset-cancel" data-i18n="cancel">取消</button>
         </div>
       </section>
 
       <!-- 残局提示 -->
       <section class="panel panel-hint" id="hint-panel" role="dialog" aria-modal="true" aria-labelledby="hint-title" hidden>
-        <h2 class="panel-title" id="hint-title">参考摆法</h2>
+        <h2 class="panel-title" id="hint-title" data-i18n="hintTitle">参考摆法</h2>
         <ul class="hint-list" id="hint-list"></ul>
         <div class="panel-actions">
-          <button type="button" class="key key-primary" id="hint-close">照着摆</button>
+          <button type="button" class="key key-primary" id="hint-close" data-i18n="hintClose">照着摆</button>
         </div>
       </section>
 
       <!-- 残局结算 -->
       <section class="panel panel-puzzle-end" id="puzzle-end-panel" role="dialog" aria-modal="true" aria-labelledby="puzzle-end-title" hidden>
         <p class="panel-kicker" id="puzzle-end-badge">★</p>
-        <h2 class="panel-title" id="puzzle-end-title">残局破解！</h2>
+        <h2 class="panel-title" id="puzzle-end-title" data-i18n="puzzleEndTitle">残局破解！</h2>
         <p class="panel-lede" id="puzzle-end-desc"></p>
         <p class="stars-big" id="puzzle-end-stars"></p>
         <p class="panel-lede" id="puzzle-end-got"></p>
         <div class="panel-actions">
-          <button type="button" class="key key-primary" id="puzzle-end-next">下一关</button>
-          <button type="button" class="key" id="puzzle-end-retry">再试一次</button>
-          <button type="button" class="key" id="puzzle-end-list">残局列表</button>
+          <button type="button" class="key key-primary" id="puzzle-end-next" data-i18n="btnNextLevel">下一关</button>
+          <button type="button" class="key" id="puzzle-end-retry" data-i18n="btnRetry">再试一次</button>
+          <button type="button" class="key" id="puzzle-end-list" data-i18n="btnPuzzleList">残局列表</button>
         </div>
       </section>
 
@@ -117,21 +117,21 @@
         <div class="tally" id="expedition-end-stats"></div>
         <p class="seed-line" id="expedition-end-seed"></p>
         <div class="panel-actions">
-          <button type="button" class="key key-primary" id="expedition-end-retry">再战一次</button>
-          <button type="button" class="key" id="expedition-end-copy">复制种子码</button>
-          <button type="button" class="key" id="expedition-end-menu">返回菜单</button>
+          <button type="button" class="key key-primary" id="expedition-end-retry" data-i18n="btnAgain">再战一次</button>
+          <button type="button" class="key" id="expedition-end-copy" data-i18n="btnCopySeed">复制种子码</button>
+          <button type="button" class="key" id="expedition-end-menu" data-i18n="btnBackMenu">返回菜单</button>
         </div>
       </section>
 
       <!-- 镜像结算 -->
       <section class="panel panel-mirror-end" id="mirror-end-panel" role="dialog" aria-modal="true" aria-labelledby="mirror-end-title" hidden>
         <p class="panel-kicker" id="mirror-end-badge">🪞</p>
-        <h2 class="panel-title" id="mirror-end-title">镜像更胜一筹</h2>
+        <h2 class="panel-title" id="mirror-end-title" data-i18n="mirrorEndTitle">镜像更胜一筹</h2>
         <p class="panel-lede" id="mirror-end-desc"></p>
         <p class="seed-line" id="mirror-end-best"></p>
         <div class="panel-actions">
-          <button type="button" class="key key-primary" id="mirror-end-retry">再战镜像</button>
-          <button type="button" class="key" id="mirror-end-exit">离开镜像</button>
+          <button type="button" class="key key-primary" id="mirror-end-retry" data-i18n="btnMirrorRetry">再战镜像</button>
+          <button type="button" class="key" id="mirror-end-exit" data-i18n="btnMirrorExit">离开镜像</button>
         </div>
       </section>
     </div>

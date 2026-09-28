@@ -4,8 +4,11 @@
   "type": "module",
   "scripts": {
     "build": "node scripts/build-site.mjs",
+    "test:pacman": "node --test games/pacman/tests/engine.test.mjs games/pacman/tests/mazes.test.mjs games/pacman/tests/score.test.mjs games/pacman/tests/storage.test.mjs games/pacman/tests/i18n.test.mjs games/pacman/tests/audio.test.mjs games/pacman/tests/game.test.mjs games/pacman/tests/render.test.mjs games/pacman/tests/markup.test.mjs games/pacman/tests/assembly.test.mjs",
+    "test:memory-duel": "node --test games/memory-duel/tests/*.test.mjs",
     "test:gomoku": "node --test games/gomoku/tests/engine.test.mjs games/gomoku/tests/ai.test.mjs games/gomoku/tests/score.test.mjs games/gomoku/tests/storage.test.mjs games/gomoku/tests/i18n.test.mjs games/gomoku/tests/markup.test.mjs games/gomoku/tests/audio.test.mjs games/gomoku/tests/game.test.mjs games/gomoku/tests/tsumego.test.mjs games/gomoku/tests/review.test.mjs",
     "test:2048": "node --test games/2048/tests/engine.test.mjs games/2048/tests/storage.test.mjs games/2048/tests/i18n.test.mjs games/2048/tests/markup.test.mjs",
+    "test:reversi": "node --test games/reversi/tests/engine.test.mjs games/reversi/tests/solver.test.mjs games/reversi/tests/ai.test.mjs games/reversi/tests/puzzles.test.mjs games/reversi/tests/i18n.test.mjs games/reversi/tests/score.test.mjs games/reversi/tests/storage.test.mjs games/reversi/tests/audio.test.mjs games/reversi/tests/render.test.mjs games/reversi/tests/game.test.mjs games/reversi/tests/markup.test.mjs games/reversi/tests/layout.test.mjs games/reversi/tests/ui.test.mjs",
     "test:orbit-sort": "node --test games/orbit-sort/tests/engine.test.mjs games/orbit-sort/tests/solver.test.mjs games/orbit-sort/tests/levels.test.mjs games/orbit-sort/tests/daily.test.mjs games/orbit-sort/tests/storage.test.mjs games/orbit-sort/tests/markup.test.mjs games/orbit-sort/tests/generator.test.mjs games/orbit-sort/tests/rules-property.test.mjs games/orbit-sort/tests/game.test.mjs games/orbit-sort/tests/score.test.mjs games/orbit-sort/tests/i18n.test.mjs",
     "test:tic-tac-toe": "node --test games/tic-tac-toe/tests/engine.test.mjs games/tic-tac-toe/tests/ai.test.mjs games/tic-tac-toe/tests/score.test.mjs games/tic-tac-toe/tests/storage.test.mjs games/tic-tac-toe/tests/game.test.mjs games/tic-tac-toe/tests/audio.test.mjs games/tic-tac-toe/tests/markup.test.mjs games/tic-tac-toe/tests/i18n.test.mjs",
     "test:home": "node --test tests/home-i18n.test.mjs",
@@ -54,7 +57,21 @@
     "test:backpack": "node --test games/backpack/tests/engine.test.mjs games/backpack/tests/storage.test.mjs games/backpack/tests/i18n.test.mjs games/backpack/tests/markup.test.mjs",
     "test:pinball": "node --test games/pinball/tests/*.test.mjs",
     "test:mow": "node --test games/mow/tests/engine.test.mjs games/mow/tests/game.test.mjs games/mow/tests/score.test.mjs games/mow/tests/storage.test.mjs games/mow/tests/i18n.test.mjs games/mow/tests/markup.test.mjs",
+    "test:breakout": "node --test games/breakout/tests/*.test.mjs",
+    "test:ramen-idle": "node --test games/ramen-idle/tests/engine.test.mjs games/ramen-idle/tests/storage.test.mjs games/ramen-idle/tests/i18n.test.mjs games/ramen-idle/tests/markup.test.mjs",
+    "test:spider": "node --test games/spider/tests/*.test.mjs",
+    "test:picross": "node --test games/picross/tests/*.test.mjs",
+    "test:bobble": "node --test games/bobble/tests/*.test.mjs",
     "test:uncoil": "node --test games/uncoil/tests/engine.test.mjs games/uncoil/tests/solvable.test.mjs games/uncoil/tests/score.test.mjs games/uncoil/tests/storage.test.mjs games/uncoil/tests/game.test.mjs games/uncoil/tests/i18n.test.mjs games/uncoil/tests/markup.test.mjs",
-    "smoke:uncoil": "node games/uncoil/tests/smoke.mjs"
+    "smoke:uncoil": "node games/uncoil/tests/smoke.mjs",
+    "test:memory-flip": "node --test games/memory-flip/tests/engine.test.mjs games/memory-flip/tests/storage.test.mjs games/memory-flip/tests/i18n.test.mjs games/memory-flip/tests/smoke.mjs",
+    "test:catcafe": "node --test games/catcafe/tests/engine.test.mjs games/catcafe/tests/storage.test.mjs games/catcafe/tests/i18n.test.mjs games/catcafe/tests/score.test.mjs games/catcafe/tests/audio.test.mjs games/catcafe/tests/markup.test.mjs games/catcafe/tests/game.test.mjs",
+    "smoke:catcafe": "node games/catcafe/tests/smoke.mjs",
+    "test:laser-reflect": "node --test games/laser-reflect/tests/engine.test.mjs games/laser-reflect/tests/storage.test.mjs games/laser-reflect/tests/i18n.test.mjs games/laser-reflect/tests/markup.test.mjs games/laser-reflect/tests/anim.test.mjs",
+    "smoke:laser-reflect": "node games/laser-reflect/tests/smoke.mjs",
+    "test:tank": "node --test games/tank/tests/engine.test.mjs games/tank/tests/levels.test.mjs games/tank/tests/storage.test.mjs games/tank/tests/game.test.mjs games/tank/tests/i18n.test.mjs games/tank/tests/markup.test.mjs",
+    "smoke:tank": "node games/tank/tests/smoke.mjs",
+    "test:bomber": "node --test games/bomber/tests/engine.test.mjs games/bomber/tests/levels.test.mjs games/bomber/tests/storage.test.mjs games/bomber/tests/i18n.test.mjs games/bomber/tests/markup.test.mjs",
+    "test:invaders": "node --test games/invaders/tests/engine.test.mjs games/invaders/tests/score.test.mjs games/invaders/tests/storage.test.mjs games/invaders/tests/i18n.test.mjs games/invaders/tests/markup.test.mjs games/invaders/tests/game.test.mjs"
   }
 }

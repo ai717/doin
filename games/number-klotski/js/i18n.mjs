@@ -60,6 +60,11 @@ export const STRINGS = {
     keyModeBlank: "移动空格（按↓空格自身向下移动）",
     dailyDone: "今日棋谱已达成！",
     dailyPrompt: "全服每日统一打乱挑战",
+    recordsTitle: "最佳纪录",
+    movesLabel: "步数:",
+    timeLabel: "用时:",
+    btnGotIt: "知道了",
+    langBtn: "EN",
   },
   en: {
     appTitle: "Number Klotski · DOIN Online Game",
@@ -114,6 +119,11 @@ export const STRINGS = {
     keyModeBlank: "Move space (↓ moves space itself down)",
     dailyDone: "Daily Puzzle Completed!",
     dailyPrompt: "Daily unified challenge for all players",
+    recordsTitle: "Best Records",
+    movesLabel: "Moves:",
+    timeLabel: "Time:",
+    btnGotIt: "Got it",
+    langBtn: "中",
   },
 };
 

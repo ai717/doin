@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>深夜拉面屋 · DOIN 游戏</title>
+  <meta name="description" content="深夜拉面屋：治愈系深夜食堂放置模拟经营。备料出餐自动赚钱，扩店解锁配方与常客故事。">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="css/style.css?v=dev">
+</head>
+<body>
+  <div id="game-app">
+    <header id="stage-bar">
+      <a href="/" id="back-home" class="bar-btn">
+        <span class="bar-glyph">←</span><span class="bar-text" id="back-text">返回大厅</span>
+      </a>
+      <h1 id="app-title">
+        <span id="app-title-main">深夜拉面屋</span>
+        <span id="app-subtitle">治愈放置经营</span>
+      </h1>
+      <div class="stage-actions">
+        <button id="btn-sound" class="bar-btn" type="button" aria-label="音效切换">
+          <span id="sound-icon">🔊</span>
+        </button>
+        <button id="btn-lang" class="bar-btn" type="button">English</button>
+        <button id="btn-help" class="bar-btn" type="button" aria-label="经营指南">
+          <span class="bar-glyph">?</span>
+        </button>
+      </div>
+    </header>
+
+    <div id="rush-banner" class="rush-banner hidden">
+      <span class="banner-icon">⚡</span>
+      <span id="rush-banner-text">客流高峰！收入翻倍中！</span>
+      <span id="rush-countdown">60s</span>
+    </div>
+
+    <main id="stage-core">
+      <!-- Left / Top: Cross-section stall atmosphere -->
+      <section id="ramen-stall" aria-label="深夜拉面屋舞台">
+        <canvas id="stage-canvas"></canvas>
+        <div id="stall-visual">
+          <div class="stall-roof">
+            <div class="noren-strip">
+              <span class="noren-flap" id="noren-1">拉</span>
+              <span class="noren-flap" id="noren-2">面</span>
+              <span class="noren-flap" id="noren-3">屋</span>
+            </div>
+            <div class="lantern-decor left-lantern">🏮</div>
+            <div class="lantern-decor right-lantern">🏮</div>
+          </div>
+          <div class="stall-interior">
+            <div class="stall-pots">
+              <div class="pot-boil"><span class="steam-pot">♨️</span></div>
+              <div class="cutting-board"><span class="knife-icon">🔪</span></div>
+            </div>
+            <div class="stall-action-zone">
+              <button id="btn-rush" type="button" class="rush-ramen-btn" aria-label="出餐冲刺">
+                <div class="bowl-icon">🍜</div>
+                <div class="rush-label-wrap">
+                  <span id="label-rush-btn" class="rush-main-label">出餐冲刺</span>
+                  <span id="label-rush-hint" class="rush-sub-label">点击或空格 (+<span id="rush-income-val">1</span>)</span>
+                </div>
+              </button>
+            </div>
+            <div class="stall-counter-seats">
+              <div class="seat-spot" id="seat-1">
+                <div class="customer-avatar" id="customer-avatar-1">🥢</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Right / Bottom: Business Operations Console -->
+      <aside id="console-wing" aria-label="拉面屋经营仪表盘">
+        <div class="finance-board">
+          <div class="finance-item coins-box">
+            <span class="finance-label" id="label-coins">营业额</span>
+            <div class="coins-display"><span class="currency-symbol">¥</span><span id="coins-val">0</span></div>
+          </div>
+          <div class="finance-item rps-box">
+            <span class="finance-label" id="label-rps">秒收益</span>
+            <div class="rps-display"><span id="rps-val">0</span><span class="rps-unit" id="unit-rps">/秒</span></div>
+          </div>
+          <div class="finance-item tier-box">
+            <span class="finance-label" id="label-tier">店铺阶段</span>
+            <div class="tier-badge" id="tier-badge-val">街角摊</div>
+          </div>
+          <div class="finance-item shift-box">
+            <span class="finance-label" id="label-shift">深夜时段</span>
+            <div class="shift-indicator" id="shift-clock-val">18:00 - 20:00</div>
+          </div>
+        </div>
+
+        <nav class="console-tabs" role="tablist">
+          <button class="tab-btn active" role="tab" id="tab-btn-kitchen" data-tab="kitchen">店铺工位</button>
+          <button class="tab-btn" role="tab" id="tab-btn-recipes" data-tab="recipes">秘传菜单</button>
+          <button class="tab-btn" role="tab" id="tab-btn-guests" data-tab="guests">常客图鉴</button>
+          <button class="tab-btn" role="tab" id="tab-btn-shop" data-tab="shop">扩建经营</button>
+        </nav>
+
+        <div class="tab-panels">
+          <div class="tab-panel active" id="panel-kitchen" role="tabpanel">
+            <div class="stations-grid" id="stations-list"></div>
+          </div>
+
+          <div class="tab-panel" id="panel-recipes" role="tabpanel">
+            <div class="recipes-grid" id="recipes-list"></div>
+          </div>
+
+          <div class="tab-panel" id="panel-guests" role="tabpanel">
+            <div class="guests-grid" id="guests-list"></div>
+          </div>
+
+          <div class="tab-panel" id="panel-shop" role="tabpanel">
+            <div class="shop-upgrades-section" id="shop-controls"></div>
+          </div>
+        </div>
+      </aside>
+    </main>
+
+    <!-- Modals -->
+    <div id="modal-guide" class="modal-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="guide-title">
+      <div class="modal-card">
+        <div class="modal-header">
+          <h2 id="guide-title">经营指南</h2>
+          <button id="btn-close-guide" type="button" class="modal-close-btn" aria-label="关闭">✕</button>
+        </div>
+        <div class="modal-body">
+          <p id="guide-text" class="guide-text-content"></p>
+        </div>
+      </div>
+    </div>
+
+    <div id="modal-offline" class="modal-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="offline-title">
+      <div class="modal-card offline-card">
+        <div class="modal-header">
+          <h2 id="offline-title">打烊账本结算</h2>
+        </div>
+        <div class="modal-body offline-body">
+          <div class="offline-icon">🏮</div>
+          <p id="offline-greeting" class="offline-greeting-text">温暖的一夜过去了……</p>
+          <p id="offline-message" class="offline-story-text">街坊常客们在摊前留下了温热的感谢与茶钱。</p>
+          <div class="offline-numbers">
+            <div id="offline-earned-text" class="offline-big-number">+0 円</div>
+            <div id="offline-eff-text" class="offline-sub-info">打烊留灯效率：50%</div>
+            <div id="offline-milestone-text" class="offline-sub-info">达成里程碑倍率：×1</div>
+          </div>
+          <button id="btn-claim-offline" type="button" class="action-btn primary-btn claim-btn">收下收入并开张</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Toast message popup -->
+    <div id="toast" role="status" aria-live="polite"></div>
+
+    <noscript>
+      <div class="noscript-banner">请开启 JavaScript 以体验深夜拉面屋。</div>
+    </noscript>
+  </div>
+
+  <script type="module" src="js/main.mjs?v=dev"></script>
+</body>
+</html>

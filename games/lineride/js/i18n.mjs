@@ -54,6 +54,8 @@ const STRINGS = {
     inkOut: "墨水不足，这一笔没画上",
     importPrompt: "粘贴画布 JSON：",
     crashToast: "摔了一跤，回到最近的安全点",
+    btnPlay: "播放",
+    btnPause: "暂停",
   },
   en: {
     docTitle: "Line Ride · DOIN games",
@@ -103,6 +105,8 @@ const STRINGS = {
     inkOut: "Out of ink — stroke discarded",
     importPrompt: "Paste canvas JSON:",
     crashToast: "Oops — back to the last safe spot",
+    btnPlay: "Play",
+    btnPause: "Pause",
   },
 };
 

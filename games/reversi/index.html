@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>黑白翻转 · DOIN 在线小游戏</title>
+  <meta name="description" content="黑白棋（奥赛罗 / 翻转棋）在线对弈：8×8 夹击翻转，见习 / 棋手 / 名手 / 无谬四档 AI，60 道求解器校验残局，空位 ≤ 14 时显示精确终局预报，无需下载即点即玩。">
+  <link rel="canonical" href="https://doin.win/reversi/">
+  <meta name="theme-color" content="#0e4d32">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="DOIN">
+  <meta property="og:title" content="黑白翻转 · DOIN 在线小游戏">
+  <meta property="og:description" content="8×8 夹击翻转，四档 AI，60 道求解器校验残局，空位 ≤ 14 时显示精确终局预报。">
+  <meta property="og:url" content="https://doin.win/reversi/">
+  <meta property="og:locale" content="zh_CN">
+  <meta property="og:image" content="https://doin.win/assets/og-image.png">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="黑白翻转 · DOIN 在线小游戏">
+  <meta name="twitter:description" content="8×8 夹击翻转，四档 AI，60 道求解器校验残局。">
+  <meta name="twitter:image" content="https://doin.win/assets/og-image.png">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="css/style.css?v=dev">
+</head>
+<body>
+  <noscript>
+    <p class="noscript" data-i18n="noscript">需要启用 JavaScript 才能游玩黑白翻转。</p>
+  </noscript>
+
+  <!-- 上下夹持（Vertical Clamp）：仪表在上、被测物居中、操作在下。完全没有侧栏。 -->
+  <div class="cabinet" id="game-app">
+    <header class="topbar">
+      <a href="/" id="back-home" class="bar-btn bar-back" data-i18n="backHome">返回门户</a>
+      <div class="title-block">
+        <h1 class="title" id="title" data-i18n="title">黑白翻转</h1>
+        <p class="subtitle" id="subtitle" data-i18n="subtitle">奥赛罗 · 夹击反转棋</p>
+      </div>
+      <div class="topbar-tools">
+        <button type="button" id="sound-btn" class="bar-btn" aria-pressed="true" data-i18n-aria="ariaSound">♪</button>
+        <button type="button" id="lang-btn" class="bar-btn" data-i18n-aria="ariaLang">EN</button>
+        <button type="button" id="help-btn" class="bar-btn" data-i18n-aria="ariaHelp">?</button>
+      </div>
+    </header>
+
+    <main class="stage">
+      <!-- ① 顶部黄铜天平横梁：左盘黑子砝码 · 中央横梁 · 右盘白子砝码 · 内嵌子数曲线 -->
+      <section class="beam-panel" aria-labelledby="beam-label">
+        <h2 class="sr-only" id="beam-label" data-i18n="ariaScale">子数天平</h2>
+
+        <div class="beam-row">
+          <div class="pan pan-black">
+            <span class="pan-plate" aria-hidden="true"></span>
+            <span class="pan-count" id="black-count">2</span>
+            <span class="pan-name" data-i18n="disc_black">黑子</span>
+          </div>
+
+          <div class="balance" aria-hidden="true">
+            <span class="balance-post"></span>
+            <span class="balance-arc"></span>
+            <div class="beam" id="beam" data-lean="0">
+              <span class="beam-bar"></span>
+              <span class="beam-pivot"></span>
+            </div>
+          </div>
+
+          <div class="pan pan-white">
+            <span class="pan-plate" aria-hidden="true"></span>
+            <span class="pan-count" id="white-count">2</span>
+            <span class="pan-name" data-i18n="disc_white">白子</span>
+          </div>
+        </div>
+
+        <div class="beam-tags">
+          <button type="button" id="forecast-plate" class="tag tag-forecast" data-state="off" aria-live="polite"></button>
+          <span class="tag" id="move-plate"></span>
+          <span class="tag" id="turn-plate"></span>
+          <span class="tag" id="tier-plate"></span>
+          <span class="tag tag-rush" id="rush-plate" hidden></span>
+        </div>
+
+        <svg class="graph" id="graph" viewBox="0 0 100 100" preserveAspectRatio="none"
+             role="img" data-i18n-aria="ariaGraph" aria-label="子数曲线">
+          <line class="graph-axis" x1="0" y1="50" x2="100" y2="50"></line>
+          <polyline class="graph-black" points=""></polyline>
+          <polyline class="graph-white" points=""></polyline>
+        </svg>
+      </section>
+
+      <!-- ② 中央舞台：绿绒台面 + 胡桃木外框 + 四角黄铜包角，唯一视觉焦点 -->
+      <section class="board-stage">
+        <div class="board-frame">
+          <span class="corner corner-tl" aria-hidden="true"></span>
+          <span class="corner corner-tr" aria-hidden="true"></span>
+          <span class="corner corner-bl" aria-hidden="true"></span>
+          <span class="corner corner-br" aria-hidden="true"></span>
+          <div class="board" id="board" role="grid" data-i18n-aria="ariaBoard" aria-label="黑白棋棋盘"></div>
+        </div>
+        <p class="status" id="status" role="status" aria-live="polite"></p>
+      </section>
+
+      <!-- ③ 底部黄铜仪表条：模式一行、机械按键一行 -->
+      <section class="instrument-bar">
+        <div class="instrument-row">
+          <div class="seg-group" id="mode-group" role="group">
+            <button type="button" class="seg" id="mode-play" data-mode="play" data-i18n="mode_play">对弈</button>
+            <button type="button" class="seg" id="mode-puzzle" data-mode="puzzle" data-i18n="mode_puzzle">残局破题</button>
+            <button type="button" class="seg" id="mode-rush" data-mode="rush" data-i18n="mode_rush">翻转冲刺</button>
+          </div>
+        </div>
+        <div class="instrument-row">
+          <button type="button" class="key" id="undo-btn" data-i18n="undo">悔棋</button>
+          <button type="button" class="key" id="hint-btn" data-i18n="hint">提示</button>
+          <button type="button" class="key" id="levels-btn" data-i18n="levels">选关</button>
+          <button type="button" class="key" id="resign-btn" data-i18n="resign">认输</button>
+          <button type="button" class="key" id="restart-btn" data-i18n="restart">重开</button>
+          <button type="button" class="key" id="settings-btn" data-i18n="settings">设置</button>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- 设置抽屉：铜牌面板，非白色弹窗 -->
+  <div class="layer" id="settings-layer" hidden role="dialog" aria-modal="true" aria-labelledby="settings-title">
+    <div class="layer-panel">
+      <h2 id="settings-title" data-i18n="settings">设置</h2>
+      <div class="field">
+        <span class="field-label" data-i18n="tierLabel">档位</span>
+        <div class="seg-group" id="tier-group" role="group">
+          <button type="button" class="seg" data-tier="novice" data-i18n="ai_novice">见习</button>
+          <button type="button" class="seg" data-tier="duelist" data-i18n="ai_duelist">棋手</button>
+          <button type="button" class="seg" data-tier="virtuoso" data-i18n="ai_virtuoso">名手</button>
+          <button type="button" class="seg" data-tier="infallible" data-i18n="ai_infallible">无谬</button>
+        </div>
+      </div>
+      <div class="field">
+        <span class="field-label" data-i18n="sideLabel">执子</span>
+        <div class="seg-group" id="side-group" role="group">
+          <button type="button" class="seg" data-side="1" data-i18n="disc_black">黑子</button>
+          <button type="button" class="seg" data-side="2" data-i18n="disc_white">白子</button>
+        </div>
+      </div>
+      <div class="field">
+        <span class="field-label" data-i18n="openingLabel">开局</span>
+        <div class="seg-group" id="opening-group" role="group">
+          <button type="button" class="seg" data-opening="standard" data-i18n="open_standard">标准</button>
+          <button type="button" class="seg" data-opening="diagonal" data-i18n="open_diagonal">对角</button>
+          <button type="button" class="seg" data-opening="perpendicular" data-i18n="open_perp">垂直</button>
+          <button type="button" class="seg" data-opening="parallel" data-i18n="open_parallel">平行</button>
+          <button type="button" class="seg" data-opening="random" data-i18n="open_random">随机前二</button>
+        </div>
+      </div>
+      <div class="field">
+        <label class="check" for="pvp-toggle">
+          <input type="checkbox" id="pvp-toggle">
+          <span data-i18n="pvpLabel">本地双人</span>
+        </label>
+        <label class="check" for="blitz-toggle">
+          <input type="checkbox" id="blitz-toggle">
+          <span data-i18n="blitz">闪电战（每手 10 秒）</span>
+        </label>
+        <label class="check" for="classic-toggle">
+          <input type="checkbox" id="classic-toggle">
+          <span data-i18n="classicRule">经典口径（终局空位不计）</span>
+        </label>
+        <label class="check" for="mobility-toggle">
+          <input type="checkbox" id="mobility-toggle">
+          <span data-i18n="showMobility">对手落点提示</span>
+        </label>
+      </div>
+      <div class="field">
+        <span class="field-label" data-i18n="volume">音量</span>
+        <input type="range" id="volume-range" min="0" max="100" value="80">
+      </div>
+      <div class="field">
+        <span class="field-label" data-i18n="recordLabel">战绩</span>
+        <p class="record-line" id="record-line"></p>
+        <button type="button" class="key key-danger" id="clear-btn" data-i18n="clearRecords">清空战绩</button>
+      </div>
+      <div class="layer-actions">
+        <button type="button" class="key key-primary" id="settings-close" data-i18n="close">关闭</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 结算：对局档案卡 / 残局星评 / 冲刺得分 -->
+  <div class="layer" id="result-layer" hidden role="dialog" aria-modal="true" aria-labelledby="result-title">
+    <div class="layer-panel">
+      <p class="result-badge" id="result-badge"></p>
+      <h2 id="result-title" data-i18n="res_win">你赢了</h2>
+      <p class="result-score" id="result-score"></p>
+      <p class="result-stars" id="result-stars" hidden></p>
+      <div class="report" id="result-report" hidden>
+        <h3 data-i18n="res_report">对局档案</h3>
+        <div class="report-row">
+          <span data-i18n="stat_moves">手数</span>
+          <b id="report-moves">0</b>
+        </div>
+        <div class="report-row">
+          <span data-i18n="stat_maxflip">最大单步翻转</span>
+          <b id="report-maxflip"></b>
+        </div>
+        <div class="report-row">
+          <span data-i18n="stat_swing">最大反转幅度</span>
+          <b id="report-swing"></b>
+        </div>
+        <p class="report-note" id="report-note" hidden></p>
+      </div>
+      <div class="layer-actions">
+        <button type="button" class="key key-primary" id="result-again" data-i18n="again">再来一局</button>
+        <button type="button" class="key" id="result-next" data-i18n="next" hidden>下一题</button>
+        <button type="button" class="key" id="result-close" data-i18n="close">关闭</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 规则说明 -->
+  <div class="layer" id="help-layer" hidden role="dialog" aria-modal="true" aria-labelledby="help-title">
+    <div class="layer-panel">
+      <h2 id="help-title" data-i18n="ariaHelp">玩法说明</h2>
+      <pre class="rules-text" id="help-text"></pre>
+      <div class="layer-actions">
+        <button type="button" class="key key-primary" id="help-close" data-i18n="close">关闭</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 残局选关：6 章 × 10 题 -->
+  <div class="layer" id="levels-layer" hidden role="dialog" aria-modal="true" aria-labelledby="levels-title">
+    <div class="layer-panel levels-panel">
+      <h2 id="levels-title" data-i18n="levels">选关</h2>
+      <p class="levels-total" id="levels-total"></p>
+      <div class="levels-grid" id="levels-grid"></div>
+      <div class="layer-actions">
+        <button type="button" class="key key-primary" id="levels-close" data-i18n="close">关闭</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 清空战绩确认 -->
+  <div class="layer" id="confirm-layer" hidden role="dialog" aria-modal="true" aria-labelledby="confirm-title">
+    <div class="layer-panel">
+      <h2 id="confirm-title" data-i18n="confirmClear">确定清空全部战绩与残局进度？</h2>
+      <div class="layer-actions">
+        <button type="button" class="key key-danger" id="confirm-yes" data-i18n="confirm">确定</button>
+        <button type="button" class="key" id="confirm-no" data-i18n="cancel">取消</button>
+      </div>
+    </div>
+  </div>
+
+  <p class="toast" id="toast" role="status" aria-live="polite" hidden></p>
+
+  <script type="module" src="js/main.mjs?v=dev"></script>
+</body>
+</html>

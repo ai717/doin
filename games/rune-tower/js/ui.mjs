@@ -199,10 +199,10 @@ export class RuneTowerUI {
 
     // 四大章节列表
     const chapters = [
-      { id: 1, nameKey: "chapter1Name", descKey: "chapter1Desc", bonus: "初始法力: 220" },
-      { id: 2, nameKey: "chapter2Name", descKey: "chapter2Desc", bonus: "初始法力: 550 · 随机遗物 ×2" },
-      { id: 3, nameKey: "chapter3Name", descKey: "chapter3Desc", bonus: "初始法力: 950 · 随机遗物 ×4" },
-      { id: 4, nameKey: "chapter4Name", descKey: "chapter4Desc", bonus: "初始法力: 1500 · 随机遗物 ×6" },
+      { id: 1, nameKey: "chapter1Name", descKey: "chapter1Desc", bonusKey: "chapter1Bonus" },
+      { id: 2, nameKey: "chapter2Name", descKey: "chapter2Desc", bonusKey: "chapter2Bonus" },
+      { id: 3, nameKey: "chapter3Name", descKey: "chapter3Desc", bonusKey: "chapter3Bonus" },
+      { id: 4, nameKey: "chapter4Name", descKey: "chapter4Desc", bonusKey: "chapter4Bonus" },
     ];
 
     for (const c of chapters) {
@@ -215,7 +215,7 @@ export class RuneTowerUI {
         <div class="chapter-card ${badgeClass}">
           <div class="chapter-header-row">
             <span class="chapter-badge ${badgeClass}">${statusLabel}</span>
-            <span class="chapter-bonus">${c.bonus}</span>
+            <span class="chapter-bonus">${t(c.bonusKey)}</span>
           </div>
           <h3>${t(c.nameKey)}</h3>
           <p>${t(c.descKey)}</p>

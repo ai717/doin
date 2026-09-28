@@ -343,9 +343,29 @@ export class PinballUI {
   applyLocale() {
     const t = strings(this.locale);
     document.documentElement.lang = this.locale === "en" ? "en" : "zh-CN";
+    document.title = `${t.title} · DOIN`;
+
+    // 1. 全局自动应用 data-i18n
+    document.querySelectorAll("[data-i18n]").forEach((el) => {
+      const key = el.getAttribute("data-i18n");
+      if (t[key] !== undefined) el.textContent = t[key];
+    });
+    document.querySelectorAll("[data-i18n-aria]").forEach((el) => {
+      const key = el.getAttribute("data-i18n-aria");
+      if (t[key] !== undefined) el.setAttribute("aria-label", t[key]);
+    });
+
+    // 2. 状态与引用更新
     this.el.title.textContent = t.title;
     this.el.sound.textContent = this.save.sound ? t.soundOn : t.soundOff;
     this.el.lang.textContent = t.langBtn;
+    if (this.el.chptLabel) {
+      const ch = this.currentChapter();
+      this.el.chptLabel.textContent = t[`chapter${ch}`];
+    }
+    if (this.el.status) {
+      this.el.status.textContent = this.game.state.status === "playing" ? t.playing : t.serving;
+    }
     this.el.goal.textContent = this.game.state.level ? format(this.locale, "goalTime", { t: this.game.state.level.targets.time }) : "";
     const descLine = this.$("goal-combo-line");
     if (descLine) descLine.textContent = this.game.state.level ? format(this.locale, "goalCombo", { c: this.game.state.level.targets.combo }) : "";
@@ -377,20 +397,6 @@ export class PinballUI {
     if (againBtn) againBtn.textContent = t.survivalAgain;
     const overBackBtn = this.$("btn-over-back");
     if (overBackBtn) overBackBtn.textContent = t.survivalBack;
-    const lamp = {
-      bumper: this.$("lamp-bumper"),
-      target: this.$("lamp-target"),
-      sling: this.$("lamp-sling"),
-      spinner: this.$("lamp-spinner"),
-      rollover: this.$("lamp-rollover"),
-      ramp: this.$("lamp-ramp")
-    };
-    if (lamp.bumper) lamp.bumper.textContent = t.lampBumper;
-    if (lamp.target) lamp.target.textContent = t.lampTarget;
-    if (lamp.sling) lamp.sling.textContent = t.lampSling;
-    if (lamp.spinner) lamp.spinner.textContent = t.lampSpinner;
-    if (lamp.rollover) lamp.rollover.textContent = t.lampRollover;
-    if (lamp.ramp) lamp.ramp.textContent = t.lampRamp;
     const launchBtn = this.$("btn-launch");
     if (launchBtn) launchBtn.textContent = t.launch;
     const flipL = this.$("btn-flip-l");
@@ -405,6 +411,11 @@ export class PinballUI {
     if (touchTip) touchTip.textContent = t.touchTip;
     const overTitle = this.$("over-title");
     if (overTitle) overTitle.textContent = t.over;
+
+    // 重新构建选关网格的多语言文本
+    if (this.el.overlays.start && !this.el.overlays.start.classList.contains("hidden")) {
+      this.buildLevelGrid();
+    }
   }
 }
 

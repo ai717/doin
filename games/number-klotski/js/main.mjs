@@ -218,7 +218,7 @@ function bootstrap() {
   function updateLangButtonUI() {
     const btn = document.getElementById("btn-lang");
     if (btn) {
-      btn.textContent = ui.locale === "zh" ? "EN" : "中";
+      btn.textContent = t("langBtn", ui.locale);
     }
   }
 

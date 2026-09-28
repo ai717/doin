@@ -135,12 +135,13 @@ function updateUI() {
   }
 
   // 播放状态
+  const curStr = strings(loadLocale());
   if (state.playState === "playing") {
     refs.btnPlay.textContent = "⏸";
-    refs.btnPlay.title = "暂停";
+    refs.btnPlay.title = curStr.btnPause;
   } else {
     refs.btnPlay.textContent = "▶";
-    refs.btnPlay.title = "播放";
+    refs.btnPlay.title = curStr.btnPlay;
   }
 }
 

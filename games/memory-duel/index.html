@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>记忆对决 · DOIN 在线小游戏</title>
+  <meta name="description" content="与 AI 抢配对打记忆翻牌战——看穿牌背、抢先配对、偷走对手的牌，融合记忆、情报与攻防的博弈对决。">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="css/style.css?v=dev">
+</head>
+<body>
+  <div id="game-app">
+    <!-- 顶边一体化紧凑控制栏（拒绝四角散落，视线紧凑统一） -->
+    <header id="stage-bar">
+      <div class="bar-left">
+        <a href="/" id="back-home" class="bar-btn">← 门户</a>
+        <h1 id="stage-title">记忆对决</h1>
+      </div>
+      <div class="stage-actions">
+        <button id="btn-restart" class="bar-btn" aria-label="重开">🔄</button>
+        <button id="btn-sound" class="bar-btn" aria-label="音效">🔊</button>
+        <button id="btn-lang" class="bar-btn" aria-label="语言">EN</button>
+        <button id="btn-help" class="bar-btn" aria-label="玩法说明">?</button>
+      </div>
+    </header>
+
+    <!-- 游戏机台/主舞台核心 -->
+    <main id="stage-core">
+      <!-- 动态构建双翼沉浸舞台 -->
+    </main>
+  </div>
+
+  <noscript><p>需要启用 JavaScript 才能游玩《记忆对决》。</p></noscript>
+  <script type="module" src="js/main.mjs?v=dev"></script>
+</body>
+</html>

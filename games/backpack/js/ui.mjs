@@ -74,38 +74,50 @@ export function createUI(controller, { save, loadSave, saveRun, loadRun, clearRu
   }
 
   function applyLang() {
+    const t = T();
     document.documentElement.lang = ui.locale === "zh" ? "zh-CN" : "en";
-    document.title = T().docTitle;
+    document.title = t.docTitle;
     const meta = document.querySelector('meta[name="description"]');
-    if (meta) meta.setAttribute("content", T().metaDesc);
+    if (meta) meta.setAttribute("content", t.metaDesc);
+
+    // 自动扫描并覆盖所有声明了 data-i18n 的静态 DOM 元素（弹窗、按钮、标题）
+    document.querySelectorAll("[data-i18n]").forEach((el) => {
+      const key = el.getAttribute("data-i18n");
+      if (t[key] !== undefined) el.textContent = t[key];
+    });
+    document.querySelectorAll("[data-i18n-aria]").forEach((el) => {
+      const key = el.getAttribute("data-i18n-aria");
+      if (t[key] !== undefined) el.setAttribute("aria-label", t[key]);
+    });
+
     const back = $("back-home");
-    if (back) back.textContent = T().back;
+    if (back) back.textContent = t.back;
     const sound = $("sound-btn");
     if (sound) {
-      sound.setAttribute("aria-label", T().ariaSound);
-      sound.title = T().sound;
+      sound.setAttribute("aria-label", t.ariaSound);
+      sound.title = t.sound;
       sound.innerHTML = `<span>${ui.muted ? "✕" : "♪"}</span>`;
     }
     const lang = $("lang-btn");
     if (lang) {
-      lang.setAttribute("aria-label", T().ariaLang);
-      lang.title = T().langSwitch;
-      lang.textContent = T().langSwitch;
+      lang.setAttribute("aria-label", t.ariaLang);
+      lang.title = t.langSwitch;
+      lang.textContent = t.langSwitch;
     }
     const help = $("help-btn");
     if (help) {
-      help.setAttribute("aria-label", T().ariaHelp);
-      help.title = T().help;
+      help.setAttribute("aria-label", t.ariaHelp);
+      help.title = t.help;
     }
     const reset = $("reset-btn");
     if (reset) {
-      reset.setAttribute("aria-label", T().resetBtn);
-      reset.title = T().resetBtn;
+      reset.setAttribute("aria-label", t.resetBtn);
+      reset.title = t.resetBtn;
     }
     const plateName = document.querySelector(".plate-name");
-    if (plateName) plateName.textContent = T().appTitle;
+    if (plateName) plateName.textContent = t.appTitle;
     const plateSub = document.querySelector(".plate-sub");
-    if (plateSub) plateSub.textContent = T().kicker;
+    if (plateSub) plateSub.textContent = t.kicker;
   }
 
   // ---------------- 菜单 ----------------
@@ -361,7 +373,7 @@ export function createUI(controller, { save, loadSave, saveRun, loadRun, clearRu
             <span class="chip">+${incomeLabel(run)}</span>
           </header>
           <div class="shop" id="shop"></div>
-          <div class="rack" id="rack" aria-label="待放架"></div>
+          <div class="rack" id="rack" aria-label="${T().rackAria}"></div>
           <div class="info-panel" id="info-panel"></div>
           <div class="enemy-card" id="enemy-card"></div>
           <button type="button" class="key key-primary key-big" id="battle-btn">${T().btnBattle}</button>
@@ -548,7 +560,7 @@ export function createUI(controller, { save, loadSave, saveRun, loadRun, clearRu
             <h2>${T().puzzlesTitle}</h2>
             <span class="chip">★ ${puzzleStarsSaved(puzzle.id)}/3</span>
           </header>
-          <div class="rack rack-puzzle" id="rack" aria-label="残局物品架"></div>
+          <div class="rack rack-puzzle" id="rack" aria-label="${T().puzzleRackAria}"></div>
           <div class="info-panel" id="info-panel"></div>
           <div class="enemy-card" id="enemy-card">
             <p class="enemy-label">${T().roundEnemy}</p>

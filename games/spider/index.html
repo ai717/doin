@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>蜘蛛纸牌 · Spider Solitaire</title>
+  <meta name="description" content="经典蜘蛛纸牌：在十列牌桌上排成同花顺，收齐八副同花顺通关，体验移形换位的沉思策略与连环清盘的畅快。">
+  <link rel="icon" type="image/svg+xml" href="favicon.svg?v=dev">
+  <link rel="stylesheet" href="css/style.css?v=dev">
+</head>
+<body>
+  <noscript>
+    <div style="padding: 20px; text-align: center; color: #fff; background: #181324;">
+      蜘蛛纸牌需要启用 JavaScript 才能畅玩。请在浏览器设置中开启 JavaScript。<br>
+      Spider Solitaire requires JavaScript to run. Please enable JavaScript in your browser settings.
+    </div>
+  </noscript>
+
+  <!-- Machine Top Status Bar -->
+  <header class="game-header">
+    <div class="header-left">
+      <a href="/" id="back-home" class="nav-link" aria-label="返回首页">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="15 18 9 12 15 6"></polyline>
+        </svg>
+        <span data-i18n="backHome">返回首页</span>
+      </a>
+      <div class="brand-title">
+        <span class="brand-icon">🕷️</span>
+        <span id="game-brand-name">蜘蛛纸牌</span>
+      </div>
+    </div>
+    <div class="header-right">
+      <button id="btn-sound" class="icon-btn" aria-label="静音切换">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+          <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+        </svg>
+      </button>
+      <button id="btn-lang" class="icon-btn" aria-label="切换语言">English</button>
+      <button id="btn-rules" class="icon-btn" aria-label="秘籍">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"></circle>
+          <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
+          <line x1="12" y1="17" x2="12.01" y2="17"></line>
+        </svg>
+        <span class="btn-text" data-i18n="rules">秘籍</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- Main Playing Stage -->
+  <main class="main-stage-container">
+    <!-- Left Stage: Table with Tableau & Stock & Foundation -->
+    <section class="board-stage" aria-label="游戏台面">
+      <div class="stage-top-bar">
+        <!-- Stock Cocoon -->
+        <div class="stock-section">
+          <div id="stock-cocoon" class="stock-cocoon" title="点击向每列发 1 张牌" role="button" tabindex="0">
+            <span class="stock-icon">🕸️</span>
+            <span id="stock-badge" class="stock-badge">5/5</span>
+          </div>
+          <div class="stock-label-group">
+            <span id="stock-title" class="stock-title">发牌</span>
+            <span id="stock-sub" class="stock-sub">剩余发牌轮次</span>
+          </div>
+        </div>
+
+        <!-- 8 Foundation Egg Sockets -->
+        <div class="foundations-section" aria-label="收牌槽">
+          <div class="foundation-slot" data-slot="0">🕷️</div>
+          <div class="foundation-slot" data-slot="1">🕷️</div>
+          <div class="foundation-slot" data-slot="2">🕷️</div>
+          <div class="foundation-slot" data-slot="3">🕷️</div>
+          <div class="foundation-slot" data-slot="4">🕷️</div>
+          <div class="foundation-slot" data-slot="5">🕷️</div>
+          <div class="foundation-slot" data-slot="6">🕷️</div>
+          <div class="foundation-slot" data-slot="7">🕷️</div>
+        </div>
+      </div>
+
+      <!-- 10 Tableau Columns -->
+      <div class="tableau-area" id="tableau-area">
+        <div class="tableau-column" data-col="0"></div>
+        <div class="tableau-column" data-col="1"></div>
+        <div class="tableau-column" data-col="2"></div>
+        <div class="tableau-column" data-col="3"></div>
+        <div class="tableau-column" data-col="4"></div>
+        <div class="tableau-column" data-col="5"></div>
+        <div class="tableau-column" data-col="6"></div>
+        <div class="tableau-column" data-col="7"></div>
+        <div class="tableau-column" data-col="8"></div>
+        <div class="tableau-column" data-col="9"></div>
+      </div>
+    </section>
+
+    <!-- Right Control Dock -->
+    <aside class="control-dock" aria-label="控制操作区">
+      <!-- Chapter Plaque -->
+      <div class="card-plaque">
+        <div class="plaque-header">
+          <span id="plaque-chapter" class="plaque-chapter">第 1 章 · 银线</span>
+        </div>
+        <p id="plaque-subtitle" class="plaque-subtitle">双花色 · 基础递减与空列整组搬运</p>
+        <button id="btn-select-level" class="btn-select-level">选择关卡</button>
+      </div>
+
+      <!-- Mode Tabs -->
+      <div class="mode-tabs">
+        <button class="mode-tab active" data-mode="story" data-i18n="modeStory">章节模式</button>
+        <button class="mode-tab" data-mode="endless" data-i18n="modeEndless">永昼织网</button>
+        <button class="mode-tab" data-mode="daily" data-i18n="modeDaily">每日同题</button>
+      </div>
+
+      <!-- Progress Stats -->
+      <div class="stats-panel">
+        <div class="stat-box">
+          <span id="lbl-runs" class="stat-label">已收同花顺</span>
+          <span id="stat-runs" class="stat-value gold">0/8</span>
+        </div>
+        <div class="stat-box">
+          <span id="lbl-moves" class="stat-label">步数</span>
+          <span id="stat-moves" class="stat-value">0</span>
+        </div>
+        <div class="stat-box">
+          <span id="lbl-par" class="stat-label">参考标杆</span>
+          <span id="stat-par" class="stat-value">100</span>
+        </div>
+        <div class="stat-box">
+          <span id="lbl-time" class="stat-label">用时</span>
+          <span id="stat-time" class="stat-value">00:00</span>
+        </div>
+        <div class="stat-box" style="grid-column: span 2;">
+          <span id="lbl-score" class="stat-label">得分</span>
+          <span id="stat-score" class="stat-value gold">0</span>
+        </div>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="action-buttons">
+        <button id="btn-deal" class="action-btn btn-deal">
+          <span class="btn-icon">🎴</span>
+          <span class="btn-label" data-i18n="deal">发牌</span>
+        </button>
+        <button id="btn-undo" class="action-btn">
+          <span class="btn-icon">↩️</span>
+          <span class="btn-label" data-i18n="undo">撤回</span>
+        </button>
+        <button id="btn-hint" class="action-btn">
+          <span class="btn-icon">💡</span>
+          <span class="btn-label" data-i18n="hint">提示</span>
+        </button>
+        <button id="btn-restart" class="action-btn">
+          <span class="btn-icon">🔄</span>
+          <span class="btn-label" data-i18n="restart">重开本局</span>
+        </button>
+      </div>
+    </aside>
+  </main>
+
+  <!-- Rules Modal -->
+  <div id="rules-modal" class="modal-backdrop" role="dialog" aria-modal="true">
+    <div class="modal-content">
+      <h2 id="rules-title" class="modal-title">蜘蛛纸牌玩法秘诀</h2>
+      <div class="rules-list">
+        <div class="rule-item" data-i18n="rule1">目标：将扑克牌按同花色由 K 至 A 递减排成顺子，集齐整副 13 张同花顺自动收牌，收满 8 副通关。</div>
+        <div class="rule-item" data-i18n="rule2">移动规则：单张或同花色连续递减的牌组可整体搬移。目标列顶牌只需比移动牌大 1 点（支持跨花色暂放）。</div>
+        <div class="rule-item" data-i18n="rule3">空列机动：空列可放置任意合法单张或同花顺牌组，是腾挪布局的关键资本。</div>
+        <div class="rule-item" data-i18n="rule4">发牌补充：点击左上方牌堆向十列各发 1 张翻开牌（共 5 轮）。</div>
+        <div class="rule-item" data-i18n="rule5">操作手势：支持点选移动、双击智能归位、拖拽搬牌；随时无限撤回。</div>
+      </div>
+      <div class="modal-actions">
+        <button id="btn-rules-close" class="btn-primary">了解，开始织网</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Level Selection Modal -->
+  <div id="level-modal" class="modal-backdrop" role="dialog" aria-modal="true">
+    <div class="modal-content">
+      <h2 id="level-modal-title" class="modal-title">章节关卡</h2>
+      <div id="level-grid" class="level-grid"></div>
+      <div class="modal-actions">
+        <button id="btn-level-modal-close" class="btn-primary">关闭</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Victory Modal -->
+  <div id="victory-modal" class="modal-backdrop" role="dialog" aria-modal="true">
+    <div class="modal-content">
+      <div class="victory-celebration">
+        <div class="victory-icon">🕸️✨</div>
+        <h2 id="victory-title" class="modal-title">蛛网织就 · 恭喜通关！</h2>
+        <p id="victory-desc" style="color: var(--text-secondary); font-size: 14px;">你已成功集齐全部 8 副同花顺，完成本局编织！</p>
+        <div id="victory-stars" class="victory-stars">★★★</div>
+        <div class="victory-stats-row">
+          <div class="victory-stat-item">
+            <span id="v-stat-score-lbl" class="stat-label">本局得分</span>
+            <span id="v-stat-score-val" class="stat-value gold">0</span>
+          </div>
+          <div class="victory-stat-item">
+            <span id="v-stat-moves-lbl" class="stat-label">完成步数</span>
+            <span id="v-stat-moves-val" class="stat-value">0</span>
+          </div>
+          <div class="victory-stat-item">
+            <span id="v-stat-time-lbl" class="stat-label">耗费时间</span>
+            <span id="v-stat-time-val" class="stat-value">00:00</span>
+          </div>
+        </div>
+        <div class="modal-actions" style="margin-top: 10px;">
+          <button id="btn-replay" class="btn-primary" style="background: rgba(164, 136, 245, 0.2); color: var(--text-primary); border: 1px solid rgba(164, 136, 245, 0.35);">再玩一次</button>
+          <button id="btn-next-level" class="btn-primary">下一关</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="js/main.mjs?v=dev"></script>
+</body>
+</html>

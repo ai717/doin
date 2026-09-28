@@ -18,16 +18,32 @@ document.querySelector("#year").textContent = String(new Date().getFullYear());
 // 分类定义映射
 const CATEGORIES = [
   { id: "all", label: t.filterAll, icon: "✨" },
-  { id: "puzzle", label: t.filterPuzzle, icon: "🧩", match: (tags) => tags.some(tag => ["益智", "经典", "数字", "无猜", "连线", "一笔画", "策略", "视觉"].includes(tag)) },
-  { id: "casual", label: t.filterCasual, icon: "☕", match: (tags) => tags.includes("休闲") },
-  { id: "match", label: t.filterMatch, icon: "🎯", match: (tags) => tags.some(tag => ["消除", "排序"].includes(tag)) },
-  { id: "physics", label: t.filterPhysics, icon: "🪐", match: (tags) => tags.some(tag => ["物理", "合成"].includes(tag)) },
-  { id: "arcade", label: t.filterArcade, icon: "⚡", match: (tags) => tags.some(tag => ["街机", "反应", "时机", "肉鸽", "音乐"].includes(tag)) },
+  { id: "puzzle", label: t.filterPuzzle, icon: "🧩", match: (tags) => tags.some(tag => ["益智", "经典", "数字", "无猜", "连线", "一笔画", "策略", "视觉", "纸牌", "对战", "解谜"].includes(tag)) },
+  { id: "casual", label: t.filterCasual, icon: "☕", match: (tags) => tags.some(tag => ["休闲", "治愈", "放置", "经营", "解压"].includes(tag)) },
+  { id: "match", label: t.filterMatch, icon: "🎯", match: (tags) => tags.some(tag => ["消除", "排序", "匹配", "连线"].includes(tag)) },
+  { id: "physics", label: t.filterPhysics, icon: "🪐", match: (tags) => tags.some(tag => ["物理", "合成", "重力", "时机"].includes(tag)) },
+  { id: "arcade", label: t.filterArcade, icon: "⚡", match: (tags) => tags.some(tag => ["街机", "反应", "时机", "肉鸽", "音乐", "动作", "射击"].includes(tag)) },
 ];
 
-// 精选推荐与新上架游戏 slugs
-const FEATURED_SLUGS = ["jump-jump", "cut-the-rope"];
-const NEW_SLUGS = ["cut-the-rope", "jump-jump", "cloud-merge"];
+// 精选大卡 (2x2)、宽卡 (2x1) 与角标定义
+const FEATURED_SLUGS = ["mow", "watermelon-2048", "backpack", "gold-miner"];
+const WIDE_SLUGS = ["pinball", "spider", "sokoban", "tetris-neo", "blind-auction", "lineride", "cut-the-rope"];
+const NEW_SLUGS = ["mow", "pinball", "backpack", "blind-auction", "sokoban", "lineride", "guess", "frog", "mole"];
+const HOT_SLUGS = ["watermelon-2048", "gold-miner", "spider", "tetris-neo", "2048", "zuma", "pinball", "mow"];
+
+// 首页推荐排序优先级：最新力作与高热度经典交替置顶，错落排布品类色彩
+const CURATED_ORDER = [
+  "mow", "picross", "pinball", "calc24", "guess", "watermelon-2048",
+  "spider", "frog", "mole", "backpack", "sokoban", "ramen-idle",
+  "freecell", "lineride", "cloud-merge", "jump-jump", "gold-miner",
+  "blind-auction", "zuma", "2048", "tetris-neo", "cut-the-rope",
+  "gomoku", "orbit-sort", "Tile-Matching", "snake-orchard", "one-line",
+  "klotski", "jigsaw", "link-up", "pair-link", "bubble-merge",
+  "bubble-bloom", "water-sort", "piano-tiles", "candy-drop", "road-bash",
+  "deep-devour", "lantern-maze", "number-klotski", "pong", "fire-ice",
+  "rune-tower", "devil-run", "space-defender", "sudoku", "tic-tac-toe",
+  "minesweeper", "winmine", "memory-duel", "Gravity-Echoes"
+];
 
 let allGames = [];
 let activeCategory = "all";
@@ -51,6 +67,9 @@ function applyStaticTexts() {
   const noscript = document.querySelector("noscript");
   if (noscript) noscript.textContent = "<p class=\"noscript-msg\">" + t.noscript + "</p>";
   
+  const siteTitle = document.querySelector(".site-title");
+  if (siteTitle) siteTitle.setAttribute("aria-label", t.homeAria);
+
   if (searchInput) {
     searchInput.placeholder = t.searchPlaceholder;
     searchInput.setAttribute("aria-label", t.searchAria);
@@ -118,9 +137,12 @@ document.addEventListener("keydown", (event) => {
 function cardFor(game, isBentoAllowed) {
   const card = document.createElement(game.comingSoon ? "article" : "a");
   const isFeatured = isBentoAllowed && FEATURED_SLUGS.includes(game.slug);
+  const isWide = isBentoAllowed && !isFeatured && WIDE_SLUGS.includes(game.slug);
+
   card.className = "game-card" + 
     (game.comingSoon ? " is-soon" : "") +
-    (isFeatured ? " is-featured" : "");
+    (isFeatured ? " is-featured" : "") +
+    (isWide ? " is-wide" : "");
   if (!game.comingSoon) card.href = game.url;
 
   const cover = document.createElement("img");
@@ -138,21 +160,42 @@ function cardFor(game, isBentoAllowed) {
 
   card.append(cover, title);
 
-  // 质感角标（即将到来 > 精选推荐 > 最新力作）
+  // 为大卡/宽卡增加视觉微标签（品类特色）
+  if ((isFeatured || isWide) && game.tags && game.tags.length > 0) {
+    const genreTag = document.createElement("span");
+    genreTag.className = "game-card__genre";
+    const tagZh = game.tags[0];
+    const tagMap = {
+      "益智": "Puzzle", "经典": "Classic", "休闲": "Casual",
+      "消除": "Match", "物理": "Physics", "街机": "Arcade",
+      "合成": "Merge", "纸牌": "Cards", "策略": "Strategy",
+      "解压": "Relaxing", "对战": "Battle", "肉鸽": "Roguelite",
+      "放置": "Idle", "经营": "Sim"
+    };
+    genreTag.textContent = locale === "en" ? (tagMap[tagZh] || tagZh) : tagZh;
+    card.append(genreTag);
+  }
+
+  // 质感角标（即将到来 > 最新力作 > 热门推荐 > 精选）
   if (game.comingSoon) {
     const badge = document.createElement("span");
     badge.className = "badge-tag badge-soon";
     badge.textContent = t.comingSoon;
     card.append(badge);
-  } else if (isFeatured) {
-    const badge = document.createElement("span");
-    badge.className = "badge-tag badge-featured";
-    badge.textContent = t.badgeFeatured;
-    card.append(badge);
   } else if (NEW_SLUGS.includes(game.slug)) {
     const badge = document.createElement("span");
     badge.className = "badge-tag badge-new";
     badge.textContent = t.badgeNew;
+    card.append(badge);
+  } else if (HOT_SLUGS.includes(game.slug)) {
+    const badge = document.createElement("span");
+    badge.className = "badge-tag badge-hot";
+    badge.textContent = t.badgeHot;
+    card.append(badge);
+  } else if (isFeatured) {
+    const badge = document.createElement("span");
+    badge.className = "badge-tag badge-featured";
+    badge.textContent = t.badgeFeatured;
     card.append(badge);
   }
 
@@ -265,7 +308,7 @@ function addStructuredData(games) {
         item: {
           "@type": "VideoGame",
           name: gameTitle(game, locale),
-          description: game.desc,
+          description: (locale === "en" && game.en?.desc) ? game.en.desc : (game.desc || ""),
           image: new URL(game.cover, window.location.href).href,
           url: new URL(game.url, window.location.href).href,
           gamePlatform: "Web Browser"
@@ -282,7 +325,13 @@ async function init() {
     if (!response.ok) throw new Error("HTTP " + response.status);
     const data = await response.json();
     if (!Array.isArray(data.games) || data.games.length === 0) throw new Error("empty games list");
-    allGames = data.games;
+    // 按推荐权重 CURATED_ORDER 智能排序，最新力作与高热度经典置顶交错排布
+    const orderMap = new Map(CURATED_ORDER.map((slug, idx) => [slug, idx]));
+    allGames = [...data.games].sort((a, b) => {
+      const posA = orderMap.has(a.slug) ? orderMap.get(a.slug) : 999;
+      const posB = orderMap.has(b.slug) ? orderMap.get(b.slug) : 999;
+      return posA - posB;
+    });
     renderCategoryTabs();
     renderGames();
     addStructuredData(allGames);

@@ -1,0 +1,570 @@
+/* style.css — 弹球肉鸽防线：暗金炼金神秘学，双翼对称机台布局。 */
+
+:root {
+  --bg-0: #0a0414;
+  --bg-1: #1a0b2e;
+  --bg-2: #0f0620;
+  --gold: #d4af37;
+  --gold-light: #ffe9a8;
+  --gold-dark: #8a6a1a;
+  --accent: #b066e6;
+  --accent-2: #ff6a2a;
+  --text: #f0e6d2;
+  --text-dim: #a89c84;
+  --panel: rgba(20, 10, 36, 0.85);
+  --panel-border: rgba(212, 175, 55, 0.35);
+  --shadow: 0 4px 24px rgba(0, 0, 0, 0.5);
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  background: radial-gradient(ellipse at 50% 0%, #1a0b2e 0%, #0a0414 60%, #050208 100%);
+  color: var(--text);
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+#game-app {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* -------------------------------------------------- 顶栏 */
+
+#stage-bar {
+  width: 100%;
+  max-width: 1100px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 16px;
+  background: linear-gradient(180deg, rgba(26, 11, 46, 0.95), rgba(15, 6, 32, 0.9));
+  border-bottom: 1px solid var(--panel-border);
+  position: sticky;
+  top: 0;
+  z-index: 50;
+}
+
+.bar-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  background: rgba(212, 175, 55, 0.1);
+  border: 1px solid var(--panel-border);
+  border-radius: 8px;
+  color: var(--gold-light);
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.15s;
+  text-decoration: none;
+}
+.bar-btn:hover {
+  background: rgba(212, 175, 55, 0.22);
+  transform: translateY(-1px);
+}
+.bar-btn:active {
+  transform: translateY(1px);
+}
+.bar-glyph {
+  font-size: 15px;
+}
+
+#app-title {
+  text-align: center;
+  line-height: 1.1;
+}
+#app-title-main {
+  display: block;
+  font-size: 18px;
+  font-weight: 800;
+  color: var(--gold-light);
+  letter-spacing: 1px;
+  text-shadow: 0 0 12px rgba(212, 175, 55, 0.5);
+}
+#app-subtitle {
+  display: block;
+  font-size: 11px;
+  color: var(--accent);
+  letter-spacing: 2px;
+  text-transform: uppercase;
+}
+
+.stage-actions {
+  display: flex;
+  gap: 6px;
+}
+
+/* -------------------------------------------------- 模式栏 */
+
+#mode-bar {
+  display: flex;
+  gap: 8px;
+  padding: 10px 16px;
+  justify-content: center;
+}
+.mode-chip {
+  padding: 6px 16px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--panel-border);
+  border-radius: 20px;
+  color: var(--text-dim);
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.mode-chip:hover {
+  color: var(--gold-light);
+}
+.mode-chip.is-active {
+  background: linear-gradient(180deg, var(--gold), var(--gold-dark));
+  color: #1a0b2e;
+  font-weight: 700;
+  border-color: var(--gold-light);
+  box-shadow: 0 0 12px rgba(212, 175, 55, 0.4);
+}
+
+/* -------------------------------------------------- 主舞台三栏 */
+
+#stage-core {
+  width: 100%;
+  max-width: 1100px;
+  flex: 1;
+  display: grid;
+  grid-template-columns: minmax(140px, 1fr) auto minmax(140px, 1fr);
+  gap: 16px;
+  padding: 12px 16px 24px;
+  align-items: start;
+}
+
+.wing {
+  background: var(--panel);
+  border: 1px solid var(--panel-border);
+  border-radius: 14px;
+  padding: 14px;
+  box-shadow: var(--shadow);
+  backdrop-filter: blur(8px);
+}
+
+.plaque-block {
+  margin-bottom: 14px;
+}
+.plaque-label {
+  display: block;
+  font-size: 11px;
+  color: var(--text-dim);
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  margin-bottom: 4px;
+}
+.plaque-value {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--gold-light);
+}
+
+.life-cells,
+.shield-cells {
+  display: flex;
+  gap: 6px;
+}
+.life-cell {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid var(--panel-border);
+  transition: all 0.2s;
+}
+.life-cell.is-on {
+  background: radial-gradient(circle, #ff6a6a, #c43a3a);
+  box-shadow: 0 0 8px rgba(255, 80, 80, 0.6);
+}
+
+.relic-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  min-height: 32px;
+}
+.relic-chip {
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--relic-color, var(--gold));
+  box-shadow: 0 0 8px color-mix(in srgb, var(--relic-color, var(--gold)) 40%, transparent);
+}
+
+.wing-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 12px;
+}
+.key-btn {
+  padding: 9px 12px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--panel-border);
+  border-radius: 10px;
+  color: var(--text);
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.key-btn:hover {
+  background: rgba(212, 175, 55, 0.15);
+}
+.key-btn:active {
+  transform: translateY(2px);
+}
+.key-primary {
+  background: linear-gradient(180deg, var(--gold), var(--gold-dark));
+  color: #1a0b2e;
+  font-weight: 700;
+  border-color: var(--gold-light);
+}
+
+.hint-text {
+  margin-top: 12px;
+  font-size: 11px;
+  color: var(--text-dim);
+  line-height: 1.6;
+}
+
+.scoreboard {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--panel-border);
+}
+.score-line {
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+  margin-top: 4px;
+}
+.score-line strong {
+  color: var(--gold-light);
+}
+
+/* -------------------------------------------------- 中央舞台 */
+
+#arena {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+}
+#crt-bezel {
+  background: linear-gradient(180deg, #1a0b2e, #0a0414);
+  border: 2px solid var(--gold-dark);
+  border-radius: 16px;
+  padding: 8px;
+  box-shadow: 0 0 32px rgba(212, 175, 55, 0.2), inset 0 0 24px rgba(0, 0, 0, 0.6);
+}
+#stage-canvas {
+  display: block;
+  width: 480px;
+  height: 640px;
+  border-radius: 10px;
+  touch-action: none;
+  overscroll-behavior: none;
+  cursor: pointer;
+}
+
+#toast {
+  position: absolute;
+  top: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 8px 18px;
+  background: rgba(26, 11, 46, 0.92);
+  border: 1px solid var(--gold);
+  border-radius: 20px;
+  color: var(--gold-light);
+  font-size: 13px;
+  opacity: 0;
+  transition: opacity 0.3s;
+  pointer-events: none;
+  z-index: 10;
+}
+#toast.is-on {
+  opacity: 1;
+}
+
+/* -------------------------------------------------- 触控台 */
+
+#control-deck {
+  display: none;
+  gap: 16px;
+  padding: 12px 16px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+.pad {
+  display: flex;
+  gap: 10px;
+}
+.pad-btn {
+  min-width: 72px;
+  height: 52px;
+  padding: 6px 14px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--panel-border);
+  border-radius: 12px;
+  color: var(--text);
+  font-size: 13px;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  user-select: none;
+  -webkit-user-select: none;
+}
+.pad-btn:active,
+.pad-btn.is-held {
+  background: rgba(212, 175, 55, 0.25);
+  transform: translateY(2px);
+}
+.pad-btn kbd {
+  font-size: 10px;
+  color: var(--text-dim);
+}
+.pad-primary {
+  background: linear-gradient(180deg, var(--gold), var(--gold-dark));
+  color: #1a0b2e;
+  font-weight: 700;
+}
+
+/* -------------------------------------------------- 弹窗 */
+
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(5, 2, 10, 0.75);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s;
+  backdrop-filter: blur(4px);
+}
+.overlay.is-open {
+  opacity: 1;
+  pointer-events: auto;
+}
+.overlay[hidden] {
+  display: none;
+}
+
+.panel {
+  background: linear-gradient(180deg, #1a0b2e, #0f0620);
+  border: 1px solid var(--gold);
+  border-radius: 18px;
+  padding: 28px;
+  max-width: 520px;
+  width: calc(100% - 32px);
+  box-shadow: 0 0 60px rgba(212, 175, 55, 0.25);
+  text-align: center;
+}
+.panel-kicker {
+  display: block;
+  font-size: 11px;
+  color: var(--accent);
+  letter-spacing: 3px;
+  margin-bottom: 8px;
+}
+.panel-title {
+  font-size: 24px;
+  color: var(--gold-light);
+  margin-bottom: 10px;
+}
+.panel-desc {
+  font-size: 14px;
+  color: var(--text-dim);
+  margin-bottom: 20px;
+  line-height: 1.6;
+}
+.panel-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+.btn {
+  padding: 10px 22px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--panel-border);
+  border-radius: 10px;
+  color: var(--text);
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.btn:hover {
+  background: rgba(212, 175, 55, 0.15);
+}
+.btn-primary {
+  background: linear-gradient(180deg, var(--gold), var(--gold-dark));
+  color: #1a0b2e;
+  font-weight: 700;
+  border-color: var(--gold-light);
+}
+
+/* 核心选择 */
+.relic-choices {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin: 20px 0;
+}
+.relic-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 16px 10px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 2px solid var(--relic-color, var(--gold));
+  border-radius: 14px;
+  cursor: pointer;
+  transition: all 0.2s;
+  color: var(--text);
+}
+.relic-card:hover {
+  background: color-mix(in srgb, var(--relic-color, var(--gold)) 18%, transparent);
+  transform: translateY(-4px);
+  box-shadow: 0 8px 24px color-mix(in srgb, var(--relic-color, var(--gold)) 35%, transparent);
+}
+.relic-glyph {
+  font-size: 36px;
+}
+.relic-name {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--relic-color, var(--gold-light));
+}
+.relic-desc {
+  font-size: 11px;
+  color: var(--text-dim);
+  line-height: 1.5;
+}
+
+.result-rows {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin: 18px 0;
+}
+.result-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 10px 14px;
+  background: rgba(255, 255, 255, 0.04);
+  border-radius: 10px;
+  font-size: 14px;
+}
+.result-row strong {
+  color: var(--gold-light);
+}
+.result-hint {
+  font-size: 13px;
+  color: var(--text-dim);
+  margin: 12px 0;
+}
+
+.help-list {
+  text-align: left;
+  font-size: 13px;
+  color: var(--text);
+  line-height: 1.8;
+  padding-left: 20px;
+  margin-bottom: 18px;
+}
+.help-list li {
+  margin-bottom: 6px;
+}
+
+/* -------------------------------------------------- 移动端 */
+
+@media (max-width: 900px) {
+  #stage-core {
+    grid-template-columns: 1fr;
+    max-width: 520px;
+  }
+  .wing {
+    order: 2;
+  }
+  #arena {
+    order: 1;
+  }
+  #wing-left,
+  #wing-right {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px 16px;
+  }
+  .wing-actions {
+    grid-column: 1 / -1;
+    flex-direction: row;
+  }
+  .hint-text {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (max-width: 540px) {
+  #stage-canvas {
+    width: 100vw;
+    max-width: 480px;
+    height: auto;
+    aspect-ratio: 3 / 4;
+  }
+  #stage-core {
+    padding: 8px;
+    gap: 8px;
+  }
+  .wing {
+    padding: 10px;
+  }
+  #control-deck {
+    display: flex;
+    padding-bottom: max(16px, calc(16px + env(safe-area-inset-bottom)));
+  }
+  .relic-choices {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* -------------------------------------------------- 动效降级 */
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}

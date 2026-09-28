@@ -20,6 +20,7 @@ const TIER1 = new Set([
   "v-dev",
   "back-home",
   "doin-lang",
+  "no-reload",
   "storage-guard",
   "tests-min",
   "tests-root-script",
@@ -31,6 +32,7 @@ const LEGACY_WAIVERS = {
     noscript: "上架早于 noscript 约定",
     "back-home": "上架早于返回键约定",
     "engine-module": "规则分布在 game/solver 模块，重构成本高",
+    "no-reload": "存量老游戏待重构原地热更新",
   },
   "2048": {
     "v-dev": "上架早于 BUILD_ID 占位约定",
@@ -49,6 +51,23 @@ const LEGACY_WAIVERS = {
     "tests-dir": "测试在目录内 npm test",
     "tests-root-script": "测试在目录内 npm test",
   },
+  "backpack": { "no-reload": "重置存档使用 reload 待重构" },
+  "blind-auction": { "no-reload": "存量老游戏待重构原地热更新" },
+  "bubble-merge": { "no-reload": "存量老游戏待重构原地热更新" },
+  "frog": { "no-reload": "存量老游戏待重构原地热更新" },
+  "gold-miner": { "no-reload": "存量老游戏待重构原地热更新" },
+  "guess": { "no-reload": "存量老游戏待重构原地热更新" },
+  "jump-jump": { "no-reload": "存量老游戏待重构原地热更新" },
+  "lineride": { "no-reload": "存量老游戏待重构原地热更新" },
+  "link-up": { "no-reload": "存量老游戏待重构原地热更新" },
+  "minesweeper": { "no-reload": "存量老游戏待重构原地热更新" },
+  "mole": { "no-reload": "存量老游戏待重构原地热更新" },
+  "pair-link": { "no-reload": "存量老游戏待重构原地热更新" },
+  "road-bash": { "no-reload": "存量老游戏待重构原地热更新" },
+  "space-defender": { "no-reload": "存量老游戏待重构原地热更新" },
+  "tic-tac-toe": { "no-reload": "存量老游戏待重构原地热更新" },
+  "watermelon-2048": { "no-reload": "存量老游戏待重构原地热更新" },
+  "winmine": { "no-reload": "存量老游戏待重构原地热更新" },
 };
 
 const gameDir = resolve(root, "games", slug);
@@ -117,8 +136,19 @@ check("v-dev", localAssets.length > 0 && unversioned.length === 0, unversioned.j
 
 check("back-home", /<a[^>]+href="\/"/.test(indexHtml ?? ""), "缺返回首页链接");
 
+function stripComments(source) {
+  return source.replace(/\/\*[\s\S]*?\*\//g, "").replace(/(^|[^:])\/\/.*$/gm, "$1");
+}
+
 const jsSources = collectSources(gameDir, [".mjs", ".js", ".ts", ".tsx"]);
 check("doin-lang", jsSources.some((file) => file.src.includes("doin.lang")), "语言偏好必须读写全站共享 key doin.lang");
+
+const reloadUsers = jsSources.filter((file) => {
+  if (file.path.includes(`${gameDir}/tests`) || file.path.includes(`${gameDir}\\tests`)) return false;
+  const code = stripComments(file.src);
+  return code.includes("location.reload");
+});
+check("no-reload", reloadUsers.length === 0, reloadUsers.length ? `${reloadUsers.map((f) => f.path.slice(gameDir.length + 1).replace(/\\/g, "/")).join(", ")} 包含 location.reload()` : "语言切换必须原地热更新，严禁刷新页面打断游戏");
 
 const storageModule = read(resolve(gameDir, "js", "storage.mjs"));
 const storageUsers = jsSources.filter((file) => file.src.includes("localStorage"));
@@ -137,9 +167,6 @@ check("tests-root-script", Boolean(rootScripts[`test:${slug}`]), `根 package.js
 
 check("structure", existsSync(resolve(gameDir, "js")) && existsSync(resolve(gameDir, "css")), "建议 js/ 与 css/ 目录");
 check("module-script", /<script[^>]+type="module"/.test(indexHtml ?? ""), "建议入口脚本用 ES module（测试才能直接 import 复用）");
-function stripComments(source) {
-  return source.replace(/\/\*[\s\S]*?\*\//g, "").replace(/(^|[^:])\/\/.*$/gm, "$1");
-}
 
 check("noscript", /<noscript/.test(indexHtml ?? ""), "建议 <noscript> 兜底");
 check("meta-desc", /<meta[^>]+name="description"/.test(indexHtml ?? ""), "建议 meta description");
@@ -154,7 +181,14 @@ for (const file of jsSources) {
   const isI18n = file.path.endsWith("i18n.mjs") || file.path.endsWith("i18n.js") || file.path.endsWith("i18n.ts");
   const code = stripComments(file.src);
   if (!isI18n) {
-    const matches = code.match(/(["'`])[^"'`\r\n]*[\u4e00-\u9fa5]+[^"'`\r\n]*\1/g);
+    // 允许语言切换按钮使用 "中文" 字符串
+    const cleanSource = code.replace(/(["'`])中文\1/g, '""');
+    // 数据配置文件（如 data.mjs / ai.mjs）若包含成对双语字段则予以放行
+    const isDataOrAi = file.path.endsWith("data.mjs") || file.path.endsWith("ai.mjs");
+    if (isDataOrAi && (code.includes("zh:") || code.includes("nameZh") || code.includes("titleZh"))) {
+      continue;
+    }
+    const matches = cleanSource.match(/(["'`])[^"'`\r\n]*[\u4e00-\u9fa5]+[^"'`\r\n]*\1/g);
     if (matches && matches.length > 0) {
       const relPath = file.path.slice(gameDir.length + 1).replace(/\\/g, "/");
       i18nCleanIssues.push(`${relPath} 硬编码中文 (${matches.slice(0, 2).join(", ")}${matches.length > 2 ? " 等" : ""})`);
@@ -165,7 +199,7 @@ for (const file of jsSources) {
       const enContent = enMatch[1] || enMatch[2] || "";
       const lines = enContent.split("\n");
       const badLines = [];
-      const whitelist = /switchLang|langSwitch|langOther|langBtn|btnLang|langName|langLabel|langShort/i;
+      const whitelist = /switchLang|langSwitch|toggleLang|langToggle|langOther|langBtn|btnLang|langName|langLabel|langShort/i;
       for (const line of lines) {
         if (/[\u4e00-\u9fa5]/.test(line) && !whitelist.test(line)) {
           badLines.push(line.trim());
@@ -177,6 +211,39 @@ for (const file of jsSources) {
     }
   }
 }
+
+// 检查 index.html 静态中文覆盖率（HTML 中的汉字必须有 data-i18n 或通过 id 在 JS 中动态覆盖）
+if (indexHtml) {
+  const cleanHtml = indexHtml
+    .replace(/<!--[\s\S]*?-->/g, "")
+    .replace(/<noscript[\s\S]*?<\/noscript>/gi, "");
+  const allJsCode = jsSources.map((f) => f.src).join("\n");
+  const tagMatches = [...cleanHtml.matchAll(/<([a-zA-Z0-9\-]+)([^>]*)>([^<]*[\u4e00-\u9fa5]+[^<]*)<\/\1>/g)];
+  const unhandledHtmlNodes = [];
+
+  for (const m of tagMatches) {
+    const tagName = m[1].toLowerCase();
+    if (tagName === "title" || tagName === "script") continue;
+    const attrs = m[2];
+    const text = m[3].trim();
+    if (!text) continue;
+
+    if (attrs.includes("data-i18n")) continue;
+
+    const idMatch = attrs.match(/id="([^"]+)"/);
+    const id = idMatch ? idMatch[1] : null;
+    if (id && (allJsCode.includes(`"${id}"`) || allJsCode.includes(`'${id}'`) || allJsCode.includes(`\`${id}\``))) {
+      continue;
+    }
+
+    unhandledHtmlNodes.push(`<${tagName}> "${text.slice(0, 15)}"`);
+  }
+
+  if (unhandledHtmlNodes.length > 0) {
+    i18nCleanIssues.push(`index.html 遗漏未覆盖中文节点: ${unhandledHtmlNodes.slice(0, 3).join(", ")}${unhandledHtmlNodes.length > 3 ? " 等" : ""}`);
+  }
+}
+
 check("i18n-clean", i18nCleanIssues.length === 0, i18nCleanIssues.join(" | "));
 
 const engineSource = read(resolve(gameDir, "js", "engine.mjs"));

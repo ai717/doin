@@ -126,8 +126,19 @@ export class GameUI {
     const optBlank = document.getElementById("opt-keymode-blank");
     if (optBlank) optBlank.textContent = t("keyModeBlank", this.locale);
 
+    const lblRecords = document.getElementById("label-records-title");
+    if (lblRecords) lblRecords.textContent = t("recordsTitle", this.locale);
+    const mhudMoves = document.getElementById("mhud-moves-lbl");
+    if (mhudMoves) mhudMoves.textContent = t("movesLabel", this.locale);
+    const mhudTime = document.getElementById("mhud-time-lbl");
+    if (mhudTime) mhudTime.textContent = t("timeLabel", this.locale);
+    const winRankLbl = document.getElementById("win-rank-label");
+    if (winRankLbl) winRankLbl.textContent = t("winRank", this.locale);
+    const winTitle = document.getElementById("win-title");
+    if (winTitle) winTitle.textContent = t("winTitle", this.locale);
+
     const btnCloseHelp = document.getElementById("btn-close-help");
-    if (btnCloseHelp) btnCloseHelp.textContent = this.locale === "zh" ? "知道了" : "Got it";
+    if (btnCloseHelp) btnCloseHelp.textContent = t("btnGotIt", this.locale);
 
     const btnPlayAgain = document.getElementById("btn-play-again");
     if (btnPlayAgain) btnPlayAgain.textContent = t("btnPlayAgain", this.locale);
