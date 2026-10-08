@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>推币机 · DOIN 在线小游戏</title>
+  <meta name="description" content="街机推币机：机顶固定投币口，金币穿过挡杆阵随机弹跳落台，往复推板把满台金币推向边缘。掉进托盘的币回到账户可以继续投，滑进两侧沟槽就丢掉了。边缘连锁每多一枚翻倍，极限 2¹⁸ 金卡爆响。120Hz 固定步长确定性物理，可逐帧重放。">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="css/style.css?v=dev">
+</head>
+<body>
+  <div id="cabinet">
+    <header id="marquee">
+      <a href="/" id="back-home" data-i18n="back">← 门户</a>
+      <h1 id="stage-title" data-i18n="appTitle">推币机</h1>
+      <div class="marquee-actions">
+        <button id="btn-sound" class="bar-btn" aria-label="音效" data-i18n-aria="sound">🔊</button>
+        <button id="btn-lang" class="bar-btn" aria-label="语言" data-i18n-aria="langName">EN</button>
+        <button id="btn-help" class="bar-btn" aria-label="玩法说明" data-i18n-aria="help">?</button>
+      </div>
+    </header>
+
+    <main id="cab-body">
+      <aside id="rail-panel">
+        <section class="plate">
+          <h2 class="plate-label" data-i18n="chuteLabel">投币口</h2>
+          <div id="chute-diagram" aria-hidden="true">
+            <span class="chute-slot"></span>
+            <span class="chute-peg"></span>
+            <span class="chute-peg"></span>
+            <span class="chute-peg"></span>
+            <span class="chute-drop"></span>
+          </div>
+          <p class="readout dim" data-i18n="chuteDesc">机顶固定投币口 · 挡杆阵决定落点</p>
+        </section>
+
+        <section class="plate">
+          <ul id="effect-lamps">
+            <li class="lamp" id="lamp-double" data-i18n="effDouble">双倍</li>
+            <li class="lamp" id="lamp-speed" data-i18n="effSpeed">加速</li>
+            <li class="lamp" id="lamp-magnet" data-i18n="effMagnet">磁吸</li>
+          </ul>
+        </section>
+
+        <section class="plate ladder-plate">
+          <h2 class="plate-label" data-i18n="jackpotLabel">金卡极限</h2>
+          <ol id="ladder">
+            <li data-i18n="tier1">4 连档</li>
+            <li data-i18n="tier2">8 连档</li>
+            <li data-i18n="tier3">12 连档</li>
+            <li data-i18n="tier4">16 连档</li>
+            <li data-i18n="tierMad">疯狂翻倍</li>
+          </ol>
+        </section>
+
+        <section class="plate">
+          <h2 class="plate-label" data-i18n="gutterLabel">两侧沟槽</h2>
+          <p class="readout dim" data-i18n="gutterDesc">被挤出台面的币掉进侧仓，不计分也不回账户</p>
+        </section>
+      </aside>
+
+      <section id="glass-stage">
+        <div id="hud-strip">
+          <span class="hud-cell"><i data-i18n="credits">账户</i><b id="hud-credits" class="lcd">50</b></span>
+          <span class="hud-cell"><i data-i18n="score">得分</i><b id="hud-score" class="lcd">0</b></span>
+          <span class="hud-cell"><i data-i18n="mult">倍率</i><b id="hud-mult" class="lcd">×1</b></span>
+          <span class="hud-cell"><i data-i18n="chainNow">本波连锁</i><b id="hud-cascade" class="lcd">0</b></span>
+        </div>
+        <p id="mode-line"><span id="mode-tag" data-i18n="modeEndless">无尽机台</span><span class="dot">·</span><span id="goal-line"></span></p>
+
+        <div id="glass-wrap">
+          <canvas id="table" width="780" height="804" aria-label="推币机玻璃观察窗" data-i18n-aria="canvasLabel"></canvas>
+          <div id="toast" role="status" aria-live="polite"></div>
+
+          <div class="overlay" id="ov-menu">
+            <h2 id="menu-title" data-i18n="appTitle">推币机</h2>
+            <p id="menu-sub" data-i18n="startSub">投币推落 · 挡杆随机落点 · 边缘连锁翻倍</p>
+            <h3 class="menu-label" data-i18n="creditPick">选择带多少币进场</h3>
+            <div id="credit-grid"></div>
+            <p id="mode-desc" class="dim"></p>
+            <button id="btn-start" class="deck-btn primary" data-i18n="start">开始</button>
+            <div class="menu-footer">
+              <span id="runs-total"></span>
+              <button id="btn-reset-save" class="bar-btn" data-i18n="saveReset">重置存档</button>
+            </div>
+          </div>
+
+          <div class="overlay" id="ov-help" hidden>
+            <h2 data-i18n="helpTitle">玩法说明</h2>
+            <p data-i18n="help1"></p>
+            <p data-i18n="help2"></p>
+            <p data-i18n="help3"></p>
+            <p data-i18n="help4"></p>
+            <p data-i18n="help5"></p>
+            <button id="btn-help-close" class="deck-btn primary" data-i18n="helpClose">知道了</button>
+          </div>
+
+          <div class="overlay" id="ov-result" hidden>
+            <h2 id="result-title"></h2>
+            <p id="result-line"></p>
+            <div class="btn-row">
+              <button id="btn-again" class="deck-btn primary" data-i18n="again">再来一局</button>
+              <button id="btn-back-menu" class="deck-btn" data-i18n="backMenu">返回主菜单</button>
+            </div>
+          </div>
+
+          <div class="overlay" id="ov-pause" hidden>
+            <h2 data-i18n="pauseTitle">已暂停</h2>
+            <div class="btn-row">
+              <button id="btn-resume" class="deck-btn primary" data-i18n="pauseResume">继续</button>
+              <button id="btn-pause-restart" class="deck-btn" data-i18n="pauseRestart">重开本局</button>
+              <button id="btn-pause-menu" class="deck-btn" data-i18n="pauseMenu">返回主菜单</button>
+            </div>
+          </div>
+        </div>
+
+        <div id="deck">
+          <button id="btn-insert" class="deck-btn insert" data-i18n="insert">投币</button>
+          <button id="btn-restart" class="deck-btn" data-i18n="restart">收工重开</button>
+          <button id="btn-pause" class="deck-btn" aria-label="暂停" data-i18n-aria="paused">❚❚</button>
+        </div>
+        <p id="key-tip" class="dim" data-i18n="keyTip">空格投币 · R 连续投币 · P 暂停</p>
+        <p id="touch-tip" class="dim" data-i18n="touchTip">点「投币」把金币送进投币口，落点由挡杆决定，不可瞄准</p>
+      </section>
+
+      <aside id="prize-panel">
+        <section class="plate">
+          <h2 class="plate-label" data-i18n="dropLog">掉落记录</h2>
+          <ul id="drop-log"></ul>
+          <p id="drop-log-empty" class="dim" data-i18n="dropLogEmpty">还没有币掉进托盘</p>
+        </section>
+
+        <section class="plate">
+          <h2 class="plate-label" data-i18n="prizeCase">奖品陈列柜</h2>
+          <ul id="prize-list">
+            <li class="prize-item"><span class="chip coin-norm"></span><span class="prize-name" data-i18n="coinNorm">普通币</span><span class="prize-val" data-i18n="coinNormValue">基础 10 分</span></li>
+            <li class="prize-item"><span class="chip coin-gold"></span><span class="prize-name" data-i18n="coinGold">黄金币</span><span class="prize-val" data-i18n="coinGoldValue">基础 50 分</span></li>
+            <li class="prize-item"><span class="chip coin-gem"></span><span class="prize-name" data-i18n="coinGem">宝石币</span><span class="prize-val" data-i18n="coinGemValue">基础 100 分</span></li>
+            <li class="prize-item"><span class="chip tok-card"></span><span class="prize-name" data-i18n="tokenCard">奖励卡</span><span class="prize-val" data-i18n="tokenCardValue">跨越触发 3 秒增益</span></li>
+            <li class="prize-item"><span class="chip tok-launch"></span><span class="prize-name" data-i18n="objLauncher">弹射器</span><span class="prize-val" data-i18n="objLauncherValue">碰触即弹射入空</span></li>
+            <li class="prize-item"><span class="chip tok-magnet"></span><span class="prize-name" data-i18n="objMagnet">磁吸金块</span><span class="prize-val" data-i18n="objMagnetValue">吸住金币成大堆</span></li>
+            <li class="prize-item"><span class="chip tok-tower"></span><span class="prize-name" data-i18n="objTower">金塔</span><span class="prize-val" data-i18n="objTowerValue">推落即大奖 + 回币 15 枚</span></li>
+          </ul>
+        </section>
+
+        <section class="plate">
+          <h3 class="plate-label" data-i18n="bestScore">最高分</h3>
+          <p class="readout"><b id="best-score" class="lcd">0</b></p>
+          <h3 class="plate-label" data-i18n="bestCascade">最高连锁</h3>
+          <p class="readout"><b id="best-cascade" class="lcd">0</b></p>
+          <h3 class="plate-label" data-i18n="bestDrops">最多落袋</h3>
+          <p class="readout"><b id="best-drops" class="lcd">0</b></p>
+        </section>
+      </aside>
+    </main>
+  </div>
+  <noscript><p data-i18n="noscript">需要启用 JavaScript 才能游玩推币机。</p></noscript>
+  <script type="module" src="js/main.mjs?v=dev"></script>
+</body>
+</html>

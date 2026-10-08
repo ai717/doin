@@ -1076,6 +1076,57 @@
         "title": "Tank Assault",
         "desc": "Top-down tank warfare on a field-command sand table: blast bricks open, bank shells off steel walls to hit around corners (the bounce can hit you too), and hold the 3-point eagle HQ while wiping out every hostile tank. A 24-stage three-star campaign across 6 chapters, endless last-stand waves, 8 limited-ammo breakthrough boards, plus kill-charged orders: Artillery, Fortify and Jamming."
       }
+    },
+    {
+      "title": "变色躲猫猫",
+      "slug": "chameleon",
+      "desc": "萤火丛林里的隐藏-发现博弈：变色龙混进 5×5 萤光集会，向邻域切色逐帧收敛伪装；猎手闭眼后扫探、圈记、指认，移动会留波纹破绽、融合度越低热度越高。6+6 角色轮换同屏双人 + 5 档 AI 单人猎手战役 + 练习观察台。",
+      "icon": "🦎",
+      "cover": "/assets/covers/chameleon.webp",
+      "tags": [
+        "益智",
+        "对战",
+        "策略"
+      ],
+      "url": "/chameleon/",
+      "en": {
+        "title": "Chameleon Hide",
+        "desc": "A hide-and-seek duel in a firefly jungle: a chameleon blends into a 5x5 glowing crowd, converging its hue frame by frame. The hunter closes their eyes, then scans, circles and accuses - movement leaves a fading ripple tell, and the lower the blend the hotter the read. 6+6 role-swap couch duel, a five-tier AI hunt campaign, and a practice blind."
+      }
+    },
+    {
+      "title": "绿呢桌球",
+      "slug": "billiards",
+      "desc": "英伦俱乐部绿呢球台：拉杆蓄力出杆，动量守恒物理把 15 颗球逐一送进黄铜袋口。10 局残局单人清台试炼限杆三星、同屏双人完整 8 球规则定组与手中球判罚、跟杆/刹车/侧旋三档走位、连击与台呢轨迹，开球线后自由摆位。",
+      "icon": "🎱",
+      "cover": "/assets/covers/billiards.webp",
+      "tags": [
+        "体育",
+        "物理",
+        "对战"
+      ],
+      "url": "/billiards/",
+      "en": {
+        "title": "Felt & Cue",
+        "desc": "An English-club green felt table: draw the cue back, release, and let momentum-perfect physics drop all fifteen balls into brass pockets. Ten solo layouts rated by par and stars, a same-screen duel with full 8-ball rules, group claiming and ball in hand, three spin gears for position play, combo runs and felt trails."
+      }
+    },
+    {
+      "title": "推币机",
+      "slug": "coin-pusher",
+      "desc": "街机投币机箱里的俯视推币物理：在投币滑轨上选落点，往复推板把整台金币推向出币唇口，边缘连锁每多落一枚倍率翻倍，第 19 枚触达 2¹⁸ = 262144 倍金卡。24 关四章战役（新手台 / 稀有币与奖励卡 / 机关台 / 金塔终章）、无限街机试手、同屏双人夺宝，120Hz 固定步长确定性物理可逐帧重放。",
+      "icon": "🪙",
+      "cover": "/assets/covers/coin-pusher.webp",
+      "tags": [
+        "街机",
+        "物理",
+        "休闲"
+      ],
+      "url": "/coin-pusher/",
+      "en": {
+        "title": "Coin Pusher",
+        "desc": "Top-down coin-pushing physics inside an arcade cabinet: pick a lane on the insert rail, let the reciprocating pusher shove the whole table toward the payout lip, and watch the edge cascade double the multiplier with every extra coin - the 19th caps at the 2^18 = 262144 jackpot. A 24-stage four-chapter campaign, endless arcade mode and a split-tray couch duel, all on 120Hz fixed-step deterministic physics you can replay frame by frame."
+      }
     }
   ]
 }

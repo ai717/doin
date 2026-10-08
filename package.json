@@ -72,6 +72,9 @@
     "test:tank": "node --test games/tank/tests/engine.test.mjs games/tank/tests/levels.test.mjs games/tank/tests/storage.test.mjs games/tank/tests/game.test.mjs games/tank/tests/i18n.test.mjs games/tank/tests/markup.test.mjs",
     "smoke:tank": "node games/tank/tests/smoke.mjs",
     "test:bomber": "node --test games/bomber/tests/engine.test.mjs games/bomber/tests/levels.test.mjs games/bomber/tests/storage.test.mjs games/bomber/tests/i18n.test.mjs games/bomber/tests/markup.test.mjs",
-    "test:invaders": "node --test games/invaders/tests/engine.test.mjs games/invaders/tests/score.test.mjs games/invaders/tests/storage.test.mjs games/invaders/tests/i18n.test.mjs games/invaders/tests/markup.test.mjs games/invaders/tests/game.test.mjs"
+    "test:invaders": "node --test games/invaders/tests/engine.test.mjs games/invaders/tests/score.test.mjs games/invaders/tests/storage.test.mjs games/invaders/tests/i18n.test.mjs games/invaders/tests/markup.test.mjs games/invaders/tests/game.test.mjs",
+    "test:chameleon": "node --test games/chameleon/tests/*.test.mjs",
+    "test:billiards": "node --test games/billiards/tests/engine.test.mjs games/billiards/tests/tables.test.mjs games/billiards/tests/rules.test.mjs games/billiards/tests/game.test.mjs games/billiards/tests/score.test.mjs games/billiards/tests/storage.test.mjs games/billiards/tests/i18n.test.mjs games/billiards/tests/markup.test.mjs",
+    "test:coin-pusher": "node --test games/coin-pusher/tests/engine.test.mjs games/coin-pusher/tests/score.test.mjs games/coin-pusher/tests/levels.test.mjs games/coin-pusher/tests/game.test.mjs games/coin-pusher/tests/storage.test.mjs games/coin-pusher/tests/i18n.test.mjs games/coin-pusher/tests/render.test.mjs games/coin-pusher/tests/markup.test.mjs"
   }
 }

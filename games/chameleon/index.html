@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>变色躲猫猫 · DOIN 在线小游戏</title>
+  <meta name="description" content="萤火丛林里的变色博弈：变色龙混进 5×5 萤光集会，向邻域切色收敛伪装；猎手闭眼后扫探、圈记、指认。谁先看穿谁？">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="css/style.css?v=dev">
+</head>
+<body>
+  <div id="game-app">
+    <header id="stage-bar">
+      <a href="/" id="back-home" class="bar-btn" data-i18n="back">返回门户</a>
+      <div class="bar-brand">
+        <span id="stage-title" data-i18n="appTitle">变色躲猫猫</span>
+        <span id="stage-kicker" data-i18n="appKicker">变色伪装 · 回合博弈</span>
+      </div>
+      <div class="stage-actions">
+        <button id="btn-levels" class="bar-btn" data-i18n="levels">猎手战役</button>
+        <button id="btn-sound" class="bar-btn" data-i18n-title="sound" data-i18n-aria="sound">🔊</button>
+        <button id="btn-lang" class="bar-btn" data-i18n="langSwitch">EN</button>
+        <button id="btn-help" class="bar-btn" data-i18n-title="help" data-i18n-aria="help">?</button>
+      </div>
+    </header>
+
+    <main id="stage-core">
+      <section id="journal">
+        <div id="journal-head">
+          <span id="phase-text" data-i18n="phaseReveal">揭幕观察</span>
+          <span id="round-badge"></span>
+        </div>
+
+        <div id="journal-body">
+          <div id="observe-frame">
+            <canvas id="observe-canvas" width="560" height="560"></canvas>
+            <div id="heat-readout" class="hidden">–</div>
+          </div>
+
+          <aside id="journal-side">
+            <div class="side-card" id="score-plate">
+              <div class="plate-title" data-i18n="hudScore">比分</div>
+              <div id="duel-score">
+                <div class="score-row"><span id="score-p1-name" data-i18n="hudP1">玩家 1</span><b id="score-p1">0</b></div>
+                <div class="score-row"><span id="score-p2-name" data-i18n="hudP2">玩家 2</span><b id="score-p2">0</b></div>
+              </div>
+              <div id="hunt-score" class="hidden">
+                <div class="score-row"><span data-i18n="resultStars">猎手评级</span><b id="hunt-stars">★★★</b></div>
+              </div>
+            </div>
+
+            <div class="side-card" id="readout-plate">
+              <div class="read-row"><span data-i18n="hudBlend">融合度</span><b id="blend-value">90</b></div>
+              <div class="read-row"><span data-i18n="hudProbe">侦察点</span><b id="probes-value">2</b></div>
+            </div>
+
+            <div class="side-card" id="hunter-tools">
+              <button id="btn-scan" class="tool-btn" data-i18n="actScan">扫探</button>
+              <button id="btn-accuse" class="tool-btn tool-danger" data-i18n="actAccuse">指认</button>
+              <button id="btn-pass" class="tool-btn tool-ghost" data-i18n="actPass">放弃</button>
+            </div>
+
+            <div class="side-card" id="camo-tools">
+              <div class="plate-title" data-i18n="actColor">变色盘</div>
+              <div id="color-pad"></div>
+              <button id="btn-refine" class="tool-btn" data-i18n="actRefine">精调</button>
+            </div>
+          </aside>
+        </div>
+
+        <div id="journal-foot">
+          <span id="foot-hint" data-i18n="curtainClose">侦察员请闭眼</span>
+        </div>
+
+        <div id="curtain" class="hidden">
+          <span id="curtain-role" data-i18n="curtainClose">侦察员请闭眼</span>
+          <b id="curtain-count">3</b>
+        </div>
+      </section>
+    </main>
+
+    <div id="panel-ready" class="overlay">
+      <div class="sheet">
+        <div class="sheet-kicker" id="ready-kicker" data-i18n="readyKicker">萤火丛林侦察手账</div>
+        <h2 class="sheet-title" id="ready-title" data-i18n="readyTitle">变色躲猫猫</h2>
+        <p class="sheet-desc" id="ready-desc" data-i18n="readyDesc"></p>
+        <div class="mode-list">
+          <button class="mode-btn" id="btn-mode-duel">
+            <span class="mode-name" data-i18n="modeDuel">同屏双人</span>
+            <span class="mode-desc" data-i18n="modeDuelDesc">6+6 回合角色轮换。</span>
+          </button>
+          <button class="mode-btn" id="btn-mode-hunt">
+            <span class="mode-name" data-i18n="modeHunt">单人猎手</span>
+            <span class="mode-desc" data-i18n="modeHuntDesc">5 档 AI 变色龙。</span>
+          </button>
+          <button class="mode-btn" id="btn-mode-practice">
+            <span class="mode-name" data-i18n="modePractice">练习观察台</span>
+            <span class="mode-desc" data-i18n="modePracticeDesc">自己藏、自己找。</span>
+          </button>
+        </div>
+        <p class="sheet-hint" id="ready-hint" data-i18n="readyHint"></p>
+      </div>
+    </div>
+
+    <div id="panel-levels" class="overlay hidden">
+      <div class="sheet sheet-wide">
+        <div class="sheet-kicker" data-i18n="levelsTitle">猎人战役</div>
+        <p class="sheet-desc" data-i18n="levelsNote"></p>
+        <div id="levels-body"></div>
+        <div class="sheet-actions">
+          <button id="btn-levels-close" class="ghost-btn" data-i18n="btnReadyModes">换模式</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="panel-help" class="overlay hidden">
+      <div class="sheet sheet-wide">
+        <div class="sheet-kicker" data-i18n="helpTitle">玩法说明</div>
+        <ul class="help-list">
+          <li data-i18n="help1"></li>
+          <li data-i18n="help2"></li>
+          <li data-i18n="help3"></li>
+          <li data-i18n="help4"></li>
+          <li data-i18n="help5"></li>
+          <li data-i18n="help6"></li>
+          <li data-i18n="help7"></li>
+          <li data-i18n="help8"></li>
+        </ul>
+        <div class="sheet-actions">
+          <button id="btn-help-close" class="big-btn" data-i18n="helpClose">我知道了</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="panel-result" class="overlay hidden">
+      <div class="sheet">
+        <div class="sheet-kicker" id="result-kicker">—</div>
+        <h2 class="sheet-title" id="result-title">—</h2>
+        <div id="result-body" class="result-rows"></div>
+        <div class="sheet-actions">
+          <button id="btn-again" class="big-btn" data-i18n="btnAgain">再来一局</button>
+          <button id="btn-next" class="ghost-btn hidden" data-i18n="btnNextLevel">下一关</button>
+          <button id="btn-levels2" class="ghost-btn" data-i18n="btnLevels">猎手战役</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="toast" class="hidden"></div>
+  </div>
+
+  <noscript><p>需要启用 JavaScript 才能游玩。</p></noscript>
+  <script type="module" src="js/main.mjs?v=dev"></script>
+</body>
+</html>
