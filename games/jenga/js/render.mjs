@@ -1,0 +1,560 @@
+// 叠叠乐 · 等轴 2.5D 木塔舞台（Canvas 2D，唯一碰绘制的层）
+//
+// 投影：世界 (x, y, z) 绕竖轴转 yaw 得到 (X', Z')，再压成屏幕
+//   sx = (X' - Z') * scale
+//   sy = (X' + Z') * scale * ISO_Y - y * scale * ISO_UP   （y 为离塔垫面的高度）
+// 画家算法：先按 X'+Z' 升序排远近，同深度再按高度升序 —— 上层压下层、近处压远处。
+//
+// 塌落阶段改用块的物理位姿 px/py/pz + rx/rz 建模，跌落、翻滚与尘屑都在这一层表现。
+
+import {
+  BLOCK_W, BLOCK_L, BLOCK_H, PAD_HALF, STATUS, PER_LAYER,
+  layerBox, axisOfLayer, layerCount, towerBlocks, slotOffset, tiltOf
+} from "./engine.mjs";
+
+const ISO_Y = 0.5;
+const ISO_UP = 1;
+const DEPTH_SORT_EPS = 1e-4;
+
+const WOOD = {
+  top: [186, 132, 84],
+  sideA: [150, 98, 58],
+  sideB: [116, 73, 42],
+  edge: [78, 48, 28]
+};
+
+const COLORS = {
+  padDark: [58, 36, 22],
+  padLight: [104, 68, 42],
+  chalk: [239, 236, 224],
+  dust: [214, 178, 128],
+  gold: [255, 206, 106],
+  glow: [255, 226, 160]
+};
+
+function rgb(c, alpha = 1, mul = 1) {
+  const r = Math.min(255, Math.round(c[0] * mul));
+  const g = Math.min(255, Math.round(c[1] * mul));
+  const b = Math.min(255, Math.round(c[2] * mul));
+  return alpha >= 1 ? `rgb(${r},${g},${b})` : `rgba(${r},${g},${b},${alpha})`;
+}
+
+export function createRenderer(canvas) {
+  const ctx = canvas.getContext ? canvas.getContext("2d") : null;
+  const view = { yaw: Math.PI * 0.25, zoom: 1, scale: 24, cx: 0, cy: 0, w: 0, h: 0 };
+  let reduced = false;
+  const dust = [];
+  let shakePhase = 0;
+
+  function resize() {
+    if (!ctx) return view;
+    const rect = canvas.getBoundingClientRect?.();
+    const cssW = Math.max(320, Math.round(rect?.width || canvas.clientWidth || 720));
+    const cssH = Math.max(240, Math.round(rect?.height || canvas.clientHeight || 560));
+    const dpr = Math.min(globalThis.devicePixelRatio || 1, 2);
+    canvas.width = Math.round(cssW * dpr);
+    canvas.height = Math.round(cssH * dpr);
+    view.w = cssW;
+    view.h = cssH;
+    view.cx = cssW / 2;
+    // 底层 tile 的前伸折算 ~1.8 单位，留出上下余量让 18~27 层都装得下
+    const idealLayers = 23;
+    view.scale = (cssH * 0.86) / (idealLayers * BLOCK_H * ISO_UP + 2.4);
+    view.dpr = dpr;
+    if (ctx.setTransform) ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    view.cy = cssH - cssH * 0.12;
+    return view;
+  }
+
+  function project(x, y, z) {
+    const c = Math.cos(view.yaw);
+    const s = Math.sin(view.yaw);
+    const rx = x * c - z * s;
+    const rz = x * s + z * c;
+    return {
+      x: view.cx + (rx - rz) * view.scale * view.zoom,
+      y: view.cy + ((rx + rz) * ISO_Y - y * ISO_UP) * view.scale * view.zoom
+    };
+  }
+
+  function depthOf(x, z) {
+    const c = Math.cos(view.yaw);
+    const s = Math.sin(view.yaw);
+    return (x * c - z * s) + (x * s + z * c);
+  }
+
+  function faceNormalsVisible() {
+    const c = Math.cos(view.yaw);
+    const s = Math.sin(view.yaw);
+    return { x: c + s, z: c - s };
+  }
+
+  // ------------------------------------------------------------ 块几何
+
+  function blockBox(state, block) {
+    if (state.status === STATUS.COLLAPSE || state.status === STATUS.LOST || !block.inTower) {
+      const hy = BLOCK_H / 2;
+      return { x0: -BLOCK_L / 2, x1: BLOCK_L / 2, z0: -BLOCK_W / 2, z1: BLOCK_W / 2, yLow: -hy, yHigh: hy, pos: [block.px, block.py, block.pz], rot: true };
+    }
+    const box = layerBox(state, block.layer, block.slot);
+    if (!box) return null;
+    const long = axisOfLayer(block.layer) === 0;
+    return {
+      x0: box.x0, x1: box.x1, z0: box.z0, z1: box.z1,
+      yLow: box.y, yHigh: box.y + BLOCK_H,
+      pos: [(box.x0 + box.x1) / 2, box.y + BLOCK_H / 2, (box.z0 + box.z1) / 2],
+      rot: false,
+      long
+    };
+  }
+
+  function cornersOf(box, state) {
+    const half = {
+      hx: (box.x1 - box.x0) / 2,
+      hz: (box.z1 - box.z0) / 2,
+      hy: (box.yHigh - box.yLow) / 2
+    };
+    const centerY = (box.yHigh + box.yLow) / 2;
+    const pts = [];
+    const local = [
+      [-1, -1, -1], [1, -1, -1], [1, 1, -1], [-1, 1, -1],
+      [-1, -1, 1], [1, -1, 1], [1, 1, 1], [-1, 1, 1]
+    ];
+    let spinX = 0;
+    let spinZ = 0;
+    if (box.rot) {
+      spinX = box.spinX ?? 0;
+      spinZ = box.spinZ ?? 0;
+    }
+    for (const [sx, sy, sz] of local) {
+      let lx = sx * half.hx;
+      let ly = sy * half.hy;
+      let lz = sz * half.hz;
+      if (spinZ) {
+        const cz = Math.cos(spinZ);
+        const sz2 = Math.sin(spinZ);
+        const nx = lx * cz - ly * sz2;
+        const ny = lx * sz2 + ly * cz;
+        lx = nx;
+        ly = ny;
+      }
+      if (spinX) {
+        const cx2 = Math.cos(spinX);
+        const sx2 = Math.sin(spinX);
+        const ny = ly * cx2 - lz * sx2;
+        const nz = ly * sx2 + lz * cx2;
+        ly = ny;
+        lz = nz;
+      }
+      const wx = box.pos[0] + lx;
+      const wy = box.pos[1] + ly;
+      const wz = box.pos[2] + lz;
+      const world = state && !box.rot ? tilt(state, wx, wy, wz) : [wx, wy, wz];
+      pts.push(project(world[0], world[1], world[2]));
+    }
+    return pts;
+    void centerY;
+  }
+
+  function tilt(state, x, y, z) {
+    return [x + y * Math.tan(state.sway.tx), y, z + y * Math.tan(state.sway.tz)];
+  }
+
+  // ------------------------------------------------------------ 绘制
+
+  function drawPolygon(points, fill, stroke) {
+    ctx.beginPath();
+    ctx.moveTo(points[0].x, points[0].y);
+    for (let i = 1; i < points.length; i += 1) ctx.lineTo(points[i].x, points[i].y);
+    ctx.closePath();
+    ctx.fillStyle = fill;
+    if (stroke) {
+      ctx.strokeStyle = stroke;
+      ctx.lineWidth = 1;
+      ctx.stroke();
+    }
+    ctx.fill();
+  }
+
+  function pointInPolygon(p, poly) {
+    let inside = false;
+    for (let i = 0, j = poly.length - 1; i < poly.length; j = i, i += 1) {
+      const a = poly[i];
+      const b = poly[j];
+      if ((a.y > p.y) !== (b.y > p.y) && p.x < ((b.x - a.x) * (p.y - a.y)) / (b.y - a.y) + a.x) {
+        inside = !inside;
+      }
+    }
+    return inside;
+  }
+
+  function drawPad(state) {
+    const segs = 48;
+    const ring = [];
+    let min = { x: Infinity, y: Infinity };
+    let max = { x: -Infinity, y: -Infinity };
+    for (let i = 0; i < segs; i += 1) {
+      const a = (i / segs) * Math.PI * 2;
+      const p = project(Math.cos(a) * PAD_HALF, BLOCK_H * 0.02, Math.sin(a) * PAD_HALF);
+      ring.push(p);
+      min = { x: Math.min(min.x, p.x), y: Math.min(min.y, p.y) };
+      max = { x: Math.max(max.x, p.x), y: Math.max(max.y, p.y) };
+    }
+    const grad = ctx.createLinearGradient(min.x, min.y, max.x, max.y);
+    grad.addColorStop(0, rgb(COLORS.padLight));
+    grad.addColorStop(1, rgb(COLORS.padDark));
+    drawPolygon(ring, grad, rgb(WOOD.edge, 0.55));
+    // 塔垫上的墨斗十字线：既是装饰，也标出质心基准原点
+    ctx.strokeStyle = rgb(COLORS.chalk, 0.24);
+    ctx.lineWidth = 1;
+    for (const [dx, dz] of [[1, 0], [0, 1]]) {
+      const a = project(-dx * PAD_HALF, BLOCK_H * 0.03, -dz * PAD_HALF);
+      const b = project(dx * PAD_HALF, BLOCK_H * 0.03, dz * PAD_HALF);
+      ctx.beginPath();
+      ctx.moveTo(a.x, a.y);
+      ctx.lineTo(b.x, b.y);
+      ctx.stroke();
+    }
+    void state;
+  }
+
+  function drawShadow(state) {
+    const blocks = towerBlocks(state);
+    if (!blocks.length) return;
+    const top = Math.max(...blocks.map((b) => b.py));
+    const alpha = 0.22 - Math.min(0.12, top * 0.002);
+    const r = PAD_HALF * 1.15 * view.scale * view.zoom;
+    const c = project(0, 0, 0);
+    const grad = ctx.createRadialGradient(c.x, c.y, r * 0.2, c.x, c.y, r);
+    grad.addColorStop(0, `rgba(28,16,8,${alpha.toFixed(3)})`);
+    grad.addColorStop(1, "rgba(28,16,8,0)");
+    ctx.fillStyle = grad;
+    ctx.beginPath();
+    ctx.ellipse(c.x, c.y, r, r * ISO_Y, 0, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  function topFace(pts) {
+    return [pts[4], pts[5], pts[6], pts[7]];
+  }
+
+  function drawBlock(state, block, opts) {
+    const box = blockBox(state, block);
+    if (!box) return;
+    const marked = opts.marked?.has(block.id);
+    const hovered = opts.hoverId === block.id;
+    const focused = opts.focusId === block.id;
+    const pullable = opts.pullableIds?.has(block.id);
+    const tone = 0.9 + ((block.id * 37) % 11) * 0.014;
+    const boost = hovered ? 1.22 : focused ? 1.14 : pullable ? 1.06 : 1;
+    const pts = cornersOf({ ...box, spinX: block.rx, spinZ: block.rz }, state);
+    const vis = faceNormalsVisible();
+    const half = {
+      hx: (box.x1 - box.x0) / 2,
+      hz: (box.z1 - box.z0) / 2,
+      hy: BLOCK_H / 2
+    };
+
+    // 朝向相机的两个侧面（由 yaw 决定选哪两面），先画侧面再盖顶面
+    const faces = [
+      {
+        pts: vis.x >= 0 ? [pts[1], pts[2], pts[6], pts[5]] : [pts[0], pts[3], pts[7], pts[4]],
+        color: WOOD.sideA
+      },
+      {
+        pts: vis.z >= 0 ? [pts[3], pts[2], pts[6], pts[7]] : [pts[0], pts[1], pts[5], pts[4]],
+        color: WOOD.sideB
+      }
+    ];
+
+    for (const face of faces) {
+      drawPolygon(face.pts, rgb(face.color, 1, tone * boost * 0.92), rgb(WOOD.edge, 0.45));
+    }
+    drawPolygon(topFace(pts), rgb(WOOD.top, 1, tone * boost), rgb(WOOD.edge, 0.5));
+
+    // 木纹：顶面沿长轴两道细线，成本极低却让"平的电缆面"不再是塑料感
+    if (half.hx > half.hz || half.hz > half.hx) {
+      const along = half.hx > half.hz;
+      ctx.save();
+      ctx.globalAlpha = 0.16;
+      ctx.strokeStyle = rgb(WOOD.edge, 1);
+      ctx.lineWidth = 1;
+      for (const frac of [-0.22, 0.24]) {
+        const a = along
+          ? project(...tilt(state, box.pos[0] + frac * half.hx, box.yHigh + 0.01, box.pos[2] - half.hz * 0.55))
+          : project(...tilt(state, box.pos[0] - half.hx * 0.55, box.yHigh + 0.01, box.pos[2] + frac * half.hz));
+        const b = along
+          ? project(...tilt(state, box.pos[0] + frac * half.hx, box.yHigh + 0.01, box.pos[2] + half.hz * 0.55))
+          : project(...tilt(state, box.pos[0] + half.hx * 0.55, box.yHigh + 0.01, box.pos[2] + frac * half.hz));
+        ctx.beginPath();
+        ctx.moveTo(a.x, a.y);
+        ctx.lineTo(b.x, b.y);
+        ctx.stroke();
+      }
+      ctx.restore();
+    }
+
+    if (marked) drawChalkMark(state, box, pts);
+    if (hovered || focused) drawSoftGlow(pts, hovered ? 0.55 : 0.4, focused && !hovered ? COLORS.gold : COLORS.glow);
+  }
+
+  function drawChalkMark(state, box, pts) {
+    const mid = project(...tilt(state, box.pos[0], box.yHigh + 0.02, box.pos[2]));
+    const rx = view.scale * view.zoom * 0.42;
+    ctx.save();
+    ctx.strokeStyle = rgb(COLORS.chalk, 0.82);
+    ctx.lineWidth = Math.max(1.4, view.scale * 0.09);
+    ctx.beginPath();
+    ctx.ellipse(mid.x, mid.y, rx, rx * ISO_Y, 0, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.restore();
+    void pts;
+  }
+
+  // 无边界径向柔光：绝不用硬边描边圈
+  function drawSoftGlow(pts, alpha, color) {
+    let cx2 = 0;
+    let cy2 = 0;
+    for (const p of pts) {
+      cx2 += p.x;
+      cy2 += p.y;
+    }
+    cx2 /= pts.length;
+    cy2 /= pts.length;
+    let r = 0;
+    for (const p of pts) r = Math.max(r, Math.hypot(p.x - cx2, p.y - cy2));
+    const grad = ctx.createRadialGradient(cx2, cy2, r * 0.15, cx2, cy2, r * 1.5);
+    grad.addColorStop(0, rgb(color, alpha));
+    grad.addColorStop(1, rgb(color, 0));
+    ctx.fillStyle = grad;
+    ctx.beginPath();
+    ctx.arc(cx2, cy2, r * 1.5, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  function drawTopSlots(state, opts) {
+    const top = state.layers[layerCount(state) - 1];
+    if (!top) return;
+    const show = state.status === STATUS.HOLDING || opts.alwaysSlots;
+    if (!show) return;
+    const axisX = axisOfLayer(layerCount(state) - 1) === 0;
+    const line = topLineBoxes(state, top, axisX);
+    line.forEach((entry, i) => {
+      const active = opts.slotIds?.includes(entry.slot);
+      const hovered = opts.hoverSlot === entry.slot;
+      const alpha = active ? (hovered ? 0.72 : 0.5) : 0.16;
+      const fill = hovered ? COLORS.gold : COLORS.glow;
+      drawPolygon(entry.pts, rgb(fill, alpha));
+      if (active) {
+        const mid = project(...tilt(state, entry.cx, entry.y + 0.01, entry.cz));
+        ctx.save();
+        ctx.fillStyle = rgb(COLORS.chalk, 0.7);
+        ctx.font = `${Math.round(view.scale * 0.5)}px system-ui, sans-serif`;
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.fillText(String(entry.slot + 1), mid.x, mid.y);
+        ctx.restore();
+      }
+      void i;
+    });
+  }
+
+  function topLineBoxes(state, top, axisX) {
+    const layerIdx = layerCount(state) - 1;
+    const baseY = layerIdx * BLOCK_H;
+    const out = [];
+    for (let slot = 0; slot < PER_LAYER; slot += 1) {
+      if (top.slots[slot] != null) continue;
+      const off = slotOffset(slot);
+      const cx = axisX ? (top.ox || 0) : off + (top.ox || 0);
+      const cz = axisX ? off + (top.oz || 0) : (top.oz || 0);
+      const hx = axisX ? BLOCK_L / 2 : BLOCK_W / 2;
+      const hz = axisX ? BLOCK_W / 2 : BLOCK_L / 2;
+      const y = baseY;
+      const corners = [
+        [-hx, -hz], [hx, -hz], [hx, hz], [-hx, hz]
+      ].map(([dx, dz]) => project(...tilt(state, cx + dx, y, cz + dz)));
+      out.push({ slot, pts: corners, cx, cz, y });
+    }
+    return out;
+  }
+
+  function drawHeld(state, opts) {
+    if (state.held == null) return null;
+    const block = state.blocks[state.held];
+    const topY = layerCount(state) * BLOCK_H + 1.1;
+    const long = axisOfLayer(layerCount(state)) === 0;
+    const hx = long ? BLOCK_W / 2 : BLOCK_L / 2;
+    const hz = long ? BLOCK_L / 2 : BLOCK_W / 2;
+    const bob = reduced ? 0 : Math.sin(performance.now?.() / 420 || 0) * 0.06;
+    const corners = [
+      [-hx, -hz], [hx, -hz], [hx, hz], [-hx, hz]
+    ].map(([dx, dz]) => project(dx, topY + bob, dz));
+    drawPolygon(corners, rgb(WOOD.top, 0.92, 1.06), rgb(WOOD.edge, 0.5));
+    drawSoftGlow(corners, 0.34, COLORS.glow);
+    void block;
+    void opts;
+    return corners;
+  }
+
+  // ------------------------------------------------------------ 木屑微尘
+
+  function spawnDust(state, danger, dt) {
+    if (reduced) return;
+    const rate = 2 + danger * 22;
+    let budget = rate * dt;
+    while (budget > 0) {
+      if (Math.random() < Math.min(1, budget)) {
+        const blocks = towerBlocks(state);
+        const anchor = blocks.length ? blocks[Math.floor(Math.random() * blocks.length)] : null;
+        const yBase = anchor ? anchor.py : BLOCK_H;
+        dust.push({
+          x: (Math.random() - 0.5) * PAD_HALF * 1.6,
+          y: yBase * (0.35 + Math.random() * 0.65),
+          z: (Math.random() - 0.5) * PAD_HALF * 1.6,
+          vy: -0.25 - Math.random() * 0.5,
+          drift: (Math.random() - 0.5) * 0.3,
+          life: 1.6 + Math.random() * 1.8,
+          age: 0,
+          size: 1 + Math.random() * 2.2
+        });
+      }
+      budget -= 1;
+    }
+    for (let i = dust.length - 1; i >= 0; i -= 1) {
+      const p = dust[i];
+      p.age += dt;
+      p.y += p.vy * dt;
+      p.x += p.drift * dt;
+      if (p.y <= 0 || p.age > p.life) dust.splice(i, 1);
+    }
+    if (dust.length > 260) dust.splice(0, dust.length - 260);
+  }
+
+  function drawDust(state) {
+    ctx.save();
+    for (const p of dust) {
+      const s = project(p.x, Math.max(0.02, p.y), p.z);
+      const alpha = 0.5 * (1 - p.age / p.life);
+      ctx.fillStyle = rgb(COLORS.dust, alpha.toFixed(3));
+      ctx.beginPath();
+      ctx.arc(s.x, s.y, Math.max(0.7, p.size * view.scale * 0.035), 0, Math.PI * 2);
+      ctx.fill();
+    }
+    ctx.restore();
+    void state;
+  }
+
+  // ------------------------------------------------------------ 排序与绘制入口
+
+  function orderedBlocks(state) {
+    const list = state.blocks.map((block) => {
+      const box = blockBox(state, block);
+      const pos = box ? box.pos : [block.px, block.py, block.pz];
+      return { block, depth: depthOf(pos[0], pos[2]), y: pos[1] };
+    });
+    list.sort((a, b) => (a.depth - b.depth) || (a.y - b.y));
+    return list;
+  }
+
+  function draw(state, opts = {}) {
+    if (!ctx) return;
+    const dt = opts.dt ?? 1 / 60;
+    const danger = Math.min(1, Math.max(0, opts.danger ?? state.danger ?? 0));
+    ctx.clearRect(0, 0, view.w, view.h);
+
+    // 判危微颤：频率与幅度随 danger 爬升（reduced-motion 下完全静止）
+    let shakeX = 0;
+    let shakeY = 0;
+    if (!reduced && danger > 0.35) {
+      shakePhase += dt * (4 + danger * 14);
+      const amp = (danger - 0.35) * 3.4;
+      shakeX = Math.sin(shakePhase * 2.3) * amp;
+      shakeY = Math.cos(shakePhase * 1.7) * amp * 0.6;
+    }
+    ctx.save();
+    ctx.translate(shakeX, shakeY);
+
+    drawPad(state);
+    drawShadow(state);
+
+    const ordered = orderedBlocks(state);
+    for (const entry of ordered) {
+      if (entry.block.inTower || state.status === STATUS.COLLAPSE || state.status === STATUS.LOST) {
+        drawBlock(state, entry.block, opts);
+      }
+    }
+    drawTopSlots(state, opts);
+    drawHeld(state, opts);
+    spawnDust(state, danger, dt);
+    drawDust(state);
+    ctx.restore();
+
+    if (opts.spire && !reduced) drawSpireGlow();
+    return { count: ordered.length, dust: dust.length };
+  }
+
+  function drawSpireGlow() {
+    const grad = ctx.createRadialGradient(view.cx, view.cy - view.h * 0.3, view.w * 0.1, view.cx, view.cy - view.h * 0.2, view.w * 0.62);
+    grad.addColorStop(0, rgb(COLORS.gold, 0.28));
+    grad.addColorStop(1, rgb(COLORS.gold, 0));
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, view.w, view.h);
+  }
+
+  // ------------------------------------------------------------ 命中测试
+
+  function hitTest(px, py, state, opts = {}) {
+    const point = { x: px, y: py };
+    // 先看塔顶槽位（落位点在最上层之上，永远优先）
+    const top = state.layers[layerCount(state) - 1];
+    if (top && (state.status === STATUS.HOLDING || opts.alwaysSlots)) {
+      const axisX = axisOfLayer(layerCount(state) - 1) === 0;
+      for (const entry of topLineBoxes(state, top, axisX)) {
+        if (pointInPolygon(point, entry.pts)) return { kind: "slot", slot: entry.slot };
+      }
+    }
+    const ordered = orderedBlocks(state);
+    for (let i = ordered.length - 1; i >= 0; i -= 1) {
+      const block = ordered[i].block;
+      if (!(block.inTower || state.status === STATUS.COLLAPSE || state.status === STATUS.LOST)) continue;
+      const box = blockBox(state, block);
+      if (!box) continue;
+      const pts = cornersOf({ ...box, spinX: block.rx, spinZ: block.rz }, state);
+      if (pointInPolygon(point, topFace(pts))) return { kind: "block", layer: block.layer, slot: block.slot, id: block.id };
+      const vis = faceNormalsVisible();
+      const sideA = vis.x >= 0 ? [pts[1], pts[2], pts[6], pts[5]] : [pts[0], pts[3], pts[7], pts[4]];
+      const sideB = vis.z >= 0 ? [pts[3], pts[2], pts[6], pts[7]] : [pts[0], pts[1], pts[5], pts[4]];
+      if (pointInPolygon(point, sideA) || pointInPolygon(point, sideB)) {
+        return { kind: "block", layer: block.layer, slot: block.slot, id: block.id };
+      }
+    }
+    return null;
+  }
+
+  return {
+    resize,
+    setReduced(value) {
+      reduced = Boolean(value);
+    },
+    rotate(delta) {
+      view.yaw += delta;
+      if (view.yaw > Math.PI * 2) view.yaw -= Math.PI * 2;
+      if (view.yaw < 0) view.yaw += Math.PI * 2;
+    },
+    zoomBy(factor) {
+      view.zoom = Math.min(1.9, Math.max(0.62, view.zoom * factor));
+    },
+    setYaw(value) {
+      view.yaw = ((value % (Math.PI * 2)) + Math.PI * 2) % (Math.PI * 2);
+    },
+    getView: () => ({ yaw: view.yaw, zoom: view.zoom, scale: view.scale, w: view.w, h: view.h }),
+    getTiltDeg: (state) => (tiltOf(state) * 180) / Math.PI,
+    clearDust: () => {
+      dust.length = 0;
+    },
+    draw,
+    hitTest,
+    project: (x, y, z) => project(x, y, z)
+  };
+}

@@ -1095,6 +1095,23 @@
       }
     },
     {
+      "title": "六边蜜筑",
+      "slug": "hexfit",
+      "desc": "蜂巢六边网格三轴满行消除：把蜜蜡块填进 61 格蜂巢棋盘，凑满 0°/60°/120° 任意一条蜂房行就蜜流消除。一次消 N 行倍率 2^(N-1)，消 4 行触发蜜流狂潮连击连乘，极限 2^18 = 262144 倍蜂王浆金标。单人章节 24 关 + 经典生存 + 同屏双人蜂战。",
+      "icon": "🍯",
+      "cover": "/assets/covers/hexfit.webp",
+      "tags": [
+        "益智",
+        "消除",
+        "策略"
+      ],
+      "url": "/hexfit/",
+      "en": {
+        "title": "Hexfit",
+        "desc": "Tri-axis honeycomb row clear: drop wax pieces into a 61-cell hex board and fill any full row along the 0/60/120 degree axes to melt it away. Clear N rows for multiplier 2^(N-1); clear 4+ to trigger Honey Rush with stacking x2 combos, capping at 2^18 = 262144x Royal Jelly. 24-level campaign, endless survival, and a shared-hive couch duel."
+      }
+    },
+    {
       "title": "绿呢桌球",
       "slug": "billiards",
       "desc": "英伦俱乐部绿呢球台：拉杆蓄力出杆，动量守恒物理把 15 颗球逐一送进黄铜袋口。10 局残局单人清台试炼限杆三星、同屏双人完整 8 球规则定组与手中球判罚、跟杆/刹车/侧旋三档走位、连击与台呢轨迹，开球线后自由摆位。",
@@ -1126,6 +1143,23 @@
       "en": {
         "title": "Coin Pusher",
         "desc": "Top-down coin-pushing physics inside an arcade cabinet: pick a lane on the insert rail, let the reciprocating pusher shove the whole table toward the payout lip, and watch the edge cascade double the multiplier with every extra coin - the 19th caps at the 2^18 = 262144 jackpot. A 24-stage four-chapter campaign, endless arcade mode and a split-tray couch duel, all on 120Hz fixed-step deterministic physics you can replay frame by frame."
+      }
+    },
+    {
+      "title": "叠叠乐",
+      "slug": "jenga",
+      "desc": "标准 54 块正交交错木塔的结构博弈：抽出端头露出的木块再叠到塔顶——抽块削的是支撑、伤在塔底，堆叠移的是质心、险在塔顶。四档判倒（底面 4 角支撑采样 / 质心越出塔垫 / 倾角 3° / 悬臂 40%）逐帧审计，连击倍率 ×3 翻叠、封顶 3¹⁸ = 387420489 触发木塔封神。4 章 24 关极限塔 + 同屏双人三局两胜 + 残局解谜四选一，承重块与阵风机逐章引入，120Hz 固定步长确定性物理可逐帧重放。",
+      "icon": "🪵",
+      "cover": "/assets/covers/jenga.webp",
+      "tags": [
+        "益智",
+        "物理",
+        "休闲"
+      ],
+      "url": "/jenga/",
+      "en": {
+        "title": "Jenga Tower",
+        "desc": "Structural brinkmanship on a standard 54-block interlocked tower: pull an exposed end block out and stack it on top - pulling eats the support and hurts the base, stacking moves the center of mass and endangers the top. Four collapse checks audit every frame (four support corners, center of mass leaving the pad, three-degree lean, forty percent overhang), while the streak multiplier triples up to x3^18 = 387,420,489 and the Spire Mark. A 24-level campaign across four chapters, a same-screen best-of-three duel and a four-choice safety riddle, with load blocks and a gust fan introduced chapter by chapter, all on 120Hz fixed-step deterministic physics you can replay frame by frame."
       }
     }
   ]
