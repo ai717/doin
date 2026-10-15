@@ -65,6 +65,7 @@ export const CHUTE_SPREAD = 0.34;     // 出口横向抖动 ±
 export const CHUTE_SIDE = 0.45;       // 出口横向初速 ±
 export const DROP_GRAVITY = 10.0;     // 通道内沿 +y 的重力加速度
 export const DROP_MAX_AIR = 2.4;      // 通道内最长飞行时长（秒）：超时即放弃挡杆直落，绝不瞬移
+export const CHUTE_DAMP = 4.2;        // 通道内横向阻尼：金属滑道，币被杆弹开后很快停止横滑
 export const DROP_SPREAD_BONUS = 0.0; // 预留：投币口磨损导致的额外散布
 
 // ---- 遮挡杆阵（挡杆：币下落随机轨迹与位置）----
@@ -84,6 +85,9 @@ export const PEG_JITTER = 0.34;       // 每根杆的确定性位置抖动（破
 export const PEG_BOUNCE = 0.45;       // 杆体弹性
 // 近正心命中是不稳定平衡：真实机台上币会从任一侧滑开，这里按 (币 id + 杆序号) 确定性择向。
 export const PEG_DEAD_ZONE = 0.24;
+// 多杆夹持（币同时顶住两根杆）时的脱困横速：杆缝净空小于币径本身就是病态几何，
+// 币必须能被挤出来而不是悬死在缝里。
+export const PEG_SLIDE = 1.6;
 
 // ---- 两侧丢币沟槽（真实机台 house edge 的主要来源）----
 // 台面左右各留一条沟槽带：币心进入带内后只受一条"低挡边"的软回推，
@@ -106,7 +110,9 @@ export const CARD_H = 0.7;
 export const CARD_PAD = 0.05;
 export const LAUNCHER_R = 0.85;
 export const LAUNCH_SPEED = 4.2;
-export const LAUNCH_AIR = 0.6;
+// 腾空时长必须与抛掷抛物线自洽：从出手到落回台面 t = 2·v/g。
+// 曾经写死 0.6s（短于抛物线周期），币在"还在上升"时就被按回台面 → 一次可见的位置突跳。
+export const LAUNCH_AIR = (2 * LAUNCH_SPEED) / DROP_GRAVITY;
 export const LAUNCH_COOLDOWN = 2.2;
 // 弹射器必须被"正在被推动的金币"撞到才触发：静置在弹射器上的初始铺币不得凭空弹射，
 // 否则开局静置就能白拿落袋分（也破坏了"开局台面静止"这一不变量）。
@@ -475,9 +481,20 @@ function applyFriction(state, dt) {
 }
 
 // 通道内下落：沿 +y 的重力加速（投币口的自由落体）
+// 横向单独强阻尼：真实投币滑道是金属管，币被挡杆弹开后很快就会停止横滑。
+// 曾经只给 0.25/s 的"空气阻尼"，币被杆弹一下能横漂 3 秒、净偏移最多 4 个单位
+// （13 宽的台面 = 30%）——这就是用户看到的"金币左右漂移、投币位置不准"。
 function applyDropGravity(state, dt) {
+  const k = Math.exp(-CHUTE_DAMP * dt);
   for (const coin of state.coins) {
-    if (coin.chute > 0) coin.vy += DROP_GRAVITY * dt;
+    if (coin.chute > 0) {
+      coin.vx *= k;
+      if (Math.abs(coin.vx) < SPEED_EPS) coin.vx = 0;
+      coin.vy += DROP_GRAVITY * dt;
+    } else if (coin.air > 0) {
+      // 腾空币同样受重力：弹射是"抛掷"，不是无重力的平移漂浮。
+      coin.vy += DROP_GRAVITY * dt;
+    }
   }
 }
 
@@ -540,6 +557,11 @@ function resolvePegs(state) {
   if (state.pegs.length === 0) return;
   for (const coin of state.coins) {
     if (coin.chute <= 0 || coin.pegFree) continue;
+    // 先收集本帧全部接触点：币完全可能同时顶住两根杆。
+    // 逐个修正时后一根杆的修正会精确抵消前一根 —— 币就悬死在杆缝里
+    // （实测最长静止 1.8s，直到 DROP_MAX_AIR 超时才直落）。这就是
+    // 「金币莫名悬停、又突然消失」的来源，必须按多接触点一起解。
+    const hits = [];
     for (const peg of state.pegs) {
       const dx = coin.x - peg.x;
       const dy = coin.y - peg.y;
@@ -564,14 +586,52 @@ function resolvePegs(state) {
         nx = side * PEG_DEAD_ZONE;
         ny = -Math.sqrt(1 - nx * nx);
       }
-      coin.x = peg.x + nx * minD;
-      coin.y = peg.y + ny * minD;
-      const vn = coin.vx * nx + coin.vy * ny;
-      if (vn < 0) {
-        coin.vx -= (1 + PEG_BOUNCE) * vn * nx;
-        coin.vy -= (1 + PEG_BOUNCE) * vn * ny;
-      }
+      hits.push({ peg, nx, ny, d, minD });
     }
+    if (hits.length === 0) continue;
+
+    if (hits.length === 1) {
+      const h = hits[0];
+      coin.x = h.peg.x + h.nx * h.minD;
+      coin.y = h.peg.y + h.ny * h.minD;
+      const vn = coin.vx * h.nx + coin.vy * h.ny;
+      if (vn < 0) {
+        coin.vx -= (1 + PEG_BOUNCE) * vn * h.nx;
+        coin.vy -= (1 + PEG_BOUNCE) * vn * h.ny;
+      }
+      continue;
+    }
+
+    // 多杆夹持：沿各接触法线的合力把币推出杆缝，并给一个确定性横向速度让它滑出来。
+    // 真实机台的杆缝必然大于币径（否则币根本过不去），所以"卡住"本身就是病态几何，
+    // 这里按确定性方向脱困，与"近正心命中"同一套择向原则。
+    let sx = 0;
+    let sy = 0;
+    let idxSum = 0;
+    let deepest = 0;
+    for (const h of hits) {
+      sx += h.nx;
+      sy += h.ny;
+      idxSum += h.peg.i;
+      deepest = Math.max(deepest, h.minD - h.d);
+    }
+    let nx;
+    let ny;
+    const len = Math.hypot(sx, sy);
+    if (len < 1e-6) {
+      const side = ((coin.id + idxSum) & 1) ? 1 : -1;
+      nx = side;
+      ny = -0.35;
+    } else {
+      nx = sx / len;
+      ny = sy / len;
+    }
+    coin.x += nx * (deepest + 1e-3);
+    coin.y += ny * (deepest + 1e-3);
+    const side = ((coin.id + idxSum) & 1) ? 1 : -1;
+    coin.vx += side * PEG_SLIDE;
+    // 顺手压一下下落速度：先横着滑出杆缝，再继续落
+    coin.vy = Math.min(coin.vy, 0.8);
   }
 }
 
@@ -830,7 +890,9 @@ function resolveTokens(state, events, dt) {
       hit.air = LAUNCH_AIR;
       hit.chute = 0;
       hit.vx = side * 2.4;
-      hit.vy = Math.abs(Math.cos(angle)) * LAUNCH_SPEED;
+      // 向上抛（−y 是朝机头方向）：币先升后落，腾空时长 = 2v/g 的完整抛物线。
+      // 曾经是 +y 直着往前推，且腾空期没有重力 —— 币像在冰面上平移，完全不合理。
+      hit.vy = -Math.abs(Math.cos(angle)) * LAUNCH_SPEED;
       events.push({ type: "launch", x: token.x, y: token.y, coinX: hit.x, coinY: hit.y });
     }
   }

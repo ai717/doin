@@ -9,6 +9,7 @@ import {
   GUTTER, TIP_ZONE, PACK_FACTOR,
   CHUTE_X, CHUTE_Y0, DROP_MAX_AIR, MAX_TOKENS, TOKEN_INTERVAL,
   PEG_Y0, PEG_ROW_GAP, PEG_R, PEG_ROWS, PEG_JITTER,
+  LAUNCH_SPEED, LAUNCH_AIR, DROP_GRAVITY,
   CREDIT_OPTIONS, DEFAULT_CREDITS, MAX_CREDITS,
   MODE, STATUS
 } from "../js/engine.mjs";
@@ -171,7 +172,10 @@ describe("engine: 挡杆阵是落点散布的唯一来源", () => {
       assert.equal(s.n, 40, `应有 40 个落点，实际 ${s.n}`);
       // 只靠投币口抖动时 std ≈ 0.34/√3 ≈ 0.196；挡杆阵必须把它显著放大
       assert.ok(s.std > 0.7, `种子 ${seed} 落点标准差过小 ${s.std.toFixed(3)}（挡杆阵没起作用）`);
-      assert.ok(s.distinct >= 12, `种子 ${seed} 落点种类过少 ${s.distinct}`);
+      // 挡杆梯架把币分流进若干条离散弹道，落点天然是"若干档"而不是连续均匀分布。
+      // 判据取 10 档（旧横向阻尼 0.25/s 时为 21 档，但落点会横漂到 3.89 单位外）。
+      // 「不许横漂过远」由专门的落点收敛断言负责，不在这里重复。
+      assert.ok(s.distinct >= 10, `种子 ${seed} 落点种类过少 ${s.distinct}`);
     }
   });
 
@@ -795,3 +799,113 @@ describe("engine: 重开与边界工具", () => {
     }
   });
 });
+
+describe("engine: 通道内不悬空（挡杆夹持必须脱困）", () => {
+  // 缺陷形态：相邻两排挡杆的净空（PEG_ROW_GAP）小于「币心到杆心」的碰撞距离时，
+  // 币会同时顶住两根杆；逐个修正时后一根杆的修正恰好抵消前一根，
+  // 币就悬死在杆缝里（实测最长静止 1.8s，直到 DROP_MAX_AIR 超时才直落）。
+  // 用户看到的就是「金币莫名悬停一会儿、又突然消失」。
+  it("多 seed 连投 30s：没有任何通道币长时间静止", () => {
+    for (const seed of [20261008, 7, 99, 777]) {
+      let state = startEndless(60, seed);
+      state.status = STATUS.PLAYING;
+      const steps = Math.round(30 / FIXED_DT);
+      const every = Math.round(0.35 / FIXED_DT);
+      const still = new Map();
+      let maxFreeze = 0;
+      let worstId = -1;
+      for (let i = 0; i < steps; i++) {
+        if (i % every === 0) state = insertCoin(state).state;
+        state = stepFrame(state, FIXED_DT, {}).state;
+        for (const c of state.coins) {
+          if (c.chute <= 0) continue;
+          let rec = still.get(c.id);
+          if (!rec) { still.set(c.id, { f: 0, x: c.x, y: c.y }); continue; }
+          // 逐帧位置 bit 级相同 = 求解器死锁（正常弹跳不可能两位小数内完全不动）
+          if (c.x === rec.x && c.y === rec.y) {
+            rec.f += 1;
+            if (rec.f > maxFreeze) { maxFreeze = rec.f; worstId = c.id; }
+          } else {
+            rec.f = 0; rec.x = c.x; rec.y = c.y;
+          }
+        }
+      }
+      const secs = maxFreeze * FIXED_DT;
+      assert.ok(secs <= 0.1, `种子 ${seed} 有币 #${worstId} 在通道里静止 ${secs.toFixed(3)}s（被挡杆夹住悬空）`);
+    }
+  });
+
+  it("横向阻尼让币很快停止横滑：落点收敛在投币口附近", () => {
+    // 旧横向阻尼只有 0.25/s（等效冰面），币被杆弹一下能横漂 3 秒、
+    // 落点最偏 3.89 单位（13 宽台面的 30%）——即"金币左右漂移、投币位置不准"。
+    for (const seed of [20261008, 777, 4242]) {
+      let state = startEndless(999, seed);
+      state.status = STATUS.PLAYING;
+      state.tokens = [];
+      state.coins = [];
+      let worst = 0;
+      for (let i = 0; i < 40; i++) {
+        const res = insertCoin(state);
+        if (res.state === state) break;
+        state = res.state;
+        const newest = state.coins.reduce((a, c) => (c.kind === "norm" && (!a || c.id > a.id) ? c : a), null);
+        if (!newest) continue;
+        const id = newest.id;
+        for (let k = 0; k < 900; k++) {
+          state = stepFrame(state, FIXED_DT, {}).state;
+          const c = state.coins.find((x) => x.id === id);
+          if (!c) break;
+          if (!(c.chute > 0)) {
+            worst = Math.max(worst, Math.abs(c.x - CHUTE_X));
+            break;
+          }
+        }
+      }
+      // 硬编码设计边界：挡杆只做适度散布，绝不允许横漂过 2.2 单位
+      assert.ok(worst <= 2.2, `种子 ${seed} 落点偏离投币口 ${worst.toFixed(2)} 单位（横漂）`);
+    }
+  });
+});
+
+describe("engine: 腾空币遵循重力（弹射是抛掷，不是漂浮）", () => {
+  const launcherToken = () => ({
+    id: 1, type: "launcher", effect: "", x: 6, y: 8, w: 0, h: 0, r: 0.85,
+    used: false, cooldown: 0, pulse: 0
+  });
+
+  it("出手向上、vy 全程单调递增、落回时速度与出手对称", () => {
+    let state = startEndless(50, 20261008);
+    state.status = STATUS.PLAYING;
+    state.tokens = [launcherToken()];
+    state.coins = [mkCoin(9300, 6, 8, { vy: 0.6 })];
+    const out = stepFrame(state, FIXED_DT, {});
+    const first = out.state.coins.find((c) => c.id === 9300);
+    assert.ok(first.air > 0, "被弹射的金币应处于空中状态");
+    assert.equal(first.chute, 0, "弹射不属于投币通道");
+    assert.ok(first.vy < 0, `出手必须向上（−y 朝机头），实际 vy=${first.vy}`);
+
+    const vys = [];
+    state = out.state;
+    for (let k = 0; k < Math.ceil(LAUNCH_AIR / FIXED_DT) + 4; k++) {
+      state = stepFrame(state, FIXED_DT, {}).state;
+      const c = state.coins.find((x) => x.id === 9300);
+      if (!c || !(c.air > 0)) break;
+      vys.push(c.vy);
+    }
+    assert.ok(vys.length >= 40, `腾空样本过少 ${vys.length}`);
+    for (let i = 1; i < vys.length; i++) {
+      assert.ok(vys[i] > vys[i - 1] - 1e-9,
+        `腾空期 vy 必须单调递增（恒定向下加速度），第 ${i} 步 ${vys[i - 1]} → ${vys[i]}`);
+    }
+    // 抛物线自洽：出手 −v、落回 +v（允许轻微空气阻尼造成的不对称）
+    assert.ok(vys[0] < 0 && vys[vys.length - 1] > 0, "必须先升后落");
+    assert.ok(Math.abs(vys[vys.length - 1] + vys[0]) < 1.5,
+      `落回速度应与出手对称：出手 ${vys[0].toFixed(2)}，落回 ${vys[vys.length - 1].toFixed(2)}`);
+  });
+
+  it("腾空时长 = 2v/g，与抛物线严格自洽", () => {
+    assert.ok(Math.abs(LAUNCH_AIR - (2 * LAUNCH_SPEED) / DROP_GRAVITY) < 1e-9,
+      "腾空时长必须等于抛物线周期，否则币还在上升就被按回台面（位置突跳）");
+  });
+});
+

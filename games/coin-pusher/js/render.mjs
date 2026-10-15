@@ -5,7 +5,8 @@
 
 import {
   FIELD_W, FIELD_H, PUSHER_EXTEND, TIP_ZONE, CARD_W, CARD_H, LAUNCHER_R, MAGNET_R,
-  GUTTER, CHUTE_X, CHUTE_Y0, COIN_R, PEG_Y0, PEG_ROW_GAP
+  GUTTER, CHUTE_X, CHUTE_Y0, COIN_R, PEG_Y0, PEG_ROW_GAP,
+  DROP_GRAVITY, LAUNCH_AIR, LAUNCH_SPEED
 } from "./engine.mjs";
 
 /* ============================================================ 投影参数 */
@@ -46,6 +47,19 @@ export function dropHeightRatio(y) {
   const t = (y - CHUTE_Y0) / span;
   const c = t < 0 ? 0 : t > 1 ? 1 : t;
   return (1 - c) * (1 - c);
+}
+
+// 腾空币（弹射器抛出）的视觉高度 = 真实抛物线高度。
+// 只用「剩余腾空时间」这一个状态量反推：t = LAUNCH_AIR − air，
+// h(t) = v₀t − ½g t²。这样币升到最高点后会自己落回来，落地瞬间 h = 0，
+// 与引擎的重力积分严格一致（纯函数，Node 可直接单测）。
+export const LAUNCH_ARC_MAX = (LAUNCH_SPEED * LAUNCH_SPEED) / (2 * DROP_GRAVITY);
+
+export function launchArcHeight(airLeft) {
+  if (!(airLeft > 0)) return 0;
+  const t = Math.max(0, Math.min(LAUNCH_AIR, LAUNCH_AIR - airLeft));
+  const h = LAUNCH_SPEED * t - 0.5 * DROP_GRAVITY * t * t;
+  return h > 0 ? h : 0;
 }
 
 // 世界视窗：y0 之上留给后墙与机顶投币结构，FIELD_H 之下留给唇口 / 落币竖井 / 托盘。
@@ -1134,8 +1148,9 @@ export function createRenderer(canvas) {
     // 投币通道里的币：高度由世界 y 反推（投币口最高，落到推板前缘即贴台面）。
     // 弹射器抛起的币不在通道内，退回按剩余飞行时间抬升。
     const dropH = inChute ? dropHeightRatio(coin.y) : 0;
-    const airT = coin.air > 0 ? Math.min(1, coin.air / 0.6) : 0;
-    const liftRatio = Math.min(1, Math.max(dropH, airT));
+    // 腾空高度走真实抛物线；抬升比例也用归一化抛物线高度（而不是线性剩余时间）
+    const arcH = coin.air > 0 ? launchArcHeight(coin.air) : 0;
+    const liftRatio = Math.min(1, Math.max(dropH, LAUNCH_ARC_MAX > 0 ? arcH / LAUNCH_ARC_MAX : 0));
     const p = P(coin.x, coin.y);
     const rx = coin.r * view.scale * p.k;
     const ry = rx * TILT;
@@ -1144,7 +1159,7 @@ export function createRenderer(canvas) {
     const stack = !air && jitter > 0.66 ? ((jitter - 0.66) / 0.34) * STACK_MAX : 0;
     // 竖直抬升一律走 lift()（= 立面竖直压缩 VERT），与遮挡杆共用同一条高度曲线。
     // 通道币的抬升必须严格等于 chuteLift，否则币会从杆的旁边"穿过去"。
-    const hop = inChute ? lift(chuteLift(coin.y)) + lift(stack) : lift(airT * 0.5 + stack);
+    const hop = inChute ? lift(chuteLift(coin.y)) + lift(stack) : lift(arcH + stack);
     const thick = coin.kind === "tower" ? TOWER_THICK : COIN_THICK;
     const th = 2 * rx * thick * VERT;
     return {

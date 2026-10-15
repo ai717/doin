@@ -4,9 +4,13 @@ import assert from "node:assert/strict";
 import {
   VIEW, VIEW_W, VIEW_H, TILT, VERT, PERSP, COIN_THICK,
   computeViewport, worldToScreen, screenToWorld, depthScale, projectedBounds, viewAspect,
-  dropHeightRatio, CHUTE_LIFT, PLATE_H, BACK_H, WALL_H, RAIL_H, TOWER_THICK, STACK_MAX
+  dropHeightRatio, CHUTE_LIFT, PLATE_H, BACK_H, WALL_H, RAIL_H, TOWER_THICK, STACK_MAX,
+  launchArcHeight, LAUNCH_ARC_MAX
 } from "../js/render.mjs";
-import { FIELD_W, FIELD_H, PUSHER_EXTEND, CHUTE_Y0, COIN_R, GUTTER, PEG_Y0, PEG_ROWS, PEG_ROW_GAP } from "../js/engine.mjs";
+import {
+  FIELD_W, FIELD_H, PUSHER_EXTEND, CHUTE_Y0, COIN_R, GUTTER, PEG_Y0, PEG_ROWS, PEG_ROW_GAP,
+  LAUNCH_SPEED, LAUNCH_AIR, DROP_GRAVITY
+} from "../js/engine.mjs";
 
 const CORNERS = [
   [VIEW.x0, VIEW.y0], [VIEW.x1, VIEW.y0], [VIEW.x0, VIEW.y1], [VIEW.x1, VIEW.y1]
@@ -205,5 +209,35 @@ describe("render: 投币通道高度曲线（币与挡杆共用同一条曲线�
     const v = computeViewport(780, 565);
     assert.ok(worldToScreen(v, GUTTER, 5).x > 0);
     assert.ok(worldToScreen(v, FIELD_W - GUTTER, 5).x < 780);
+  });
+});
+
+describe("render: 腾空币高度 = 真实抛物线", () => {
+  it("先升后落，两端贴台面，顶点 = v₀²/(2g)", () => {
+    // h(t) = v₀t − ½g t²，t = LAUNCH_AIR − air。端点高度必须为 0，
+    // 否则币会在"还在上升"时被按回台面 —— 一次可见的位置突跳（用户看到的"突然消失"）。
+    assert.equal(launchArcHeight(LAUNCH_AIR), 0, "刚出手时应贴台面");
+    assert.equal(launchArcHeight(0), 0, "即将落地时应贴台面");
+    const mid = launchArcHeight(LAUNCH_AIR / 2);
+    // 顶点用引擎设计常量算，不从被测函数反推
+    const expected = (LAUNCH_SPEED * LAUNCH_SPEED) / (2 * DROP_GRAVITY);
+    assert.ok(Math.abs(mid - expected) < 1e-9,
+      `腾空最高点应为 ${expected.toFixed(3)}，实际 ${mid.toFixed(3)}`);
+    assert.ok(Math.abs(LAUNCH_ARC_MAX - expected) < 1e-9, "导出的顶点常量与抛物线顶点不一致");
+    // 上升段单调、全程非负、单峰。抛物线顶点恒在 t = v/g = 半个周期处，故以中点分段。
+    let prev = -1;
+    let sawDescent = false;
+    for (let k = 0; k <= 40; k++) {
+      const h = launchArcHeight((LAUNCH_AIR * k) / 40);
+      assert.ok(h >= 0, "抛物线高度不得为负");
+      if (k <= 20) {
+        assert.ok(h >= prev - 1e-9, `上升段必须单调（k=${k}）`);
+      } else if (k >= 21) {
+        assert.ok(h <= prev + 1e-9, `下降段必须单调（k=${k}）`);
+        sawDescent = true;
+      }
+      prev = h;
+    }
+    assert.ok(sawDescent, "必须有下降段（否则就是匀速上漂，不是抛物线）");
   });
 });
