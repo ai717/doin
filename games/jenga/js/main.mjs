@@ -355,8 +355,10 @@ function boot() {
   }
 
   const pointers = new Map();
-  let dragging = false;
+  let dragging = false; // 正在拖拽转视角（抓空起手才允许）
+  let rotateArmed = false; // 按下点抓空 → 随后的拖动才转视角
   let dragStart = { x: 0, y: 0 };
+  let dragDist = 0; // 距按下点的最大位移：区分"点选"与"拖动"
   let pinchDist = 0;
 
   canvas.addEventListener("pointerdown", (event) => {
@@ -367,10 +369,20 @@ function boot() {
       const [a, b] = [...pointers.values()];
       pinchDist = Math.hypot(a.x - b.x, a.y - b.y);
       dragging = false;
+      rotateArmed = false;
+      dragDist = Infinity; // 捏合结束后不补一次点击
       return;
     }
     dragStart = { x: event.clientX, y: event.clientY };
+    dragDist = 0;
     dragging = false;
+    // 转视角只认"抓空"：按在木块/槽位上时，拖动永远不转视角——否则点选时手一抖
+    // 塔就跟着鼠标乱转，抽块的手感全毁（用户反馈：一直跟随鼠标旋转，不合理）。
+    // 想转视角：拖空白处、用 ◀▶ 按钮或方向键。
+    const p = localPoint(event);
+    rotateArmed = !renderer.hitTest(p.x, p.y, game.state, {
+      alwaysSlots: game.state.status === STATUS.HOLDING
+    });
   });
 
   canvas.addEventListener("pointermove", (event) => {
@@ -384,7 +396,8 @@ function boot() {
     }
     const dx = event.clientX - dragStart.x;
     const dy = event.clientY - dragStart.y;
-    if (!dragging && Math.abs(dx) + Math.abs(dy) > 7) dragging = true;
+    dragDist = Math.max(dragDist, Math.abs(dx) + Math.abs(dy));
+    if (!dragging && rotateArmed && dragDist > 7) dragging = true;
     if (dragging) {
       renderer.rotate(dx * 0.008);
       dragStart = { x: event.clientX, y: event.clientY };
@@ -395,17 +408,20 @@ function boot() {
 
   canvas.addEventListener("pointerup", (event) => {
     pointers.delete(event.pointerId);
-    if (!dragging) {
+    // 只有"按住没动"才算点选：从木块上起手拖开（误拖）不抽块，也不转视角。
+    if (!dragging && dragDist <= 7) {
       updateHover(event);
       handleClick(hover);
     }
     dragging = false;
+    rotateArmed = false;
     pinchDist = 0;
   });
 
   canvas.addEventListener("pointercancel", () => {
     pointers.clear();
     dragging = false;
+    rotateArmed = false;
     pinchDist = 0;
   });
 

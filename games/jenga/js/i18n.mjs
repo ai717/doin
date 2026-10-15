@@ -57,7 +57,7 @@ const LOCALES = {
     act_zoomOut: "拉远",
     act_levels: "选关",
     keyTip: "←/→ 转视角 · 1/2/3 落位 · 空格确认 · Tab 换候选块 · Esc 取消 · R 重摆",
-    touchTip: "单指拖动转视角 · 点端头露出的木块抽出 · 点塔顶三个槽位落位",
+    touchTip: "拖空白处转视角 · 点端头露出的木块抽出 · 点塔顶三个槽位落位",
     holding: "手上这块：点塔顶槽位落位",
     pickHint: "点端头露出的木块把它抽出来",
 
@@ -207,7 +207,7 @@ const LOCALES = {
     act_zoomOut: "Zoom Out",
     act_levels: "Levels",
     keyTip: "Arrows rotate · 1/2/3 stack · Space confirm · Tab cycle blocks · Esc cancel · R rebuild",
-    touchTip: "Drag to rotate · tap an exposed end block to pull · tap one of the three top slots to stack",
+    touchTip: "Drag empty space to rotate · tap an exposed end block to pull · tap one of the three top slots to stack",
     holding: "Block in hand: pick a top slot",
     pickHint: "Tap an exposed end block to pull it out",
 

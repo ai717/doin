@@ -320,7 +320,7 @@ export function createRenderer(canvas) {
     }
 
     if (marked) drawChalkMark(state, box, pts);
-    if (hovered || focused) drawSoftGlow(pts, hovered ? 0.55 : 0.4, focused && !hovered ? COLORS.gold : COLORS.glow);
+    if (hovered || focused) drawSoftGlow(faces, hovered ? 0.45 : 0.32, focused && !hovered ? COLORS.gold : COLORS.glow);
   }
 
   function drawChalkMark(state, box, pts) {
@@ -336,25 +336,44 @@ export function createRenderer(canvas) {
     void pts;
   }
 
-  // 无边界径向柔光：绝不用硬边描边圈
-  function drawSoftGlow(pts, alpha, color) {
+  // 无边界径向柔光：绝不用硬边描边圈。但必须裁进"这块自己的三个可见面"里——
+  // 之前光晕半径给到 1.5×外接圆又不裁剪，会整片糊到相邻木块和塔外背景上：被照到的
+  // 邻居起雾发白，整层看着像半透明缺了一块（用户反馈：视觉残缺；鼠标一移这团雾就扫过塔身）。
+  // 裁进去后"亮的是这一块"，边缘依旧柔和，却不再污染别人。
+  function drawSoftGlow(faces, alpha, color) {
+    const quads = [faces.top, faces.sideA, faces.sideB];
     let cx2 = 0;
     let cy2 = 0;
-    for (const p of pts) {
-      cx2 += p.x;
-      cy2 += p.y;
-    }
-    cx2 /= pts.length;
-    cy2 /= pts.length;
     let r = 0;
-    for (const p of pts) r = Math.max(r, Math.hypot(p.x - cx2, p.y - cy2));
-    const grad = ctx.createRadialGradient(cx2, cy2, r * 0.15, cx2, cy2, r * 1.5);
+    for (const q of quads) {
+      for (const p of q) {
+        cx2 += p.x;
+        cy2 += p.y;
+      }
+    }
+    cx2 /= quads.length * 4;
+    cy2 /= quads.length * 4;
+    for (const q of quads) {
+      for (const p of q) r = Math.max(r, Math.hypot(p.x - cx2, p.y - cy2));
+    }
+    ctx.save();
+    ctx.beginPath();
+    for (const q of quads) {
+      ctx.moveTo(q[0].x, q[0].y);
+      ctx.lineTo(q[1].x, q[1].y);
+      ctx.lineTo(q[2].x, q[2].y);
+      ctx.lineTo(q[3].x, q[3].y);
+      ctx.closePath();
+    }
+    ctx.clip();
+    const grad = ctx.createRadialGradient(cx2, cy2, r * 0.15, cx2, cy2, r * 1.15);
     grad.addColorStop(0, rgb(color, alpha));
     grad.addColorStop(1, rgb(color, 0));
     ctx.fillStyle = grad;
     ctx.beginPath();
-    ctx.arc(cx2, cy2, r * 1.5, 0, Math.PI * 2);
+    ctx.arc(cx2, cy2, r * 1.15, 0, Math.PI * 2);
     ctx.fill();
+    ctx.restore();
   }
 
   function drawTopSlots(state, opts) {
@@ -424,7 +443,7 @@ export function createRenderer(canvas) {
     drawPolygon(faces.sideA, rgb(WOOD.sideA, 1, 0.94), rgb(WOOD.edge, 0.5));
     drawPolygon(faces.sideB, rgb(WOOD.sideB, 1, 0.9), rgb(WOOD.edge, 0.5));
     drawPolygon(faces.top, rgb(WOOD.top, 1, 1.08), rgb(WOOD.edge, 0.55));
-    drawSoftGlow(pts, 0.3, COLORS.glow);
+    drawSoftGlow(faces, 0.3, COLORS.glow);
     void block;
     void opts;
     return pts;
@@ -512,7 +531,11 @@ export function createRenderer(canvas) {
       const pos = box ? box.pos : [block.px, block.py, block.pz];
       return { block, depth: cameraDepth(pos[0], pos[1], pos[2]), y: pos[1] };
     });
-    list.sort((a, b) => (a.depth - b.depth) || (a.y - b.y));
+    // 层序优先，深度只做同层内的次序：相机在斜上方，高层永远更靠近视线、也永远
+    // 盖在低层身上；纯深度键会被同层邻块的 x/z 差跨层反转（下层块盖上上层块，
+    // 侧面被别块的顶面盖掉），塔身满布"面残缺"。z-buffer 逐像素实测：纯深度
+    // 9.99% 错像素，层序优先 0%。塌落块的 py 是真实高度，同样按高度归位。
+    list.sort((a, b) => (a.y - b.y) || (a.depth - b.depth));
     return list;
   }
 

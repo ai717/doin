@@ -1,8 +1,12 @@
 // 叠叠乐 · 渲染层回归（Canvas 录制桩，跑真实 render.mjs）
 //
-// 两个真实发生过的 bug 的护栏：
+// 三个真实发生过的 bug 的护栏：
 //   1) 面的顶点排成"蝴蝶结"序 → Canvas nonzero 只填两个瓣，塔顶看起来"碎掉"；
-//   2) 深度排序漏掉高度项 → 低处块盖住高处块。
+//   2) 深度排序漏掉高度项 → 低处块盖住高处块；
+//   3) 纯深度排序缺层序优先 → 同层邻块的 x/z 差跨层反转遮挡，侧面被别块的顶面
+//      盖掉，塔身满布"面残缺"（z-buffer 逐像素实测 9.99% 错像素）；
+//   4) 悬停柔光不裁剪 → 半径 1.5× 外接圆整片糊上去，把相邻木块与塔外背景一起照亮，
+//      被照的那层起雾发白像"缺了一块"（用户反馈：视觉残缺）。
 // 断言方式：把 render.mjs 真实画出来的多边形全部录下来，逐条做几何检查，
 // 而不是只断言"没抛错"。
 
@@ -10,7 +14,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { createRenderer, faceRects } from "../js/render.mjs";
 import {
-  createInitialState, STATUS, BLOCK_H, BLOCK_L, BLOCK_W, layerCount, towerBlocks, pullBlock, layerBox
+  createInitialState, STATUS, BLOCK_H, BLOCK_L, BLOCK_W, layerCount, towerBlocks, pullBlock, stackBlock, canStack, pullableBlocks, layerBox
 } from "../js/engine.mjs";
 
 // ---------------------------------------------------------------- Canvas 录制桩
@@ -38,6 +42,7 @@ function makeRecordingCanvas(w = 720, h = 560) {
     fill() { if (current.length >= 3) paths.push({ op: "fill", style: String(this.fillStyle), path: current.slice() }); },
     stroke() { if (current.length >= 3) paths.push({ op: "stroke", style: String(this.strokeStyle), path: current.slice() }); },
     save() {}, restore() {}, translate() {}, scale() {}, setTransform() {}, clearRect() {},
+    clip() { if (current.length >= 3) paths.push({ op: "clip", style: "", path: current.slice() }); },
     ellipse() {}, arc() {}, fillRect() {}, fillText() {}
   };
   const canvas = {
@@ -205,6 +210,66 @@ test("遮挡顺序：顶层面不会被后画的多边形侵入", () => {
   }
 });
 
+// 每块的顶面在录制流里的下标：层序优先 ⇒ 低层的下标必须处处小于高层。
+function topFaceIndices(renderer, paths, state) {
+  const quads = paths.filter((p) => p.op === "fill" && p.path.length === 4);
+  const order = [];
+  for (const block of towerBlocks(state)) {
+    const box = layerBox(state, block.layer, block.slot);
+    const y = box.y + BLOCK_H; // 顶面高度
+    const face = [
+      renderer.project(box.x0, y, box.z0),
+      renderer.project(box.x1, y, box.z0),
+      renderer.project(box.x1, y, box.z1),
+      renderer.project(box.x0, y, box.z1)
+    ];
+    const idx = quads.findIndex((q) => sameQuad(q.path, face));
+    assert.ok(idx >= 0, `找不到块 ${block.id}（层 ${block.layer}）的顶面多边形`);
+    order.push({ id: block.id, layer: block.layer, idx });
+  }
+  return order;
+}
+
+function assertLayerFirst(order, yaw) {
+  for (const a of order) {
+    for (const b of order) {
+      if (a.layer < b.layer) {
+        assert.ok(
+          a.idx < b.idx,
+          `yaw=${yaw} 层 ${a.layer} 的块画在了层 ${b.layer} 之后——层序优先被破坏，塔身会出现"面残缺"`
+        );
+      }
+    }
+  }
+}
+
+test("遮挡顺序：层序优先——低层永远先于高层绘制", () => {
+  // 历史 bug：orderedBlocks 曾用纯深度键排序，同层邻块的 x/z 差会跨层反转遮挡，
+  // 下层块的侧面被别块的顶面盖掉（z-buffer 逐像素实测 9.99% 错像素，层序优先 0%）。
+  for (const yaw of [0, 0.6, 1.7, -1.1, Math.PI]) {
+    const state = createInitialState({ seed: 4242 });
+    const { renderer, paths } = bootRenderer(yaw, state);
+    assertLayerFirst(topFaceIndices(renderer, paths, state), yaw);
+  }
+});
+
+test("遮挡顺序：层序优先在有空档的中局塔上同样成立", () => {
+  // 抽一块再落位：塔身留下空档、顶上多一层——空档让跨层可见面变多，排序更不能错。
+  const state = createInitialState({ seed: 77 });
+  const piece = pullableBlocks(state).find((p) => p.layer > 0 && p.layer < layerCount(state) - 2);
+  assert.ok(piece, "应找得到可抽的块");
+  pullBlock(state, piece.layer, piece.slot);
+  assert.equal(state.status, STATUS.HOLDING);
+  // 初始塔顶是满的，落位会自动起新层（canStack：顶层已满时三个槽位都合法）
+  assert.ok(canStack(state, 0), "抽块后应能落位");
+  stackBlock(state, 0);
+  assert.equal(state.status, STATUS.IDLE);
+  for (const yaw of [0, 1.2, -0.9]) {
+    const { renderer, paths } = bootRenderer(yaw, state);
+    assertLayerFirst(topFaceIndices(renderer, paths, state), yaw);
+  }
+});
+
 test("命中测试：点顶块中心能选中，点空白处返回 null", () => {
   const state = createInitialState({ seed: 9 });
   const { renderer } = bootRenderer(0, state);
@@ -253,4 +318,43 @@ test("抽块后手持块按立方体三面绘制，且不含蝴蝶结", () => {
   for (const q of quads) assert.ok(!isSelfIntersecting(q.path), "手持块或塔体出现蝴蝶结");
   // 手持块在塔顶之上：塔体少一块（-3 面）+ 手持块 3 面
   assert.ok(quads.length >= 3 * (state.blocks.length - 1) + 3, `面数不足：${quads.length}`);
+});
+
+test("悬停柔光必须裁进木块自身轮廓（不得糊到相邻块与塔外背景）", () => {
+  const state = createInitialState({ seed: 5 });
+  const { canvas, paths } = makeRecordingCanvas();
+  const renderer = createRenderer(canvas);
+  renderer.resize();
+  for (let i = 0; i < 60; i += 1) renderer.draw(state, { dt: 1 / 60 });
+  renderer.draw(state, { dt: 10 });
+
+  const mid = towerBlocks(state).find((b) => b.layer === Math.floor(layerCount(state) / 2));
+  assert.ok(mid, "应有中层木块");
+
+  // 先确认"没悬停就不裁剪"——裁剪只属于柔光，不该平白多出来
+  paths.length = 0;
+  renderer.draw(state, { dt: 1 / 60 });
+  assert.equal(paths.filter((p) => p.op === "clip").length, 0, "无悬停时不应出现裁剪");
+
+  paths.length = 0;
+  renderer.draw(state, { hoverId: mid.id, dt: 1 / 60 });
+
+  const clips = paths.filter((p) => p.op === "clip");
+  assert.equal(clips.length, 1, `悬停一块应恰有 1 次裁剪，实得 ${clips.length}`);
+  const clip = clips[0];
+  // 裁剪域 = 该块三个可见面（3×4 = 12 个顶点），不是整块外接圆
+  assert.equal(clip.path.length, 12, `裁剪路径应为 3 面共 12 顶点，实得 ${clip.path.length}`);
+
+  const idx = paths.indexOf(clip);
+  const faces = paths.slice(0, idx).filter((p) => p.op === "fill" && p.path.length === 4).slice(-3);
+  assert.equal(faces.length, 3, "裁剪前应有该块 3 个面填色");
+  const bounds = (pts) => pts.reduce((b, p) => ({
+    x0: Math.min(b.x0, p.x), y0: Math.min(b.y0, p.y),
+    x1: Math.max(b.x1, p.x), y1: Math.max(b.y1, p.y)
+  }), { x0: Infinity, y0: Infinity, x1: -Infinity, y1: -Infinity });
+  const cb = bounds(clip.path);
+  const fb = bounds(faces.flatMap((f) => f.path));
+  for (const k of ["x0", "y0", "x1", "y1"]) {
+    assert.ok(Math.abs(cb[k] - fb[k]) < 0.01, `柔光裁剪域必须与木块三面完全重合（${k}: ${cb[k].toFixed(2)} vs ${fb[k].toFixed(2)}）`);
+  }
 });
