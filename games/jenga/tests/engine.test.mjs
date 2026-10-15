@@ -17,6 +17,8 @@ import {
   AXIS,
   LEAN_DEG,
   OVERHANG_RATIO,
+  OVERHANG_BASE,
+  OVERHANG_LOAD,
   COLLAPSE_TIME,
   mulberry32,
   createInitialState,
@@ -479,4 +481,55 @@ test("towerStats 快照：层数 / 块数 / 判危度 / 连击口径自洽", () 
   assert.ok(stat.danger >= 0 && stat.danger <= 1);
   assert.equal(stat.height, START_LAYERS * BLOCK_H);
   assert.equal(stat.topSlots.length, PER_LAYER);
+});
+
+// ---- 档 4 悬臂危险度校准（回归：曾把危险度永久钉在 ~0.79）----
+// 每次抽块都会在被抽层上方留下一个块宽（BLOCK_W/BLOCK_L = 1/3）的缺口，这是正交交错
+// 堆叠的固有悬臂而非危险。危险度必须从这条基准起算，否则每抽一块灯就全亮、舞台常振。
+
+test("档 4 危险度：单抽只留固有 1/3 悬臂，几何危险度不得钉高位", () => {
+  const s = fresh();
+  const r = pullBlock(s, 5, 0);
+  assert.equal(r.ok, true);
+  assert.equal(r.collapsed, false, "单抽一块不应判倒");
+  // 缺口 = 一个块宽，采样悬垂必须落在固有基准线之下（基准 = BLOCK_W/BLOCK_L）
+  assert.ok(
+    s.audit.worstOverhangLoaded.ratio <= OVERHANG_BASE,
+    `单抽后悬垂 ${s.audit.worstOverhangLoaded.ratio.toFixed(3)} 不得越过固有基准 ${OVERHANG_BASE.toFixed(3)}`
+  );
+  assert.ok(s.geomDanger < 0.5, `单抽后几何危险度应回落，实测 ${s.geomDanger.toFixed(3)}`);
+  // 900 帧（15s）演化：抽块冲击的摆动必须衰减，塔不能因为这一次抽块而倒
+  for (let i = 0; i < 900; i += 1) {
+    stepFrame(s);
+    if (s.status === STATUS.LOST) break;
+  }
+  assert.notEqual(s.status, STATUS.LOST, "单抽一块后塔必须存活");
+  assert.ok(s.geomDanger < 0.5, `摆动衰减后几何危险度仍应低位，实测 ${s.geomDanger.toFixed(3)}`);
+});
+
+test("档 4 危险度：同层抽空到只剩一块，顶层低载荷块越阈即判倒", () => {
+  const s = fresh();
+  assert.equal(pullBlock(s, 16, 0).ok, true);
+  stackBlock(s, 0); // 起新层，17 层从"正在施工的顶层"变为可抽
+  assert.equal(pullBlock(s, 17, 0).ok, true);
+  stackBlock(s, 1);
+  const r = pullBlock(s, 17, 2);
+  assert.equal(r.ok, true);
+  assert.equal(r.collapsed, true, "同层抽空后必须判倒");
+  assert.equal(r.verdict.gear, 4);
+  assert.ok(r.verdict.ratio > OVERHANG_RATIO, `悬垂 ${r.verdict.ratio.toFixed(3)} 应越阈 ${OVERHANG_RATIO}`);
+  assert.ok(r.verdict.load < OVERHANG_LOAD, "判倒块的载荷必须低于保护线");
+  assert.equal(s.status, STATUS.COLLAPSE);
+});
+
+test("档 4 保护线：同层抽两块但上压 ≥ 2 时只拉满危险度、不判倒", () => {
+  const s = fresh();
+  pullBlock(s, 5, 0);
+  stackBlock(s, 1);
+  const r = pullBlock(s, 5, 1); // 邻居已抽走，中间块端头外露可抽
+  assert.equal(r.ok, true);
+  assert.equal(r.collapsed, false, "上压足够时档 4 不得判倒");
+  assert.equal(s.geomDanger, 1, "抽空同层两块的悬垂必须把几何危险度拉满");
+  assert.equal(s.audit.worstOverhang.ratio > OVERHANG_RATIO, true);
+  assert.ok(s.audit.worstOverhang.load >= OVERHANG_LOAD, "保护线来自上方载荷");
 });

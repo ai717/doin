@@ -14,7 +14,12 @@ import {
 
 const ISO_Y = 0.5;
 const ISO_UP = 1;
-const DEPTH_SORT_EPS = 1e-4;
+// 由投影反推的相机视线方向：n ∝ (cos(yaw)+sin(yaw), 2√2, cos(yaw)−sin(yaw))
+// 排序深度必须带上 y 权重，否则"高而远"的块会被"低而近"的块错误盖住
+const CAM_UP = 2 * Math.SQRT2;
+const FIT_R = PAD_HALF; // 塔身（含塔垫）水平半径，用于自适应取景
+const FOOT_HW = FIT_R * Math.SQRT2;             // 塔垫椭圆横向半宽（世界单位）
+const FOOT_HH = FIT_R * Math.SQRT2 * ISO_Y * 1.04; // 塔垫椭圆竖向半宽
 
 const WOOD = {
   top: [186, 132, 84],
@@ -39,9 +44,37 @@ function rgb(c, alpha = 1, mul = 1) {
   return alpha >= 1 ? `rgb(${r},${g},${b})` : `rgba(${r},${g},${b},${alpha})`;
 }
 
+// ------------------------------------------------------------ 立方体面片（纯函数）
+//
+// 8 角顺序（cornersOf 的 local 顺序 [sx,sy,sz]，lx=sx·hx / ly=sy·hy / lz=sz·hz）：
+//   p0(-,-,-) p1(+,-,-) p2(+,+,-) p3(-,+,-) p4(-,-,+) p5(+,-,+) p6(+,+,+) p7(-,+,+)
+//   ⇒ 0..3 是 y=-hy（底），4..7 是 y=+hy（顶）；x=+hx 是 1/2/5/6；z=+hz 是 4/5/6/7
+//
+// ⚠ 每个面的 4 个顶点必须按同一绕向排（相邻边首尾相接）。排成"蝴蝶结"序时
+//   Canvas 的 nonzero 填充只填两个瓣、留下三角缺口 —— 塔顶看起来"碎掉"就是这个原因。
+//   （曾真实发生过：FACE_TOP 写成 [p2,p3,p6,p7]，因 p6 的 x 是 +hx 而非 -hx。）
+const FACE_TOP = (p) => [p[2], p[3], p[7], p[6]];
+const FACE_BOTTOM = (p) => [p[0], p[1], p[5], p[4]];
+const FACE_PX = (p) => [p[1], p[2], p[6], p[5]];
+const FACE_NX = (p) => [p[0], p[3], p[7], p[4]];
+const FACE_PZ = (p) => [p[4], p[5], p[6], p[7]];
+const FACE_NZ = (p) => [p[0], p[1], p[2], p[3]];
+
+// 给定 8 个投影点与"视线在 x/z 轴上的符号"，返回朝向相机的三个面（顶 + 两侧）
+export function faceRects(pts, visX, visZ) {
+  return {
+    top: FACE_TOP(pts),
+    sideA: visX >= 0 ? FACE_PX(pts) : FACE_NX(pts),
+    sideB: visZ >= 0 ? FACE_PZ(pts) : FACE_NZ(pts)
+  };
+}
+
 export function createRenderer(canvas) {
   const ctx = canvas.getContext ? canvas.getContext("2d") : null;
-  const view = { yaw: Math.PI * 0.25, zoom: 1, scale: 24, cx: 0, cy: 0, w: 0, h: 0 };
+  // 默认正视塔的一个棱角（yaw=0）：±x 与 ±z 两个侧面同时朝向相机，棱角视感最立体。
+  // 注意 yaw=45° 是退化角——相机正对 x 轴，±z 面屏幕面积为 0，整座塔会退化成
+  // "只剩一个侧面 + 顶面"的正立面，看起来像一片平板（历史 bug）。
+  const view = { yaw: 0, zoom: 1, scale: 24, cx: 0, cy: 0, w: 0, h: 0 };
   let reduced = false;
   const dust = [];
   let shakePhase = 0;
@@ -57,12 +90,11 @@ export function createRenderer(canvas) {
     view.w = cssW;
     view.h = cssH;
     view.cx = cssW / 2;
-    // 底层 tile 的前伸折算 ~1.8 单位，留出上下余量让 18~27 层都装得下
-    const idealLayers = 23;
-    view.scale = (cssH * 0.86) / (idealLayers * BLOCK_H * ISO_UP + 2.4);
     view.dpr = dpr;
     if (ctx.setTransform) ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    // 塔垫锚点贴在舞台下方；具体缩放交给每帧 fitView 按塔高自适应
     view.cy = cssH - cssH * 0.12;
+    view.scale = Math.min(cssW * 0.15, cssH * 0.055);
     return view;
   }
 
@@ -77,10 +109,12 @@ export function createRenderer(canvas) {
     };
   }
 
-  function depthOf(x, z) {
+  // 画家算法的深度键：沿相机视线方向投影。少了 y 项就会把"高而远"的块
+  // 画到"低而近"的块前面，塔身出现互相穿插的假象。
+  function cameraDepth(x, y, z) {
     const c = Math.cos(view.yaw);
     const s = Math.sin(view.yaw);
-    return (x * c - z * s) + (x * s + z * c);
+    return x * (c + s) + y * CAM_UP + z * (c - s);
   }
 
   function faceNormalsVisible() {
@@ -234,8 +268,10 @@ export function createRenderer(canvas) {
     ctx.fill();
   }
 
-  function topFace(pts) {
-    return [pts[4], pts[5], pts[6], pts[7]];
+  // 当前 yaw 下真正朝向相机的三个面：顶面 + 两个侧面（由视线方向决定选哪一侧）
+  function visibleFaces(pts) {
+    const vis = faceNormalsVisible();
+    return faceRects(pts, vis.x, vis.z);
   }
 
   function drawBlock(state, block, opts) {
@@ -248,7 +284,6 @@ export function createRenderer(canvas) {
     const tone = 0.9 + ((block.id * 37) % 11) * 0.014;
     const boost = hovered ? 1.22 : focused ? 1.14 : pullable ? 1.06 : 1;
     const pts = cornersOf({ ...box, spinX: block.rx, spinZ: block.rz }, state);
-    const vis = faceNormalsVisible();
     const half = {
       hx: (box.x1 - box.x0) / 2,
       hz: (box.z1 - box.z0) / 2,
@@ -256,24 +291,14 @@ export function createRenderer(canvas) {
     };
 
     // 朝向相机的两个侧面（由 yaw 决定选哪两面），先画侧面再盖顶面
-    const faces = [
-      {
-        pts: vis.x >= 0 ? [pts[1], pts[2], pts[6], pts[5]] : [pts[0], pts[3], pts[7], pts[4]],
-        color: WOOD.sideA
-      },
-      {
-        pts: vis.z >= 0 ? [pts[3], pts[2], pts[6], pts[7]] : [pts[0], pts[1], pts[5], pts[4]],
-        color: WOOD.sideB
-      }
-    ];
+    const faces = visibleFaces(pts);
 
-    for (const face of faces) {
-      drawPolygon(face.pts, rgb(face.color, 1, tone * boost * 0.92), rgb(WOOD.edge, 0.45));
-    }
-    drawPolygon(topFace(pts), rgb(WOOD.top, 1, tone * boost), rgb(WOOD.edge, 0.5));
+    drawPolygon(faces.sideA, rgb(WOOD.sideA, 1, tone * boost * 0.92), rgb(WOOD.edge, 0.45));
+    drawPolygon(faces.sideB, rgb(WOOD.sideB, 1, tone * boost * 0.88), rgb(WOOD.edge, 0.45));
+    drawPolygon(faces.top, rgb(WOOD.top, 1, tone * boost), rgb(WOOD.edge, 0.5));
 
     // 木纹：顶面沿长轴两道细线，成本极低却让"平的电缆面"不再是塑料感
-    if (half.hx > half.hz || half.hz > half.hx) {
+    if (half.hx !== half.hz) {
       const along = half.hx > half.hz;
       ctx.save();
       ctx.globalAlpha = 0.16;
@@ -382,19 +407,27 @@ export function createRenderer(canvas) {
   function drawHeld(state, opts) {
     if (state.held == null) return null;
     const block = state.blocks[state.held];
-    const topY = layerCount(state) * BLOCK_H + 1.1;
+    const topY = layerCount(state) * BLOCK_H + 1.05;
     const long = axisOfLayer(layerCount(state)) === 0;
     const hx = long ? BLOCK_W / 2 : BLOCK_L / 2;
     const hz = long ? BLOCK_L / 2 : BLOCK_W / 2;
     const bob = reduced ? 0 : Math.sin(performance.now?.() / 420 || 0) * 0.06;
-    const corners = [
-      [-hx, -hz], [hx, -hz], [hx, hz], [-hx, hz]
-    ].map(([dx, dz]) => project(dx, topY + bob, dz));
-    drawPolygon(corners, rgb(WOOD.top, 0.92, 1.06), rgb(WOOD.edge, 0.5));
-    drawSoftGlow(corners, 0.34, COLORS.glow);
+    // 手里的块也按立方体画三个面，否则和塔上的块一眼就看得出"一个是片一个是块"
+    const box = {
+      x0: -hx, x1: hx, z0: -hz, z1: hz,
+      yLow: topY + bob, yHigh: topY + bob + BLOCK_H,
+      pos: [0, topY + bob + BLOCK_H / 2, 0],
+      rot: false
+    };
+    const pts = cornersOf(box, state);
+    const faces = visibleFaces(pts);
+    drawPolygon(faces.sideA, rgb(WOOD.sideA, 1, 0.94), rgb(WOOD.edge, 0.5));
+    drawPolygon(faces.sideB, rgb(WOOD.sideB, 1, 0.9), rgb(WOOD.edge, 0.5));
+    drawPolygon(faces.top, rgb(WOOD.top, 1, 1.08), rgb(WOOD.edge, 0.55));
+    drawSoftGlow(pts, 0.3, COLORS.glow);
     void block;
     void opts;
-    return corners;
+    return pts;
   }
 
   // ------------------------------------------------------------ 木屑微尘
@@ -447,11 +480,37 @@ export function createRenderer(canvas) {
 
   // ------------------------------------------------------------ 排序与绘制入口
 
+  // 当前塔顶世界高度（手持块与塌落碎片不计入，避免取景乱跳）
+  function towerHeight(state) {
+    let top = layerCount(state) * BLOCK_H;
+    for (const b of state.blocks) {
+      if (b.inTower && b.py + BLOCK_H / 2 > top) top = b.py + BLOCK_H / 2;
+    }
+    return top;
+  }
+
+  // 自适应取景：塔越长高就缩得越小，18~27 层都不削顶、不出框；缩放平滑过渡。
+  // 水平占地按塔垫椭圆算（横向半宽 R√2、竖向半宽 R√2·ISO_Y，与 yaw 无关），
+  // 手持块另算 1.75 的顶部余量——否则抽出的块会顶出画布上沿。
+  function fitView(state, dt) {
+    if (!ctx) return;
+    const towerH = towerHeight(state);
+    const headroom = state.held != null ? 1.75 : 0.4;
+    const target = Math.min(
+      (view.w * 0.94) / (FOOT_HW * 2 + 0.9),
+      (view.cy - view.h * 0.035) / (towerH + FOOT_HH + headroom),
+      (view.h - view.cy - view.h * 0.02) / (FOOT_HH + 0.3)
+    );
+    const k = reduced ? 1 : Math.min(1, dt * 3.2);
+    view.scale += (target - view.scale) * k;
+    if (Math.abs(target - view.scale) < 0.02) view.scale = target;
+  }
+
   function orderedBlocks(state) {
     const list = state.blocks.map((block) => {
       const box = blockBox(state, block);
       const pos = box ? box.pos : [block.px, block.py, block.pz];
-      return { block, depth: depthOf(pos[0], pos[2]), y: pos[1] };
+      return { block, depth: cameraDepth(pos[0], pos[1], pos[2]), y: pos[1] };
     });
     list.sort((a, b) => (a.depth - b.depth) || (a.y - b.y));
     return list;
@@ -475,6 +534,7 @@ export function createRenderer(canvas) {
     ctx.save();
     ctx.translate(shakeX, shakeY);
 
+    fitView(state, dt);
     drawPad(state);
     drawShadow(state);
 
@@ -521,13 +581,10 @@ export function createRenderer(canvas) {
       const box = blockBox(state, block);
       if (!box) continue;
       const pts = cornersOf({ ...box, spinX: block.rx, spinZ: block.rz }, state);
-      if (pointInPolygon(point, topFace(pts))) return { kind: "block", layer: block.layer, slot: block.slot, id: block.id };
-      const vis = faceNormalsVisible();
-      const sideA = vis.x >= 0 ? [pts[1], pts[2], pts[6], pts[5]] : [pts[0], pts[3], pts[7], pts[4]];
-      const sideB = vis.z >= 0 ? [pts[3], pts[2], pts[6], pts[7]] : [pts[0], pts[1], pts[5], pts[4]];
-      if (pointInPolygon(point, sideA) || pointInPolygon(point, sideB)) {
-        return { kind: "block", layer: block.layer, slot: block.slot, id: block.id };
-      }
+      const faces = visibleFaces(pts);
+      const hit = { kind: "block", layer: block.layer, slot: block.slot, id: block.id };
+      if (pointInPolygon(point, faces.top)) return hit;
+      if (pointInPolygon(point, faces.sideA) || pointInPolygon(point, faces.sideB)) return hit;
     }
     return null;
   }

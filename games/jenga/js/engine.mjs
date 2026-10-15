@@ -45,6 +45,10 @@ export const LEAN_DEG = 3; // 档 3：倾角阈值
 export const LEAN_LIMIT = (LEAN_DEG * Math.PI) / 180;
 export const OVERHANG_RATIO = 0.4; // 档 4：悬空长度 / 自身长度
 export const OVERHANG_LOAD = 2; // 档 4：上压 ≥ 2 块不判倒
+// 悬臂危险度基准线：任何一次抽块都会在被抽层上方留下一个块宽（BLOCK_W/BLOCK_L = 1/3）
+// 的缺口，这是正常堆叠的固有悬臂而非危险。危险度必须从这条基准起算、到判倒阈值拉满，
+// 否则每抽一块，上层的悬臂都会把危险度钉在 ~0.8（舞台常振、判危灯长亮）。
+export const OVERHANG_BASE = BLOCK_W / BLOCK_L;
 
 // ---- 摆动动力学（档 3 的倾角来源）----
 // 塔被视为绕基座的受迫阻尼摆：平衡点 = 质心偏移角，抽叠冲击与阵风为外界激励。
@@ -274,6 +278,10 @@ export function audit(state) {
 
   let worstSupport = { gear: 1, block: null, corners: SUPPORT_CORNERS, center: true, load: 0 };
   let worstOverhang = { gear: 4, block: null, ratio: 0, load: 0 };
+  // 危险度专用的悬臂口径：只统计"上面压了东西"的块。最顶层刚叠上去的块搭在缺口上
+  // 是正常堆叠（既压不塌什么，也不会翻），若按同一口径计数，危险度会被永久钉在
+  // ~0.8 高位，连带舞台常振、判危度指示灯长亮。
+  let worstOverhangLoaded = { gear: 4, block: null, ratio: 0, load: 0 };
 
   for (const b of towerBlocks(state)) {
     const box = boxOfBlock(state, b);
@@ -292,6 +300,9 @@ export function audit(state) {
     const oh = overhangOf(state, b);
     const ratio = oh / BLOCK_L;
     if (ratio > worstOverhang.ratio) worstOverhang = { gear: 4, block: b.id, ratio, load };
+    if (load >= 1 && ratio > worstOverhangLoaded.ratio) {
+      worstOverhangLoaded = { gear: 4, block: b.id, ratio, load };
+    }
   }
   const baseBlocks = state.layers[0] ? state.layers[0].slots.filter((id) => id != null).length : 0;
 
@@ -307,10 +318,11 @@ export function audit(state) {
       ? 1
       : 0.8;
   const d2 = clamp(comOffset, 0, 1);
-  const d4 = clamp(worstOverhang.ratio / OVERHANG_RATIO, 0, 1);
+  // 从固有悬臂基准起算：抽一块 → 上层缺 1/3 → 危险度 0；逼近判倒阈值才拉满
+  const d4 = clamp((worstOverhangLoaded.ratio - OVERHANG_BASE) / (OVERHANG_RATIO - OVERHANG_BASE), 0, 1);
 
   state.geomDanger = Math.max(d1, d2, d4);
-  state.audit = { worstSupport, worstOverhang, comOffset, base, baseBlocks };
+  state.audit = { worstSupport, worstOverhang, worstOverhangLoaded, comOffset, base, baseBlocks };
   state.danger = Math.max(state.geomDanger, tiltOf(state) / LEAN_LIMIT);
   return state.audit;
 }
