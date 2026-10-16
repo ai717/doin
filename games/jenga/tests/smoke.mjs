@@ -56,7 +56,6 @@ class StubElement {
     this.style = new Proxy({ setProperty: () => {} }, { get: (t, k) => t[k], set: (t, k, v) => (t[k] = v, true) });
     this._text = "";
     this.disabled = false;
-    this._hidden = false;
     if (this.tagName === "CANVAS") {
       this.width = 720;
       this.height = 560;
@@ -85,14 +84,14 @@ class StubElement {
     this.attributes.set("id", value);
   }
 
+  // hidden 属性即唯一事实来源（与真实 DOM 一致）：property 与 attribute 双向同步，
+  // 否则 toggleAttribute 改了 attribute、property 还读旧值，断言会假绿。
   get hidden() {
-    return this._hidden;
+    return this.attributes.has("hidden");
   }
 
   set hidden(value) {
-    this._hidden = Boolean(value);
-    if (this._hidden) this.attributes.set("hidden", "");
-    else this.attributes.delete("hidden");
+    this.toggleAttribute("hidden", Boolean(value));
   }
 
   get textContent() {
@@ -295,7 +294,6 @@ function parseHtml(html) {
         el.attributes.set(name, value);
         if (name === "id") byId.set(value, el);
         if (name === "class") el.classList.set = new Set(value.split(/\s+/).filter(Boolean));
-        if (name === "hidden") el._hidden = true;
         if (name.startsWith("data-")) el.dataset[camel(name.slice(5))] = value;
       }
       const parent = stack[stack.length - 1];
@@ -490,9 +488,16 @@ test("浮层与暂停：help 冻结物理，关掉后恢复；选关抽屉可开
   const handle = mod.default;
   const ui = handle.ui;
   const game = handle.game;
+  const ov = (id) => env.document.getElementById(id);
 
+  // 内部状态切了不算数——DOM 的 hidden 必须真的翻转（曾因 setOverlay 的
+  // toggle 条件写反，四个浮层全线弹不出来，结算静默失败）
   ui.setOverlay("help");
   assert.equal(ui.currentOverlay(), "help");
+  assert.equal(ov("ov-help").hidden, false, "help 浮层必须真的显示出来");
+  for (const id of ["ov-pause", "ov-result", "ov-levels"]) {
+    assert.equal(ov(id).hidden, true, `${id} 必须保持隐藏`);
+  }
   assert.equal(game.paused, true, "说明浮层必须冻结对局");
   const t = game.state.time;
   env.step(10);
@@ -500,18 +505,26 @@ test("浮层与暂停：help 冻结物理，关掉后恢复；选关抽屉可开
 
   ui.setOverlay("none");
   assert.equal(game.paused, false);
+  assert.equal(ov("ov-help").hidden, true, "关掉浮层必须真的隐藏");
   env.step(10);
   assert.ok(game.state.time > t, "恢复后时钟继续走");
 
   ui.setOverlay("levels");
   assert.equal(ui.currentOverlay(), "levels");
+  assert.equal(ov("ov-levels").hidden, false, "选关抽屉必须真的显示出来");
   assert.ok(ui.el.levels.children.length >= 4, "选关抽屉必须列出 4 个章节");
   ui.setOverlay("none");
 
   // 结算浮层：给一个假结果也要能弹出来
   ui.showResult({ won: true, stars: 2, score: 300, layers: 20, streak: 3, level: { index: 1 } });
   assert.equal(ui.currentOverlay(), "result");
+  assert.equal(ov("ov-result").hidden, false, "结算浮层必须真的显示出来");
   assert.ok(env.document.getElementById("result-title").textContent.length > 0);
+  // 再开暂停：结算让位，且结算自己收起来
+  ui.setOverlay("pause");
+  assert.equal(ov("ov-result").hidden, true, "切换浮层时旧浮层必须收起");
+  assert.equal(ov("ov-pause").hidden, false, "暂停浮层必须真的显示出来");
+  ui.setOverlay("none");
 });
 
 test("选关与模式切换：按钮点击真的换了关卡 / 模式", async () => {

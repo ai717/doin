@@ -88,7 +88,10 @@ export function createUI(handlers = {}) {
     for (const [key, node] of Object.entries(el.overlays)) {
       if (!node) continue;
       const on = key === name;
-      if (node.hasAttribute("hidden") === !on) node.toggleAttribute("hidden", !on);
+      // 目标态：命中的面板去掉 hidden，其余一律加上。原来这里写的是 ===，
+      // 变成"状态已经正确才动 DOM"——结果没有任何面板能被显示出来
+      // （结算/帮助/暂停/关卡全线失效，且单测 DOM-free 抓不到）。
+      if (node.hasAttribute("hidden") !== !on) node.toggleAttribute("hidden", !on);
     }
     handlers.onOverlayChange?.(name, FREEZE.has(name));
     return overlay;

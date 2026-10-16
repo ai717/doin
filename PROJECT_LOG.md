@@ -67,6 +67,8 @@ DOIN（`doin.win`）是静态集合型独立网页小游戏门户。
 
 **方法论沉淀**：headless Chrome 的 `Page.captureScreenshot` 会拿到**过期合成帧**（画布 bitmap 其实一直在重绘，`getImageData` 可证）——验收 Canvas 动画要直接取 `canvas.toDataURL()`，别信页面截图。
 
+**第四轮修复（2026-10-16 晚，用户反馈「连续抽叠 5 块 · 进度 5/5 之后没有反应了」）**：第 1 关达标后结算面板不弹。CDP 驱动真实 Chrome 复现：`finished` 事件正常触发、`game.finished === true`、控制台零异常，但 `ov-result` 的 `hidden` 始终为 `true`。顺藤摸到 `ui.mjs` 的 `setOverlay`——toggle 条件写反了：`if (node.hasAttribute("hidden") === !on)` 表示「状态已经正确才去动 DOM」，等于**任何浮层都永远弹不出来**（结算/帮助/暂停/选关四类全灭）。改成 `!==`（状态不对才修正）。该 bug 自 `1e02f33`（jenga 上线首日）就潜伏，之所以没被抓到：单测全是 DOM-free 的纯逻辑，而唯一跑装配链的 `smoke.mjs` 只断言 `ui.currentOverlay()` 的**内部状态变量**、从没看过 DOM 的 `hidden`。修复同时补两层防线：① `smoke.mjs` 的 DOM 桩把 `hidden` property 改成从 attribute 派生（原来 `_hidden` 独立字段，`toggleAttribute` 不同步它，等于桩在纵容假绿）；② 浮层用例全部改为断言真实 DOM 可见性，并覆盖「开 A 时 B/C/D 保持隐藏」「从结算切暂停时旧浮层收起」——灌毒验证：把 `!==` 改回 `===` 立刻 fail 1。**验收**：单测 93/93、`check-game` 21/0/0、build 通过；真实 Chrome **10/10**（帮助/暂停/选关均可弹可收、5/5 达标三星弹结算、面板三按钮、「下一关」正确进入第 2 关 target 6）。教训：**内部状态机正确 ≠ 用户可见**，验收必须看 DOM 真值。
+
 ### 体验与架构规范升级：即开即玩原则、常驻非阻塞选关与破除连环抄袭（2026-10-09）
 - **根因治理**：纠正近几款新游戏首屏强制弹出全屏选关/模式遮罩阻断游玩、以及连环照搬存量老项目 HTML/CSS 结构导致界面雷同（左右双翼机械堆叠）的体验倒退；
 - **核心铁律确立**：
