@@ -4,7 +4,7 @@
 // 纯几何换算（computeViewport / worldToScreen / screenToWorld / depthScale）不碰 DOM，可在 Node 直接单测。
 
 import {
-  FIELD_W, FIELD_H, PUSHER_EXTEND, TIP_ZONE, CARD_W, CARD_H, LAUNCHER_R, MAGNET_R,
+  FIELD_W, FIELD_H, PUSHER_EXTEND, TIP_ZONE, CARD_W, CARD_H, LAUNCHER_R, MAGNET_R, MAGNET_RADIUS,
   GUTTER, CHUTE_X, CHUTE_Y0, COIN_R, PEG_Y0, PEG_ROW_GAP,
   DROP_GRAVITY, LAUNCH_AIR, LAUNCH_SPEED
 } from "./engine.mjs";
@@ -1211,31 +1211,44 @@ export function createRenderer(canvas) {
   /* ---------------------------------------------------- 机关 */
 
   // 单个机关（画家算法里逐个调用）
+  // 浮空道具（奖励卡）：搭在币面上方，参与 y 排序遮挡。
+  // 脉冲时卡抬得更高（"跳一下"），影子钉在地面并随之放大变淡 —— 高度差要落在影子上。
   function drawToken(token) {
+    if (token.type !== "card") return;
     const sp = ensureSprites();
     const p = P(token.x, token.y);
     const pulse = token.pulse > 0 ? 1 + token.pulse * 0.35 : 1;
     const k = p.k;
+    const img = token.effect === "double" ? sp.cardDouble : token.effect === "speed" ? sp.cardSpeed : sp.cardMagnet;
+    const rx = (CARD_W / 2) * view.scale * k * pulse;
+    const ry = (CARD_H / 2) * view.scale * k * TILT * pulse;
+    const th = 2 * rx * CARD_THICK * VERT;
+    const liftPx = lift(CARD_LIFT) * (1 + (pulse - 1) * 1.4);
+    const sh = 1 + liftPx / (view.scale * 1.6);
+    ctx.beginPath();
+    ctx.ellipse(p.x + liftPx * 0.42, p.y + liftPx * 0.3, rx * 0.92 * sh, ry * 0.86 * sh, 0, 0, Math.PI * 2);
+    ctx.fillStyle = `rgba(0,0,0,${0.36 / Math.sqrt(sh)})`;
+    ctx.fill();
+    ctx.drawImage(img, p.x - rx, p.y - ry - th - liftPx, rx * 2, ry * 2 + th);
+  }
 
-    if (token.type === "card") {
-      const img = token.effect === "double" ? sp.cardDouble : token.effect === "speed" ? sp.cardSpeed : sp.cardMagnet;
-      const rx = (CARD_W / 2) * view.scale * k * pulse;
-      const ry = (CARD_H / 2) * view.scale * k * TILT * pulse;
-      const th = 2 * rx * CARD_THICK * VERT;
-      const liftPx = lift(CARD_LIFT);
-      ctx.beginPath();
-      ctx.ellipse(p.x + liftPx * 0.35, p.y + liftPx * 0.5, rx * 0.92, ry * 0.86, 0, 0, Math.PI * 2);
-      ctx.fillStyle = "rgba(0,0,0,0.36)";
-      ctx.fill();
-      ctx.drawImage(img, p.x - rx, p.y - ry - th - liftPx, rx * 2, ry * 2 + th);
-    } else if (token.type === "launcher") {
+  // 贴地机关（弹射井 / 磁力盘）：台面地板的一部分，先于一切币绘制。
+  // 之前它们混在 y 排序里：平贴圆盘被"站在身后的币"盖掉半张脸，
+  // 字形图标被裁得只剩两个白柱 —— 看起来像凭空冒出的穹顶残骸。
+  // 贴地件与台面的接合靠一圈嵌入暗缝，绝不画外投阴影（凹陷不投影）。
+  function drawTokenBase(token) {
+    const p = P(token.x, token.y);
+    const k = p.k;
+    if (token.type === "launcher") {
       const rx = LAUNCHER_R * view.scale * k;
       const ry = rx * TILT;
       const ready = token.cooldown <= 0;
+      // 台面切缝：井圈"嵌"进地板
       ctx.beginPath();
-      ctx.ellipse(p.x, p.y + ry * 0.5, rx * 1.05, ry * 1.05, 0, 0, Math.PI * 2);
-      ctx.fillStyle = "rgba(0,0,0,0.3)";
-      ctx.fill();
+      ctx.ellipse(p.x, p.y, rx * 1.17, ry * 1.17, 0, 0, Math.PI * 2);
+      ctx.strokeStyle = "rgba(0,0,0,0.5)";
+      ctx.lineWidth = Math.max(1, view.scale * 0.035);
+      ctx.stroke();
       // 弹射井的金属圈：用「外盘 − 内井」画出一圈实体边（不是描边圈）
       ctx.beginPath();
       ctx.ellipse(p.x, p.y, rx * 1.12, ry * 1.12, 0, 0, Math.PI * 2);
@@ -1254,6 +1267,12 @@ export function createRenderer(canvas) {
       well.addColorStop(1, "#1e2941");
       ctx.fillStyle = well;
       ctx.fill();
+      // 近端内唇受光：井的近侧内壁被顶光点亮（远壁沉在阴影里）——凹陷的方向感
+      ctx.beginPath();
+      ctx.ellipse(p.x, p.y, rx * 0.96, ry * 0.96, 0, Math.PI * 0.18, Math.PI * 0.82);
+      ctx.strokeStyle = ready ? "rgba(255,190,130,0.38)" : "rgba(150,175,215,0.2)";
+      ctx.lineWidth = Math.max(1, view.scale * 0.045);
+      ctx.stroke();
       // 井内柔光：就绪时暖色、冷却时冷色 —— 用径向柔光渐隐，不用描边圈
       const halo = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, rx);
       halo.addColorStop(0, ready ? "rgba(255,172,102,0.46)" : "rgba(140,165,205,0.16)");
@@ -1272,7 +1291,7 @@ export function createRenderer(canvas) {
         ctx.lineWidth = Math.max(1, view.scale * 0.03);
         ctx.stroke();
       }
-      // 圈顶金属高光（材质反光，与状态无关）
+      // 远端外沿金属高光（材质反光，与状态无关）
       ctx.beginPath();
       ctx.ellipse(p.x, p.y, rx * 1.12, ry * 1.12, 0, Math.PI * 1.12, Math.PI * 1.88);
       ctx.strokeStyle = "rgba(238,246,255,0.45)";
@@ -1281,16 +1300,13 @@ export function createRenderer(canvas) {
     } else if (token.type === "magnet") {
       const rx = MAGNET_R * view.scale * k;
       const ry = rx * TILT;
-      // 磁力柔光（在盘体之下，读成"这块地方有磁力"）
-      const field = ctx.createRadialGradient(p.x, p.y, rx * 0.7, p.x, p.y, rx * 1.9);
-      field.addColorStop(0, `rgba(140,190,255,${0.24 + 0.1 * Math.sin(clock * 2.4)})`);
-      field.addColorStop(0.55, `rgba(120,170,255,${0.09 + 0.04 * Math.sin(clock * 2.4)})`);
-      field.addColorStop(1, "rgba(120,170,255,0)");
-      ctx.fillStyle = field;
+      // 台面切缝
       ctx.beginPath();
-      ctx.ellipse(p.x, p.y, rx * 1.9, ry * 1.9, 0, 0, Math.PI * 2);
-      ctx.fill();
-      // 磁块本体：金属圈 + 深色盘心
+      ctx.ellipse(p.x, p.y, rx * 1.16, ry * 1.16, 0, 0, Math.PI * 2);
+      ctx.strokeStyle = "rgba(0,0,0,0.5)";
+      ctx.lineWidth = Math.max(1, view.scale * 0.035);
+      ctx.stroke();
+      // 磁块本体：平嵌台面的薄钢板环 + 深色盘心（币可以整个压在它上面）
       ctx.beginPath();
       ctx.ellipse(p.x, p.y, rx * 1.1, ry * 1.1, 0, 0, Math.PI * 2);
       const mrim = ctx.createLinearGradient(0, p.y - ry * 1.1, 0, p.y + ry * 1.1);
@@ -1306,15 +1322,57 @@ export function createRenderer(canvas) {
       mcore.addColorStop(1, "#26334f");
       ctx.fillStyle = mcore;
       ctx.fill();
+      // 马蹄磁铁贴花：压扁空间内画弧形蹄身 + 双红极，开口朝玩家。
+      // 弃用系统字体 "U" 字形 —— 字形被前排币裁掉下半后只剩两根白柱，读不出任何东西。
       ctx.save();
       ctx.translate(p.x, p.y);
       ctx.scale(1, TILT);
-      ctx.fillStyle = "rgba(196,224,255,0.95)";
-      ctx.font = `700 ${Math.round(rx * 0.9)}px system-ui, sans-serif`;
-      ctx.textAlign = "center";
-      ctx.textBaseline = "middle";
-      ctx.fillText("U", 0, 0);
+      const R = rx * 0.5;
+      const arm = rx * 0.2;
+      const gap = 0.5;
+      ctx.beginPath();
+      ctx.arc(0, 0, R + arm * 0.5, Math.PI / 2 + gap, Math.PI / 2 - gap, false);
+      ctx.arc(0, 0, R - arm * 0.5, Math.PI / 2 - gap, Math.PI / 2 + gap, true);
+      ctx.closePath();
+      const steel = ctx.createLinearGradient(0, -(R + arm), 0, R + arm);
+      steel.addColorStop(0, "#dfe8f6");
+      steel.addColorStop(1, "#8fa2c0");
+      ctx.fillStyle = steel;
+      ctx.fill();
+      ctx.lineWidth = Math.max(1, arm * 0.14);
+      ctx.strokeStyle = "rgba(20,30,50,0.55)";
+      ctx.stroke();
+      for (const s of [-1, 1]) {
+        const a = Math.PI / 2 + s * gap;
+        ctx.beginPath();
+        ctx.arc(Math.cos(a) * R, Math.sin(a) * R, arm * 0.62, 0, Math.PI * 2);
+        ctx.fillStyle = "#e0564e";
+        ctx.fill();
+        ctx.beginPath();
+        ctx.arc(Math.cos(a) * R - arm * 0.18, Math.sin(a) * R - arm * 0.18, arm * 0.2, 0, Math.PI * 2);
+        ctx.fillStyle = "rgba(255,255,255,0.5)";
+        ctx.fill();
+      }
       ctx.restore();
+    }
+  }
+
+  // 磁力场辉光：叠在币面之上（场罩着币，而不是垫在币下），
+  // 半径直接用引擎的真实作用范围 MAGNET_RADIUS —— 光圈即捕获区，所见即所得。
+  function drawTokenGlows(state) {
+    for (const token of state.tokens) {
+      if (token.type !== "magnet") continue;
+      const p = P(token.x, token.y);
+      const fr = MAGNET_RADIUS * view.scale * p.k;
+      const a = 0.15 + 0.05 * Math.sin(clock * 2.4);
+      const field = ctx.createRadialGradient(p.x, p.y, fr * 0.18, p.x, p.y, fr);
+      field.addColorStop(0, `rgba(140,190,255,${a})`);
+      field.addColorStop(0.55, `rgba(120,170,255,${a * 0.42})`);
+      field.addColorStop(1, "rgba(120,170,255,0)");
+      ctx.fillStyle = field;
+      ctx.beginPath();
+      ctx.ellipse(p.x, p.y, fr, fr * TILT, 0, 0, Math.PI * 2);
+      ctx.fill();
     }
   }
 
@@ -1742,6 +1800,11 @@ export function createRenderer(canvas) {
     if (state) {
       drawPusherChamber(state);
       drawChuteRig(state);
+      // 贴地机关（弹射井 / 磁力盘）是地板的一部分：先于一切台面物件绘制，
+      // 任何币——哪怕站在机关身后——都盖在它上面（贴地层不参与 y 遮挡排序）。
+      for (const token of state.tokens) {
+        if (token.type !== "card") drawTokenBase(token);
+      }
       // 由远及近排序：台面上的金币 / 机关 / 遮挡杆梯架 / 推板前缘，谁 y 大谁后画（遮住远处）。
       // 飞行中的币不参与排序——它在空中，必须始终画在最上层，否则会被推板挡住。
       const items = [];
@@ -1750,7 +1813,9 @@ export function createRenderer(canvas) {
         if (coin.chute > 0 || coin.air > 0) flying.push(coin);
         else items.push({ y: coin.y, draw: () => drawOneCoin(coin) });
       }
-      for (const token of state.tokens) items.push({ y: token.y, draw: () => drawToken(token) });
+      for (const token of state.tokens) {
+        if (token.type === "card") items.push({ y: token.y, draw: () => drawToken(token) });
+      }
       const pegs = state.pegs || [];
       pegCount = pegs.length;
       // 遮挡杆按排成组：一排 = 一根横梁 + 若干短杆，整排作为一个画家项参与遮挡排序
@@ -1759,6 +1824,8 @@ export function createRenderer(canvas) {
       items.sort((a, b) => a.y - b.y);
       for (const item of items) item.draw();
       for (const coin of flying) drawOneCoin(coin);
+      // 磁力场辉光罩在币面之上：场作用于币，光效叠在币上而不是垫在币下。
+      drawTokenGlows(state);
     }
     drawParticles();
     ctx.restore();
