@@ -7,6 +7,9 @@
 //      盖掉，塔身满布"面残缺"（z-buffer 逐像素实测 9.99% 错像素）；
 //   4) 悬停柔光不裁剪 → 半径 1.5× 外接圆整片糊上去，把相邻木块与塔外背景一起照亮，
 //      被照的那层起雾发白像"缺了一块"（用户反馈：视觉残缺）。
+//   5) 落位区与 canStack 语义不一致 → topLineBoxes 对"顶层已满"返回空数组，画布上零个
+//      落位点，玩家点塔顶永远命中实体块，卡在 HOLDING 抽不了第二块（用户反馈：第 7 关
+//      「抽了一个就不能抽了」；第 2 章起 18 个手动选位关全中招）。
 // 断言方式：把 render.mjs 真实画出来的多边形全部录下来，逐条做几何检查，
 // 而不是只断言"没抛错"。
 
@@ -14,7 +17,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { createRenderer, faceRects } from "../js/render.mjs";
 import {
-  createInitialState, STATUS, BLOCK_H, BLOCK_L, BLOCK_W, layerCount, towerBlocks, pullBlock, stackBlock, canStack, pullableBlocks, layerBox
+  createInitialState, cloneState, STATUS, BLOCK_H, BLOCK_L, BLOCK_W, layerCount, towerBlocks, pullBlock, stackBlock, canStack, pullableBlocks, layerBox
 } from "../js/engine.mjs";
 
 // ---------------------------------------------------------------- Canvas 录制桩
@@ -277,9 +280,66 @@ test("命中测试：点顶块中心能选中，点空白处返回 null", () => 
   const block = towerBlocks(state).find((b) => b.layer === topLayer);
   const y = (topLayer + 1) * BLOCK_H;
   const p = renderer.project(block.px, y, block.pz);
-  const hit = renderer.hitTest(p.x, p.y, state, { alwaysSlots: true });
+  // IDLE 态不显示落位槽（alwaysSlots 只在 HOLDING 传，见 main.mjs）——点顶块命中块本身
+  const hit = renderer.hitTest(p.x, p.y, state);
   assert.ok(hit && hit.kind === "block" && hit.id === block.id, `应命中顶块，实得 ${JSON.stringify(hit)}`);
   assert.equal(renderer.hitTest(-9999, -9999, state), null);
+});
+
+test("HOLDING 落位区必须与 canStack 语义一致（顶层满 → 新层三槽可命中）", () => {
+  // bug 护栏：topLineBoxes 曾对"顶层已满"返回空数组——画布上零个落位点。玩家按
+  // touchTip 提示点塔顶落位永远命中实体块（「非法」toast + blocked），卡在 HOLDING
+  // 再抽全被拒，即「抽了一个就不能抽了」。第 2 章起 18 个手动选位关抽底层端头
+  // （顶层仍满）必踩，实测全中招。矩阵：24 关 × 3 策略 × 连抽 + 24 关安全连抽 12 轮。
+  const state = createInitialState({ seed: 101037 });
+  const { renderer } = bootRenderer(0, state);
+  // 扫画布收集命中的槽位号（drawTopSlots 与 hitTest 共用 topLineBoxes，几何一致）
+  const scanSlots = () => {
+    const hits = new Set();
+    for (let y = 2; y < renderer.getView().h - 2; y += 4) {
+      for (let x = 2; x < renderer.getView().w - 2; x += 4) {
+        const h = renderer.hitTest(x, y, state, { alwaysSlots: true });
+        if (h && h.kind === "slot") hits.add(h.slot);
+      }
+    }
+    return [...hits].sort();
+  };
+
+  // ① 顶层满：抽一块不会塌的 → HOLDING，引擎三槽全合法，画布必须三个都命中得了
+  let first = null;
+  for (const cand of pullableBlocks(state)) {
+    const probe = cloneState(state);
+    const r = pullBlock(probe, cand.layer, cand.slot);
+    if (r.ok && !r.collapsed) { first = cand; break; }
+  }
+  assert.ok(first, "必须找得到不会塌的首抽块");
+  assert.ok(first.layer < layerCount(state) - 1, "预置：抽非顶层，顶层保持满");
+  pullBlock(state, first.layer, first.slot);
+  assert.equal(state.status, STATUS.HOLDING);
+  const legalFull = [0, 1, 2].filter((s) => canStack(state, s));
+  assert.deepEqual(legalFull, [0, 1, 2], "顶层满时 canStack 三槽全合法（落位自动起新层）");
+  const hitsFull = scanSlots();
+  assert.deepEqual(hitsFull, [0, 1, 2], `顶层满时三槽必须全部可命中，实得 ${JSON.stringify(hitsFull)}`);
+  // 落位后必须起新层且回到 IDLE（链条闭环，不卡死）
+  stackBlock(state, 1);
+  assert.equal(state.status, STATUS.IDLE);
+  assert.equal(layerCount(state), 19, "往满层顶落位必须起新层");
+
+  // ② 顶层未满：只应命中空槽，已占槽不得可命中（防止把块叠进已占位置）
+  let second = null;
+  for (const cand of pullableBlocks(state)) {
+    if (cand.layer >= layerCount(state) - 1) continue; // 顶层不可抽
+    const probe = cloneState(state);
+    const r = pullBlock(probe, cand.layer, cand.slot);
+    if (r.ok && !r.collapsed) { second = cand; break; }
+  }
+  assert.ok(second, "新层之下必须还有不会塌的可抽块");
+  pullBlock(state, second.layer, second.slot);
+  assert.equal(state.status, STATUS.HOLDING);
+  const legalPart = [0, 1, 2].filter((s) => canStack(state, s));
+  assert.deepEqual(legalPart, [0, 2], "新层已占 slot 1，只剩两个空槽合法");
+  const hitsPart = scanSlots();
+  assert.deepEqual(hitsPart, [0, 2], `未满时必须恰好命中两个空槽，实得 ${JSON.stringify(hitsPart)}`);
 });
 
 test("自适应取景：18 层与 27 层都不削顶、不出框", () => {

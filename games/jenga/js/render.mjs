@@ -392,8 +392,7 @@ export function createRenderer(canvas) {
     if (!top) return;
     const show = state.status === STATUS.HOLDING || opts.alwaysSlots;
     if (!show) return;
-    const axisX = axisOfLayer(layerCount(state) - 1) === 0;
-    const line = topLineBoxes(state, top, axisX);
+    const line = topLineBoxes(state, top);
     line.forEach((entry, i) => {
       const active = opts.slotIds?.includes(entry.slot);
       const hovered = opts.hoverSlot === entry.slot;
@@ -414,18 +413,30 @@ export function createRenderer(canvas) {
     });
   }
 
-  function topLineBoxes(state, top, axisX) {
+  // 塔顶落位区的几何（drawTopSlots 与 hitTest 共用，必须与 engine 的 canStack 语义一致）：
+  //   顶层未满 → 只列空槽（叠进本层空位，真实 Jenga 规则）；
+  //   顶层已满 → canStack 说"三槽全合法（落位自动起新层）"、HUD 按钮与
+  //     availableSlots 也都这么说，这里就必须同步给出「新层」的三个虚拟槽位。
+  // ⚠ 旧实现顶层满时返回空数组：画布上零个落位点，玩家按 touchTip 提示点塔顶
+  //   永远点空（只命中实体块 →「非法」toast），卡在 HOLDING 再抽全被 blocked——
+  //   即「抽了一个就不能抽了」。第 2 章起全是手动选位关卡，抽底层端头（顶层仍满）
+  //   必踩，实测第 7 关起 18 关全中招。
+  // 虚拟槽位高度 = 上一层顶（layerIdx+1），朝向按新层索引 axisOfLayer 算；
+  // ox/oz 取顶层偏移做近似（stackBlock 起新层时的随机漂移无法预知，只影响视觉微差）。
+  function topLineBoxes(state, top) {
     const layerIdx = layerCount(state) - 1;
-    const baseY = layerIdx * BLOCK_H;
+    const full = top.slots.every((id) => id != null);
+    const layer = full ? layerIdx + 1 : layerIdx;
+    const y = layer * BLOCK_H;
+    const axisX = axisOfLayer(layer) === 0;
     const out = [];
     for (let slot = 0; slot < PER_LAYER; slot += 1) {
-      if (top.slots[slot] != null) continue;
+      if (!full && top.slots[slot] != null) continue;
       const off = slotOffset(slot);
       const cx = axisX ? (top.ox || 0) : off + (top.ox || 0);
       const cz = axisX ? off + (top.oz || 0) : (top.oz || 0);
       const hx = axisX ? BLOCK_L / 2 : BLOCK_W / 2;
       const hz = axisX ? BLOCK_W / 2 : BLOCK_L / 2;
-      const y = baseY;
       const corners = [
         [-hx, -hz], [hx, -hz], [hx, hz], [-hx, hz]
       ].map(([dx, dz]) => project(...tilt(state, cx + dx, y, cz + dz)));
@@ -671,8 +682,7 @@ export function createRenderer(canvas) {
     // 先看塔顶槽位（落位点在最上层之上，永远优先）
     const top = state.layers[layerCount(state) - 1];
     if (top && (state.status === STATUS.HOLDING || opts.alwaysSlots)) {
-      const axisX = axisOfLayer(layerCount(state) - 1) === 0;
-      for (const entry of topLineBoxes(state, top, axisX)) {
+      for (const entry of topLineBoxes(state, top)) {
         if (pointInPolygon(point, entry.pts)) return { kind: "slot", slot: entry.slot };
       }
     }
