@@ -510,18 +510,27 @@ function applyEdgeTip(state, dt) {
   }
 }
 
-// 两侧低挡边：币心进入沟槽带后受到向内的弹簧回推 + 侧向阻尼（弹簧-阻尼器模型）。
-// 被推板挤压得足够狠的币会突破挡边掉进侧仓——这就是真实机台的 house edge。
-// 阻尼是必需的：只有弹簧时币被推回后会带着动能冲过边界，且整个过程缓慢可见。
+// 两侧低挡边 = 接触式单向墙：只阻挡"正被往外挤"的币，**绝不把静止的币推向中间**。
+// 曾经是无条件弹簧回推（币心进带即受力）：静止贴边币会自行获得 vx、整列边缘币
+// 一起滑向台面中央（用户反馈「边缘的金币莫名其妙自动往中间弹回来」）。
+// 静止物体在无接触时受力 = 违反"无人推动绝不自行移动"铁律（与 applyEdgeTip 同源）。
+// 真实机台的侧挡边是矮墙：币贴着不动毫无关系，被推板狠挤才翻过去掉侧仓
+// ——那就是真实机台的 house edge。
 function applyGutter(state, dt) {
   for (const coin of state.coins) {
     if (coin.chute > 0 || coin.air > 0) continue;
     if (coin.x < GUTTER) {
+      if (coin.vx >= 0) continue; // 静止或向内运动：挡边对这个币不存在
       const t = 1 - coin.x / GUTTER;
       coin.vx += (GUTTER_PUSH * t - GUTTER_DAMP * coin.vx) * dt;
     } else if (coin.x <= FIELD_W && coin.x > FIELD_W - GUTTER) {
+      if (coin.vx <= 0) continue;
       const t = 1 - (FIELD_W - coin.x) / GUTTER;
-      coin.vx -= (GUTTER_PUSH * t - GUTTER_DAMP * coin.vx) * dt;
+      // 弹簧把币推离右墙（-x）且阻尼同步泄掉外向速度，二者同向：
+      // dv/dt = -(P·t) - D·v。曾经中间写成减号（-(P·t - D·v)），
+      // vx>0 时阻尼项变负阻尼、每帧给币加速往墙外推——撞右挡边的币
+      // 会直接飞出 FIELD_W 掉侧仓（探针 [E] 实测，初速 +4 即穿）。
+      coin.vx -= (GUTTER_PUSH * t + GUTTER_DAMP * coin.vx) * dt;
     }
   }
 }

@@ -515,20 +515,71 @@ describe("engine: 台面静置不变量（无人推动绝不自行移动）", ()
     }
   });
 
-  it("沟槽带内的币被挡边推回后不得过冲越界（弹簧-阻尼，不是持续吹风）", () => {
-    // 注入方式：GUTTER_DAMP 设 0（只留弹簧）→ 币过冲到 0.93 → 打红
+  it("挡边是接触式墙：静止边缘币零自移，撞挡边的币被拦住且不过冲", () => {
+    // 用户反馈「边缘的金币莫名其妙自动往中间弹回来」。
+    // 旧实现是无条件弹簧回推：静止贴边币自行获得 vx、整列边缘币一起滑向台面中央。
+    // 注入方式 1：删掉 applyGutter 的 vx 门控（恢复无条件弹簧）→ A 组位移 → 打红
+    // 注入方式 2：右分支阻尼符号改回减号（负阻尼）→ 右缘币被加速甩出 FIELD_W 掉侧仓 → C 组打红
+    // 注入方式 3：GUTTER_DAMP 设 0 → 回弹穿透/过冲 → B 组打红
+
+    // A. 静止币零自移（左右两缘 + 前缘角落；推板碰不到的 y 段）
+    //    位置 bit-exact：无接触、无受力 ⇒ 积分步进 x += 0·h。
+    //    坐标硬编码，绝不跟着 GUTTER / FIELD_W / TIP_ZONE 走——否则注入缺陷时位置一起漂移，断言恒真。
+    const cases = [
+      { id: 1, x: 0.30, y: 7.0 },
+      { id: 2, x: 0.62, y: 9.3 },
+      { id: 3, x: 12.65, y: 7.0 },
+      { id: 4, x: 12.30, y: 9.3 },
+      { id: 5, x: 0.40, y: 10.70 }
+    ];
     let cur = startEndless(50, 7);
     cur.status = STATUS.PLAYING;
     cur.tokens = [];
     cur.pegs = [];
-    cur.coins = [mkCoin(1, 0.30, 7.0)];
-    let maxX = 0;
+    cur.coins = cases.map((c) => mkCoin(c.id, c.x, c.y));
+    for (let i = 0; i < 1200; i++) cur = stepFrame(cur, FIXED_DT, {}).state; // 10s：覆盖多个推板周期
+    assert.equal(cur.coins.length, cases.length, "静止边缘币不该消失");
+    for (const c of cases) {
+      const now = cur.coins.find((q) => q.id === c.id);
+      assert.equal(now.x, c.x, `静止边缘币 #${c.id} 横向自移（x=${now.x}）`);
+      assert.equal(now.y, c.y, `静止边缘币 #${c.id} 纵向自移（y=${now.y}）`);
+    }
+
+    // B. 撞左挡边（vx=-4 ≈ 推板量级）：不许穿透 x=0 掉侧仓，回推不许过冲越界
+    cur = startEndless(50, 7);
+    cur.status = STATUS.PLAYING;
+    cur.tokens = [];
+    cur.pegs = [];
+    cur.coins = [mkCoin(11, 0.60, 7.0, { vx: -4 })];
+    let minX = 0.60;
+    let maxX = 0.60;
     for (let i = 0; i < 600; i++) {
       cur = stepFrame(cur, FIXED_DT, {}).state;
       if (cur.coins.length === 0) break;
-      if (cur.coins[0].x > maxX) maxX = cur.coins[0].x;
+      minX = Math.min(minX, cur.coins[0].x);
+      maxX = Math.max(maxX, cur.coins[0].x);
     }
+    assert.equal(cur.coins.length, 1, "撞左挡边的币被穿透甩出台面（minX=" + minX + "）");
+    // rail 硬度：vx=-4（推板量级）的币心最多探入 0.30（= 30% 币径，硬编码常量，绝不从 GUTTER 派生）。
+    // 注入方式 3（GUTTER_DAMP=0）下实测探到 0.174 —— 挡边变软、币几乎贴到墙根，此断言即为其捕获位。
+    assert.ok(minX >= 0.30, `挡边必须硬：撞击下探入过深，minX=${minX}（下限 0.30）`);
     assert.ok(maxX <= GUTTER + 1e-3, `挡边回推不得过冲越界，实际冲到 x=${maxX}（边界 ${GUTTER}）`);
+
+    // C. 撞右挡边（vx=+4）：负阻尼 bug 的捕获位——旧代码每帧给币加速往墙外推
+    cur = startEndless(50, 7);
+    cur.status = STATUS.PLAYING;
+    cur.tokens = [];
+    cur.pegs = [];
+    cur.coins = [mkCoin(12, 12.40, 7.0, { vx: 4 })];
+    let rMaxX = 12.40;
+    for (let i = 0; i < 600; i++) {
+      cur = stepFrame(cur, FIXED_DT, {}).state;
+      if (cur.coins.length === 0) break;
+      rMaxX = Math.max(rMaxX, cur.coins[0].x);
+    }
+    assert.equal(cur.coins.length, 1, `撞右挡边的币被甩出右墙掉侧仓（maxX=${rMaxX}）`);
+    // rail 硬度（右侧对称，同一条硬编码下限 0.30）
+    assert.ok(rMaxX <= FIELD_W - 0.30, `挡边必须硬：右向撞击探入过深，maxX=${rMaxX}（上限 ${FIELD_W - 0.30}）`);
   });
 
   it("推板推进必须真正推动币堆（行程最远端须越过首行铺币球心）", () => {
