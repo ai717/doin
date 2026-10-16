@@ -127,8 +127,19 @@ export function createRenderer(canvas) {
 
   function blockBox(state, block) {
     if (state.status === STATUS.COLLAPSE || state.status === STATUS.LOST || !block.inTower) {
+      // 塌落块按原层级朝向保留占地（一横一竖），否则同层三块全画成横的会互相嵌成一块。
+      // yLow/yHigh 跟着 py 走——写死 0.3 会让木纹与粉笔记号画到地面高度去。
       const hy = BLOCK_H / 2;
-      return { x0: -BLOCK_L / 2, x1: BLOCK_L / 2, z0: -BLOCK_W / 2, z1: BLOCK_W / 2, yLow: -hy, yHigh: hy, pos: [block.px, block.py, block.pz], rot: true };
+      const long = axisOfLayer(block.layer ?? 0) === 0;
+      const hx = long ? BLOCK_L / 2 : BLOCK_W / 2;
+      const hz = long ? BLOCK_W / 2 : BLOCK_L / 2;
+      return {
+        x0: -hx, x1: hx, z0: -hz, z1: hz,
+        yLow: block.py - hy, yHigh: block.py + hy,
+        pos: [block.px, block.py, block.pz],
+        rot: true,
+        long
+      };
     }
     const box = layerBox(state, block.layer, block.slot);
     if (!box) return null;
@@ -511,15 +522,83 @@ export function createRenderer(canvas) {
   // 自适应取景：塔越长高就缩得越小，18~27 层都不削顶、不出框；缩放平滑过渡。
   // 水平占地按塔垫椭圆算（横向半宽 R√2、竖向半宽 R√2·ISO_Y，与 yaw 无关），
   // 手持块另算 1.75 的顶部余量——否则抽出的块会顶出画布上沿。
+  // 塌落/散落阶段改按碎屑包围盒取景：碎屑会铺开到 4 个块长，还按 18 层塔高取景的话
+  // 左右直接顶出画布（旧实现 towerHeight 只数 inTower 块，塌落时它们全 false）。
+  //
+  // ⚠ 两个都踩过的坑：
+  // 1) 这里量出来的必须是"相对锚点的偏移"。project() 带 cx/cy 偏移，直接拿它的返回值
+  //    当偏移反解 scale，roomY 会算成 25/285 ≈ 0.09——整片碎屑缩成亚像素，画面全空。
+  // 2) 碎屑是贴地的一片，屏幕竖直方向向下伸出 0.707R；塔式锚点贴在舞台下方
+  //    （cy = h − 0.12h）只剩 38px 余量，按它取景同样把碎屑压成看不见。所以塌落阶段
+  //    锚点上移到画面中部，上下都有余量（见 fitView 里的 cy 缓动）。
+  function debrisExtent(state) {
+    const r = BLOCK_L / 2; // 姿态吸附后最大半幅（躺平 x 向就是它）
+    // project() 读的是 view.scale/zoom，先把它们按"单位缩放"量一遍再还原，
+    // 否则拿到的极值反解不出目标 scale。锚点偏移当场减掉，与缩放/锚点无关。
+    const s0 = view.scale;
+    const z0 = view.zoom;
+    view.scale = 1;
+    view.zoom = 1;
+    let minX = Infinity;
+    let maxX = -Infinity;
+    let minY = Infinity;
+    let maxY = -Infinity;
+    for (const b of state.blocks) {
+      if (b.inTower) continue;
+      for (const sx of [-r, r]) {
+        for (const sz of [-r, r]) {
+          for (const sy of [-r, r]) {
+            const p = project(b.px + sx, b.py + sy, b.pz + sz);
+            const ox = p.x - view.cx;
+            const oy = p.y - view.cy;
+            if (ox < minX) minX = ox;
+            if (ox > maxX) maxX = ox;
+            if (oy < minY) minY = oy;
+            if (oy > maxY) maxY = oy;
+          }
+        }
+      }
+    }
+    view.scale = s0;
+    view.zoom = z0;
+    if (!Number.isFinite(minX)) return null;
+    return { minX, maxX, minY, maxY };
+  }
+
   function fitView(state, dt) {
     if (!ctx) return;
-    const towerH = towerHeight(state);
-    const headroom = state.held != null ? 1.75 : 0.4;
-    const target = Math.min(
-      (view.w * 0.94) / (FOOT_HW * 2 + 0.9),
-      (view.cy - view.h * 0.035) / (towerH + FOOT_HH + headroom),
-      (view.h - view.cy - view.h * 0.02) / (FOOT_HH + 0.3)
-    );
+    let target;
+    const debris = state.status === STATUS.COLLAPSE || state.status === STATUS.LOST
+      ? debrisExtent(state)
+      : null;
+    // 塌落阶段把锚点从"舞台下方"缓动到"画面中部"：碎屑场是贴着地面的一整片，
+    // 需要上下对称的余量；塔则向上生长，锚点必须贴在下方。切回非塌落状态时
+    // 锚点再缓动回去（restart 后不会跳变）。
+    const anchorWant = debris ? view.h * 0.52 : view.h - view.h * 0.12;
+    const kc = reduced ? 1 : Math.min(1, dt * 5);
+    view.cy += (anchorWant - view.cy) * kc;
+    if (debris) {
+      // 单位缩放的极值（相对锚点）⇒ 屏幕坐标 = 锚点 + 偏移·(scale·zoom)，反解 scale 时把 zoom 除掉。
+      const z = view.zoom || 1;
+      const ay = view.cy;
+      const roomX = Math.min(
+        (view.cx - view.w * 0.03) / Math.max(1e-6, -debris.minX),
+        (view.w * 0.97 - view.cx) / Math.max(1e-6, debris.maxX)
+      );
+      const roomY = Math.min(
+        (ay - view.h * 0.04) / Math.max(1e-6, -debris.minY),
+        (view.h * 0.96 - ay) / Math.max(1e-6, debris.maxY)
+      );
+      target = Math.min(roomX, roomY) / z;
+    } else {
+      const towerH = towerHeight(state);
+      const headroom = state.held != null ? 1.75 : 0.4;
+      target = Math.min(
+        (view.w * 0.94) / (FOOT_HW * 2 + 0.9),
+        (view.cy - view.h * 0.035) / (towerH + FOOT_HH + headroom),
+        (view.h - view.cy - view.h * 0.02) / (FOOT_HH + 0.3)
+      );
+    }
     const k = reduced ? 1 : Math.min(1, dt * 3.2);
     view.scale += (target - view.scale) * k;
     if (Math.abs(target - view.scale) < 0.02) view.scale = target;

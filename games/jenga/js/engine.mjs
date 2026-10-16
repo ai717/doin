@@ -76,7 +76,35 @@ export const LEAN_HEIGHT_GAIN = 2.2;
 export const COLLAPSE_TIME = 3.2;
 export const REST_SPEED = 0.06;
 export const GROUND_RESTITUTION = 0.26;
-export const GROUND_FRICTION = 0.62;
+// 落地滑移阻力（每秒指数衰减）。旧实现是"每帧 ×0.62"，在 120Hz 固定步长下等于
+// 每秒 ×0.62^120 ≈ 0 —— 触地即冻住，既不帧率无关也谈不上滑移。改成显式速率。
+// 取 3.2：14 太黏（块全堆在塔基 narrow band 里堆成针塔），5.5 能把大部队摊到
+// 半径 10，但塔顶会冻成一根 16 块的刚性小塔（承接链把相对层高原样保留），
+// 收尾打包在 6 单位内找不到空地，只能把小塔原样留下——就是"最后散落很凌乱"。
+// 3.2 让塌落波把塔真正打散，打包时才摊得平。
+export const GROUND_DRAG = 3.2;
+// 收尾打包的螺旋搜索参数：步长与最大环数（环 = 方环，环上点距原点 ≥ 环×步长）。
+// 步长必须细：0.6 的粗网格在碎片化空地上根本落不下 3×1 的足迹，只能往上叠——
+// 实测粗网格把泡沫态叠出 15 层塔。0.25 配 24 环 = 6 个单位搜索半径：塔顶冻成的
+// 刚性小塔旁边往往没有空地，但 6 单位内必有（塌落波把 debris 摊到半径 10）。
+// worst case 每块扫 1+8×(1+…+24)=2353 个点，54 块总共几百万次格子判定（<30ms）。
+export const DEBRIS_PACK_STEP = 0.25;
+export const DEBRIS_PACK_RINGS = 24;
+// 空间哈希格子边长。足迹重叠 ⟺ 两块所占格子范围相交（floor 单调），
+// 所以格子判定对"能不能搁这儿"是精确的，只会保守不会漏判。
+export const DEBRIS_PACK_CELL = 0.25;
+// 收尾整姿到 LOST 之间的"落位"阶段：块从物理落点插值到打包目标位，而不是
+// 一帧之内拍过去（实测直接拍会改动 16% 的画布像素，肉眼是个明显的"跳"）。
+// 线性匀速：每块时长 = 位移 / SETTLE_SPEED（封顶 1.2s），所以不管远近，所有块
+// 的滑行速度一致——指数插值会让 10 单位的远块在 0.5s 内冲出 60 单位/秒，
+// 看着像碎屑乱飞。逐块延迟 = 序号 × SETTLE_STAGGER，从底部往上波浪式落位。
+export const SETTLE_STAGGER = 0.006;
+export const SETTLE_SPEED = 14;
+export const SETTLE_MAX_TIME = 1.6;
+// 每块初速相对倒塌方向的随机扇面角（弧度，±63°）。塔倒下去是一条线，块弹
+// 开是一片扇形——扇面越宽，塌落波越能把塔打散（冻不成刚性小塔），收尾时也
+// 越容易摊平。±49° 实测还能冻出 16 块的整根小塔。
+export const COLLAPSE_FAN = 1.1;
 export const EPS = 1e-6;
 // 支撑角判定容差：必须大于初始摆放抖动的最大值（HAND_JITTER），
 // 否则手工摆放的微小错位会把标准塔判成悬空。
@@ -455,7 +483,9 @@ function makeBlock(state, id, layer, slot) {
     spinX: 0,
     spinZ: 0,
     inTower: true,
-    resting: false
+    resting: false,
+    landed: false, // 塌落中是否已触地/压到别的块（决定何时开始吃落地阻力）
+    support: -1 // 正下方托着本块的那块在 state.blocks 里的下标（-1 = 没有/待定）
   };
 }
 
@@ -639,30 +669,60 @@ export function startCollapse(state) {
     const h = b.py / maxH;
     b.inTower = false;
     b.resting = false;
-    b.vx = dirX * (0.9 + 2.4 * h) + randRange(state, -0.6, 0.6);
-    b.vz = dirZ * (0.9 + 2.4 * h) + randRange(state, -0.6, 0.6);
-    b.vy = randRange(state, -0.2, 0.6);
-    b.spinX = randRange(state, -3.2, 3.2);
-    b.spinZ = randRange(state, -3.2, 3.2);
+    b.landed = false;
+    // 倒塌方向 + 每块一个随机扇面角：整座塔朝 lean 方向翻，但块与块、块与地
+    // 碰撞后会向两侧弹开。旧实现所有块共用同一方向（只加 ±0.25 直线抖动），
+    // 54 块排成一条 12 单位长的线，沿线首尾相接全被贪心堆叠成针塔。
+    const fan = randRange(state, -COLLAPSE_FAN, COLLAPSE_FAN);
+    const cs = Math.cos(fan);
+    const sn = Math.sin(fan);
+    const fx = dirX * cs - dirZ * sn;
+    const fz = dirX * sn + dirZ * cs;
+    const speed = (1.1 + 3.6 * h) * randRange(state, 0.75, 1.25);
+    b.vx = fx * speed + randRange(state, -0.2, 0.2);
+    b.vz = fz * speed + randRange(state, -0.2, 0.2);
+    b.vy = randRange(state, -0.15, 0.25);
+    // 整座塔朝同一个方向翻过去，而不是每块各转各的：绕"垂直于倒塌方向的水平轴"
+    // 给同一个角速度。倒下 +x ⇒ 绕 z 轴正向翻（顶朝 +x 走），倒下 +z ⇒ 绕 x 轴正向翻。
+    // 旧实现 spinX/spinZ 各自独立 ±3.2 rad/s，塌完 54 块没有一块还是轴对齐的，
+    // 其中十几块竖着立在半空——"最后散落的状态很凌乱"主要就是这个。
+    const tumble = randRange(state, 1.1, 2.0) + randRange(state, -0.15, 0.15);
+    b.spinZ = dirX * tumble;
+    b.spinX = dirZ * tumble;
   }
   if (state.held != null) {
     const hb = state.blocks[state.held];
-    hb.vx = dirX * 1.4 + randRange(state, -0.5, 0.5);
-    hb.vz = dirZ * 1.4 + randRange(state, -0.5, 0.5);
-    hb.vy = 0.6;
-    hb.spinX = randRange(state, -2, 2);
-    hb.spinZ = randRange(state, -2, 2);
+    const fan = randRange(state, -COLLAPSE_FAN, COLLAPSE_FAN);
+    const cs = Math.cos(fan);
+    const sn = Math.sin(fan);
+    hb.vx = (dirX * cs - dirZ * sn) * 1.4 + randRange(state, -0.25, 0.25);
+    hb.vz = (dirX * sn + dirZ * cs) * 1.4 + randRange(state, -0.25, 0.25);
+    hb.vy = 0.3;
+    const tumble = randRange(state, 1.0, 1.6);
+    hb.spinZ = dirX * tumble;
+    hb.spinX = dirZ * tumble;
   }
   state.streak = 0;
   state.status = STATUS.COLLAPSE;
-  state.collapse = { t: 0, dirX, dirZ, done: false };
+  state.collapse = { t: 0, dirX, dirZ, done: false, pack: null, settleT: 0 };
   return state;
+}
+
+// 塌落中每块的水平占地（保留原层级的朝向：交错层的块本来就一横一竖）。
+// 全按同一个朝向画会让同层三块互相嵌成一块，视觉上直接"糊"掉。
+function blockSpan(block) {
+  const long = axisOfLayer(block.layer ?? 0) === 0;
+  return long
+    ? { hx: BLOCK_L / 2, hz: BLOCK_W / 2 }
+    : { hx: BLOCK_W / 2, hz: BLOCK_L / 2 };
 }
 
 function stepCollapse(state, dt) {
   const col = state.collapse;
   col.t += dt;
   state.time += dt;
+  // 收尾落位阶段：物理已经结束，块正逐块插值到打包目标位，不再跑重力/承接
+  if (col.pack) return settleStep(state, dt);
   const bodies = state.blocks;
   for (const b of bodies) {
     if (b.resting) continue;
@@ -673,67 +733,297 @@ function stepCollapse(state, dt) {
     b.rx += b.spinX * dt;
     b.rz += b.spinZ * dt;
   }
-  // 块间竖直分离：避免塌落时整堆木块互相穿模叠成一层。
+  // 承接：只有"上面那块正落向下面那块"时才把它放到下层块顶、并停下落速度。
+  // 并排下落的块（dy≈0、速度接近）一律不碰。
+  //
+  // ⚠ 两块历史坑都在这段循环里：
+  // 1) 旧实现让同一块在一帧内被多个下方块连续承接。密堆里存在"逐级低 0.1 的
+  //    楼梯"，每承接一次就把 a 往上顶最多 0.55，实测最高 py 从 5.2 一路泵到
+  //    7.5 且三秒还在泵。现在每块每帧只承接一次（snapped 旗标）。
+  // 2) 更旧的实现对"相距 1 个块宽以内的每一对"都做竖向分离并把竖向速度对半
+  //    衰减，18 层密堆积塔里每块每帧都被切一次速度：整座塔既不往下掉还往上膨胀。
   for (let i = 0; i < bodies.length; i += 1) {
     const a = bodies[i];
     if (a.resting) continue;
-    for (let j = i + 1; j < bodies.length; j += 1) {
+    const sa = blockSpan(a);
+    let snapped = false;
+    for (let j = i + 1; j < bodies.length && !snapped; j += 1) {
       const c = bodies[j];
       if (c.resting) continue;
-      const dx = Math.abs(a.px - c.px);
-      const dz = Math.abs(a.pz - c.pz);
-      if (dx >= BLOCK_W || dz >= BLOCK_W) continue;
+      const sc = blockSpan(c);
+      if (Math.abs(a.px - c.px) >= sa.hx + sc.hx) continue;
+      if (Math.abs(a.pz - c.pz) >= sa.hz + sc.hz) continue;
       const dy = a.py - c.py;
-      if (Math.abs(dy) >= BLOCK_H) continue;
-      const push = (BLOCK_H - Math.abs(dy)) / 2;
-      const sign = dy >= 0 ? 1 : -1;
-      a.py += sign * push;
-      c.py -= sign * push;
-      const avg = (a.vy + c.vy) / 2;
-      a.vy = avg * 0.5;
-      c.vy = avg * 0.5;
+      if (dy <= 0.05 || dy >= BLOCK_H) continue; // a 不在 c 正上方一层内
+      if (a.vy >= c.vy - 0.05) continue;         // a 没有在落向 c
+      a.py = c.py + BLOCK_H;
+      a.vy = 0;
+      a.landed = true;
+      a.support = j;
+      snapped = true;
     }
   }
+  const drag = Math.exp(-GROUND_DRAG * dt);
   let moving = 0;
+  let drift = 0;
+  let lift = 0;
+  let airborne = 0;
   for (const b of bodies) {
     if (b.resting) continue;
     const floor = BLOCK_H / 2;
-    if (b.py <= floor) {
+    if (b.py <= floor + EPS) {
       b.py = floor;
+      b.landed = true;
       if (Math.abs(b.vy) < REST_SPEED * 4) {
         b.vy = 0;
       } else {
         b.vy = -b.vy * GROUND_RESTITUTION;
       }
-      b.vx *= GROUND_FRICTION;
-      b.vz *= GROUND_FRICTION;
-      b.spinX *= GROUND_FRICTION;
-      b.spinZ *= GROUND_FRICTION;
     }
-    if (Math.abs(b.vy) < REST_SPEED && b.py <= floor + EPS) {
-      b.vy = 0;
-      b.vx *= 0.5;
-      b.vz *= 0.5;
-      if (Math.hypot(b.vx, b.vz) < REST_SPEED) {
-        b.vx = 0;
-        b.vz = 0;
-        b.spinX = 0;
-        b.spinZ = 0;
-        b.resting = true;
+    // 触地/压到别的块之后才开始吃阻力；空中段保持惯性，塔才散得开
+    if (b.landed) {
+      b.vx *= drag;
+      b.vz *= drag;
+      b.spinX *= drag;
+      b.spinZ *= drag;
+    }
+    // 安家条件：贴地静止，或"压在已静止的块背上且自身不再动弹"。
+    // 只认贴地的话，搭在堆上的块永远拿不到 resting——支撑块每次从地面反弹
+    // （GROUND_RESTITUTION）都会把背上的块上顶一次，整堆永远在动，早退条件
+    // 永远不满足，3.2s 超时后留给收尾的是一摊高低不一的泡沫。
+    // 静止块本身不会再动，所以"支撑已静止"是安全的递归基；高度差与 footprint
+    // 双重校验防止支撑滑走后的块被粘在半空。
+    // ⚠ 竖向阈值必须跟贴地路径一样用 REST_SPEED*4：一帧重力就有 0.08，卡着
+    //   REST_SPEED(0.06) 会让背上的块永远差一点、永远安不了家（实测空转）。
+    let supported = b.py <= floor + EPS;
+    if (!supported && b.support >= 0) {
+      const c = bodies[b.support];
+      if (c.resting) {
+        const sb = blockSpan(b);
+        const sc = blockSpan(c);
+        supported = Math.abs(b.px - c.px) < sb.hx + sc.hx
+          && Math.abs(b.pz - c.pz) < sb.hz + sc.hz
+          && Math.abs(b.py - (c.py + BLOCK_H)) < 0.05;
       }
     }
-    if (!b.resting) moving += 1;
+    if (supported && Math.abs(b.vy) < REST_SPEED * 4 && Math.hypot(b.vx, b.vz) < REST_SPEED) {
+      b.vy = 0;
+      b.vx = 0;
+      b.vz = 0;
+      settlePose(b);
+      b.resting = true;
+      continue;
+    }
+    moving += 1;
+    drift = Math.max(drift, Math.hypot(b.vx, b.vz));
+    lift = Math.max(lift, Math.abs(b.vy));
+    if (!b.landed && b.py > floor + EPS) airborne += 1;
   }
-  if (moving === 0 || col.t >= COLLAPSE_TIME) {
-    for (const b of bodies) {
+  // 收尾：全部安家（贴地或压在静止块背上）；或每一块都已经落到地面/压到别的块上
+  // 且不再漂移也不再起跳；否则空转到 3.2s 超时。
+  // 超时路径也会走到这里——打包（planPack）保证终态干净，落位阶段只是让过渡可见。
+  if (moving === 0 || (airborne === 0 && drift < REST_SPEED && lift < REST_SPEED * 4)
+      || col.t >= COLLAPSE_TIME) {
+    startSettle(state);
+    return settleStep(state, dt);
+  }
+  return state;
+}
+
+// 落定姿态吸附：rx/rz 收到最近的 π 倍数 —— 一律躺平。
+// 竖着立在场地上的块最扎眼，也最不像真的塌落；翻滚中停在任意角度的块同理。
+function settlePose(b) {
+  b.rx = Math.round(b.rx / Math.PI) * Math.PI;
+  b.rz = Math.round(b.rz / Math.PI) * Math.PI;
+  b.spinX = 0;
+  b.spinZ = 0;
+}
+
+// 收尾整姿。旧版三种做法都失败过：
+// ① 贪心按 py 往上叠——物理阶段被承接而压在别的块背上的块依次搁到已放置
+//    块的顶上，54 块沿倒塌方向一块搭一块，实测搭出 32 层针塔（比原塔还高一倍）；
+// ② 纯水平松弛——塔基密堆核心（54 块挤在约 25 平方单位里，密度 2.2）永远
+//    收敛不了，残差照样叠成针塔；
+// ③ 粗网格（0.6）代价搜索——"代价 = 堆高层数×3 + 位移"在碎片化空地上找不到
+//    能容下 3×1 足迹的空位，泡沫态照样叠出 15 层塔（实测）。
+// 现在按"物理落点高度"排序（先放原本就贴地的，再收半空中的），每块先用空间
+// 哈希由近及远螺旋找空地躺平，找不到才叠到最高顶——密堆核心逐块向外摊开，
+// 堆高有界，针塔结构上就叠不出来。
+// 打包只算目标位姿（不发生修改），随后由 settleStep 逐块插值落位——直接一帧
+// 拍过去会改动 16% 的画布像素，肉眼是个明显的"跳"。
+function startSettle(state) {
+  const col = state.collapse;
+  const bodies = state.blocks;
+  const order = bodies.map((_, i) => i).sort((i, j) =>
+    (bodies[i].py - bodies[j].py)
+    || (bodies[i].px - bodies[j].px)
+    || (bodies[i].pz - bodies[j].pz));
+  col.pack = planPack(bodies, order);
+  col.settleT = 0;
+  return state;
+}
+
+// 逐块打包。placed 里任何一块与本块水平相交时，本块必须垫在它上面至少一个
+// BLOCK_H——top 取所有相交块的最高顶，因此打完包任何两块都不相交、没有悬空。
+//
+// 分两级，优先躺平：
+// ① 螺旋扫周围候选点，第一个"足迹不撞任何已放置块"的环上取最近点——那就是
+//    空地，直接搁地面（py = BLOCK_H/2）。判定用空间哈希（DEBRIS_PACK_CELL），
+//    精确且 O(1)。密堆核心因此逐块向外摊开，而不是原地往上叠。
+// ② 搜索半径内实在没有空地（极端密堆）才叠：取当前脚印下所有相交已放置块
+//    的最高顶。因为①已经把能摊开的都摊开了，②只是兜底，堆不高也形不成针塔。
+function planPack(bodies, order) {
+  const spans = bodies.map(blockSpan);
+  // 网格范围 = 所有块足迹并集外扩（搜索半径 + 一个块长），候选足迹必在界内
+  let gx0 = Infinity;
+  let gx1 = -Infinity;
+  let gz0 = Infinity;
+  let gz1 = -Infinity;
+  for (const b of bodies) {
+    const sb = blockSpan(b);
+    gx0 = Math.min(gx0, b.px - sb.hx);
+    gx1 = Math.max(gx1, b.px + sb.hx);
+    gz0 = Math.min(gz0, b.pz - sb.hz);
+    gz1 = Math.max(gz1, b.pz + sb.hz);
+  }
+  const pad = DEBRIS_PACK_RINGS * DEBRIS_PACK_STEP + BLOCK_L;
+  gx0 -= pad;
+  gx1 += pad;
+  gz0 -= pad;
+  gz1 += pad;
+  const W = Math.ceil((gx1 - gx0) / DEBRIS_PACK_CELL) + 1;
+  const H = Math.ceil((gz1 - gz0) / DEBRIS_PACK_CELL) + 1;
+  const occ = new Int16Array(W * H);
+  const stamp = (px, pz, sb, delta) => {
+    const x0 = Math.floor((px - sb.hx - gx0) / DEBRIS_PACK_CELL);
+    const x1 = Math.floor((px + sb.hx - gx0) / DEBRIS_PACK_CELL);
+    const z0 = Math.floor((pz - sb.hz - gz0) / DEBRIS_PACK_CELL);
+    const z1 = Math.floor((pz + sb.hz - gz0) / DEBRIS_PACK_CELL);
+    for (let cx = x0; cx <= x1; cx += 1) {
+      const row = cx * H;
+      for (let cz = z0; cz <= z1; cz += 1) occ[row + cz] += delta;
+    }
+  };
+  const freeAt = (px, pz, sb) => {
+    const x0 = Math.floor((px - sb.hx - gx0) / DEBRIS_PACK_CELL);
+    const x1 = Math.floor((px + sb.hx - gx0) / DEBRIS_PACK_CELL);
+    const z0 = Math.floor((pz - sb.hz - gz0) / DEBRIS_PACK_CELL);
+    const z1 = Math.floor((pz + sb.hz - gz0) / DEBRIS_PACK_CELL);
+    for (let cx = x0; cx <= x1; cx += 1) {
+      const row = cx * H;
+      for (let cz = z0; cz <= z1; cz += 1) {
+        if (occ[row + cz] > 0) return false;
+      }
+    }
+    return true;
+  };
+  const out = new Array(bodies.length);
+  const placed = [];
+  for (let seq = 0; seq < order.length; seq += 1) {
+    const idx = order[seq];
+    const b = bodies[idx];
+    const sb = spans[idx];
+    // ① 由近及远找空地：同一环上取距原位最近的点，找到即止（环 r 的点全比环 r-1 远）
+    let bx = b.px;
+    let bz = b.pz;
+    let py = -1;
+    let bestD2 = Infinity;
+    for (let ring = 0; ring <= DEBRIS_PACK_RINGS && py < 0; ring += 1) {
+      for (let dx = -ring; dx <= ring; dx += 1) {
+        for (let dz = -ring; dz <= ring; dz += 1) {
+          if (ring > 0 && Math.abs(dx) !== ring && Math.abs(dz) !== ring) continue;
+          const px = b.px + dx * DEBRIS_PACK_STEP;
+          const pz = b.pz + dz * DEBRIS_PACK_STEP;
+          if (!freeAt(px, pz, sb)) continue;
+          const d2 = dx * dx + dz * dz;
+          if (d2 < bestD2) {
+            bestD2 = d2;
+            bx = px;
+            bz = pz;
+            py = BLOCK_H / 2;
+          }
+        }
+      }
+    }
+    // ② 密堆残差：原地叠到相交已放置块的最高顶上
+    if (py < 0) {
+      let top = BLOCK_H / 2;
+      for (const c of placed) {
+        if (Math.abs(b.px - c.px) >= sb.hx + c.span.hx) continue;
+        if (Math.abs(b.pz - c.pz) >= sb.hz + c.span.hz) continue;
+        if (c.py + BLOCK_H > top) top = c.py + BLOCK_H;
+      }
+      py = top;
+    }
+    const fx = b.px;
+    const fy = b.py;
+    const fz = b.pz;
+    const frx = b.rx;
+    const frz = b.rz;
+    out[idx] = {
+      fx,
+      fy,
+      fz,
+      frx,
+      frz,
+      px: bx,
+      py,
+      pz: bz,
+      rx: Math.round(b.rx / Math.PI) * Math.PI,
+      rz: Math.round(b.rz / Math.PI) * Math.PI,
+      delay: seq * SETTLE_STAGGER,
+      dur: Math.min(1.2, Math.max(0.08, Math.hypot(bx - fx, py - fy, bz - fz) / SETTLE_SPEED)),
+    };
+    stamp(bx, bz, sb, 1);
+    placed.push({ px: bx, py, pz: bz, span: sb });
+  }
+  return out;
+}
+
+// 落位阶段：每块延迟一点出发，以恒定速度滑向目标位姿；全部到位（或 SETTLE_MAX_TIME
+// 兜底）后落精确值、置 resting、翻 LOST。这期间 status 仍是 COLLAPSE，UI 不受影响。
+function settleStep(state, dt) {
+  const col = state.collapse;
+  col.settleT += dt;
+  let done = true;
+  for (let i = 0; i < state.blocks.length; i += 1) {
+    const b = state.blocks[i];
+    const t = col.pack[i];
+    const local = col.settleT - t.delay;
+    if (local <= 0) {
+      done = false;
+      continue;
+    }
+    const k = Math.min(1, local / t.dur);
+    b.px = t.fx + (t.px - t.fx) * k;
+    b.py = t.fy + (t.py - t.fy) * k;
+    b.pz = t.fz + (t.pz - t.fz) * k;
+    b.rx = t.frx + (t.rx - t.frx) * k;
+    b.rz = t.frz + (t.rz - t.frz) * k;
+    b.vx = 0;
+    b.vy = 0;
+    b.vz = 0;
+    b.spinX = 0;
+    b.spinZ = 0;
+    if (k < 1) done = false;
+  }
+  if ((done && col.settleT > 0.05) || col.settleT >= SETTLE_MAX_TIME) {
+    for (let i = 0; i < state.blocks.length; i += 1) {
+      const b = state.blocks[i];
+      const t = col.pack[i];
+      b.px = t.px;
+      b.py = t.py;
+      b.pz = t.pz;
+      b.rx = t.rx;
+      b.rz = t.rz;
       b.vx = 0;
       b.vy = 0;
       b.vz = 0;
       b.spinX = 0;
       b.spinZ = 0;
       b.resting = true;
-      if (b.py < BLOCK_H / 2) b.py = BLOCK_H / 2;
     }
+    col.pack = null;
     col.done = true;
     state.status = STATUS.LOST;
   }

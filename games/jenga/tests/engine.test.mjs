@@ -10,6 +10,8 @@ import assert from "node:assert/strict";
 import {
   FIXED_DT,
   BLOCK_H,
+  BLOCK_W,
+  BLOCK_L,
   PER_LAYER,
   START_LAYERS,
   TOTAL_BLOCKS,
@@ -20,11 +22,14 @@ import {
   OVERHANG_BASE,
   OVERHANG_LOAD,
   COLLAPSE_TIME,
+  SETTLE_MAX_TIME,
+  SETTLE_STAGGER,
   mulberry32,
   createInitialState,
   cloneState,
   canPull,
   pullBlock,
+  startCollapse,
   canStack,
   stackBlock,
   cancelPull,
@@ -357,7 +362,7 @@ test("≥1000 步随机合法操作游走：状态机不崩、不卡死、不变
         guard += 1;
       }
       assert.equal(s.status, STATUS.LOST, "塌落必须收敛");
-      assert.ok(guard <= Math.ceil(COLLAPSE_TIME / FIXED_DT) + 2, "塌落不得超过设定时长");
+      assert.ok(guard <= Math.ceil((COLLAPSE_TIME + SETTLE_MAX_TIME) / FIXED_DT) + 2, "塌落不得超过设定时长");
       s = createInitialState({ seed: 1000 + collapses });
       continue;
     }
@@ -425,12 +430,89 @@ test("判倒后进入塌落松弛，并在限定帧数内收敛为 LOST（块全
     frames += 1;
   }
   assert.equal(s.status, STATUS.LOST);
-  assert.ok(frames <= Math.ceil(COLLAPSE_TIME / FIXED_DT) + 2);
+  // 物理封顶 COLLAPSE_TIME + 落位阶段封顶 SETTLE_MAX_TIME（含逐块延迟与匀速插值，
+  // 插值通常远早于兜底就收敛）
+  assert.ok(frames <= Math.ceil((COLLAPSE_TIME + SETTLE_MAX_TIME) / FIXED_DT) + 2,
+    `塌落+落位应在 ${(COLLAPSE_TIME + SETTLE_MAX_TIME).toFixed(1)}s 内结束，实际 ${(frames * FIXED_DT).toFixed(2)}s`);
   for (const b of s.blocks) {
     assert.ok(b.resting, "塌落结束后所有木块必须静止");
     assert.ok(b.py >= BLOCK_H / 2 - 1e-9, "木块不得陷进地面");
     assert.equal(b.vx, 0);
     assert.equal(b.vz, 0);
+  }
+});
+
+// 散落终态不变量。用户反馈"最后散落的状态很凌乱"——根因是收尾整姿留了一根
+// 15 层的小塔加一滩半空泡沫。这套断言把"摊平、不镶嵌、不浮空、堆高有界"钉死：
+// 改动塌落物理/收尾打包后若回归，这里立刻红。
+test("塌落散落终态：全部平躺、无镶嵌、无浮空、堆高有界（多 seed）", () => {
+  const spanOf = (b) => (axisOfLayer(b.layer ?? 0) === AXIS.X
+    ? { hx: BLOCK_L / 2, hz: BLOCK_W / 2 }
+    : { hx: BLOCK_W / 2, hz: BLOCK_L / 2 });
+  const floorY = BLOCK_H / 2;
+  for (const seed of [1, 2, 3, 7, 42, 2024]) {
+    const s = createInitialState({ seed });
+    for (let i = 0; i < 30; i += 1) stepFrame(s);
+    if (s.status === STATUS.IDLE) startCollapse(s);
+    let guard = 0;
+    while (s.status !== STATUS.LOST && guard < 1200) {
+      stepFrame(s);
+      guard += 1;
+    }
+    assert.equal(s.status, STATUS.LOST, `seed ${seed} 必须收敛`);
+    const bs = s.blocks;
+    assert.equal(bs.length, TOTAL_BLOCKS);
+    // ① 全部静止、贴地或更高、姿态一律轴对齐（躺平，没有竖立/斜插的块）
+    for (const b of bs) {
+      assert.ok(b.resting, `seed ${seed} 块 ${b.id} 未静止`);
+      assert.ok(b.py >= floorY - 1e-9, `seed ${seed} 块 ${b.id} 陷进地面`);
+      assert.equal(b.vx, 0);
+      assert.equal(b.vz, 0);
+      const kx = b.rx / Math.PI;
+      const kz = b.rz / Math.PI;
+      assert.ok(Math.abs(kx - Math.round(kx)) < 1e-6, `seed ${seed} 块 ${b.id} 姿态未轴对齐`);
+      assert.ok(Math.abs(kz - Math.round(kz)) < 1e-6, `seed ${seed} 块 ${b.id} 姿态未轴对齐`);
+    }
+    // ② 无镶嵌：同层（py 差 < 一个块高）且足迹相交即算互嵌
+    for (let i = 0; i < bs.length; i += 1) {
+      for (let j = i + 1; j < bs.length; j += 1) {
+        const a = bs[i];
+        const c = bs[j];
+        if (Math.abs(a.py - c.py) >= BLOCK_H - 1e-9) continue;
+        const sa = spanOf(a);
+        const sc = spanOf(c);
+        const overlap = Math.abs(a.px - c.px) < sa.hx + sc.hx - 1e-9
+          && Math.abs(a.pz - c.pz) < sa.hz + sc.hz - 1e-9;
+        assert.ok(!overlap, `seed ${seed} 块 ${a.id} 与 ${c.id} 互相镶嵌`);
+      }
+    }
+    // ③ 无浮空：离地的块必须正好压在某块顶上（高度差一个块高且足迹相交）
+    for (const b of bs) {
+      if (b.py <= floorY + 1e-6) continue;
+      const sb = spanOf(b);
+      let supported = false;
+      for (const c of bs) {
+        if (c === b) continue;
+        const sc = spanOf(c);
+        if (Math.abs(b.px - c.px) >= sb.hx + sc.hx) continue;
+        if (Math.abs(b.pz - c.pz) >= sb.hz + sc.hz) continue;
+        if (Math.abs(b.py - (c.py + BLOCK_H)) < 0.05) {
+          supported = true;
+          break;
+        }
+      }
+      assert.ok(supported, `seed ${seed} 块 ${b.id} 悬空在 py=${b.py.toFixed(2)}`);
+    }
+    // ④ 堆高有界：最多 8 层。针塔版实测 15~19 层（maxPy 8.7~11.1）、泡沫版
+    //    悬空 22~26 块；健康版实测最高 7 层、离地 3~7 块，留一倍余量卡回归。
+    const maxPy = Math.max(...bs.map((b) => b.py));
+    assert.ok(maxPy <= floorY + 7 * BLOCK_H + 1e-6,
+      `seed ${seed} 堆得太高：py=${maxPy.toFixed(2)}（>8 层）`);
+    const off = bs.filter((b) => b.py > floorY + 1e-6).length;
+    assert.ok(off <= 12, `seed ${seed} 离地块太多：${off} 块没摊平`);
+    // ⑤ 摊开：不能有一半以上块挤在塔基（半径 2）不动
+    const near = bs.filter((b) => Math.hypot(b.px, b.pz) < 2).length;
+    assert.ok(near <= TOTAL_BLOCKS / 2, `seed ${seed} 过半块没散开（${near} 块在塔基 2 单位内）`);
   }
 });
 
