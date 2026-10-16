@@ -27,6 +27,8 @@ export function createUi(handlers = {}) {
     btnHelp: byId("btn-help"),
     btnRotate: byId("btn-rotate"),
     btnReset: byId("btn-reset"),
+    btnLevels: byId("btn-levels"),
+    btnReadyClose: byId("btn-ready-close"),
     panelReady: byId("panel-ready"),
     panelLevels: byId("panel-levels"),
     panelHelp: byId("panel-help"),
@@ -54,6 +56,8 @@ export function createUi(handlers = {}) {
   byId("btn-help-close").addEventListener("click", () => hideOverlay(el.panelHelp));
   el.btnRotate.addEventListener("click", () => { handlers.onRotate?.(1); });
   el.btnReset.addEventListener("click", () => handlers.onReset?.());
+  el.btnLevels.addEventListener("click", () => openLevels());
+  el.btnReadyClose.addEventListener("click", () => hideAllOverlays());
   byId("btn-mode-campaign").addEventListener("click", () => openLevels());
   byId("btn-mode-survival").addEventListener("click", () => handlers.onMode?.("survival"));
   byId("btn-mode-duel").addEventListener("click", () => handlers.onMode?.("duel"));
@@ -63,16 +67,34 @@ export function createUi(handlers = {}) {
   el.btnModes.addEventListener("click", () => { hideAllOverlays(); showOverlay(el.panelReady); });
 
   el.boardCanvas.addEventListener("contextmenu", (e) => e.preventDefault());
+  let pressStart = null; // {x,y,t,id}：按下起点，用于区分轻击/拖放与滑动
+
   el.boardCanvas.addEventListener("pointermove", (e) => {
-    const cell = renderer.cellAt(e.clientX, e.clientY);
-    hoverCell = cell;
+    hoverCell = renderer.cellAt(e.clientX, e.clientY);
   });
   el.boardCanvas.addEventListener("pointerleave", () => { hoverCell = null; });
   el.boardCanvas.addEventListener("pointerdown", (e) => {
     if (e.button === 2) { handlers.onRotate?.(1); return; }
+    if (e.button !== 0 && e.pointerType !== "touch") return;
+    pressStart = { x: e.clientX, y: e.clientY, t: performance.now(), id: e.pointerId };
+    // 按下即吸附预览（触屏无 hover），松手时按最终位置落子
+    hoverCell = renderer.cellAt(e.clientX, e.clientY);
+  });
+  el.boardCanvas.addEventListener("pointerup", (e) => {
+    if (e.button === 2) return;
+    const start = pressStart;
+    pressStart = null;
+    if (!start) return;
+    const dx = e.clientX - start.x;
+    const dy = e.clientY - start.y;
+    const moved = Math.hypot(dx, dy);
+    const dt = performance.now() - start.t;
+    // 轻击或拖放：位移在容差内（含直接松手）即落子；大幅滑动视为取消
+    if (moved > 26 || dt > 900) { hoverCell = renderer.cellAt(e.clientX, e.clientY); return; }
     const cell = renderer.cellAt(e.clientX, e.clientY);
     if (cell) handlers.onPlace?.(cell[0], cell[1]);
   });
+  el.boardCanvas.addEventListener("pointercancel", () => { pressStart = null; });
   el.boardCanvas.addEventListener("wheel", (e) => {
     e.preventDefault();
     handlers.onRotate?.(e.deltaY > 0 ? 1 : -1);
@@ -164,10 +186,14 @@ export function createUi(handlers = {}) {
     renderQueue(view);
   }
 
+  let lastQueueSig = "";
   function renderQueue(view) {
+    const list = (view.queue || []).slice(0, 3);
+    const sig = list.join(",");
+    if (sig === lastQueueSig) return;
+    lastQueueSig = sig;
     el.queueBody.innerHTML = "";
-    const items = view.queue || [];
-    items.slice(0, 3).forEach((shapeId, idx) => {
+    list.forEach((shapeId, idx) => {
       const slot = document.createElement("div");
       slot.className = `queue-slot${idx === 0 ? " current" : ""}`;
       const mini = miniShape(shapeId);
@@ -225,8 +251,6 @@ export function createUi(handlers = {}) {
     }
   }
 
-  function showReady() { showOverlay(el.panelReady); }
-
   function showResult(result) {
     el.resultBody.innerHTML = "";
     if (result.mode === "campaign") {
@@ -268,7 +292,6 @@ export function createUi(handlers = {}) {
     syncSize,
     toast,
     buildLevels,
-    showReady,
     showResult,
     showLevels: openLevels,
     hideAllOverlays,

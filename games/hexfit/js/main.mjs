@@ -158,7 +158,9 @@ function boot() {
   ui.applyStrings(locale, str(), { docLang: i18n.htmlLang(locale) });
   audio.setMuted(save.muted);
   ui.setSoundIcon(save.muted);
-  ui.showReady();
+  // 即开即玩（站点铁律）：默认载入存档记忆关卡，无记录则直接进入经典生存
+  if (save.last) startCampaign(save.last);
+  else startSurvival();
   requestAnimationFrame(frame);
 }
 

@@ -293,6 +293,7 @@ html, body {
   border-radius: 20px;
   font-weight: 700;
   z-index: 100;
+  pointer-events: none; /* 纯提示层，永不拦截棋盘点击 */
   box-shadow: 0 4px 12px rgba(0,0,0,0.4);
 }
 #toast.hidden { display: none; }

@@ -22,6 +22,8 @@ import {
   findFullRows,
   applyGravity,
   placementKeys,
+  shapeCenteredCells,
+  stepFrame,
   MODE,
 } from "../js/engine.mjs";
 import { mulberry32 } from "../js/rng.mjs";
@@ -262,4 +264,82 @@ test("倍率封顶：连乘不超过 2^18", () => {
   // 即使狂潮 combo 很大，倍率也不超过 2^18
   const mult = totalMultiplier(1, s.rushCombo, true);
   assert.ok(mult <= MULT_CAP, `倍率 ${mult} ≤ 2^18`);
+});
+
+test("跟手锚定：居中偏移恒为块体真实格平移（光标即块格）", () => {
+  const ids = [
+    "mono", "domino", "tri-line", "tri-bend", "tetro-line", "tetro-square",
+    "tetro-bend", "tetro-t", "pento-cluster", "pento-line", "pento-y", "pento-z",
+  ];
+  for (const id of ids) {
+    for (let rot = 0; rot < 6; rot += 1) {
+      const raw = shapeCells(id, rot);
+      const centered = shapeCenteredCells(id, rot);
+      assert.equal(centered.length, raw.length, `${id}#${rot} 格数守恒`);
+      assert.ok(centered.some(([q, r]) => q === 0 && r === 0), `${id}#${rot} 原点必须是块体真实格`);
+      // centered 必须是 raw 的整体平移，且平移量是 raw 中的真实格
+      const oq = raw[0][0] - centered[0][0];
+      const orr = raw[0][1] - centered[0][1];
+      assert.ok(
+        raw.every((c, i) => c[0] - centered[i][0] === oq && c[1] - centered[i][1] === orr),
+        `${id}#${rot} centered 必须是 raw 的整体平移`,
+      );
+      assert.ok(
+        raw.some((c) => c[0] === oq && c[1] === orr),
+        `${id}#${rot} 平移量必须是块体真实格`,
+      );
+    }
+  }
+});
+
+test("跟手放置：点击空格且合法时该格必被填充；非法点击零副作用", () => {
+  const s = fresh(MODE.SURVIVAL, 77);
+  const all = allCells();
+  const inB = (qq, rr) => Math.abs(qq) <= 4 && Math.abs(rr) <= 4 && Math.abs(qq + rr) <= 4;
+  for (let step = 0; step < 200 && !s.gameOver && s.current; step += 1) {
+    const { shapeId, rotation } = s.current;
+    const cursor = all[(step * 7) % all.length];
+    const cells = shapeCenteredCells(shapeId, rotation);
+    const fit = cells.every(([dq, dr]) => {
+      const qq = cursor[0] + dq;
+      const rr = cursor[1] + dr;
+      return inB(qq, rr) && !s.occupied[cellKey(qq, rr)];
+    });
+    const before = occupiedCount(s);
+    const minQ = Math.min(...cells.map((c) => c[0]));
+    const minR = Math.min(...cells.map((c) => c[1]));
+    const res = placeAndClear(s, shapeId, rotation, cursor[0] + minQ, cursor[1] + minR);
+    if (fit) {
+      assert.equal(res.placed, true, "合法点击必须成功放置");
+      if (res.rowsCleared === 0) {
+        assert.equal(s.occupied[cellKey(cursor[0], cursor[1])], true, "未消行时点击格必须被填充");
+      }
+    } else {
+      assert.equal(res.placed, false, "非法点击必须拒绝");
+      assert.equal(occupiedCount(s), before, "非法点击零副作用");
+    }
+    if (step % 10 === 0) {
+      const inv = invariants(s);
+      assert.ok(Object.values(inv).every(Boolean), `不变式守恒: ${JSON.stringify(inv)}`);
+    }
+  }
+  assert.ok(occupiedCount(s) > 0, "至少放置一次");
+});
+
+test("消除浮字：placeAndClear 产生 pop 事件，stepFrame 确定性衰减", () => {
+  const s = fresh(MODE.SURVIVAL, 9);
+  // 构造 constant r=0 行 9 格中占 8 格，用 mono 补 (4,0) → 必消 1 行
+  for (let q = -4; q <= 3; q += 1) s.occupied[cellKey(q, 0)] = true;
+  const res = placeAndClear(s, "mono", 0, 4, 0);
+  assert.equal(res.placed, true);
+  assert.ok(res.rowsCleared >= 1, "补满 r=0 行必须消除");
+  const pops = s.events.filter((e) => e.type === "pop");
+  assert.equal(pops.length, 1, "单波消除恰产生一条 pop 事件");
+  assert.equal(pops[0].text, `+${res.scoreGain}`, "浮字必须等于实际得分");
+  assert.ok(pops[0].t > 0, "初始寿命为正");
+  const t0 = pops[0].t;
+  stepFrame(s, 0.4);
+  assert.ok(Math.abs(pops[0].t - (t0 - 0.4)) < 1e-9, "stepFrame 确定性衰减");
+  stepFrame(s, 10);
+  assert.equal(s.events.filter((e) => e.type === "pop").length, 0, "寿命归零后清除");
 });

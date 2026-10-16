@@ -4,11 +4,11 @@ import {
   drawPiece,
   placeAndClear,
   isBoardStuck,
-  shapeCells,
   cellKey,
   inBoard,
+  shapeCenteredCells,
+  stepFrame,
   MODE,
-  RADIUS,
   snapshot,
 } from "./engine.mjs";
 import { randomSeed } from "./rng.mjs";
@@ -78,7 +78,17 @@ export function createGame() {
   function place(q, r) {
     if (!state || state.gameOver || !state.current) return { ok: false };
     const { shapeId, rotation } = state.current;
-    const res = placeAndClear(state, shapeId, rotation, q, r);
+    // 跟手锚定：光标格即块体真实格（shapeCenteredCells 原点），预览与落子所见即所得
+    const cells = shapeCenteredCells(shapeId, rotation);
+    const okAll = cells.every(([dq, dr]) => {
+      const qq = q + dq;
+      const rr = r + dr;
+      return inBoard(qq, rr) && !state.occupied[cellKey(qq, rr)];
+    });
+    if (!okAll) return { ok: false };
+    const minQ = Math.min(...cells.map((c) => c[0]));
+    const minR = Math.min(...cells.map((c) => c[1]));
+    const res = placeAndClear(state, shapeId, rotation, q + minQ, r + minR);
     if (!res.placed) return { ok: false };
     lastClearRows = res.rowsCleared;
     if (res.rowsCleared > 0) {
@@ -104,18 +114,6 @@ export function createGame() {
     return true;
   }
 
-  /** 预览某位置放置是否合法（不改变状态） */
-  function canPlaceAt(q, r) {
-    if (!state || !state.current) return false;
-    const cells = shapeCells(state.current.shapeId, state.current.rotation);
-    for (const [dq, dr] of cells) {
-      const qq = q + dq;
-      const rr = r + dr;
-      if (!inBoard(qq, rr) || state.occupied[cellKey(qq, rr)]) return false;
-    }
-    return true;
-  }
-
   // ------------------------------------------------------------ 帧推进
 
   let acc = 0;
@@ -126,7 +124,8 @@ export function createGame() {
     acc += d;
     let steps = 0;
     while (acc >= FIXED_DT && steps < MAX_STEPS) {
-      // engine stepFrame 只推进粒子/事件
+      // engine stepFrame 推进粒子/事件计时（纯确定性）
+      stepFrame(state, FIXED_DT);
       acc -= FIXED_DT;
       steps += 1;
     }
@@ -196,7 +195,6 @@ export function createGame() {
     tick,
     place,
     rotate,
-    canPlaceAt,
     view,
     result,
     diagnose,

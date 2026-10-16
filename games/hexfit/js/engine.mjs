@@ -228,6 +228,29 @@ export function hasValidPlacement(state, shapeId, rotation) {
   return false;
 }
 
+/**
+ * 以"质心最近格"为原点重排形状偏移：光标恒落在块体真实格上（跟手锚定）。
+ * 平局取遍历首个最近格，确定性输出；预览与真实落子共用，所见即所得。
+ */
+export function shapeCenteredCells(shapeId, rotation = 0) {
+  const cells = shapeCells(shapeId, rotation);
+  const n = cells.length;
+  const cq = cells.reduce((s, c) => s + c[0], 0) / n;
+  const cr = cells.reduce((s, c) => s + c[1], 0) / n;
+  let best = cells[0];
+  let bestD = Infinity;
+  for (const [q, r] of cells) {
+    const dx = Math.sqrt(3) * ((q + r / 2) - (cq + cr / 2));
+    const dy = 1.5 * (r - cr);
+    const d = dx * dx + dy * dy;
+    if (d < bestD) {
+      bestD = d;
+      best = [q, r];
+    }
+  }
+  return cells.map(([q, r]) => [q - best[0], r - best[1]]);
+}
+
 /** 棋盘是否放不下任何当前块（含全部旋转） */
 export function isBoardStuck(state) {
   if (!state.current) return false;
@@ -291,6 +314,7 @@ export function placeAndClear(state, shapeId, rotation, anchorQ, anchorR) {
   // 级联消除
   let totalRows = 0;
   let firstWaveRows = 0;
+  let firstWaveKeys = [];
   let rushTriggered = false;
   let guard = 0;
   while (guard < 64) {
@@ -300,7 +324,10 @@ export function placeAndClear(state, shapeId, rotation, anchorQ, anchorR) {
     for (const row of full) for (const k of row) clearedKeys.add(k);
     for (const k of clearedKeys) delete state.occupied[k];
     totalRows += full.length;
-    if (guard === 0) firstWaveRows = full.length;
+    if (guard === 0) {
+      firstWaveRows = full.length;
+      firstWaveKeys = [...clearedKeys];
+    }
     state.rowsCleared += full.length;
     applyGravity(state);
     guard += 1;
@@ -324,6 +351,21 @@ export function placeAndClear(state, shapeId, rotation, anchorQ, anchorR) {
       if (!state.rushActive) rushTriggered = true;
       state.rushActive = true;
     }
+    // 消除浮字事件（纯数据；render 层绘制，stepFrame 统一衰减）
+    let cq = 0;
+    let cr = 0;
+    for (const k of firstWaveKeys) {
+      const [kq, kr] = parseKey(k);
+      cq += kq;
+      cr += kr;
+    }
+    state.events.push({
+      type: "pop",
+      q: Math.round(cq / Math.max(1, firstWaveKeys.length)),
+      r: Math.round(cr / Math.max(1, firstWaveKeys.length)),
+      text: `+${scoreGain}`,
+      t: 0.9,
+    });
   } else {
     // 未消除：狂潮中断
     state.rushActive = false;
@@ -413,5 +455,6 @@ export function snapshot(state) {
     goalRows: state.goalRows,
     goalMet: state.goalMet,
     particles: state.particles.map((p) => ({ ...p })),
+    events: state.events.map((e) => ({ ...e })),
   };
 }

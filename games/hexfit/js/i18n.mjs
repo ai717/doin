@@ -37,6 +37,8 @@ const DICT = {
     stat_queue: "块队列",
     actPick: "取块",
     actRotate: "旋转",
+    actLevels: "选关",
+    btnResume: "继续游戏",
     actPlace: "放置",
     actReset: "重开",
 
@@ -133,6 +135,8 @@ const DICT = {
     stat_queue: "Queue",
     actPick: "Pick",
     actRotate: "Rotate",
+    actLevels: "Levels",
+    btnResume: "Resume",
     actPlace: "Place",
     actReset: "Reset",
 
