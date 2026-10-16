@@ -1,0 +1,634 @@
+/* chameleon · 萤火丛林侦察手账 —— 摊开的牛皮纸手账 + 手绘观察窗 + 黄铜包边 + 红蜡笔圈记 */
+
+:root {
+  --ink: #2c2416;
+  --ink-soft: #57482f;
+  --paper: #e9d9b0;
+  --paper-deep: #d9c491;
+  --paper-edge: #bea76c;
+  --brass: #d9a441;
+  --brass-deep: #a97a24;
+  --night: #0c1a16;
+  --night-2: #122a22;
+  --crayon: #cf4a3c;
+  --led: #eaffd0;
+  --glow: rgba(234, 255, 208, 0.14);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  min-height: 100%;
+}
+
+body {
+  font-family: "Segoe UI", "PingFang SC", "Microsoft YaHei", system-ui, sans-serif;
+  color: var(--ink);
+  background:
+    radial-gradient(1200px 700px at 50% -10%, #1c3a30 0%, transparent 60%),
+    radial-gradient(900px 600px at 80% 110%, #143028 0%, transparent 55%),
+    linear-gradient(160deg, #0a1a15 0%, #12281f 55%, #08130f 100%);
+  background-attachment: fixed;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+#game-app {
+  max-width: 980px;
+  margin: 0 auto;
+  padding: 14px 16px calc(22px + env(safe-area-inset-bottom));
+}
+
+/* ---------- 顶部栏 ---------- */
+#stage-bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 12px;
+  margin-bottom: 14px;
+  color: var(--led);
+  background: rgba(8, 20, 15, 0.55);
+  border: 1px solid rgba(217, 164, 65, 0.25);
+  border-radius: 14px;
+  backdrop-filter: blur(6px);
+}
+
+.bar-brand {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+}
+
+#stage-title {
+  font-size: 1.15rem;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+}
+
+#stage-kicker {
+  font-size: 0.72rem;
+  opacity: 0.7;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+}
+
+.stage-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.bar-btn {
+  cursor: pointer;
+  color: var(--led);
+  background: rgba(217, 164, 65, 0.12);
+  border: 1px solid rgba(217, 164, 65, 0.3);
+  border-radius: 10px;
+  padding: 7px 11px;
+  font-size: 0.85rem;
+  font-family: inherit;
+  transition: transform 0.08s ease, background 0.16s ease;
+}
+
+.bar-btn:hover {
+  background: rgba(217, 164, 65, 0.22);
+}
+
+.bar-btn:active {
+  transform: translateY(2px);
+}
+
+#back-home {
+  text-decoration: none;
+}
+
+/* ---------- 手账主体 ---------- */
+#journal {
+  position: relative;
+  background:
+    linear-gradient(rgba(93, 70, 33, 0.06) 1px, transparent 1px) 0 0 / 100% 28px,
+    radial-gradient(60% 100% at 50% 0%, rgba(255, 255, 255, 0.14), transparent 60%),
+    var(--paper);
+  border-radius: 16px 8px 8px 16px;
+  box-shadow:
+    0 24px 50px rgba(0, 0, 0, 0.45),
+    inset 0 1px 0 rgba(255, 255, 255, 0.25),
+    inset -10px 0 0 -6px rgba(190, 167, 108, 0.65);
+  padding: 16px 18px 14px;
+  perspective: 1400px;
+}
+
+/* 装订线与左侧胶脊 */
+#journal::before {
+  content: "";
+  position: absolute;
+  left: 10px;
+  top: 20px;
+  bottom: 20px;
+  width: 3px;
+  background: repeating-linear-gradient(to bottom, rgba(169, 122, 36, 0.8) 0 4px, transparent 4px 12px);
+  border-radius: 4px;
+}
+
+#journal-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: 0 0 12px 14px;
+  border-bottom: 2px dashed var(--paper-edge);
+  padding-bottom: 8px;
+}
+
+#phase-text {
+  font-weight: 800;
+  font-size: 0.98rem;
+  letter-spacing: 1px;
+}
+
+#round-badge {
+  font-size: 0.82rem;
+  color: var(--crayon);
+  font-weight: 700;
+}
+
+#journal-body {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+}
+
+/* ---------- 观察窗（黄铜包边圆形放大镜框） ---------- */
+#observe-frame {
+  position: relative;
+  flex: 1 1 auto;
+  min-width: 0;
+  border-radius: 22px;
+  padding: 10px;
+  background:
+    radial-gradient(120% 120% at 30% 20%, rgba(255, 255, 255, 0.28), transparent 50%),
+    var(--brass-deep);
+  box-shadow:
+    0 10px 26px rgba(0, 0, 0, 0.5),
+    inset 0 1px 2px rgba(255, 255, 255, 0.4),
+    inset 0 -1px 2px rgba(0, 0, 0, 0.4);
+}
+
+#observe-canvas {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: 14px;
+  background: radial-gradient(circle at 50% 45%, var(--night-2), var(--night));
+  touch-action: none;
+  overscroll-behavior: none;
+  cursor: pointer;
+}
+
+#heat-readout {
+  position: absolute;
+  top: 22px;
+  right: 22px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: rgba(8, 20, 15, 0.85);
+  color: var(--led);
+  font-weight: 800;
+  letter-spacing: 1px;
+  box-shadow: 0 0 14px var(--glow);
+}
+
+/* ---------- 右侧手账页签 ---------- */
+#journal-side {
+  flex: 0 0 248px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.side-card {
+  background: rgba(255, 252, 240, 0.5);
+  border: 1px solid var(--paper-edge);
+  border-radius: 10px;
+  padding: 10px 12px;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.5), 0 3px 8px rgba(0, 0, 0, 0.12);
+}
+
+.plate-title {
+  font-size: 0.7rem;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+  margin-bottom: 6px;
+}
+
+.score-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.9rem;
+  margin: 3px 0;
+}
+
+.score-row b {
+  font-size: 1.05rem;
+}
+
+.read-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.88rem;
+  margin: 4px 0;
+}
+
+.read-row b {
+  color: var(--crayon);
+}
+
+.tool-btn {
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 0.88rem;
+  padding: 8px 10px;
+  border-radius: 8px;
+  border: 1px solid var(--paper-edge);
+  background: linear-gradient(180deg, #fffdf4, #e8d9b4);
+  color: var(--ink);
+  box-shadow: 0 2px 0 rgba(0, 0, 0, 0.18);
+  transition: transform 0.06s ease, filter 0.16s ease;
+}
+
+.tool-btn:hover {
+  filter: brightness(1.03);
+}
+
+.tool-btn:active {
+  transform: translateY(2px);
+  box-shadow: 0 0 0 rgba(0, 0, 0, 0.18);
+}
+
+#hunter-tools,
+#camo-tools {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+#hunter-tools .tool-btn {
+  flex: 1 1 30%;
+}
+
+.tool-danger {
+  background: linear-gradient(180deg, #e8b0a3, #cf6a56);
+  color: #fff;
+  border-color: #a94a36;
+}
+
+.tool-ghost {
+  background: linear-gradient(180deg, #f2ead4, #d9c491);
+}
+
+/* 变色盘 */
+#color-pad {
+  display: flex;
+  gap: 7px;
+  margin-bottom: 8px;
+}
+
+.swatch {
+  flex: 1;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  cursor: pointer;
+  border: 2px solid rgba(255, 255, 255, 0.6);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.25);
+  transition: transform 0.08s ease;
+}
+
+.swatch:hover {
+  transform: scale(1.08);
+}
+
+.swatch:active {
+  transform: scale(0.94);
+}
+
+.swatch.selected {
+  outline: 3px solid var(--crayon);
+  outline-offset: 1px;
+}
+
+/* ---------- 幕布 ---------- */
+#curtain {
+  position: absolute;
+  inset: 0;
+  border-radius: 16px 8px 8px 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background:
+    repeating-linear-gradient(0deg, rgba(0, 0, 0, 0.05) 0 2px, transparent 2px 5px),
+    linear-gradient(180deg, #e0c892, #c7a866);
+  color: var(--ink);
+  z-index: 5;
+}
+
+#curtain-role {
+  font-size: 1rem;
+  letter-spacing: 2px;
+}
+
+#curtain-count {
+  font-size: 3rem;
+  font-weight: 900;
+  color: var(--crayon);
+}
+
+/* 同屏双人 / 练习：幕布变为不挡操作的上方浮签（社交闭眼仪式，变色龙仍可看盘行动） */
+#curtain.peek {
+  inset: auto;
+  top: 78px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: auto;
+  min-width: 200px;
+  padding: 8px 18px;
+  border-radius: 999px;
+  flex-direction: row;
+  gap: 10px;
+  background: linear-gradient(180deg, rgba(224, 200, 146, 0.96), rgba(199, 168, 102, 0.96));
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35);
+  pointer-events: none;
+}
+
+#curtain.peek #curtain-role {
+  font-size: 0.86rem;
+  letter-spacing: 1px;
+}
+
+#curtain.peek #curtain-count {
+  font-size: 1.5rem;
+}
+
+/* ---------- 页脚 ---------- */
+#journal-foot {
+  margin: 12px 0 0 14px;
+  font-size: 0.8rem;
+  color: var(--ink-soft);
+  font-style: italic;
+}
+
+/* ---------- 弹层 ---------- */
+.overlay {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(4, 12, 9, 0.62);
+  padding: 20px;
+  z-index: 50;
+}
+
+.hidden {
+  display: none !important;
+}
+
+.sheet {
+  width: min(460px, 100%);
+  max-height: 86vh;
+  overflow-y: auto;
+  background: linear-gradient(180deg, #f6edd2, #e6d3a4);
+  border: 1px solid var(--paper-edge);
+  border-radius: 14px;
+  padding: 22px 24px;
+  box-shadow: 0 30px 70px rgba(0, 0, 0, 0.55);
+}
+
+.sheet-wide {
+  width: min(540px, 100%);
+}
+
+.sheet-kicker {
+  font-size: 0.72rem;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+}
+
+.sheet-title {
+  margin: 6px 0 10px;
+  font-size: 1.5rem;
+}
+
+.sheet-desc {
+  font-size: 0.92rem;
+  line-height: 1.6;
+  color: var(--ink-soft);
+}
+
+.sheet-hint {
+  font-size: 0.84rem;
+  color: var(--ink-soft);
+  border-left: 3px solid var(--brass);
+  padding-left: 10px;
+}
+
+.sheet-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 14px;
+  flex-wrap: wrap;
+}
+
+.big-btn,
+.ghost-btn {
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 0.92rem;
+  padding: 10px 16px;
+  border-radius: 9px;
+  border: 1px solid var(--paper-edge);
+}
+
+.big-btn {
+  background: linear-gradient(180deg, #7ae0b0, #2fa979);
+  color: #06351f;
+  font-weight: 700;
+  box-shadow: 0 2px 0 rgba(0, 0, 0, 0.2);
+}
+
+.ghost-btn {
+  background: rgba(255, 255, 255, 0.45);
+}
+
+.big-btn:active,
+.ghost-btn:active {
+  transform: translateY(2px);
+}
+
+.mode-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 12px 0;
+}
+
+.mode-btn {
+  cursor: pointer;
+  text-align: left;
+  padding: 12px 14px;
+  border-radius: 10px;
+  border: 1px solid var(--paper-edge);
+  background: rgba(255, 252, 240, 0.6);
+  font-family: inherit;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  transition: transform 0.08s ease;
+}
+
+.mode-btn:hover {
+  background: rgba(255, 252, 240, 0.9);
+}
+
+.mode-btn:active {
+  transform: translateY(2px);
+}
+
+.mode-name {
+  font-weight: 800;
+  font-size: 1rem;
+}
+
+.mode-desc {
+  font-size: 0.8rem;
+  color: var(--ink-soft);
+}
+
+.help-list {
+  margin: 8px 0;
+  padding: 0 0 0 6px;
+  list-style: none;
+}
+
+.help-list li {
+  font-size: 0.82rem;
+  line-height: 1.55;
+  margin: 8px 0;
+  color: var(--ink-soft);
+}
+
+/* 猎手战役关卡卡 */
+#levels-body {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(96px, 1fr));
+  gap: 8px;
+  margin: 12px 0;
+}
+
+.level-card {
+  cursor: pointer;
+  border: 1px solid var(--paper-edge);
+  border-radius: 10px;
+  padding: 10px 8px;
+  text-align: center;
+  background: rgba(255, 252, 240, 0.6);
+  font-family: inherit;
+}
+
+.level-card .lc-num {
+  font-weight: 800;
+  font-size: 1.05rem;
+}
+
+.level-card .lc-ai {
+  font-size: 0.7rem;
+  color: var(--ink-soft);
+}
+
+.level-card .lc-stars {
+  color: var(--crayon);
+  font-size: 0.85rem;
+  letter-spacing: 1px;
+}
+
+.level-card.locked {
+  opacity: 0.45;
+}
+
+.result-rows {
+  margin: 10px 0;
+}
+
+.result-rows .rr {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.92rem;
+  margin: 5px 0;
+}
+
+.result-rows .rr b {
+  color: var(--crayon);
+}
+
+#toast {
+  position: fixed;
+  left: 50%;
+  bottom: 90px;
+  transform: translateX(-50%);
+  background: rgba(8, 20, 15, 0.92);
+  color: var(--led);
+  padding: 9px 16px;
+  border-radius: 999px;
+  font-size: 0.88rem;
+  z-index: 80;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+  max-width: 86vw;
+  text-align: center;
+}
+
+/* ---------- 移动端（≤899px）：观察窗全宽，工具条窗下折叠，底部广告避让 ---------- */
+@media (max-width: 899px) {
+  #game-app {
+    padding: 10px 10px calc(16px + max(68px, env(safe-area-inset-bottom)));
+    padding-bottom: max(68px, calc(16px + env(safe-area-inset-bottom)));
+  }
+
+  #journal-body {
+    flex-direction: column;
+  }
+
+  #journal-side {
+    flex: 1 1 auto;
+    width: 100%;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+  }
+
+  #score-plate {
+    grid-column: 1 / -1;
+  }
+
+  #observe-frame {
+    width: 100%;
+  }
+
+  .sheet {
+    padding: 18px 16px;
+  }
+}
+
+/* ---------- 动效降级 ---------- */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+}

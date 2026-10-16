@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <defs>
+    <radialGradient id="soup" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#f5a623"/>
+      <stop offset="100%" stop-color="#d06810"/>
+    </radialGradient>
+    <linearGradient id="bowlGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#3c2012"/>
+      <stop offset="100%" stop-color="#1f0f08"/>
+    </linearGradient>
+  </defs>
+  <!-- Bowl Base -->
+  <ellipse cx="32" cy="56" rx="14" ry="4" fill="#000" opacity="0.3"/>
+  <!-- Bowl Outer -->
+  <path d="M10 26 C10 48, 20 54, 32 54 C44 54, 54 48, 54 26 Z" fill="url(#bowlGrad)" stroke="#e86b24" stroke-width="2"/>
+  <!-- Broth -->
+  <ellipse cx="32" cy="26" rx="21" ry="8" fill="url(#soup)"/>
+  <!-- Noodles -->
+  <path d="M20 26 Q26 31 32 26 Q38 31 44 26" fill="none" stroke="#fff4cf" stroke-width="3" stroke-linecap="round"/>
+  <!-- Ajitsuke Egg -->
+  <ellipse cx="25" cy="24" rx="5" ry="4" fill="#ffffff"/>
+  <ellipse cx="25" cy="24" rx="3" ry="2.5" fill="#f8b600"/>
+  <!-- Scallions -->
+  <circle cx="36" cy="23" r="1.5" fill="#43a047"/>
+  <circle cx="39" cy="25" r="1.5" fill="#43a047"/>
+  <!-- Chashu -->
+  <ellipse cx="38" cy="27" rx="5" ry="3.5" fill="#8d3a1f"/>
+  <!-- Steam -->
+  <path d="M26 18 Q23 12 28 8" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" opacity="0.6"/>
+  <path d="M34 16 Q37 10 32 6" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" opacity="0.7"/>
+</svg>

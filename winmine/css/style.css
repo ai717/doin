@@ -1,0 +1,422 @@
+/* 经典扫雷 · WinMine 复刻 —— Win95 灰底浮雕 + 青色桌面 CRT 舞台 */
+
+:root {
+  --teal: #008080;
+  --face: #c0c0c0;
+  --light: #ffffff;
+  --shadow: #808080;
+  --dark: #404040;
+  --ink: #000000;
+  --led-red: #ff2020;
+  --cell: 34px;
+  --title-blue-l: #1084d0;
+  --title-blue-r: #000080;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body { height: 100%; }
+
+body {
+  font-family: "Segoe UI", "Microsoft YaHei", system-ui, sans-serif;
+  color: var(--ink);
+  background:
+    radial-gradient(120% 90% at 50% 0%, rgba(255,255,255,.10), rgba(0,0,0,.10) 60%),
+    var(--teal);
+  background-attachment: fixed;
+  overscroll-behavior: none;
+  min-height: 100dvh;
+}
+
+/* 极淡的 CRT 扫描质感和暗角，铺满整个舞台 */
+#stage {
+  position: relative;
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+}
+
+#stage::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background:
+    repeating-linear-gradient(to bottom, rgba(255,255,255,.015) 0 1px, transparent 1px 3px),
+    radial-gradient(120% 120% at 50% 50%, transparent 55%, rgba(0,0,0,.34) 100%);
+  z-index: 0;
+}
+
+/* ── 机顶内嵌紧凑状态条 ─────────────────────────── */
+.topbar {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 16px;
+  background: linear-gradient(to bottom, #d8d4c8, #b8b4a8);
+  border-bottom: 2px solid var(--shadow);
+  box-shadow: 0 1px 0 var(--light) inset;
+}
+.bar-title {
+  flex: 1;
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: .5px;
+}
+.top-actions { display: flex; gap: 6px; }
+.bar-btn {
+  font-family: inherit;
+  font-size: 13px;
+  padding: 4px 10px;
+  color: var(--ink);
+  background: var(--face);
+  border: 2px solid;
+  border-color: var(--light) var(--shadow) var(--shadow) var(--light);
+  border-radius: 0;
+  cursor: pointer;
+  text-decoration: none;
+}
+.bar-btn:active { border-color: var(--shadow) var(--light) var(--light) var(--shadow); padding: 5px 9px 3px 11px; }
+
+/* ── 桌面三栏布局 ─────────────────────────────── */
+.desktop {
+  position: relative;
+  z-index: 1;
+  flex: 1;
+  display: grid;
+  grid-template-columns: minmax(160px, 200px) auto minmax(160px, 200px);
+  gap: 18px;
+  align-items: start;
+  justify-content: center;
+  padding: 20px 24px 40px;
+  max-width: 1240px;
+  width: 100%;
+  margin: 0 auto;
+}
+
+.wing { display: flex; }
+.stage-center { display: flex; justify-content: center; }
+
+/* ── Win95 对话框式小窗（两翼）──────────────────── */
+.dlg {
+  background: var(--face);
+  border: 2px solid;
+  border-color: var(--light) var(--shadow) var(--shadow) var(--light);
+  box-shadow: 2px 2px 0 var(--dark);
+}
+.dlg-title {
+  padding: 5px 8px 4px;
+  font-size: 12px;
+  font-weight: 700;
+  color: #fff;
+  background: linear-gradient(90deg, var(--title-blue-l), var(--title-blue-r));
+  white-space: nowrap;
+}
+.dlg-body { padding: 10px; }
+.dlg-tip {
+  margin-top: 8px;
+  padding: 6px 8px;
+  font-size: 12px;
+  color: #333;
+  background: var(--face);
+  border: 1px solid var(--shadow);
+  white-space: normal;
+}
+
+.wing-difficulty { display: flex; flex-direction: column; gap: 6px; }
+.wing-opt {
+  font-family: inherit;
+  font-size: 13px;
+  text-align: left;
+  padding: 6px 8px;
+  cursor: pointer;
+  background: var(--face);
+  border: 2px solid;
+  border-color: var(--light) var(--shadow) var(--shadow) var(--light);
+  border-radius: 0;
+}
+.wing-opt:active { border-color: var(--shadow) var(--light) var(--light) var(--shadow); }
+.wing-opt[aria-checked="true"],
+.wing-opt.is-active {
+  background: var(--title-blue-l);
+  color: #fff;
+  border-color: var(--light) var(--dark) var(--dark) var(--light);
+}
+
+.best-list { list-style: none; margin: 0; padding: 0; }
+.best-list li {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 3px 2px;
+  font-size: 12px;
+  border-bottom: 1px dotted var(--shadow);
+}
+.best-list li b { font-variant-numeric: tabular-nums; }
+.best-empty { font-size: 12px; color: #555; }
+
+/* ── 中央游戏窗口 ─────────────────────────────── */
+.window {
+  background: var(--face);
+  border: 2px solid;
+  border-color: var(--light) var(--dark) var(--dark) var(--light);
+  box-shadow: 4px 4px 12px rgba(0,0,0,.35);
+  width: max-content;
+}
+.titlebar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 3px 4px;
+  background: linear-gradient(90deg, var(--title-blue-r), var(--title-blue-l));
+}
+.titlebar-text {
+  font-size: 12px;
+  font-weight: 700;
+  color: #fff;
+  padding-left: 3px;
+}
+.titlebar-btns { display: flex; gap: 2px; }
+.tb-min, .tb-max, .tb-close {
+  width: 16px; height: 14px;
+  display: inline-block;
+  background: var(--face);
+  border: 1px solid;
+  border-color: var(--light) var(--dark) var(--dark) var(--light);
+  position: relative;
+}
+.tb-close::before, .tb-close::after {
+  content: ""; position: absolute; top: 6px; left: 3px;
+  width: 8px; height: 1px; background: var(--ink);
+}
+.tb-close::before { transform: rotate(45deg); }
+.tb-close::after { transform: rotate(-45deg); }
+.tb-min::before { content: ""; position: absolute; top: 10px; left: 3px; width: 8px; height: 1px; background: var(--ink); }
+.tb-max::before { content: ""; position: absolute; top: 2px; left: 2px; width: 10px; height: 8px; border: 1px solid var(--ink); }
+
+.menubar {
+  display: flex;
+  gap: 2px;
+  padding: 1px 2px;
+  border-top: 1px solid var(--light);
+  border-bottom: 1px solid var(--shadow);
+}
+.menu-item {
+  font-family: inherit;
+  font-size: 12px;
+  padding: 2px 8px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+}
+.menu-item:hover, .menu-item.open { background: var(--title-blue-l); color: #fff; }
+
+.statusbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 4px 6px;
+  border-top: 2px solid var(--shadow);
+  border-bottom: 2px solid var(--shadow);
+  background: var(--face);
+}
+
+/* LED 数码计数器 */
+.led {
+  position: relative;
+  font-family: "Consolas", "Courier New", monospace;
+  font-size: 24px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  color: var(--led-red);
+  background: #000;
+  border: 2px solid;
+  border-color: var(--shadow) var(--light) var(--light) var(--shadow);
+  padding: 0 4px;
+  line-height: 1.2;
+  min-width: 3.2ch;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+
+/* 笑脸按钮 */
+.smiley {
+  font-size: 0; /* 内容由 SVG 填充 */
+  width: 30px; height: 30px;
+  padding: 0;
+  cursor: pointer;
+  background: var(--face);
+  border: 2px solid;
+  border-color: var(--light) var(--shadow) var(--shadow) var(--light);
+  border-radius: 2px;
+  display: grid;
+  place-items: center;
+}
+.smiley:active { border-color: var(--shadow) var(--light) var(--light) var(--shadow); }
+.smiley svg { width: 22px; height: 22px; display: block; }
+
+/* ── 棋盘 ───────────────────────────────────── */
+.board-wrap {
+  padding: 8px;
+  background: var(--face);
+}
+.board {
+  display: grid;
+  grid-template-columns: repeat(var(--cols), var(--cell));
+  grid-template-rows: repeat(var(--rows), var(--cell));
+  border: 3px solid;
+  border-color: var(--shadow) var(--light) var(--light) var(--shadow);
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.cell {
+  position: relative;
+  width: var(--cell);
+  height: var(--cell);
+  padding: 0;
+  font-family: "Segoe UI", "Microsoft YaHei", system-ui, sans-serif;
+  font-weight: 700;
+  display: grid;
+  place-items: center;
+  background: var(--face);
+  cursor: default;
+  line-height: 1;
+}
+.cell svg { display: block; pointer-events: none; }
+
+/* 未翻开：凸起高浮雕 */
+.cell--hidden { border: 2px solid; border-color: var(--light) var(--shadow) var(--shadow) var(--light); }
+/* 按下态：凹陷 */
+.cell--hidden:active { border-color: var(--shadow) var(--light) var(--light) var(--shadow); border-width: 1px; }
+/* 翻开：浅色凹陷平面，与未扫的深灰凸起方块形成明确反差 */
+.cell--revealed {
+  border: 1px solid;
+  border-color: var(--shadow) var(--light) var(--light) var(--shadow);
+  background: #d6d6d6;
+  font-size: calc(var(--cell) * 0.58);
+}
+/* 数字原版配色 */
+.cell--n1 { color: #0000ff; }
+.cell--n2 { color: #008000; }
+.cell--n3 { color: #ff0000; }
+.cell--n4 { color: #000080; }
+.cell--n5 { color: #800000; }
+.cell--n6 { color: #008080; }
+.cell--n7 { color: #000000; }
+.cell--n8 { color: #808080; }
+/* 被点中的雷：红底 */
+.cell--boom { background: #ff0000; }
+
+/* 死亡后亮出的误标 / 普通雷，用柔和的衬底区分 */
+
+/* ── 下拉菜单 ───────────────────────────────── */
+.menu-drop {
+  position: absolute;
+  z-index: 40;
+  background: var(--face);
+  border: 2px solid;
+  border-color: var(--light) var(--dark) var(--dark) var(--light);
+  box-shadow: 3px 3px 8px rgba(0,0,0,.3);
+  padding: 3px;
+  min-width: 160px;
+}
+.menu-row {
+  display: block;
+  width: 100%;
+  text-align: left;
+  font-family: inherit;
+  font-size: 13px;
+  padding: 4px 22px 4px 24px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  position: relative;
+}
+.menu-row:hover { background: var(--title-blue-l); color: #fff; }
+.menu-row[aria-checked="true"]::before {
+  content: "✓";
+  position: absolute; left: 6px;
+  color: var(--ink);
+}
+.menu-row:hover[aria-checked="true"]::before { color: #fff; }
+.menu-sep { height: 1px; margin: 3px 1px; background: var(--shadow); border-bottom: 1px solid var(--light); }
+
+/* ── 弹窗层 ───────────────────────────────── */
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  background: rgba(0,0,0,.25);
+  display: grid;
+  place-items: center;
+  padding: 16px;
+}
+/* 关键修复：display:grid 会覆盖 [hidden] 的默认 display:none，
+   导致蒙层一直盖住全屏、拦截所有点击。这里显式归零。 */
+.overlay[hidden] { display: none; }
+.dialog { width: min(360px, 100%); }
+.dialog .dlg-body { padding: 12px; }
+.dialog-body { font-size: 13px; line-height: 1.7; white-space: pre-line; }
+.field { display: flex; align-items: center; gap: 8px; margin: 6px 0; }
+.field span { min-width: 84px; font-size: 13px; }
+.field input {
+  flex: 1;
+  font-family: inherit;
+  font-size: 14px;
+  padding: 4px 6px;
+  border: 2px solid;
+  border-color: var(--shadow) var(--light) var(--light) var(--shadow);
+  border-radius: 0;
+  background: #fff;
+}
+.form-err { font-size: 12px; color: #c00000; margin: 4px 0 0; }
+.dlg-actions { display: flex; justify-content: center; gap: 10px; padding: 10px 12px 12px; }
+.btn {
+  font-family: inherit;
+  font-size: 13px;
+  padding: 6px 18px;
+  cursor: pointer;
+  background: var(--face);
+  border: 2px solid;
+  border-color: var(--light) var(--shadow) var(--shadow) var(--light);
+  border-radius: 0;
+}
+.btn:active { border-color: var(--shadow) var(--light) var(--light) var(--shadow); }
+.btn-ok { min-width: 80px; }
+
+.noscript { padding: 20px; font-size: 14px; }
+
+/* ── 动效降级 ─────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+
+/* ── 移动端（≤768px）─────────────────────────── */
+@media (max-width: 768px) {
+  .desktop {
+    grid-template-columns: 1fr;
+    gap: 12px;
+    padding: 12px;
+    /* 底部广告安全避让 */
+    padding-bottom: max(68px, calc(16px + env(safe-area-inset-bottom)));
+  }
+  .wing-left { order: 2; }
+  .stage-center { order: 1; }
+  .wing-right { order: 3; }
+  .wing .dlg { width: 100%; }
+  .wing-difficulty {
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+  .wing-opt { flex: 1 1 calc(50% - 6px); text-align: center; }
+
+  .titlebar-text { font-size: 12px; }
+  .bar-title { font-size: 13px; }
+}

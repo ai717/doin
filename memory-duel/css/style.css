@@ -1,0 +1,1040 @@
+/* 记忆对决 · 样式表 (午夜魔法赌档 · 秘牌对决) */
+/* 杜绝老套网页表单化，采用一体化街机机台与双栏沉浸舞台 */
+
+:root {
+  --bg-deep: #160a24;
+  --bg-parlor: #211136;
+  --bg-surface: #2e174b;
+  --bg-panel: #3a1d5e;
+  --bg-card-back: #26133d;
+  --bg-card-front: #341854;
+
+  --gold-primary: #e8c46a;
+  --gold-bright: #ffd782;
+  --gold-dim: #9c7832;
+  --gold-shadow: #5c4416;
+
+  --cyan-mystic: #38d6fc;
+  --purple-glow: rgba(168, 85, 247, 0.45);
+  --gold-glow: rgba(232, 196, 106, 0.45);
+  --crimson-threat: #f43f5e;
+
+  --text-main: #f8fafc;
+  --text-dim: #cbd5e1;
+  --text-gold: #fde68a;
+
+  --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --safe-bottom: max(68px, calc(16px + env(safe-area-inset-bottom)));
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  -webkit-tap-highlight-color: transparent;
+}
+
+html, body {
+  width: 100%;
+  height: 100%;
+  min-height: 100vh;
+  background-color: var(--bg-deep);
+  background-image: 
+    radial-gradient(circle at 50% 15%, rgba(147, 51, 234, 0.18) 0%, transparent 60%),
+    radial-gradient(circle at 20% 85%, rgba(232, 196, 106, 0.1) 0%, transparent 50%),
+    linear-gradient(180deg, #1b0c2c 0%, #12061f 100%);
+  color: var(--text-main);
+  font-family: var(--font-family);
+  overflow-x: hidden;
+  overscroll-behavior: none;
+  user-select: none;
+}
+
+/* 顶栏控制条（一体化收纳，严禁四角散落） */
+#stage-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 16px;
+  background: rgba(33, 17, 54, 0.85);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid rgba(232, 196, 106, 0.25);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  height: 52px;
+}
+
+.bar-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+#stage-title {
+  font-size: 1.15rem;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  color: var(--gold-bright);
+  text-shadow: 0 0 10px rgba(255, 215, 130, 0.5);
+}
+
+.stage-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.bar-btn {
+  background: rgba(58, 29, 94, 0.6);
+  border: 1px solid rgba(232, 196, 106, 0.35);
+  color: var(--text-gold);
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 0.88rem;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.15s ease, background 0.15s ease, border-color 0.15s ease;
+}
+
+.bar-btn:hover {
+  background: rgba(78, 39, 126, 0.85);
+  border-color: var(--gold-bright);
+  transform: translateY(-1px);
+}
+
+.bar-btn:active {
+  transform: translateY(1px);
+}
+
+/* 主对决舞台 */
+#stage-core {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  max-width: 1160px;
+  margin: 0 auto;
+  padding: 12px 16px var(--safe-bottom) 16px;
+}
+
+.duel-stage {
+  width: 100%;
+}
+
+/* 移动端紧凑顶条 (默认在宽屏隐藏) */
+.mobile-hud {
+  display: none;
+  justify-content: space-between;
+  align-items: center;
+  background: rgba(46, 23, 75, 0.9);
+  border: 1px solid rgba(232, 196, 106, 0.25);
+  border-radius: 10px;
+  padding: 8px 12px;
+  margin-bottom: 12px;
+}
+
+.mobile-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.m-label {
+  font-size: 0.72rem;
+  color: var(--text-dim);
+}
+
+.m-val {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--gold-bright);
+}
+
+.m-sp {
+  font-size: 0.75rem;
+  color: #67e8f9;
+}
+
+.mobile-turn-badge {
+  background: rgba(232, 196, 106, 0.15);
+  border: 1px solid var(--gold-bright);
+  border-radius: 20px;
+  padding: 4px 10px;
+  font-size: 0.78rem;
+  color: var(--gold-bright);
+  font-weight: 600;
+}
+
+/* 桌面双翼对决竞技场 */
+.duel-arena {
+  display: grid;
+  grid-template-columns: 260px 1fr 260px;
+  gap: 20px;
+  align-items: start;
+  width: 100%;
+}
+
+/* 双翼战利品面板 */
+.vault-wing {
+  background: rgba(46, 23, 75, 0.75);
+  border: 1px solid rgba(232, 196, 106, 0.3);
+  border-radius: 14px;
+  padding: 16px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+  backdrop-filter: blur(8px);
+}
+
+.vault-box-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.vault-chest-icon {
+  font-size: 1.8rem;
+}
+
+.vault-meta {
+  flex: 1;
+}
+
+.vault-title {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--gold-bright);
+  margin-bottom: 4px;
+}
+
+.vault-progress-bar {
+  width: 100%;
+  height: 6px;
+  background: rgba(18, 6, 31, 0.8);
+  border-radius: 3px;
+  overflow: hidden;
+  border: 1px solid rgba(232, 196, 106, 0.2);
+}
+
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #ca8a04, #facc15);
+  border-radius: 3px;
+  transition: width 0.3s ease;
+}
+
+.progress-fill.ai-fill {
+  background: linear-gradient(90deg, #9333ea, #c084fc);
+}
+
+.vault-counters {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 6px;
+  margin-bottom: 14px;
+}
+
+.vault-pill {
+  background: rgba(22, 10, 36, 0.8);
+  border: 1px solid rgba(232, 196, 106, 0.15);
+  border-radius: 8px;
+  padding: 6px 4px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.pill-label {
+  font-size: 0.7rem;
+  color: var(--text-dim);
+}
+
+.pill-num {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--gold-bright);
+}
+
+/* 策略面板与按钮 */
+.tactical-deck {
+  background: rgba(22, 10, 36, 0.6);
+  border: 1px solid rgba(232, 196, 106, 0.2);
+  border-radius: 10px;
+  padding: 12px;
+  margin-bottom: 12px;
+}
+
+.sp-bar-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.sp-text {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--text-gold);
+}
+
+.sp-gems {
+  display: flex;
+  gap: 4px;
+}
+
+.sp-gem {
+  font-size: 1.05rem;
+  transition: transform 0.2s, opacity 0.2s;
+}
+
+.sp-gem.spent {
+  opacity: 0.2;
+  filter: grayscale(1);
+}
+
+.sp-gem.active {
+  animation: gemPulse 2.5s infinite ease-in-out;
+}
+
+@keyframes gemPulse {
+  0%, 100% { transform: scale(1); filter: drop-shadow(0 0 2px #38d6fc); }
+  50% { transform: scale(1.1); filter: drop-shadow(0 0 6px #38d6fc); }
+}
+
+.action-buttons-group {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.action-btn {
+  background: linear-gradient(180deg, #4c247d 0%, #2e1452 100%);
+  border: 1px solid rgba(232, 196, 106, 0.4);
+  color: var(--text-gold);
+  padding: 10px 6px;
+  border-radius: 8px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  box-shadow: 0 3px 0 var(--gold-shadow), 0 4px 10px rgba(0, 0, 0, 0.3);
+  transition: transform 0.1s ease, filter 0.1s ease, border-color 0.15s ease;
+  touch-action: manipulation;
+  min-height: 48px;
+}
+
+.action-btn .btn-icon {
+  font-size: 1.15rem;
+}
+
+.action-btn:hover:not(:disabled) {
+  filter: brightness(1.15);
+  border-color: var(--gold-bright);
+  transform: translateY(-2px);
+  box-shadow: 0 5px 0 var(--gold-shadow), 0 6px 14px rgba(0, 0, 0, 0.4);
+}
+
+.action-btn:active:not(:disabled) {
+  transform: translateY(2px);
+  box-shadow: 0 1px 0 var(--gold-shadow), 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.action-btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+  filter: grayscale(0.8);
+  box-shadow: none;
+  transform: none;
+}
+
+.action-btn.active-state {
+  border-color: #38d6fc;
+  box-shadow: 0 0 12px rgba(56, 214, 252, 0.6);
+  background: linear-gradient(180deg, #1e3a8a 0%, #0f172a 100%);
+}
+
+.btn-cancel-scout {
+  width: 100%;
+  margin-top: 8px;
+  background: #dc2626;
+  color: #fff;
+  border: 1px solid #f87171;
+  padding: 6px;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+/* 战况滚动条 */
+.event-ticker {
+  background: rgba(18, 6, 31, 0.9);
+  border: 1px solid rgba(232, 196, 106, 0.2);
+  border-radius: 8px;
+  padding: 8px 10px;
+  min-height: 38px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.ticker-text {
+  font-size: 0.78rem;
+  color: #e2e8f0;
+}
+
+.ticker-text.bump {
+  animation: textBump 0.25s ease-out;
+}
+
+@keyframes textBump {
+  0% { transform: scale(1.12); color: var(--gold-bright); }
+  100% { transform: scale(1); color: #e2e8f0; }
+}
+
+/* 右翼 AI 占卜师卡片 */
+.ai-avatar-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: rgba(22, 10, 36, 0.8);
+  border: 1px solid rgba(168, 85, 247, 0.35);
+  border-radius: 10px;
+  padding: 10px;
+  margin-bottom: 12px;
+}
+
+.ai-avatar-mask {
+  font-size: 2.2rem;
+  background: rgba(58, 29, 94, 0.5);
+  border-radius: 50%;
+  width: 50px;
+  height: 50px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(232, 196, 106, 0.3);
+}
+
+.ai-badge {
+  font-size: 0.68rem;
+  background: rgba(232, 196, 106, 0.2);
+  color: var(--gold-bright);
+  padding: 2px 6px;
+  border-radius: 4px;
+  border: 1px solid rgba(232, 196, 106, 0.3);
+}
+
+.ai-name {
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: #f1f5f9;
+  margin: 3px 0 2px 0;
+}
+
+.ai-desc {
+  font-size: 0.72rem;
+  color: var(--text-dim);
+  line-height: 1.25;
+}
+
+.ai-sp-box {
+  background: rgba(22, 10, 36, 0.6);
+  border: 1px solid rgba(232, 196, 106, 0.2);
+  border-radius: 8px;
+  padding: 10px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.ai-sp-used {
+  font-size: 0.8rem;
+  color: #e9d5ff;
+}
+
+.stage-nav-dock {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.dock-btn {
+  width: 100%;
+}
+
+/* 中央牌桌主舞台 */
+.board-center {
+  background: rgba(30, 14, 50, 0.85);
+  border: 1px solid rgba(232, 196, 106, 0.35);
+  border-radius: 16px;
+  padding: 16px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.45);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-height: 480px;
+}
+
+.board-banner {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  margin-bottom: 14px;
+  padding: 0 6px;
+}
+
+.round-indicator, .goal-indicator {
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--text-gold);
+}
+
+.combo-badge {
+  background: linear-gradient(90deg, #ea580c, #f59e0b);
+  color: #ffffff;
+  font-size: 0.78rem;
+  font-weight: 800;
+  padding: 3px 10px;
+  border-radius: 12px;
+  letter-spacing: 0.5px;
+  box-shadow: 0 0 10px rgba(249, 115, 22, 0.6);
+  animation: comboPunch 0.3s ease-out;
+}
+
+@keyframes comboPunch {
+  0% { transform: scale(1.4); }
+  100% { transform: scale(1); }
+}
+
+/* 卡牌网格与 3D 翻转 */
+.cards-grid {
+  display: grid;
+  gap: 10px;
+  width: 100%;
+  max-width: 580px;
+  touch-action: none;
+}
+
+.cards-grid.grid-compact {
+  grid-template-columns: repeat(4, 1fr);
+}
+
+.cards-grid.grid-5x4 {
+  grid-template-columns: repeat(5, 1fr);
+}
+
+.cards-grid.grid-6x4 {
+  grid-template-columns: repeat(6, 1fr);
+}
+
+.cards-grid.grid-6x5 {
+  grid-template-columns: repeat(6, 1fr);
+}
+
+/* 单张卡牌容器 */
+.duel-card {
+  background: none;
+  border: none;
+  padding: 0;
+  aspect-ratio: 5 / 7;
+  perspective: 900px;
+  cursor: pointer;
+  position: relative;
+  outline: none;
+}
+
+.card-inner {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  transition: transform 0.32s cubic-bezier(0.3, 0.9, 0.2, 1);
+  transform-style: preserve-3d;
+  border-radius: 10px;
+}
+
+.duel-card:hover .card-inner {
+  transform: translateY(-2px);
+}
+
+.duel-card.card-revealed .card-inner {
+  transform: rotateY(180deg);
+}
+
+.card-face {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border-radius: 10px;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(232, 196, 106, 0.35);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+}
+
+/* 卡背 */
+.card-back {
+  background: linear-gradient(135deg, #2b1347 0%, #1a0a2d 100%);
+  position: relative;
+  overflow: hidden;
+}
+
+.card-back-pattern {
+  width: 82%;
+  height: 82%;
+  opacity: 0.85;
+}
+
+.scout-eye-mark {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  font-size: 0.9rem;
+  background: rgba(6, 182, 212, 0.4);
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 0 6px #06b6d4;
+}
+
+/* 卡面 */
+.card-front {
+  background: linear-gradient(135deg, #38195a 0%, #25103c 100%);
+  transform: rotateY(180deg);
+  padding: 6px;
+}
+
+.totem-wrapper {
+  width: 65%;
+  height: 65%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.totem-icon {
+  width: 100%;
+  height: 100%;
+}
+
+.totem-name {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--text-gold);
+  margin-top: 4px;
+}
+
+/* 卡牌高亮（严禁使用硬描边圈！必须无边界径向柔光托出） */
+.card-glow .card-face {
+  box-shadow: 0 0 16px rgba(232, 196, 106, 0.6), inset 0 0 10px rgba(232, 196, 106, 0.35);
+  border-color: var(--gold-bright);
+}
+
+.scouting-active .duel-card:not(.card-revealed):not(.card-removed) .card-face {
+  animation: scoutBreathing 1.6s infinite alternate ease-in-out;
+}
+
+@keyframes scoutBreathing {
+  0% { box-shadow: 0 0 4px rgba(56, 214, 252, 0.3); }
+  100% { box-shadow: 0 0 14px rgba(56, 214, 252, 0.7); }
+}
+
+/* 已消除卡牌 */
+.duel-card.card-removed {
+  opacity: 0.12;
+  cursor: default;
+  pointer-events: none;
+  filter: grayscale(1);
+  transform: scale(0.92);
+  transition: opacity 0.4s ease, transform 0.4s ease;
+}
+
+/* 状态提示 */
+.status-hint {
+  margin-top: 14px;
+  font-size: 0.82rem;
+  color: #38d6fc;
+  font-weight: 500;
+  min-height: 20px;
+  text-align: center;
+}
+
+/* 弹窗通用样式 */
+.game-modal {
+  margin: auto;
+  border: 1px solid rgba(232, 196, 106, 0.5);
+  border-radius: 16px;
+  background: rgba(30, 14, 50, 0.95);
+  color: var(--text-main);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.65), 0 0 30px rgba(168, 85, 247, 0.3);
+  backdrop-filter: blur(16px);
+  max-width: 500px;
+  width: 90%;
+}
+
+.game-modal::backdrop {
+  background: rgba(8, 2, 14, 0.75);
+  backdrop-filter: blur(4px);
+}
+
+.modal-card {
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.modal-large {
+  max-width: 600px;
+  text-align: left;
+}
+
+.modal-big-icon {
+  font-size: 3rem;
+  margin-bottom: 8px;
+}
+
+.modal-title {
+  font-size: 1.35rem;
+  font-weight: 800;
+  color: var(--gold-bright);
+  margin-bottom: 8px;
+}
+
+.modal-desc {
+  font-size: 0.9rem;
+  color: var(--text-dim);
+  margin-bottom: 16px;
+}
+
+.stars-display {
+  display: flex;
+  gap: 8px;
+  font-size: 2rem;
+  margin-bottom: 18px;
+}
+
+.star-icon.unlit {
+  opacity: 0.25;
+  filter: grayscale(1);
+}
+
+.star-icon.lit {
+  animation: starPop 0.4s ease-out;
+}
+
+@keyframes starPop {
+  0% { transform: scale(0.4); opacity: 0; }
+  70% { transform: scale(1.3); }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+.modal-stats-grid {
+  width: 100%;
+  background: rgba(18, 6, 31, 0.7);
+  border: 1px solid rgba(232, 196, 106, 0.2);
+  border-radius: 10px;
+  padding: 12px 16px;
+  margin-bottom: 20px;
+}
+
+.stat-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 6px 0;
+  font-size: 0.86rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.stat-row:last-child {
+  border-bottom: none;
+}
+
+.stat-name {
+  color: var(--text-dim);
+}
+
+.stat-val {
+  font-weight: 700;
+  color: var(--gold-bright);
+}
+
+.modal-actions {
+  display: flex;
+  gap: 12px;
+  width: 100%;
+  justify-content: center;
+}
+
+.btn-primary {
+  background: linear-gradient(180deg, #f59e0b 0%, #d97706 100%);
+  border: 1px solid #fde68a;
+  color: #1a0826;
+  font-weight: 700;
+  font-size: 0.92rem;
+  padding: 10px 20px;
+  border-radius: 8px;
+  cursor: pointer;
+  box-shadow: 0 3px 0 #92400e;
+  transition: transform 0.15s ease;
+}
+
+.btn-primary:hover {
+  transform: translateY(-2px);
+}
+
+.btn-secondary {
+  background: rgba(58, 29, 94, 0.8);
+  border: 1px solid rgba(232, 196, 106, 0.4);
+  color: var(--text-gold);
+  font-weight: 600;
+  font-size: 0.92rem;
+  padding: 10px 20px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+/* 模式与关卡抽屉 */
+.mode-tabs {
+  display: flex;
+  gap: 8px;
+  width: 100%;
+  margin-bottom: 16px;
+}
+
+.tab-btn {
+  flex: 1;
+  background: rgba(18, 6, 31, 0.6);
+  border: 1px solid rgba(232, 196, 106, 0.25);
+  color: var(--text-dim);
+  padding: 8px;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.tab-btn.active {
+  background: rgba(58, 29, 94, 0.9);
+  color: var(--gold-bright);
+  border-color: var(--gold-bright);
+}
+
+.modes-panel {
+  width: 100%;
+  margin-bottom: 16px;
+}
+
+.challenge-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.tier-card {
+  background: rgba(18, 6, 31, 0.7);
+  border: 1px solid rgba(232, 196, 106, 0.2);
+  border-radius: 10px;
+  padding: 12px;
+  display: grid;
+  grid-template-columns: 40px 1fr 80px;
+  align-items: center;
+  gap: 12px;
+}
+
+.tier-icon {
+  font-size: 1.8rem;
+}
+
+.tier-card h4 {
+  font-size: 0.92rem;
+  color: var(--gold-bright);
+}
+
+.tier-card p {
+  font-size: 0.76rem;
+  color: var(--text-dim);
+}
+
+.tier-start-btn {
+  background: linear-gradient(180deg, #4c247d, #2e1452);
+  border: 1px solid var(--gold-bright);
+  color: var(--text-gold);
+  padding: 6px 10px;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  cursor: pointer;
+}
+
+.puzzles-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  max-height: 280px;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.puzzle-cell {
+  background: rgba(18, 6, 31, 0.8);
+  border: 1px solid rgba(232, 196, 106, 0.2);
+  border-radius: 8px;
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.puzzle-cell.locked {
+  opacity: 0.5;
+}
+
+.pz-num {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--gold-bright);
+}
+
+.pz-title {
+  font-size: 0.7rem;
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  width: 100%;
+}
+
+.pz-stars {
+  font-size: 0.72rem;
+  color: #facc15;
+}
+
+.pz-btn {
+  background: #3b1d5c;
+  border: 1px solid rgba(232, 196, 106, 0.4);
+  color: #fff;
+  border-radius: 4px;
+  font-size: 0.72rem;
+  padding: 3px 8px;
+  cursor: pointer;
+}
+
+/* 玩法说明排版 */
+.rules-body {
+  margin-bottom: 20px;
+  line-height: 1.6;
+}
+
+.rules-body h3 {
+  font-size: 0.95rem;
+  color: var(--gold-bright);
+  margin-top: 10px;
+  margin-bottom: 4px;
+}
+
+.rules-body p {
+  font-size: 0.84rem;
+  color: var(--text-dim);
+  white-space: pre-line;
+}
+
+.hidden {
+  display: none !important;
+}
+
+/* 响应式断点：移动端 (≤768px) */
+@media (max-width: 768px) {
+  #stage-core {
+    padding-left: 8px;
+    padding-right: 8px;
+  }
+
+  .mobile-hud {
+    display: flex;
+  }
+
+  .duel-arena {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  /* 移动端两翼面板重排：收缩在主舞台下方 */
+  .vault-wing.ai-wing {
+    display: none; /* 移动端数据全部收纳进 mobile-hud */
+  }
+
+  .vault-wing.player-wing {
+    order: 2;
+    width: 100%;
+    padding: 12px;
+  }
+
+  .vault-box-header, .vault-counters {
+    display: none; /* 移动端数据在顶部 mobile-hud 展示 */
+  }
+
+  .board-center {
+    order: 1;
+    width: 100%;
+    min-height: auto;
+    padding: 10px;
+  }
+
+  .cards-grid {
+    gap: 6px;
+  }
+
+  .action-buttons-group {
+    grid-template-columns: repeat(4, 1fr);
+    gap: 6px;
+  }
+
+  .action-btn {
+    min-height: 52px;
+    padding: 6px 2px;
+    font-size: 0.72rem;
+  }
+
+  .action-btn .btn-icon {
+    font-size: 1.1rem;
+  }
+
+  .puzzles-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* 动效降级 (AGENTS.md 红线) */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+
+  .duel-card:hover .card-inner {
+    transform: none !important;
+  }
+}
