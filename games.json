@@ -137,6 +137,23 @@
       }
     },
     {
+      "title": "中国象棋",
+      "slug": "xiangqi",
+      "desc": "9×10 红木棋桌上的中国象棋：24 关将帅残局闯关、五档阶梯 AI 对战与同屏双人对弈，马后炮与车马冷着尽数登场。",
+      "icon": "♟",
+      "cover": "/assets/covers/xiangqi.webp",
+      "tags": [
+        "益智",
+        "对战",
+        "经典"
+      ],
+      "url": "/xiangqi/",
+      "en": {
+        "title": "Xiangqi",
+        "desc": "Chinese Chess on a 9×10 rosewood board: 24 endgame campaign levels, five-tier ladder AI and local two-player duels."
+      }
+    },
+    {
       "title": "数独",
       "slug": "sudoku",
       "desc": "经典 9x9 逻辑填数，从入门到骨灰级的烧脑修行。",
@@ -1112,6 +1129,40 @@
       }
     },
     {
+      "title": "积木爆破",
+      "slug": "blockblast",
+      "desc": "把糖果霓虹拼块拖进 8×8 网格，填满任意整行整列就玻璃爆破——行与列可同爆触发十字共鸣，连击音阶上行。无计时无道具的爆款原味，外加 4 章 24 关章节挑战与经典生存，即开即玩。",
+      "icon": "🧱",
+      "cover": "/assets/covers/blockblast.webp",
+      "tags": [
+        "益智",
+        "消除",
+        "策略"
+      ],
+      "url": "/blockblast/",
+      "en": {
+        "title": "Block Blast",
+        "desc": "Drag candy-neon pieces into the 8x8 grid and blast any full row or column into glass shards and confetti. A row and a column can pop together for Cross Resonance, combos climb the scale, and there is no timer or power-ups. Includes a 4-chapter, 24-level campaign plus classic survival."
+      }
+    },
+    {
+      "title": "滑冰推箱",
+      "slug": "ice-slide",
+      "desc": "冰封湖面上的惯性推箱：人和补给箱都会一路滑行、撞墙才停——把每只箱子规划到正确的墙边停住，推上科考站灯标。4 章 32 关渐进 + 每日一局 + 练习场，求解器实算每关最优 par，三星评级、无限撤销与实时提示，极地冰原视窗。",
+      "icon": "🧊",
+      "cover": "/assets/covers/ice-slide.webp",
+      "tags": [
+        "益智",
+        "解谜",
+        "经典"
+      ],
+      "url": "/ice-slide/",
+      "en": {
+        "title": "Ice Slide",
+        "desc": "Momentum sokoban on a frozen lake: you and the supply crates slide until something stops you — plan every crate against the right wall and park it on a station beacon. 32 levels in 4 chapters plus a daily slide and a practice mode, solver-computed optimal par, three-star grading, unlimited undo and live hints, all in a polar ice aesthetic."
+      }
+    },
+    {
       "title": "绿呢桌球",
       "slug": "billiards",
       "desc": "英伦俱乐部绿呢球台：拉杆蓄力出杆，动量守恒物理把 15 颗球逐一送进黄铜袋口。10 局残局单人清台试炼限杆三星、同屏双人完整 8 球规则定组与手中球判罚、跟杆/刹车/侧旋三档走位、连击与台呢轨迹，开球线后自由摆位。",
@@ -1160,6 +1211,23 @@
       "en": {
         "title": "Jenga Tower",
         "desc": "Structural brinkmanship on a standard 54-block interlocked tower: pull an exposed end block out and stack it on top - pulling eats the support and hurts the base, stacking moves the center of mass and endangers the top. Four collapse checks audit every frame (four support corners, center of mass leaving the pad, three-degree lean, forty percent overhang), while the streak multiplier triples up to x3^18 = 387,420,489 and the Spire Mark. A 24-level campaign across four chapters, a same-screen best-of-three duel and a four-choice safety riddle, with load blocks and a gust fan introduced chapter by chapter, all on 120Hz fixed-step deterministic physics you can replay frame by frame."
+      }
+    },
+    {
+      "title": "每日猜词",
+      "slug": "wordle",
+      "desc": "一日一词，六行定胜负：英文五字母与中文成语双轨词库，日期种子让全站玩家同题同卷。绿黄灰三色铅字逐格翻揭晓示重复与错位，双人对抗同题轮换先中者胜；练习模式无限开新局，胜率、连胜与六行分布统统记入你的排印工作单。",
+      "icon": "🔤",
+      "cover": "/assets/covers/wordle.webp",
+      "tags": [
+        "文字",
+        "益智",
+        "每日"
+      ],
+      "url": "/wordle/",
+      "en": {
+        "title": "Daily Word",
+        "desc": "One word a day, six rows to settle it: a dual wordlist of English five-letter words and Chinese four-character idioms, the same daily puzzle for everyone through a date seed. Letterpress tiles flip green, yellow or grey to reveal repeats and misplaced spots; take turns in the same-puzzle duel or open endless practice rounds, with win rate, streaks and a six-row distribution all kept on your letterpress worksheet."
       }
     }
   ]

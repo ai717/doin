@@ -1,0 +1,165 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <title>积木爆破 · DOIN 在线小游戏</title>
+    <meta name="description" content="把糖果霓虹拼块拖进 8×8 网格，填满任意整行整列就玻璃爆破——行与列可同爆触发十字共鸣，连击音阶上行，无计时无道具，即开即玩。">
+    <link rel="canonical" href="https://doin.win/blockblast/">
+    <meta name="theme-color" content="#070b16">
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="DOIN">
+    <meta property="og:title" content="积木爆破 · DOIN 在线小游戏">
+    <meta property="og:description" content="8×8 拖放拼块，满行满列玻璃爆破，十字共鸣连击上演，无计时无道具的爆款原味。">
+    <meta property="og:url" content="https://doin.win/blockblast/">
+    <meta property="og:locale" content="zh_CN">
+    <meta property="og:image" content="https://doin.win/assets/og-image.png">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="积木爆破 · DOIN 在线小游戏">
+    <meta name="twitter:description" content="8×8 拖放拼块，满行满列玻璃爆破，十字共鸣连击上演。">
+    <meta name="twitter:image" content="https://doin.win/assets/og-image.png">
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <link rel="stylesheet" href="css/style.css?v=dev">
+  </head>
+  <body>
+    <div class="arcade-room" aria-hidden="true">
+      <span class="dust d1"></span><span class="dust d2"></span><span class="dust d3"></span>
+      <span class="dust d4"></span><span class="dust d5"></span><span class="dust d6"></span>
+    </div>
+
+    <div id="game-app">
+      <!-- 柜顶一体化状态条（拒绝四角散落浮动按钮） -->
+      <header id="stage-bar">
+        <a href="/" id="back-home" class="bar-btn" data-i18n="back">返回门户</a>
+        <h1 id="stage-title">
+          <span data-i18n="appTitle">积木爆破</span>
+          <small id="stage-sub" data-i18n="appSub">8×8 拖放拼块 · 满行列爆破</small>
+        </h1>
+        <div class="stage-actions">
+          <button id="btn-sound" class="bar-btn" type="button" aria-label="音效">🔊</button>
+          <button id="btn-lang" class="bar-btn" type="button" data-i18n="langSwitch">EN</button>
+          <button id="btn-help" class="bar-btn" type="button" data-i18n="help">玩法</button>
+        </div>
+      </header>
+
+      <!-- LED 计分牌 -->
+      <section id="led-board" aria-label="scoreboard">
+        <div class="led-card">
+          <span class="led-tag" data-i18n="hudScore">总分</span>
+          <b class="led-value" id="led-score">0</b>
+        </div>
+        <div class="led-card">
+          <span class="led-tag" data-i18n="hudCombo">连击</span>
+          <b class="led-value" id="led-combo">x0</b>
+        </div>
+        <div class="led-card">
+          <span class="led-tag" data-i18n="hudMaxCombo">最高连击</span>
+          <b class="led-value" id="led-max-combo">x0</b>
+        </div>
+        <div class="led-card">
+          <span class="led-tag" data-i18n="hudRows">消除</span>
+          <b class="led-value" id="led-rows">0</b>
+        </div>
+        <div class="led-card">
+          <span class="led-tag" data-i18n="hudCross">十字</span>
+          <b class="led-value" id="led-cross">0</b>
+        </div>
+        <div class="led-card" id="led-best-card">
+          <span class="led-tag" data-i18n="hudBest">最高分</span>
+          <b class="led-value" id="led-best">0</b>
+        </div>
+        <div class="led-card">
+          <span class="led-tag" data-i18n="hudDifficulty">当前难度</span>
+          <b class="led-value" id="led-difficulty"></b>
+        </div>
+      </section>
+
+      <!-- 玻璃展示柜：Canvas 舞台 -->
+      <main id="cabinet">
+        <div id="cabinet-glass">
+          <div class="glass-sheen" aria-hidden="true"></div>
+          <canvas
+            id="stage"
+            role="application"
+            tabindex="0"
+            data-i18n-aria="boardLabel"
+            aria-label="8×8 拼块板"
+          ></canvas>
+        </div>
+        <!-- 柜体底座操作条 -->
+        <div id="cabinet-base">
+          <button id="btn-rotate" class="cab-btn" type="button" data-i18n="actRotate">旋转</button>
+          <button id="btn-difficulty" class="cab-btn" type="button" data-i18n="actDifficulty">难度</button>
+          <button id="btn-reset" class="cab-btn" type="button" data-i18n="actReset">重开</button>
+        </div>
+      </main>
+
+      <p id="toast" role="status" aria-live="polite" hidden></p>
+    </div>
+
+    <!-- 玩法说明 -->
+    <div id="help-layer" class="overlay" hidden>
+      <section class="overlay-panel" role="dialog" aria-modal="true" aria-labelledby="help-title">
+        <h2 id="help-title" data-i18n="helpTitle">玩法说明</h2>
+        <ol class="help-list">
+          <li data-i18n="help1"></li>
+          <li data-i18n="help2"></li>
+          <li data-i18n="help3"></li>
+          <li data-i18n="help4"></li>
+          <li data-i18n="help5"></li>
+          <li data-i18n="help6"></li>
+          <li data-i18n="help7"></li>
+        </ol>
+        <div class="overlay-actions">
+          <button id="help-close" class="cab-btn primary" type="button" data-i18n="helpClose">开始游戏</button>
+        </div>
+      </section>
+    </div>
+
+    <!-- 难度选择 -->
+    <div id="difficulty-layer" class="overlay" hidden>
+      <section class="overlay-panel" role="dialog" aria-modal="true" aria-labelledby="difficulty-title">
+        <h2 id="difficulty-title" data-i18n="difficultyTitle">选择难度</h2>
+        <p class="overlay-note" data-i18n="difficultyNote">三档难度无尽冲分，最高分按难度分别记录。</p>
+        <div class="mode-cards" id="difficulty-cards">
+          <button id="diff-easy" class="mode-card" type="button" aria-pressed="false">
+            <b data-i18n="diffEasy">休闲</b>
+            <span id="diff-easy-desc"></span>
+            <em id="diff-easy-best"></em>
+          </button>
+          <button id="diff-normal" class="mode-card" type="button" aria-pressed="false">
+            <b data-i18n="diffNormal">标准</b>
+            <span id="diff-normal-desc"></span>
+            <em id="diff-normal-best"></em>
+          </button>
+          <button id="diff-hard" class="mode-card" type="button" aria-pressed="false">
+            <b data-i18n="diffHard">大师</b>
+            <span id="diff-hard-desc"></span>
+            <em id="diff-hard-best"></em>
+          </button>
+        </div>
+        <div class="overlay-actions">
+          <button id="difficulty-close" class="cab-btn" type="button" data-i18n="btnClose">看看盘面</button>
+        </div>
+      </section>
+    </div>
+
+    <!-- 结算 -->
+    <div id="result-layer" class="overlay" hidden>
+      <section class="overlay-panel" role="dialog" aria-modal="true" aria-labelledby="result-title">
+        <p class="result-badge" id="result-badge"></p>
+        <h2 id="result-title" data-i18n="resultTitle">本局结算</h2>
+        <p class="result-sub" id="result-sub"></p>
+        <div class="result-rows" id="result-rows"></div>
+        <div class="overlay-actions">
+          <button id="result-again" class="cab-btn primary" type="button" data-i18n="btnAgain">再来一局</button>
+          <button id="result-difficulty" class="cab-btn" type="button" data-i18n="btnDifficulty">换难度</button>
+          <button id="result-close" class="cab-btn" type="button" data-i18n="btnClose">看看盘面</button>
+        </div>
+      </section>
+    </div>
+
+    <noscript><p class="noscript-note">需要启用 JavaScript 才能游玩《积木爆破》。</p></noscript>
+    <script type="module" src="js/main.mjs?v=dev"></script>
+  </body>
+</html>
