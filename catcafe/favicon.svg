@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#fff3d6"/>
+      <stop offset="100%" stop-color="#c9a878"/>
+    </linearGradient>
+    <linearGradient id="cup" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#fff0d0"/>
+      <stop offset="100%" stop-color="#d4a042"/>
+    </linearGradient>
+  </defs>
+  <rect width="64" height="64" rx="14" fill="url(#bg)"/>
+  <!-- 猫耳朵 -->
+  <path d="M14 22 L20 12 L26 22 Z" fill="#ffa94d"/>
+  <path d="M50 22 L44 12 L38 22 Z" fill="#ffa94d"/>
+  <!-- 猫脸圆 -->
+  <circle cx="32" cy="36" r="18" fill="#ffa94d"/>
+  <circle cx="32" cy="36" r="18" fill="none" stroke="#5d3a1f" stroke-width="1.5"/>
+  <!-- 眼睛 -->
+  <ellipse cx="25" cy="34" rx="2.5" ry="3" fill="#2a1f15"/>
+  <ellipse cx="39" cy="34" rx="2.5" ry="3" fill="#2a1f15"/>
+  <!-- 鼻子 -->
+  <path d="M30 40 L34 40 L32 43 Z" fill="#ff6b6b"/>
+  <!-- 胡须 -->
+  <line x1="14" y1="40" x2="22" y2="41" stroke="#5d3a1f" stroke-width="1"/>
+  <line x1="14" y1="44" x2="22" y2="43" stroke="#5d3a1f" stroke-width="1"/>
+  <line x1="50" y1="40" x2="42" y2="41" stroke="#5d3a1f" stroke-width="1"/>
+  <line x1="50" y1="44" x2="42" y2="43" stroke="#5d3a1f" stroke-width="1"/>
+  <!-- 咖啡杯（小图标叠加） -->
+  <rect x="36" y="44" width="14" height="12" rx="2" fill="url(#cup)" stroke="#5d3a1f" stroke-width="1"/>
+  <path d="M50 47 Q56 47 56 51 Q56 55 50 55" fill="none" stroke="#5d3a1f" stroke-width="1.5"/>
+  <!-- 蒸汽 -->
+  <path d="M40 42 Q42 39 40 36" fill="none" stroke="#fff" stroke-width="1" opacity="0.8"/>
+  <path d="M44 42 Q46 39 44 36" fill="none" stroke="#fff" stroke-width="1" opacity="0.8"/>
+</svg>

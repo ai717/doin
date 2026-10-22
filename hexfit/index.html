@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-D67E3XTNSS"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-D67E3XTNSS');
+  </script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>六边蜜筑 · DOIN 在线小游戏</title>
+  <meta name="description" content="把蜜蜡块填进蜂巢棋盘，凑满任意一条蜂房行就蜜流消除——消 4 行触发蜜流狂潮，连击倍率连乘，极限 2^18 蜂王浆金标。">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="css/style.css?v=cc9de66203b3">
+</head>
+<body>
+  <div id="game-app">
+    <header id="stage-bar">
+      <a href="/" id="back-home" class="bar-btn" data-i18n="back">返回门户</a>
+      <div class="bar-brand">
+        <span id="stage-title" data-i18n="appTitle">六边蜜筑</span>
+        <span id="stage-kicker" data-i18n="appKicker">蜂巢满行消除 · 三轴连击</span>
+      </div>
+      <div class="stage-actions">
+        <button id="btn-sound" class="bar-btn" data-i18n-title="sound" data-i18n-aria="sound">🔊</button>
+        <button id="btn-lang" class="bar-btn" data-i18n="langSwitch">EN</button>
+        <button id="btn-help" class="bar-btn" data-i18n-title="help" data-i18n-aria="help">?</button>
+      </div>
+    </header>
+
+    <main id="stage-core">
+      <!-- 采蜜黑板：章节目标 · 最高连击 · 蜜罐总量 -->
+      <section id="chalkboard">
+        <div class="chalk-row">
+          <span class="chalk-label" data-i18n="hudGoal">目标</span>
+          <b id="goal-value">–</b>
+        </div>
+        <div class="chalk-row">
+          <span class="chalk-label" data-i18n="hudPieces">剩余块</span>
+          <b id="pieces-value">∞</b>
+        </div>
+        <div class="chalk-row">
+          <span class="chalk-label" data-i18n="hudRows">消除</span>
+          <b id="rows-value">0</b>
+        </div>
+      </section>
+
+      <!-- 木框蜂箱 -->
+      <section id="hive-frame">
+        <div id="queue-bar">
+          <span class="queue-label" data-i18n="stat_queue">块队列</span>
+          <div id="queue-body"></div>
+        </div>
+
+        <div id="board-wrap">
+          <canvas id="board-canvas" width="560" height="560"></canvas>
+          <span id="player-badge" class="hidden"></span>
+          <span id="rush-badge" data-i18n="hudRush">蜜流狂潮</span>
+        </div>
+
+        <div id="tool-bar">
+          <button id="btn-rotate" class="tool-btn" data-i18n="actRotate">旋转</button>
+          <button id="btn-levels" class="tool-btn tool-ghost" data-i18n="actLevels">选关</button>
+          <button id="btn-reset" class="tool-btn tool-ghost" data-i18n="actReset">重开</button>
+        </div>
+      </section>
+
+      <!-- 蜜罐计分 -->
+      <aside id="honey-jar">
+        <div class="jar-plate">
+          <div class="plate-title" data-i18n="hudScore">蜜罐</div>
+          <b id="score-value">0</b>
+        </div>
+        <div class="jar-plate">
+          <div class="plate-title" data-i18n="hudMult">倍率</div>
+          <b id="mult-value">×1</b>
+        </div>
+        <div class="jar-plate">
+          <div class="plate-title" data-i18n="hudCombo">连击</div>
+          <b id="combo-value">–</b>
+        </div>
+      </aside>
+    </main>
+
+    <!-- 模式选择 -->
+    <div id="panel-ready" class="overlay">
+      <div class="sheet">
+        <div class="sheet-kicker" data-i18n="readyKicker">蜂房酿蜜工坊</div>
+        <h2 class="sheet-title" data-i18n="readyTitle">六边蜜筑</h2>
+        <p class="sheet-desc" data-i18n="readyDesc"></p>
+        <div class="mode-list">
+          <button class="mode-btn" id="btn-mode-campaign">
+            <span class="mode-name" data-i18n="modeCampaign">单人章节</span>
+            <span class="mode-desc" data-i18n="modeCampaignDesc">4 章 × 6 关，目标成长。</span>
+          </button>
+          <button class="mode-btn" id="btn-mode-survival">
+            <span class="mode-name" data-i18n="modeSurvival">经典生存</span>
+            <span class="mode-desc" data-i18n="modeSurvivalDesc">无限块队列，放不下即结束。</span>
+          </button>
+          <button class="mode-btn" id="btn-mode-duel">
+            <span class="mode-name" data-i18n="modeDuel">同屏双人</span>
+            <span class="mode-desc" data-i18n="modeDuelDesc">共享棋盘轮流放置。</span>
+          </button>
+        </div>
+        <p class="sheet-hint" data-i18n="readyHint"></p>
+        <div class="sheet-actions">
+          <button id="btn-ready-close" class="ghost-btn" data-i18n="btnResume">继续游戏</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 章节选择 -->
+    <div id="panel-levels" class="overlay hidden">
+      <div class="sheet sheet-wide">
+        <div class="sheet-kicker" data-i18n="levelsTitle">蜜房章节</div>
+        <p class="sheet-desc" data-i18n="levelsNote"></p>
+        <div id="levels-body"></div>
+        <div class="sheet-actions">
+          <button id="btn-modes" class="ghost-btn" data-i18n="btnModes">换模式</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 玩法说明 -->
+    <div id="panel-help" class="overlay hidden">
+      <div class="sheet sheet-wide">
+        <div class="sheet-kicker" data-i18n="helpTitle">玩法说明</div>
+        <ul class="help-list">
+          <li data-i18n="help1"></li>
+          <li data-i18n="help2"></li>
+          <li data-i18n="help3"></li>
+          <li data-i18n="help4"></li>
+          <li data-i18n="help5"></li>
+          <li data-i18n="help6"></li>
+          <li data-i18n="help7"></li>
+          <li data-i18n="help8"></li>
+        </ul>
+        <div class="sheet-actions">
+          <button id="btn-help-close" class="big-btn" data-i18n="helpClose">我知道了</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 结算 -->
+    <div id="panel-result" class="overlay hidden">
+      <div class="sheet">
+        <h2 class="sheet-title" id="result-title">—</h2>
+        <div id="result-body" class="result-rows"></div>
+        <div class="sheet-actions">
+          <button id="btn-again" class="big-btn" data-i18n="btnAgain">再来一局</button>
+          <button id="btn-next" class="ghost-btn hidden" data-i18n="btnNextLevel">下一关</button>
+          <button id="btn-levels2" class="ghost-btn" data-i18n="btnLevels">章节选择</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="toast" class="hidden"></div>
+  </div>
+
+  <noscript><p>需要启用 JavaScript 才能游玩。</p></noscript>
+  <script type="module" src="js/main.mjs?v=cc9de66203b3"></script>
+</body>
+</html>
