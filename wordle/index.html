@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-D67E3XTNSS"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-D67E3XTNSS');
+  </script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>每日猜词 Wordle · DOIN 在线小游戏</title>
+  <meta name="description" content="铅字排印台猜词：每天一个词（英文五字母 / 中文四字成语），七次机会逐字翻色——绿＝字位俱对、黄＝字对位错、灰＝不在词中，卡住时可启用一次提示。日期种子全站同日同题，另附练习场与同屏双人对抗。">
+  <link rel="icon" href="favicon.svg?v=c8732b64217b" type="image/svg+xml">
+  <link rel="stylesheet" href="css/style.css?v=c8732b64217b">
+</head>
+<body>
+  <noscript><p class="noscript">需要启用 JavaScript 才能运行每日猜词。/ JavaScript is required.</p></noscript>
+  <div class="lamp-glow" aria-hidden="true"></div>
+  <div id="particles" aria-hidden="true"></div>
+
+  <header id="stage-bar">
+    <a href="/" id="back-home" data-i18n-aria="back" title="返回门户">&#x2302;</a>
+    <div class="brand">
+      <div id="stage-title" data-i18n="appTitle">每日猜词</div>
+      <div id="stage-kicker" data-i18n="appKicker">铅字排印台 · 每日一词</div>
+    </div>
+    <nav class="ctrl" aria-label="controls">
+      <button id="btn-mode" class="ctrl-btn wide" type="button" data-i18n-aria="modesLabel">每日一题</button>
+      <button id="btn-track" class="ctrl-btn wide" type="button" data-i18n-aria="trackTitle">中 / EN</button>
+      <button id="btn-sound" class="ctrl-btn" type="button" data-i18n-aria="soundOn">&#x266A;</button>
+      <button id="btn-lang" class="ctrl-btn" type="button" data-i18n-aria="langSwitch">EN</button>
+      <button id="btn-help" class="ctrl-btn" type="button" data-i18n-aria="helpLabel">?</button>
+    </nav>
+  </header>
+
+  <main id="stage">
+    <section id="worksheet" class="plaque" aria-label="print work sheet">
+      <div class="ws-item"><span class="ws-label" data-i18n="wsIssue">期</span><span id="ws-issue" class="ws-num">-</span></div>
+      <div class="ws-item"><span class="ws-label" data-i18n="wsWinrate">胜率</span><span id="ws-winrate" class="ws-num">-</span></div>
+      <div class="ws-item"><span class="ws-label" data-i18n="wsStreak">连胜</span><span id="ws-streak" class="ws-num">-</span></div>
+      <div class="ws-item ws-dist-item">
+        <span class="ws-label" data-i18n="wsDist">分布</span>
+        <span id="ws-dist" class="ws-dist" aria-hidden="true">
+          <i class="ws-bar"></i><i class="ws-bar"></i><i class="ws-bar"></i><i class="ws-bar"></i><i class="ws-bar"></i><i class="ws-bar"></i><i class="ws-bar"></i>
+        </span>
+      </div>
+      <div class="ws-item"><span class="ws-label" data-i18n="wsChances">机会</span><span id="ws-chances" class="ws-num">7</span></div>
+    </section>
+
+    <section id="boards" aria-label="guess boards"></section>
+    <div id="duel-turn" class="duel-turn" hidden></div>
+    <div id="banner" class="banner" hidden></div>
+
+    <div id="hint-bar">
+      <button id="btn-hint" class="key-btn hint-btn" type="button" data-i18n="btnHint" hidden>提示</button>
+    </div>
+
+    <section id="kb" aria-label="type keyboard"></section>
+  </main>
+
+  <div id="panel-help" class="overlay" hidden>
+    <div class="sheet">
+      <h2 class="sheet-title" data-i18n="helpTitle">玩法说明</h2>
+      <ul class="help-list">
+        <li data-i18n="help1"></li>
+        <li data-i18n="help2"></li>
+        <li data-i18n="help3"></li>
+        <li data-i18n="help4"></li>
+        <li data-i18n="help5"></li>
+        <li data-i18n="help6"></li>
+        <li data-i18n="help7"></li>
+        <li data-i18n="help8"></li>
+      </ul>
+      <div class="help-demo" aria-hidden="true">
+        <span class="tile demo demo-green">S</span>
+        <span class="tile demo demo-amber">P</span>
+        <span class="tile demo demo-gray">A</span>
+      </div>
+      <button id="help-close" class="key-btn primary" type="button" data-i18n="close">关闭</button>
+    </div>
+  </div>
+
+  <div id="panel-stats" class="overlay" hidden>
+    <div class="sheet">
+      <h2 class="sheet-title" data-i18n="statsLabel">排印工作单</h2>
+      <div id="stats-body"></div>
+      <button id="stats-close" class="key-btn primary" type="button" data-i18n="close">关闭</button>
+    </div>
+  </div>
+
+  <div id="panel-modes" class="overlay" hidden>
+    <div class="sheet">
+      <h2 class="sheet-title" data-i18n="modesTitle">选择模式</h2>
+      <div class="mode-grid">
+        <button id="mode-daily" class="mode-card" type="button">
+          <span class="mc-name" data-i18n="modeDaily">每日一题</span>
+          <span class="mc-desc" data-i18n="modeDailyDesc">全站同题，连胜在手</span>
+        </button>
+        <button id="mode-practice" class="mode-card" type="button">
+          <span class="mc-name" data-i18n="modePractice">练习场</span>
+          <span class="mc-desc" data-i18n="modePracticeDesc">不限次数，随机词题</span>
+        </button>
+        <button id="mode-duel" class="mode-card" type="button">
+          <span class="mc-name" data-i18n="modeDuel">双人对抗</span>
+          <span class="mc-desc" data-i18n="modeDuelDesc">同词双板，轮流输入</span>
+        </button>
+      </div>
+      <div class="track-row">
+        <span class="ws-label" data-i18n="trackTitle">语言轨</span>
+        <button id="track-en" class="track-btn" type="button" data-i18n="trackEn">英文单词</button>
+        <button id="track-cn" class="track-btn" type="button" data-i18n="trackCn">中文成语</button>
+      </div>
+      <button id="modes-close" class="key-btn primary" type="button" data-i18n="resume">返回当前局</button>
+    </div>
+  </div>
+
+  <div id="panel-result" class="overlay" hidden>
+    <div class="sheet result-sheet">
+      <div id="result-kicker" class="result-kicker"></div>
+      <h2 id="result-title" class="sheet-title"></h2>
+      <div id="result-grid" class="share-grid" aria-hidden="true"></div>
+      <div id="result-note" class="result-note"></div>
+      <div id="result-badge" class="result-badge" hidden></div>
+      <div class="result-actions">
+        <button id="btn-share" class="key-btn primary" type="button" data-i18n="btnShare">复制战绩</button>
+        <button id="btn-again" class="key-btn" type="button" data-i18n="btnNewWord" hidden>换一题</button>
+        <button id="btn-modes2" class="key-btn" type="button" data-i18n="modesLabel">模式与语言轨</button>
+      </div>
+      <textarea id="share-text" class="share-text" readonly hidden></textarea>
+    </div>
+  </div>
+
+  <div id="toast" role="status" aria-live="polite" hidden></div>
+
+  <script type="module" src="js/main.mjs?v=c8732b64217b"></script>
+</body>
+</html>

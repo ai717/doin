@@ -1,0 +1,19 @@
+// filepath: games/Gravity-Echoes/favicon.svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <defs>
+    <radialGradient id="gradVoid" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#0284c7" stop-opacity="1" />
+      <stop offset="60%" stop-color="#38bdf8" stop-opacity="0.6" />
+      <stop offset="100%" stop-color="#030712" stop-opacity="0" />
+    </radialGradient>
+    <linearGradient id="gradPaddle" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#2dd4bf" />
+      <stop offset="100%" stop-color="#38bdf8" />
+    </linearGradient>
+  </defs>
+  <rect width="64" height="64" rx="14" fill="#070913" />
+  <circle cx="32" cy="24" r="18" fill="url(#gradVoid)" />
+  <circle cx="32" cy="24" r="5" fill="#f8fafc" />
+  <ellipse cx="32" cy="24" rx="14" ry="5" fill="none" stroke="#c084fc" stroke-width="1.5" stroke-dasharray="3 3" transform="rotate(-15 32 24)" />
+  <rect x="16" y="52" width="32" height="5" rx="2.5" fill="url(#gradPaddle)" />
+</svg>

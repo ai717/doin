@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-D67E3XTNSS"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-D67E3XTNSS');
+  </script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>叠叠乐 · DOIN 在线小游戏</title>
+  <meta name="description" content="叠叠乐：标准 54 块正交交错木塔，抽出端头安全块再叠到塔顶。抽块削的是支撑、伤在塔底，堆叠移的是质心、险在塔顶。四档判倒（支撑采样 4 点 / 质心越出基座 / 倾角 3° / 悬臂 40%）逐帧审计，连击 ×3^n 封顶 3¹⁸ = 387420489。">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="css/jenga.css?v=c8732b64217b">
+</head>
+<body>
+  <div id="bench">
+    <header id="marquee">
+      <a href="/" id="back-home" data-i18n="back">← 门户</a>
+      <h1 id="stage-title" data-i18n="appTitle">叠叠乐</h1>
+      <nav class="marquee-actions" aria-label="mode">
+        <button id="btn-mode-spire" class="mode-btn" type="button" data-i18n="mode_spire">极限塔</button>
+        <button id="btn-mode-duel" class="mode-btn" type="button" data-i18n="mode_duel">双人对决</button>
+        <button id="btn-mode-riddle" class="mode-btn" type="button" data-i18n="mode_riddle">残局解谜</button>
+        <button id="btn-sound" class="bar-btn" type="button" aria-pressed="true" data-i18n-aria="sound">🔊</button>
+        <button id="btn-lang" class="bar-btn" type="button" data-i18n="langBtn">EN</button>
+        <button id="btn-help" class="bar-btn" type="button" data-i18n-aria="help">?</button>
+      </nav>
+    </header>
+
+    <section id="chalkboard" aria-label="scoreboard">
+      <h2 class="board-label" data-i18n="boardTitle">粉笔黑板</h2>
+      <div class="board-grid">
+        <div class="chalk-cell"><span data-i18n="stat_score">得分</span><b id="hud-score" class="lcd">0</b></div>
+        <div class="chalk-cell"><span data-i18n="stat_streak">连击</span><b id="hud-streak" class="lcd">0</b></div>
+        <div class="chalk-cell"><span data-i18n="stat_mult">倍率</span><b id="hud-mult" class="lcd">×1</b></div>
+        <div class="chalk-cell"><span data-i18n="stat_layers">层数</span><b id="hud-layers" class="lcd">18</b></div>
+        <div class="chalk-cell" id="danger-cell"><span data-i18n="ui_danger">判危度</span><b id="hud-danger" class="lcd">0%</b></div>
+        <div class="chalk-cell"><span data-i18n="bestLayers">最高层数</span><b id="hud-best" class="lcd">18</b></div>
+      </div>
+      <p id="hazard-line"><span id="hazard-tag" data-i18n="hazardNone">无机关</span></p>
+    </section>
+
+    <main id="stage">
+      <div id="stage-head">
+        <span id="level-tag" class="tag"></span>
+        <span id="level-name" class="tag dim"></span>
+        <span id="goal-tag" class="tag goal"></span>
+        <span id="mode-line" class="tag mode"></span>
+      </div>
+
+      <div id="canvas-wrap">
+        <canvas id="tower" aria-label="等轴 2.5D 木塔舞台" data-i18n-aria="canvasLabel"></canvas>
+        <p id="stage-hint" class="hint"></p>
+        <div id="toast" role="status" aria-live="polite"></div>
+
+        <div class="overlay" id="ov-help" hidden>
+          <h2 data-i18n="helpTitle">玩法说明</h2>
+          <p data-i18n="help1"></p>
+          <p data-i18n="help2"></p>
+          <p data-i18n="help3"></p>
+          <p data-i18n="help4"></p>
+          <p data-i18n="help5"></p>
+          <p data-i18n="help6"></p>
+          <button id="btn-help-close" class="tray-btn primary" type="button" data-i18n="helpClose">知道了</button>
+        </div>
+
+        <div class="overlay" id="ov-pause" hidden>
+          <h2 data-i18n="pauseTitle">已暂停</h2>
+          <div class="btn-row">
+            <button id="btn-resume" class="tray-btn primary" type="button" data-i18n="pauseResume">继续</button>
+            <button id="btn-pause-restart" class="tray-btn" type="button" data-i18n="pauseRestart">重摆这座塔</button>
+            <button id="btn-pause-levels" class="tray-btn" type="button" data-i18n="pauseMenu">返回选关</button>
+          </div>
+        </div>
+
+        <div class="overlay" id="ov-result" hidden>
+          <h2 id="result-title"></h2>
+          <p id="result-line"></p>
+          <p id="result-stars" class="stars"></p>
+          <div class="btn-row">
+            <button id="btn-result-next" class="tray-btn primary" type="button" data-i18n="resultNext">下一关</button>
+            <button id="btn-result-retry" class="tray-btn" type="button" data-i18n="resultRetry">再来一次</button>
+            <button id="btn-result-levels" class="tray-btn" type="button" data-i18n="resultLevels">返回选关</button>
+          </div>
+        </div>
+
+        <div class="overlay wide" id="ov-levels" hidden>
+          <h2 data-i18n="levelsTitle">选关</h2>
+          <p id="levels-progress" class="dim"></p>
+          <div id="levels-list"></div>
+          <div class="btn-row">
+            <button id="btn-levels-close" class="tray-btn primary" type="button" data-i18n="helpClose">知道了</button>
+            <button id="btn-reset-save" class="tray-btn" type="button" data-i18n="saveReset">重置存档</button>
+          </div>
+        </div>
+      </div>
+
+      <div id="tray" role="toolbar" aria-label="tool tray">
+        <div class="tool-cluster">
+          <button id="btn-rot-l" class="tray-btn" type="button" data-i18n="act_rotL">↺ 转视角</button>
+          <button id="btn-rot-r" class="tray-btn" type="button" data-i18n="act_rotR">转视角 ↻</button>
+          <button id="btn-zoom-out" class="tray-btn" type="button" data-i18n="act_zoomOut">拉远</button>
+          <button id="btn-zoom-in" class="tray-btn" type="button" data-i18n="act_zoomIn">拉近</button>
+        </div>
+        <div class="tool-cluster slot-cluster">
+          <button id="btn-slot-0" class="tray-btn slot" type="button" data-i18n="slot_left">左槽</button>
+          <button id="btn-slot-1" class="tray-btn slot" type="button" data-i18n="slot_mid">中槽</button>
+          <button id="btn-slot-2" class="tray-btn slot" type="button" data-i18n="slot_right">右槽</button>
+        </div>
+        <div class="tool-cluster">
+          <button id="btn-cancel" class="tray-btn" type="button" data-i18n="act_cancel">取消抽块</button>
+          <button id="btn-rebuild" class="tray-btn" type="button" data-i18n="act_rebuild">重摆塔</button>
+          <button id="btn-levels" class="tray-btn" type="button" data-i18n="act_levels">选关</button>
+          <button id="btn-pause" class="tray-btn" type="button" aria-label="pause">❚❚</button>
+        </div>
+      </div>
+
+      <p id="tip-line" class="dim" data-i18n="keyTip">←/→ 转视角 · 1/2/3 落位 · 空格确认 · Tab 换候选块 · Esc 取消 · R 重摆</p>
+      <p id="touch-line" class="dim" data-i18n="touchTip">拖空白处转视角 · 点端头露出的木块抽出 · 点塔顶三个槽位落位</p>
+    </main>
+  </div>
+
+  <noscript><p data-i18n="noscript">需要启用 JavaScript 才能游玩叠叠乐。</p></noscript>
+  <script type="module" src="js/main.mjs?v=c8732b64217b"></script>
+</body>
+</html>

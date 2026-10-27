@@ -1,0 +1,455 @@
+/* 象棋残局 —— 红木棋桌对弈局视窗。沉浸暗色 + 茶室暖光 + 纸质记分簿 + 木浮雕控件。 */
+
+:root {
+  --table-deep: #170c06;
+  --table-warm: #3a2013;
+  --paper-hi: #efe2bd;
+  --paper-lo: #ddc795;
+  --ink: #3b2a18;
+  --ink-soft: rgba(59, 42, 24, 0.72);
+  --wood-hi: #b3854e;
+  --wood-lo: #7c5227;
+  --wood-text: #f7e9cd;
+  --amber: #ffcf8a;
+  --amber-soft: rgba(255, 207, 138, 0.55);
+  --red-wax: #b8433a;
+  --safe-bottom: max(68px, calc(16px + env(safe-area-inset-bottom)));
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  padding: 0;
+  min-height: 100%;
+}
+
+body {
+  background:
+    radial-gradient(1200px 700px at 50% 30%, rgba(255, 176, 96, 0.14), rgba(0, 0, 0, 0) 62%),
+    radial-gradient(900px 500px at 18% 85%, rgba(184, 67, 58, 0.08), rgba(0, 0, 0, 0) 55%),
+    linear-gradient(180deg, #221109 0%, var(--table-deep) 70%);
+  color: var(--paper-hi);
+  font-family: "PingFang SC", "Microsoft YaHei", "Segoe UI", system-ui, sans-serif;
+  overscroll-behavior: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+#game-app {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ─── 顶栏（茶室暖光横梁）────────────────────────────────────── */
+#stage-bar {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 10px clamp(12px, 3vw, 28px);
+  background: linear-gradient(180deg, rgba(64, 36, 18, 0.92), rgba(38, 20, 10, 0.88));
+  border-bottom: 1px solid rgba(255, 207, 138, 0.14);
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.45);
+}
+
+#stage-title-wrap {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  min-width: 0;
+}
+
+#stage-title {
+  margin: 0;
+  font-size: clamp(19px, 2.6vw, 26px);
+  font-family: "STKaiti", "KaiTi", "SimSun", serif;
+  letter-spacing: 6px;
+  color: #f2dfae;
+  text-shadow: 0 0 18px rgba(255, 191, 105, 0.35);
+  white-space: nowrap;
+}
+
+#stage-subtitle {
+  font-size: 12px;
+  color: rgba(242, 223, 174, 0.55);
+  letter-spacing: 2px;
+  white-space: nowrap;
+}
+
+.stage-actions {
+  margin-left: auto;
+  display: flex;
+  gap: 8px;
+}
+
+.bar-btn {
+  min-width: 38px;
+  height: 34px;
+  padding: 0 12px;
+  border: none;
+  border-radius: 9px;
+  background: linear-gradient(180deg, var(--wood-hi), var(--wood-lo));
+  color: var(--wood-text);
+  font-size: 14px;
+  font-family: inherit;
+  cursor: pointer;
+  box-shadow: inset 0 1px 0 rgba(255, 232, 190, 0.35), 0 3px 8px rgba(0, 0, 0, 0.4);
+  transition: transform 0.08s ease, box-shadow 0.08s ease, filter 0.15s ease;
+}
+
+.bar-btn:hover { filter: brightness(1.08); }
+.bar-btn:active { transform: translateY(2px); box-shadow: inset 0 1px 0 rgba(255, 232, 190, 0.2), 0 1px 3px rgba(0, 0, 0, 0.4); }
+
+/* ─── 主舞台：三区棋桌 ───────────────────────────────────────── */
+#stage-core {
+  flex: 1;
+  display: grid;
+  grid-template-columns: minmax(228px, 270px) minmax(0, 1fr) minmax(228px, 270px);
+  gap: clamp(12px, 2vw, 26px);
+  padding: clamp(12px, 2.4vw, 28px) clamp(12px, 3.5vw, 48px) clamp(20px, 3vw, 36px);
+  align-items: start;
+  max-width: 1440px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+/* 泛黄纸质卡（记分簿 / 棋谱卡 / 抽屉）*/
+.paper-card {
+  background:
+    radial-gradient(140% 100% at 20% 0%, rgba(255, 250, 230, 0.5), rgba(0, 0, 0, 0) 55%),
+    linear-gradient(165deg, var(--paper-hi), var(--paper-lo));
+  color: var(--ink);
+  border-radius: 14px;
+  padding: 16px 16px 18px;
+  box-shadow:
+    inset 0 0 0 1px rgba(120, 84, 40, 0.25),
+    inset 0 -14px 30px rgba(166, 124, 66, 0.18),
+    0 10px 26px rgba(0, 0, 0, 0.45);
+}
+
+.paper-title {
+  margin: 0 0 10px;
+  font-family: "STKaiti", "KaiTi", "SimSun", serif;
+  font-size: 17px;
+  letter-spacing: 4px;
+  color: #4a3010;
+  border-bottom: 1px dashed rgba(90, 62, 26, 0.4);
+  padding-bottom: 8px;
+}
+
+.ink-line {
+  margin: 6px 0;
+  font-size: 13.5px;
+  color: var(--ink);
+  line-height: 1.55;
+}
+
+/* 模式页签（手账标签）*/
+#mode-tabs {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 6px 0 12px;
+}
+
+.mode-tab {
+  border: none;
+  text-align: left;
+  padding: 9px 12px;
+  border-radius: 8px;
+  background: rgba(124, 82, 39, 0.12);
+  color: var(--ink);
+  font-size: 14px;
+  font-family: inherit;
+  cursor: pointer;
+  box-shadow: inset 0 0 0 1px rgba(124, 82, 39, 0.28);
+  transition: background 0.15s ease, box-shadow 0.15s ease, transform 0.08s ease;
+}
+
+.mode-tab:hover { background: rgba(124, 82, 39, 0.2); }
+.mode-tab:active { transform: translateY(1px); }
+.mode-tab.active {
+  background: linear-gradient(180deg, #b8874d, #96632f);
+  color: var(--wood-text);
+  box-shadow: inset 0 1px 0 rgba(255, 232, 190, 0.4), 0 3px 10px rgba(80, 44, 12, 0.4);
+}
+
+.badge-caption { margin-top: 12px; }
+
+#badge-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.badge-chip {
+  font-size: 12px;
+  padding: 4px 9px;
+  border-radius: 999px;
+  background: rgba(124, 82, 39, 0.14);
+  color: var(--ink-soft);
+  box-shadow: inset 0 0 0 1px rgba(124, 82, 39, 0.26);
+}
+
+.badge-chip.earned {
+  background: linear-gradient(180deg, #e8b45a, #c98d2e);
+  color: #3d2606;
+  font-weight: 600;
+  box-shadow: 0 0 12px rgba(232, 180, 90, 0.45);
+}
+
+/* ─── 棋桌中央 ───────────────────────────────────────────────── */
+#table-zone {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+#status-strip {
+  width: 100%;
+  max-width: 620px;
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  font-size: 13.5px;
+  color: rgba(242, 223, 174, 0.85);
+  text-shadow: 0 0 10px rgba(255, 191, 105, 0.25);
+  min-height: 20px;
+}
+
+#status-right { color: rgba(242, 223, 174, 0.6); }
+
+#board {
+  display: block;
+  width: min(100%, 620px);
+  aspect-ratio: 10 / 10.4;
+  max-height: calc(100vh - 250px);
+  border-radius: 12px;
+  touch-action: none;
+  cursor: pointer;
+  box-shadow: 0 18px 44px rgba(0, 0, 0, 0.55), 0 0 60px rgba(255, 176, 96, 0.07);
+}
+
+/* 木制棋盒操作托盘 */
+#action-tray {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+}
+
+.tray-btn {
+  min-width: 86px;
+  height: 40px;
+  padding: 0 16px;
+  border: none;
+  border-radius: 11px;
+  background: linear-gradient(180deg, var(--wood-hi), var(--wood-lo));
+  color: var(--wood-text);
+  font-size: 14.5px;
+  font-family: inherit;
+  letter-spacing: 2px;
+  cursor: pointer;
+  box-shadow: inset 0 1px 0 rgba(255, 232, 190, 0.4), inset 0 -2px 0 rgba(60, 32, 8, 0.35), 0 4px 12px rgba(0, 0, 0, 0.42);
+  transition: transform 0.08s ease, box-shadow 0.08s ease, filter 0.15s ease, opacity 0.15s ease;
+}
+
+.tray-btn:hover { filter: brightness(1.1); }
+.tray-btn:active { transform: translateY(2px); box-shadow: inset 0 1px 0 rgba(255, 232, 190, 0.25), 0 2px 5px rgba(0, 0, 0, 0.4); }
+.tray-btn:disabled { opacity: 0.45; cursor: default; filter: none; transform: none; }
+.tray-btn.primary {
+  background: linear-gradient(180deg, #d0654f, #9c3c2c);
+  box-shadow: inset 0 1px 0 rgba(255, 224, 200, 0.45), 0 4px 14px rgba(184, 67, 58, 0.4);
+}
+
+/* 右翼：棋谱卡 + AI 档位 */
+#chessbox {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.level-name {
+  font-family: "STKaiti", "KaiTi", "SimSun", serif;
+  font-size: 16px;
+  color: #5a3410;
+  letter-spacing: 1px;
+}
+
+#tier-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.tier-btn {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  border: none;
+  padding: 9px 12px;
+  border-radius: 8px;
+  background: rgba(124, 82, 39, 0.12);
+  color: var(--ink);
+  font-size: 13.5px;
+  font-family: inherit;
+  cursor: pointer;
+  box-shadow: inset 0 0 0 1px rgba(124, 82, 39, 0.28);
+  transition: background 0.15s ease, transform 0.08s ease;
+}
+
+.tier-btn:hover { background: rgba(124, 82, 39, 0.2); }
+.tier-btn:active { transform: translateY(1px); }
+.tier-btn.active {
+  background: linear-gradient(180deg, #b8874d, #96632f);
+  color: var(--wood-text);
+  box-shadow: inset 0 1px 0 rgba(255, 232, 190, 0.4), 0 0 14px rgba(232, 180, 90, 0.35);
+}
+
+.tier-badge {
+  font-size: 11px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: rgba(60, 36, 10, 0.18);
+  color: var(--ink-soft);
+}
+
+.tier-badge.earned { background: linear-gradient(180deg, #e8b45a, #c98d2e); color: #3d2606; font-weight: 600; }
+
+/* ─── 抽屉与弹层 ─────────────────────────────────────────────── */
+#level-drawer, #result-modal, #help-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 18px;
+}
+
+/* display:flex 会覆盖 hidden 属性的 UA 样式，必须显式夺回，否则弹层常显且关不掉 */
+#level-drawer[hidden], #result-modal[hidden], #help-modal[hidden] {
+  display: none;
+}
+
+.drawer-mask {
+  position: absolute;
+  inset: 0;
+  background: rgba(12, 5, 2, 0.62);
+  backdrop-filter: blur(3px);
+}
+
+.drawer-body {
+  position: relative;
+  width: min(560px, 94vw);
+  max-height: min(78vh, 720px);
+  overflow: auto;
+  animation: drawer-in 0.18s ease;
+}
+
+@keyframes drawer-in {
+  from { transform: translateY(14px) scale(0.985); opacity: 0; }
+  to { transform: none; opacity: 1; }
+}
+
+.drawer-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.drawer-head .paper-title { margin: 0; border: none; padding: 0; }
+
+#help-body {
+  margin: 0;
+  font-family: inherit;
+  font-size: 13.5px;
+  line-height: 1.9;
+  color: var(--ink);
+  white-space: pre-wrap;
+}
+
+.chapter-block { margin-bottom: 14px; }
+
+.chapter-name {
+  font-family: "STKaiti", "KaiTi", "SimSun", serif;
+  font-size: 15px;
+  letter-spacing: 2px;
+  color: #5a3410;
+  margin: 4px 0 8px;
+}
+
+.level-grid {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 8px;
+}
+
+.level-chip {
+  border: none;
+  border-radius: 10px;
+  padding: 8px 2px 7px;
+  background: rgba(124, 82, 39, 0.12);
+  color: var(--ink);
+  font-family: inherit;
+  cursor: pointer;
+  box-shadow: inset 0 0 0 1px rgba(124, 82, 39, 0.28);
+  transition: background 0.15s ease, transform 0.08s ease;
+}
+
+.level-chip:hover:not(:disabled) { background: rgba(124, 82, 39, 0.22); }
+.level-chip:active:not(:disabled) { transform: translateY(1px); }
+.level-chip:disabled { opacity: 0.4; cursor: default; }
+
+.level-chip .no { display: block; font-size: 14px; font-weight: 600; }
+.level-chip .stars { display: block; font-size: 11px; margin-top: 2px; color: #a8741e; }
+.level-chip.current { background: linear-gradient(180deg, #b8874d, #96632f); color: var(--wood-text); box-shadow: 0 0 12px rgba(232, 180, 90, 0.4); }
+.level-chip.current .stars { color: rgba(247, 233, 205, 0.85); }
+
+.result-card { text-align: center; padding-bottom: 22px; }
+#result-title { font-family: "STKaiti", "KaiTi", "SimSun", serif; letter-spacing: 4px; font-size: 22px; color: #5a3410; margin: 6px 0 4px; }
+.result-actions { display: flex; justify-content: center; gap: 12px; margin-top: 14px; }
+
+.noscript-tip {
+  position: fixed;
+  inset: auto 0 0;
+  text-align: center;
+  padding: 12px;
+  background: #7e241d;
+  color: #ffe9d8;
+}
+
+/* ─── 移动端 ─────────────────────────────────────────────────── */
+@media (max-width: 899px) {
+  #stage-core {
+    grid-template-columns: 1fr;
+    padding-bottom: var(--safe-bottom);
+  }
+
+  #scorebook { order: 2; }
+  #table-zone { order: 1; }
+  #chessbox { order: 3; }
+
+  #mode-tabs { flex-direction: row; flex-wrap: wrap; }
+  .mode-tab { flex: 1 1 auto; text-align: center; }
+
+  #board { max-height: 62vh; }
+  #action-tray { padding-bottom: 6px; }
+
+  .level-grid { grid-template-columns: repeat(4, 1fr); }
+
+  #stage-subtitle { display: none; }
+}
+
+/* ─── 动效降级 ───────────────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

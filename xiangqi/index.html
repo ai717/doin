@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-D67E3XTNSS"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-D67E3XTNSS');
+  </script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>象棋残局 · DOIN 在线小游戏</title>
+  <meta name="description" content="红木棋桌上的中国象棋：残局闯关 24 关求解器校验、五档阶梯 AI 对战、同屏双人，点开即玩。">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="css/style.css?v=c8732b64217b">
+</head>
+<body>
+  <div id="game-app">
+    <header id="stage-bar">
+      <a href="/" id="back-home" class="bar-btn" data-i18n="backHome">← 门户</a>
+      <div id="stage-title-wrap">
+        <h1 id="stage-title" data-i18n="appTitle">象棋残局</h1>
+        <span id="stage-subtitle" data-i18n="appSubtitle">木桌对弈 · 残局解题</span>
+      </div>
+      <div class="stage-actions">
+        <button id="btn-sound" class="bar-btn" type="button" aria-label="音效" data-i18n-aria="btnSound">🔊</button>
+        <button id="btn-lang" class="bar-btn" type="button">EN</button>
+        <button id="btn-help" class="bar-btn" type="button" aria-label="玩法说明" data-i18n-aria="btnHelp">?</button>
+      </div>
+    </header>
+
+    <main id="stage-core">
+      <!-- 左：纸质记分簿（模式 / 战绩 / 徽章） -->
+      <aside id="scorebook" class="paper-card">
+        <h2 class="paper-title" data-i18n="scorebookTitle">记分簿</h2>
+        <div id="mode-tabs" role="tablist">
+          <button id="tab-campaign" class="mode-tab" type="button" data-i18n="modeCampaign">残局闯关</button>
+          <button id="tab-ai" class="mode-tab" type="button" data-i18n="modeAi">阶梯 AI 对战</button>
+          <button id="tab-2p" class="mode-tab" type="button" data-i18n="mode2p">同屏双人</button>
+        </div>
+        <div id="duel-book">
+          <p id="duel-record" class="ink-line">0</p>
+          <p id="duel-streak" class="ink-line">0</p>
+          <p class="ink-line badge-caption" data-i18n="badgeTitle">实力徽章</p>
+          <div id="badge-row"></div>
+        </div>
+      </aside>
+
+      <!-- 中：红木棋桌 -->
+      <section id="table-zone">
+        <div id="status-strip">
+          <span id="status-left"></span>
+          <span id="status-right"></span>
+        </div>
+        <canvas id="board" aria-label="xiangqi board"></canvas>
+        <div id="action-tray">
+          <button id="btn-undo" class="tray-btn" type="button" data-i18n="btnUndo">悔棋</button>
+          <button id="btn-restart" class="tray-btn" type="button" data-i18n="btnRestart">重摆</button>
+          <button id="btn-levels" class="tray-btn" type="button" data-i18n="btnLevels">选关</button>
+          <button id="btn-hint" class="tray-btn" type="button" data-i18n="btnHint">提示</button>
+        </div>
+      </section>
+
+      <!-- 右：泛黄棋谱卡 / AI 档位 + 木制棋盒操作 -->
+      <aside id="chessbox">
+        <div id="endgame-card" class="paper-card">
+          <h2 class="paper-title" data-i18n="endgameCardTitle">棋谱卡</h2>
+          <p id="card-level" class="ink-line level-name"></p>
+          <p id="card-goal" class="ink-line"></p>
+          <p id="card-moves" class="ink-line"></p>
+        </div>
+        <div id="ai-panel" class="paper-card">
+          <h2 class="paper-title" data-i18n="aiPanelTitle">阶梯 AI</h2>
+          <div id="tier-list"></div>
+        </div>
+      </aside>
+    </main>
+  </div>
+
+  <!-- 选关抽屉（常驻入口按钮呼出，绝不前置阻塞） -->
+  <div id="level-drawer" hidden>
+    <div class="drawer-mask"></div>
+    <div class="drawer-body paper-card">
+      <div class="drawer-head">
+        <h2 id="drawer-title" data-i18n="btnLevels">选关</h2>
+        <button id="btn-drawer-close" class="tray-btn" type="button" data-i18n="btnClose">关闭</button>
+      </div>
+      <div id="drawer-chapters"></div>
+    </div>
+  </div>
+
+  <!-- 终局结算 -->
+  <div id="result-modal" hidden>
+    <div class="drawer-mask"></div>
+    <div class="drawer-body paper-card result-card">
+      <h2 id="result-title"></h2>
+      <p id="result-detail" class="ink-line"></p>
+      <div class="result-actions">
+        <button id="btn-result-primary" class="tray-btn primary" type="button"></button>
+        <button id="btn-result-secondary" class="tray-btn" type="button" data-i18n="btnLevels">选关</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 玩法说明 -->
+  <div id="help-modal" hidden>
+    <div class="drawer-mask"></div>
+    <div class="drawer-body paper-card">
+      <div class="drawer-head">
+        <h2 data-i18n="helpTitle">玩法说明</h2>
+        <button id="btn-help-close" class="tray-btn" type="button" data-i18n="btnClose">关闭</button>
+      </div>
+      <pre id="help-body"></pre>
+    </div>
+  </div>
+
+  <noscript><p class="noscript-tip">需要启用 JavaScript 才能游玩。</p></noscript>
+  <script type="module" src="js/main.mjs?v=c8732b64217b"></script>
+</body>
+</html>

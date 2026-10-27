@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-D67E3XTNSS"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-D67E3XTNSS');
+  </script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>绿呢桌球 · DOIN 在线小游戏</title>
+  <meta name="description" content="胡桃木球台上拉杆瞄准，用动量守恒物理把花色球逐一送进黄铜袋口。10 局残局单人清台试炼 + 同屏双人完整 8 球规则，英伦俱乐部质感。">
+  <link rel="icon" href="favicon.svg?v=c8732b64217b" type="image/svg+xml">
+  <link rel="stylesheet" href="css/style.css?v=c8732b64217b">
+</head>
+<body>
+  <noscript>
+    <div class="noscript-banner">
+      <p data-i18n="noscript">需要启用 JavaScript 才能游玩。</p>
+    </div>
+  </noscript>
+
+  <div id="club">
+    <header class="club-topbar">
+      <a href="/" id="back-home" class="brass-btn" data-i18n-aria="backHome" aria-label="门户">&#8592;</a>
+      <h1 class="club-title" data-i18n="gameTitle">绿呢桌球</h1>
+      <div class="club-tools">
+        <button id="btn-sound" class="brass-btn" type="button" data-i18n-aria="btnSound" aria-label="音效">&#128266;</button>
+        <button id="btn-lang" class="brass-btn lang-btn" type="button" data-i18n-aria="langSwitch">EN</button>
+        <button id="btn-help" class="brass-btn" type="button" data-i18n-aria="btnHelp" aria-label="玩法">?</button>
+      </div>
+    </header>
+
+    <div class="lamp-halo" aria-hidden="true"></div>
+
+    <main class="club-room">
+      <section class="scoreboard" aria-live="polite">
+        <div class="score-flag">
+          <span class="flag-cloth" id="turn-flag" data-i18n="player_a">玩家一</span>
+        </div>
+        <ul class="score-chips">
+          <li><span data-i18n="ui_table">球局</span><b id="chip-table">1</b></li>
+          <li><span data-i18n="ui_par">标准杆</span><b id="chip-par">24</b></li>
+          <li><span data-i18n="ui_shots">杆数</span><b id="chip-shots">0</b></li>
+          <li><span data-i18n="ui_run">连击</span><b id="chip-run">0</b></li>
+          <li><span data-i18n="ui_foul">犯规</span><b id="chip-fouls">0</b></li>
+          <li><span data-i18n="group_open">未定组</span><b id="chip-group">-</b></li>
+        </ul>
+      </section>
+
+      <section class="table-stage">
+        <canvas id="felt" width="1240" height="680" aria-label="billiards table"></canvas>
+        <div id="toast" class="table-toast" role="status" aria-live="polite"></div>
+        <div id="place-bar" class="place-bar" hidden>
+          <span data-i18n="bihBody">犯规后你获得手中球：把母球拖到想放的位置，点「确认放球」</span>
+          <button id="btn-place-done" class="tray-btn" type="button" data-i18n="btnPlaceConfirm">确认放球</button>
+          <button id="btn-place-auto" class="tray-btn" type="button" data-i18n="btnPlaceAuto">帮我选位</button>
+        </div>
+      </section>
+
+      <footer class="rail-tray">
+        <div class="tray-group tray-power">
+          <span class="tray-label" data-i18n="ui_power">力度</span>
+          <div class="power-meter"><i id="power-fill"></i></div>
+          <input id="power-range" class="power-slider" type="range" min="5" max="100" value="55" data-i18n-aria="ui_power" aria-label="力度">
+        </div>
+        <div class="tray-group tray-spin">
+          <span class="tray-label" data-i18n="ui_spin">旋转</span>
+          <div class="spin-set" id="spin-set">
+            <button class="spin-btn" type="button" data-spin="follow" data-i18n="spin_follow">跟杆</button>
+            <button class="spin-btn" type="button" data-spin="draw" data-i18n="spin_draw">刹车</button>
+            <button class="spin-btn" type="button" data-spin="side" data-i18n="spin_side">侧旋</button>
+          </div>
+        </div>
+        <div class="tray-group tray-actions">
+          <button id="btn-tables" class="tray-btn" type="button" data-i18n="btnTables">球局手册</button>
+          <button id="btn-restart" class="tray-btn" type="button" data-i18n="btnRestart">重开本局</button>
+          <button id="btn-pause" class="tray-btn" type="button" data-i18n="btnPause">暂停</button>
+        </div>
+      </footer>
+    </main>
+
+    <div class="overlay" id="ov-menu">
+      <div class="sheet sheet-wide">
+        <h2 data-i18n="gameTitle">绿呢桌球</h2>
+        <p class="sheet-lead" data-i18n="tagline">拉杆瞄准，动量守恒</p>
+        <div class="mode-grid">
+          <button class="mode-card" type="button" data-mode="clear">
+            <b data-i18n="modeClear">单人清台</b>
+            <span data-i18n="modeClearSub">10 局残局</span>
+          </button>
+          <button class="mode-card" type="button" data-mode="duel">
+            <b data-i18n="modeDuel">同屏双人</b>
+            <span data-i18n="modeDuelSub">完整规则</span>
+          </button>
+        </div>
+        <div class="option-row">
+          <label class="switch"><input type="checkbox" id="opt-aim"><span data-i18n="optAim">瞄准辅助线</span></label>
+          <label class="switch"><input type="checkbox" id="opt-spin"><span data-i18n="optSpin">击点预览</span></label>
+          <label class="switch"><input type="checkbox" id="opt-sound"><span data-i18n="btnSound">音效</span></label>
+        </div>
+        <div class="sheet-actions">
+          <button id="btn-start" class="tray-btn primary" type="button" data-i18n="btnPlay">开打</button>
+          <button id="btn-open-tables" class="tray-btn" type="button" data-i18n="btnTables">球局手册</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="overlay" id="ov-tables" hidden>
+      <div class="sheet sheet-wide">
+        <h2 data-i18n="btnTables">球局手册</h2>
+        <div class="table-grid" id="table-grid"></div>
+        <div class="sheet-actions">
+          <button id="btn-tables-close" class="tray-btn" type="button" data-i18n="btnClose">关闭</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="overlay" id="ov-help" hidden>
+      <div class="sheet">
+        <h2 data-i18n="btnHelp">玩法</h2>
+        <p data-i18n="helpClear">移动鼠标瞄准，按住画面任意位置（方向立即锁定），往后拖动蓄力，松手击球。</p>
+        <p data-i18n="helpSpin">旋转三档：跟杆撞球后跟进，刹车撞球后急停回拉，侧旋改变碰库反弹方向。</p>
+        <p data-i18n="helpDuel">两名玩家共用一张球台轮流击球，依法清理本方花色后合法打进黑八。</p>
+        <p data-i18n="helpKeys">键盘：左右微调瞄准，上下调整力度，空格蓄力松手击球。</p>
+        <p data-i18n="helpTouch">触屏：按住并拖动，母球朝拖动的反方向击出，拉得越远力度越大。</p>
+        <div class="sheet-actions">
+          <button id="btn-help-close" class="tray-btn primary" type="button" data-i18n="btnClose">关闭</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="overlay" id="ov-result" hidden>
+      <div class="sheet">
+        <h2 id="result-title" data-i18n="resultCleared">清台完成</h2>
+        <div class="stars" id="result-stars"><i></i><i></i><i></i></div>
+        <dl class="result-stats">
+          <div><dt data-i18n="ui_shots">杆数</dt><dd id="res-shots">0</dd></div>
+          <div><dt data-i18n="ui_par">标准杆</dt><dd id="res-par">0</dd></div>
+          <div><dt data-i18n="ui_foul">犯规</dt><dd id="res-fouls">0</dd></div>
+          <div><dt data-i18n="statBest">最佳连击</dt><dd id="res-run">0</dd></div>
+        </dl>
+        <div class="sheet-actions">
+          <button id="btn-result-next" class="tray-btn primary" type="button" data-i18n="btnNext">下一局</button>
+          <button id="btn-result-retry" class="tray-btn" type="button" data-i18n="btnRetry">再来一局</button>
+          <button id="btn-result-manual" class="tray-btn" type="button" data-i18n="btnManual">球局手册</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="overlay" id="ov-pause" hidden>
+      <div class="sheet">
+        <h2 data-i18n="paused">暂停</h2>
+        <div class="sheet-actions">
+          <button id="btn-resume" class="tray-btn primary" type="button" data-i18n="btnResume">继续</button>
+          <button id="btn-pause-restart" class="tray-btn" type="button" data-i18n="btnRestart">重开本局</button>
+          <button id="btn-pause-menu" class="tray-btn" type="button" data-i18n="btnMenu">主菜单</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="js/main.mjs?v=c8732b64217b"></script>
+</body>
+</html>

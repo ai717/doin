@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" role="img" aria-label="Bubble Merge">
+  <defs>
+    <radialGradient id="bm-bg" cx="50%" cy="42%" r="72%">
+      <stop offset="0%" stop-color="#1B4F72"/>
+      <stop offset="100%" stop-color="#0E3B4D"/>
+    </radialGradient>
+    <radialGradient id="bm-bubble" cx="38%" cy="32%" r="72%">
+      <stop offset="0%" stop-color="#FFFFFF" stop-opacity="0.95"/>
+      <stop offset="34%" stop-color="#6FE3E1" stop-opacity="0.72"/>
+      <stop offset="68%" stop-color="#B39DDB" stop-opacity="0.6"/>
+      <stop offset="100%" stop-color="#FF9EB5" stop-opacity="0.78"/>
+    </radialGradient>
+    <radialGradient id="bm-small" cx="36%" cy="30%" r="74%">
+      <stop offset="0%" stop-color="#FFFFFF" stop-opacity="0.9"/>
+      <stop offset="55%" stop-color="#FFD66B" stop-opacity="0.6"/>
+      <stop offset="100%" stop-color="#FF9EB5" stop-opacity="0.7"/>
+    </radialGradient>
+  </defs>
+  <rect width="64" height="64" rx="14" fill="url(#bm-bg)"/>
+  <circle cx="26" cy="40" r="17" fill="url(#bm-bubble)" stroke="#EAFBFF" stroke-opacity="0.55" stroke-width="1.4"/>
+  <ellipse cx="20" cy="33" rx="5.4" ry="4" fill="#FFFFFF" fill-opacity="0.8" transform="rotate(-28 20 33)"/>
+  <circle cx="46" cy="22" r="9" fill="url(#bm-small)" stroke="#EAFBFF" stroke-opacity="0.5" stroke-width="1.1"/>
+  <ellipse cx="43" cy="19" rx="2.8" ry="2" fill="#FFFFFF" fill-opacity="0.78" transform="rotate(-28 43 19)"/>
+  <circle cx="50" cy="46" r="3.4" fill="#6FE3E1" fill-opacity="0.5"/>
+  <circle cx="14" cy="18" r="2.4" fill="#FFD66B" fill-opacity="0.45"/>
+</svg>
