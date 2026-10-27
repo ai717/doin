@@ -208,3 +208,36 @@ function storage() {
 5. **安全避让**：移动端底部预留 `≥68px` 安全距离，画布声明 `touch-action: none;`；
 6. **零外链**：零 CDN、零外链字体音视频，资源附加 `?v=dev`；
 7. **门禁自测**：通过 `node scripts/check-game.mjs <slug>` 校验（T1 零 fail，T2 零 warn）。
+
+---
+
+## 7 · 进阶体验与生态互联规范（对标国际一流体验）
+
+1. **门户事件与元数据广播（Portal Bridge API）**：
+   - 子游戏终局或达成关卡里程碑时，建议将战报同步记录至全站共享本地存储 `doin.meta.v1`，并向父级广播：
+   ```javascript
+   function reportGameSession(outcome) {
+     const payload = {
+       slug: '<slug>',
+       outcome: outcome.won ? 'WON' : 'LOST',
+       score: outcome.score || 0,
+       stars: outcome.stars || 0,
+       timestamp: Date.now()
+     };
+     try {
+       const meta = JSON.parse(localStorage.getItem('doin.meta.v1') || '{}');
+       meta.recentlyPlayed = [payload.slug, ...(meta.recentlyPlayed || []).filter(s => s !== payload.slug)].slice(0, 8);
+       meta.totalStars = (meta.totalStars || 0) + (outcome.stars || 0);
+       localStorage.setItem('doin.meta.v1', JSON.stringify(meta));
+     } catch (e) {}
+     if (window.parent && window.parent !== window) {
+       window.parent.postMessage({ type: 'DOIN_GAME_EVENT', payload }, '*');
+     }
+   }
+   ```
+   - 赋能门户主站逐步长出「最近常玩（Continue Playing）」与「全站星级成就墙」，打破各游戏孤岛效应。
+2. **零成本离线战绩卡海报（Zero-Cost Canvas Share Card）**：
+   - 鼓励在胜利/结算弹窗中提供 `[保存战绩卡]` 按钮。使用游戏已有 Canvas 上下文纯离线渲染 600×800 像素海报（游戏主视觉、关卡、用时、步数、星级印章与 `doin.win/<slug>/` 水印），一键 `toDataURL` 存图，赋能玩家朋友圈与小红书自传播。
+3. **交互生命周期清理与中间态防御**：
+   - 拖拽取块态与棋盘落子预览态必须严格解耦；指针未滑入有效棋盘前绝不预武装幽灵预览；指针移出棋盘必须立即收回光标；
+   - 单测基建入口必须在每个用例前显式重置内存 Map（`resetBackendForTests()`），防止跨用例数据泄漏。
