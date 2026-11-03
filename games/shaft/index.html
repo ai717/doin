@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>是男人就下一百层 · DOIN 在线小游戏</title>
+  <meta name="description" content="是男人就下一百层：头顶尖刺天花板步步紧压，脚下深渊不断上涌，在岩板、弹簧、尖刺、传送带与碎裂板之间疾速下潜。23 关地质深渊、经典百层长跑与无尽深渊三模式。">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="css/style.css?v=dev">
+</head>
+<body>
+  <div id="game-app">
+    <header id="stage-bar">
+      <a href="/" id="back-home" class="bar-btn" data-i18n-title="back">
+        <span class="bar-glyph">←</span><span class="bar-text" id="back-text" data-i18n="back">返回门户</span>
+      </a>
+      <h1 id="app-title">
+        <span id="app-title-main" data-i18n="appTitle">深渊百层</span>
+        <span id="app-subtitle" data-i18n="appSubtitle">微缩矿坑竖井</span>
+      </h1>
+      <div class="stage-actions">
+        <button id="btn-levels" class="bar-btn" type="button" data-i18n-title="levelsBtn">
+          <span class="bar-glyph">▤</span><span class="bar-text" data-i18n="levelsBtn">选关</span>
+        </button>
+        <button id="btn-pause" class="bar-btn" type="button" data-i18n-title="pause" data-i18n-aria="pause">
+          <span class="bar-glyph">❚❚</span>
+        </button>
+        <button id="btn-restart" class="bar-btn" type="button" data-i18n-title="restart" data-i18n-aria="restart">
+          <span class="bar-glyph">↻</span>
+        </button>
+        <button id="btn-sound" class="bar-btn" type="button" aria-pressed="true" data-i18n-title="sound" data-i18n-aria="sound">
+          <span class="bar-glyph">🔊</span>
+        </button>
+        <button id="btn-lang" class="bar-btn" type="button" data-i18n-title="langSwitch">EN</button>
+        <button id="btn-help" class="bar-btn" type="button" data-i18n-title="help" data-i18n-aria="help">
+          <span class="bar-glyph">?</span>
+        </button>
+      </div>
+    </header>
+
+    <nav id="mode-bar" role="tablist" data-i18n-aria="modeAria" aria-label="选择玩法模式">
+      <button class="mode-chip is-active" type="button" role="tab" data-mode="campaign" aria-selected="true" data-i18n="modeCampaign">深渊关卡</button>
+      <button class="mode-chip" type="button" role="tab" data-mode="classic" aria-selected="false" data-i18n="modeClassic">经典百层</button>
+      <button class="mode-chip" type="button" role="tab" data-mode="endless" aria-selected="false" data-i18n="modeEndless">无尽深渊</button>
+    </nav>
+
+    <main id="stage-core">
+      <aside id="wing-left" class="wing" data-i18n-aria="hudDepth" aria-label="深度与生命仪表">
+        <section class="plate plate-depth">
+          <span class="plate-label" id="label-depth" data-i18n="hudDepth">下潜深度</span>
+          <div class="depth-read">
+            <strong class="depth-value" id="val-depth">0</strong>
+            <span class="depth-unit" id="unit-depth" data-i18n="hudDepthUnit">层</span>
+          </div>
+          <div class="depth-ticks" aria-hidden="true">
+            <span></span><span></span><span></span><span></span><span></span>
+          </div>
+        </section>
+
+        <section class="plate plate-life">
+          <span class="plate-label" id="label-life" data-i18n="hudLife">生命</span>
+          <div class="hearts" id="hearts" aria-hidden="true"></div>
+          <strong class="life-value" id="val-hp">12 / 12</strong>
+        </section>
+
+        <section class="plate plate-goal">
+          <span class="plate-label" id="label-goal" data-i18n="hudGoal">目标深度</span>
+          <div class="goal-track" id="goal-track" aria-hidden="true"><span class="goal-fill" id="goal-fill"></span></div>
+          <strong class="goal-value" id="val-goal">0 / 0</strong>
+        </section>
+
+        <section class="plate plate-best">
+          <span class="plate-label" id="label-best" data-i18n="hudBest">最佳纪录</span>
+          <strong class="best-value" id="val-best">0</strong>
+        </section>
+      </aside>
+
+      <section id="shaft-arena" data-i18n-aria="stageAria" aria-label="微缩矿坑竖井舞台">
+        <div id="shaft-frame">
+          <canvas id="stage-canvas" width="420" height="680" role="img" aria-label="矿坑竖井中，探险者在下落跳板之间左右腾挪下潜"></canvas>
+          <div id="toast" role="status" aria-live="polite"></div>
+        </div>
+        <div id="touch-controls">
+          <button id="btn-left" class="touch-key" type="button" data-i18n-aria="touchLeft" aria-label="向左移动">◀</button>
+          <button id="btn-dive" class="touch-key touch-key-dive" type="button" data-i18n-aria="touchDive" aria-label="快速俯冲">▼</button>
+          <button id="btn-right" class="touch-key" type="button" data-i18n-aria="touchRight" aria-label="向右移动">▶</button>
+        </div>
+      </section>
+
+      <aside id="wing-right" class="wing" data-i18n-aria="hudRadar" aria-label="地质声纳与速度表">
+        <section class="plate plate-radar">
+          <span class="plate-label" id="label-radar" data-i18n="hudRadar">地质声纳</span>
+          <div class="radar-screen" aria-hidden="true">
+            <span class="radar-ring"></span>
+            <span class="radar-sweep"></span>
+            <span class="radar-glyph" id="radar-icon">◎</span>
+          </div>
+          <strong class="radar-text" id="radar-text" data-i18n="radarClear">下方暂无机关</strong>
+        </section>
+
+        <section class="plate plate-speed">
+          <span class="plate-label" id="label-speed" data-i18n="hudSpeed">下坠速度</span>
+          <div class="speed-read">
+            <strong class="speed-value" id="val-speed">0</strong>
+            <span class="speed-unit" id="unit-speed" data-i18n="hudSpeedUnit">px/s</span>
+          </div>
+          <div class="speed-track" aria-hidden="true"><span class="speed-fill" id="speed-fill"></span></div>
+        </section>
+
+        <section class="plate plate-hint">
+          <span class="key-hint" id="key-hint" data-i18n="keyHint">【A/D 或 ←/→】左右移动　【S / ↓】俯冲加速</span>
+        </section>
+      </aside>
+    </main>
+
+    <div id="panel-levels" class="overlay">
+      <div class="panel panel-levels">
+        <h2 class="panel-title" id="levels-title" data-i18n="levelsTitle">深渊关卡</h2>
+        <p class="panel-sub" id="levels-progress">0 / 69 ★</p>
+        <div class="levels-scroll">
+          <div class="levels-grid" id="levels-grid" data-i18n-aria="levelsAria" aria-label="关卡选择"></div>
+        </div>
+        <div class="panel-actions">
+          <button id="btn-levels-close" class="btn" type="button" data-i18n="btnClose">返回</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="panel-pause" class="overlay">
+      <div class="panel panel-pause">
+        <span class="panel-sub" id="pause-kicker" data-i18n="pauseKicker">竖井冻结</span>
+        <h2 class="panel-title" id="pause-title" data-i18n="pauseTitle">已暂停</h2>
+        <p class="panel-desc" id="pause-desc" data-i18n="pauseDesc">下潜已冻结，喘口气再继续。当前深度、生命与机关全部原样保留。</p>
+        <div class="panel-actions">
+          <button id="btn-resume" class="btn btn-primary" type="button" data-i18n="btnResume">继续下潜</button>
+          <button id="btn-pause-restart" class="btn" type="button" data-i18n="btnPauseRestart">重来本局</button>
+          <button id="btn-pause-levels" class="btn" type="button" data-i18n="btnLevelsResult">选择关卡</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="panel-result" class="overlay">
+      <div class="panel panel-result">
+        <h2 class="panel-title" id="result-title">踩上金盾升降机！</h2>
+        <div class="result-stars" id="result-stars" aria-hidden="true">
+          <span class="star">★</span><span class="star">★</span><span class="star">★</span>
+        </div>
+        <div class="result-score">
+          <span class="result-score-label" id="label-res-score" data-i18n="resultScore">最终得分</span>
+          <strong class="result-score-value" id="res-score">0</strong>
+          <span class="result-badge" id="result-badge" hidden>新纪录！</span>
+        </div>
+        <div class="result-rows">
+          <div class="result-row"><span id="label-res-depth" data-i18n="resultDepth">下潜深度</span><strong id="res-depth">0</strong></div>
+          <div class="result-row"><span id="label-res-hp" data-i18n="resultHp">剩余生命</span><strong id="res-hp">0 / 12</strong></div>
+          <div class="result-row"><span id="label-res-time" data-i18n="resultTime">用时</span><strong id="res-time">0</strong></div>
+          <div class="result-row"><span id="label-res-stars" data-i18n="resultStars">本关星级</span><strong id="res-stars">—</strong></div>
+        </div>
+        <p class="result-hint" id="result-hint"></p>
+        <div class="panel-actions">
+          <button id="btn-retry" class="btn btn-primary" type="button" data-i18n="btnRetry">再下一次</button>
+          <button id="btn-next" class="btn" type="button" data-i18n="btnNext">下一关</button>
+          <button id="btn-again" class="btn btn-primary" type="button" data-i18n="btnAgain">再来一局</button>
+          <button id="btn-levels-result" class="btn" type="button" data-i18n="btnLevelsResult">选择关卡</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="panel-help" class="overlay">
+      <div class="panel panel-help">
+        <h2 class="panel-title" id="help-title" data-i18n="helpTitle">玩法说明</h2>
+        <ol class="help-list" id="help-list">
+          <li data-i18n="help1"></li>
+          <li data-i18n="help2"></li>
+          <li data-i18n="help3"></li>
+          <li data-i18n="help4"></li>
+          <li data-i18n="help5"></li>
+          <li data-i18n="help6"></li>
+          <li data-i18n="help7"></li>
+        </ol>
+        <div class="panel-actions">
+          <button id="btn-help-close" class="btn btn-primary" type="button" data-i18n="helpClose">我知道了</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <noscript><p>需要启用 JavaScript 才能游玩深渊百层。</p></noscript>
+  <script type="module" src="js/main.mjs?v=dev"></script>
+</body>
+</html>

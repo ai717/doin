@@ -1229,6 +1229,24 @@
         "title": "Daily Word",
         "desc": "One word a day, six rows to settle it: a dual wordlist of English five-letter words and Chinese four-character idioms, the same daily puzzle for everyone through a date seed. Letterpress tiles flip green, yellow or grey to reveal repeats and misplaced spots; take turns in the same-puzzle duel or open endless practice rounds, with win rate, streaks and a six-row distribution all kept on your letterpress worksheet."
       }
+    },
+    {
+      "title": "深渊百层",
+      "slug": "shaft",
+      "desc": "是男人就下一百层现代重制：头顶液压尖刺步步下压、脚下深渊不断上涌，在岩板、弹簧、尖刺、传送带与碎裂晶板之间左右腾挪疾速下潜。23 关五大地质深渊章节、经典百层长跑与无尽深渊三模式，踩普通板回血、俯冲加速、120Hz 固定步长确定性物理，进度本机保存。",
+      "icon": "⛏️",
+      "cover": "/assets/covers/shaft.webp",
+      "tags": [
+        "街机",
+        "平台跳跃",
+        "经典",
+        "动作"
+      ],
+      "url": "/shaft/",
+      "en": {
+        "title": "Down 100",
+        "desc": "A modern remake of the classic Down 100: a hydraulic spike ceiling presses down while the abyss rises, and you hop between rock ledges, springs, spike boards, conveyor belts and crumbling crystal platforms. 23 stages across five geological chapters, the classic hundred-floor run and an endless abyss, with life-restoring ledges, fast dives and 120Hz fixed-step deterministic physics. Progress saves locally."
+      }
     }
   ]
 }
