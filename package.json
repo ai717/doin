@@ -82,6 +82,7 @@
     "test:jenga": "node --test games/jenga/tests/engine.test.mjs games/jenga/tests/score.test.mjs games/jenga/tests/levels.test.mjs games/jenga/tests/storage.test.mjs games/jenga/tests/game.test.mjs games/jenga/tests/render.test.mjs games/jenga/tests/i18n.test.mjs games/jenga/tests/markup.test.mjs games/jenga/tests/smoke.mjs",
     "test:coin-pusher": "node --test games/coin-pusher/tests/engine.test.mjs games/coin-pusher/tests/score.test.mjs games/coin-pusher/tests/levels.test.mjs games/coin-pusher/tests/game.test.mjs games/coin-pusher/tests/storage.test.mjs games/coin-pusher/tests/render.test.mjs games/coin-pusher/tests/markup.test.mjs",
     "test:shaft": "node --test games/shaft/tests/*.test.mjs",
-    "test:xiangqi": "node --test games/xiangqi/tests/engine.test.mjs games/xiangqi/tests/solver.test.mjs games/xiangqi/tests/ai.test.mjs games/xiangqi/tests/game.test.mjs games/xiangqi/tests/score.test.mjs games/xiangqi/tests/storage.test.mjs games/xiangqi/tests/i18n.test.mjs games/xiangqi/tests/markup.test.mjs"
+    "test:xiangqi": "node --test games/xiangqi/tests/engine.test.mjs games/xiangqi/tests/solver.test.mjs games/xiangqi/tests/ai.test.mjs games/xiangqi/tests/game.test.mjs games/xiangqi/tests/score.test.mjs games/xiangqi/tests/storage.test.mjs games/xiangqi/tests/i18n.test.mjs games/xiangqi/tests/markup.test.mjs",
+    "test:magic-tower": "node --test games/magic-tower/tests/engine.test.mjs games/magic-tower/tests/levels.test.mjs games/magic-tower/tests/solver.test.mjs games/magic-tower/tests/game.test.mjs games/magic-tower/tests/storage.test.mjs games/magic-tower/tests/i18n.test.mjs games/magic-tower/tests/markup.test.mjs"
   }
 }

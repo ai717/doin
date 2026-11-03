@@ -1,6 +1,23 @@
 {
   "games": [
     {
+      "title": "魔塔：勇者登顶",
+      "slug": "magic-tower",
+      "desc": "经典 24 层固定数值魔塔：没有随机暴击与掉落，每只怪的战损都能当场算清。五区递进、三色钥匙、金币商人，用智能战损雷达规划攻防路线；楼层快照与 30 步撤销让你告别一步走错废档。",
+      "icon": "🏰",
+      "cover": "/assets/covers/magic-tower.webp",
+      "tags": [
+        "RPG",
+        "策略",
+        "经典"
+      ],
+      "url": "/magic-tower/",
+      "en": {
+        "title": "Magic Tower",
+        "desc": "A classic 24-floor fixed-number tower: no random crits, no drops — every fight's exact HP loss is on screen before you commit. Five escalating zones, three key colours, gold merchants, and damage radar to plan your build; floor snapshots and 30-step undo make a single misstep non-fatal."
+      }
+    },
+    {
       "title": "舷窗防线",
       "slug": "invaders",
       "desc": "太空侵略者现代重制：在观测舱舷窗后左右走位，迎击横移下压、越打越快的外星阵列。点射管理过热槽、长按蓄力轨道炮贯穿整列，俯冲转入冲刺直段时正面迎击拿双倍分。12 关战役 + 生存演习 + 战术训练场。",
