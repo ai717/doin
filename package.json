@@ -3,6 +3,11 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "test:pin": "node --test games/pin/tests/*.test.mjs",
+    "test:tidy": "node --test games/tidy/tests/*.test.mjs",
+    "test:bumper": "node --test games/bumper/tests/*.test.mjs",
+    "test:tug": "node --test games/tug/tests/*.test.mjs",
+    "test:sleepwalker": "node --test games/sleepwalker/tests/*.test.mjs",
     "build": "node scripts/build-site.mjs",
     "test:pacman": "node --test games/pacman/tests/engine.test.mjs games/pacman/tests/mazes.test.mjs games/pacman/tests/score.test.mjs games/pacman/tests/storage.test.mjs games/pacman/tests/i18n.test.mjs games/pacman/tests/audio.test.mjs games/pacman/tests/game.test.mjs games/pacman/tests/render.test.mjs games/pacman/tests/markup.test.mjs games/pacman/tests/assembly.test.mjs",
     "test:memory-duel": "node --test games/memory-duel/tests/*.test.mjs",

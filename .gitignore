@@ -16,6 +16,7 @@ node_modules/
 Thumbs.db
 .vscode/
 .idea/
+.trae-html-share-packages/
 *.log
 
 # Local agent memory

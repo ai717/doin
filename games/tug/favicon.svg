@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <defs>
+    <linearGradient id="ropeGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#ff4757"/>
+      <stop offset="48%" stop-color="#d2a679"/>
+      <stop offset="52%" stop-color="#d2a679"/>
+      <stop offset="100%" stop-color="#1e90ff"/>
+    </linearGradient>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="2" stdDeviation="2" flood-color="#000" flood-opacity="0.4"/>
+    </filter>
+  </defs>
+  <!-- Background Circle -->
+  <circle cx="32" cy="32" r="30" fill="#141c2b" stroke="#f5ba31" stroke-width="2"/>
+  <!-- Arena Mud Pit in Center -->
+  <ellipse cx="32" cy="46" rx="20" ry="8" fill="#4a3525" opacity="0.8"/>
+  <!-- Hemp Rope -->
+  <path d="M 8 32 C 20 30, 44 30, 56 32" stroke="url(#ropeGrad)" stroke-width="6" stroke-linecap="round" fill="none" filter="url(#shadow)"/>
+  <path d="M 8 32 C 20 30, 44 30, 56 32" stroke="#fff" stroke-width="1.5" stroke-dasharray="3,4" fill="none" opacity="0.6"/>
+  <!-- Red Central Marker Flag -->
+  <polygon points="32,27 38,36 32,36" fill="#ff4757" filter="url(#shadow)"/>
+  <!-- Red Left Wrestler Fist -->
+  <circle cx="16" cy="32" r="6" fill="#ff4757" stroke="#fff" stroke-width="1.5"/>
+  <!-- Blue Right Wrestler Fist -->
+  <circle cx="48" cy="32" r="6" fill="#1e90ff" stroke="#fff" stroke-width="1.5"/>
+</svg>

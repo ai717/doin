@@ -49,6 +49,7 @@ Rules:
 4. `main.mjs` only wires modules together.
 5. Never mutate state in place; return new state objects. No-ops should return the same reference so callers can check with `===`.
 6. All invalid user actions must degrade gracefully — never throw from engine/game.
+7. For time-sensitive games (countdown, continuous motion, tickers): provide a clear Pause/Resume button, keyboard shortcut (P/Esc/Space), and auto-pause on document.visibilitychange / window.blur to freeze timers and audio.
 
 ## Test wiring
 

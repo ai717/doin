@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1e2433"/>
+      <stop offset="100%" stop-color="#0e131d"/>
+    </linearGradient>
+    <linearGradient id="sparkGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#fff"/>
+      <stop offset="100%" stop-color="#f5ba31"/>
+    </linearGradient>
+    <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="2" stdDeviation="2" flood-color="#000" flood-opacity="0.5"/>
+    </filter>
+  </defs>
+  <!-- Tabletop Arena -->
+  <circle cx="32" cy="32" r="30" fill="url(#bgGrad)" stroke="#f5ba31" stroke-width="2"/>
+  <circle cx="32" cy="32" r="23" fill="none" stroke="#24324d" stroke-width="1.5" stroke-dasharray="4,4"/>
+
+  <!-- Red Car (left, angled right) -->
+  <g transform="translate(20, 32) rotate(25)" filter="url(#glow)">
+    <rect x="-12" y="-8" width="24" height="16" rx="6" fill="#ff4757" stroke="#fff" stroke-width="1.5"/>
+    <!-- Headlight -->
+    <circle cx="10" cy="-4" r="2" fill="#ffeaa7"/>
+    <circle cx="10" cy="4" r="2" fill="#ffeaa7"/>
+    <!-- Front Bumper -->
+    <path d="M 10 -7 Q 14 0 10 7" stroke="#dfe4ea" stroke-width="2.5" fill="none"/>
+  </g>
+
+  <!-- Blue Car (right, angled left) -->
+  <g transform="translate(44, 32) rotate(-155)" filter="url(#glow)">
+    <rect x="-12" y="-8" width="24" height="16" rx="6" fill="#1e90ff" stroke="#fff" stroke-width="1.5"/>
+    <!-- Headlight -->
+    <circle cx="10" cy="-4" r="2" fill="#ffeaa7"/>
+    <circle cx="10" cy="4" r="2" fill="#ffeaa7"/>
+    <!-- Front Bumper -->
+    <path d="M 10 -7 Q 14 0 10 7" stroke="#f5ba31" stroke-width="2.5" fill="none"/>
+  </g>
+
+  <!-- Collision Spark Star -->
+  <polygon points="32,23 34,29 40,32 34,35 32,41 30,35 24,32 30,29" fill="url(#sparkGrad)" filter="url(#glow)"/>
+</svg>

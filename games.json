@@ -1,6 +1,95 @@
 {
   "games": [
     {
+      "title": "见缝插针",
+      "slug": "pin",
+      "desc": "找准旋转齿轮的狭窄空隙，单键射出针头扎入圆盘，严防针头互撞！23 关精密机械钟表工坊挑战，沉浸黄铜机芯美学与连击音阶奖励。",
+      "icon": "📌",
+      "cover": "/assets/covers/pin.webp",
+      "tags": [
+        "反应",
+        "休闲",
+        "节奏",
+        "经典"
+      ],
+      "url": "/pin/",
+      "en": {
+        "title": "Pin Circle",
+        "desc": "Shoot pins into narrow gaps of spinning gears without colliding! 23 clockwork challenges, hypnotic rhythm, and endless mode."
+      }
+    },
+    {
+      "title": "沉浸收纳达人",
+      "slug": "tidy",
+      "desc": "将凌乱散落的生活好物旋转对齐，严丝合缝嵌入几何凹槽收纳盒，治愈强迫症！24 关五大生活流主题微缩手作盒，ASMR 物理声学拟真微雕与拍立得通关定格，零广告纯净体验。",
+      "icon": "📦",
+      "cover": "/assets/covers/tidy.webp",
+      "tags": [
+        "益智",
+        "收纳",
+        "解谜",
+        "治愈"
+      ],
+      "url": "/tidy/",
+      "en": {
+        "title": "Tidy Master",
+        "desc": "Snap scattered life treasures into snug geometric organizer slots to satisfy your inner perfectionist! 24 handcrafted boxes across 5 cozy themes, acoustic ASMR textures and zero-distraction flow."
+      }
+    },
+    {
+      "title": "微型回旋撞车",
+      "slug": "bumper",
+      "desc": "单键控制微型赛车自旋瞄准与直线喷火冲撞，在悬空无护栏的微缩玩具擂台上漂移对决！支持同屏双人对轰与 23 关单人天梯，利用刚体碰撞与急刹微操把对手撞落悬崖深渊！",
+      "icon": "🚗",
+      "cover": "/assets/covers/bumper.webp",
+      "tags": [
+        "对战",
+        "双人",
+        "赛车",
+        "物理"
+      ],
+      "url": "/bumper/",
+      "en": {
+        "title": "Micro Bumper",
+        "desc": "One-button drift and bumper car clash on miniature suspended arenas! Master crisp single-key steering and thrust bursts in 2-player local party mode or conquer 23 single-player ladder stages. Ram opponents off the cliff!"
+      }
+    },
+    {
+      "title": "指尖拔河",
+      "slug": "tug",
+      "desc": "微缩对称红蓝机台对决：同屏双人极速狂点对轰手速，或挑战 22 位身怀绝技的单人天梯拔河大师！掐准节拍触发金色暴击，把中心红巾扯过胜负线，落败方滑稽扑入泥潭！",
+      "icon": "🪢",
+      "cover": "/assets/covers/tug.webp",
+      "tags": [
+        "对战",
+        "双人",
+        "手速",
+        "反应"
+      ],
+      "url": "/tug/",
+      "en": {
+        "title": "Tug of War",
+        "desc": "Miniature red vs blue arena clash: mash keys with a friend on one screen or conquer 22 distinctive AI masters in the single-player ladder! Strike on the rhythm beat to trigger golden bursts, pull the ribbon past the goal line, and laugh as opponents flop into the mud!"
+      }
+    },
+    {
+      "title": "梦游先生",
+      "slug": "sleepwalker",
+      "desc": "经典微缩剧场时机解谜：观察梦游先生漫步路线，掐准黄金时机点击井盖、雨棚与机械机关，铺路避险护送他安然入梦！22 关五大主题奇妙夜、5 秒时光倒带与隐藏金泡泡收集。",
+      "icon": "🌙",
+      "cover": "/assets/covers/sleepwalker.webp",
+      "tags": [
+        "益智",
+        "经典",
+        "解谜"
+      ],
+      "url": "/sleepwalker/",
+      "en": {
+        "title": "Sleepwalker",
+        "desc": "Classic diorama theater timing puzzle: watch Sleepwalker stroll through midnight rooftops, carnival tracks and high construction beams. Click gadgets at the golden moment to pave his way home! 22 levels across 5 acts, 5-second rewind and dream bubbles."
+      }
+    },
+    {
       "title": "魔塔：勇者登顶",
       "slug": "magic-tower",
       "desc": "经典 24 层固定数值魔塔：没有随机暴击与掉落，每只怪的战损都能当场算清。五区递进、三色钥匙、金币商人，用智能战损雷达规划攻防路线；楼层快照与 30 步撤销让你告别一步走错废档。",
