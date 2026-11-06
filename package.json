@@ -3,6 +3,7 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "test:hanzi": "node --test games/hanzi/tests/*.test.mjs",
     "test:mtower": "node --test games/mtower/tests/*.test.mjs",
     "test:airpuck": "node --test games/airpuck/tests/*.test.mjs",
     "test:pin": "node --test games/pin/tests/*.test.mjs",

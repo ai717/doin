@@ -1,6 +1,25 @@
 {
   "games": [
     {
+      "title": "字灵拆拆乐",
+      "slug": "hanzi",
+      "desc": "将汉字自由拆解为偏旁、重新组合成新字，拖入水墨山水触发真实物理反应（加火烧木、三水成河、日月为明），妙解 22 关东方炼金谜题！",
+      "icon": "📜",
+      "cover": "/assets/covers/hanzi.webp",
+      "tags": [
+        "益智",
+        "解谜",
+        "文字",
+        "文化",
+        "策略"
+      ],
+      "url": "/hanzi/",
+      "en": {
+        "title": "Glyph Craft",
+        "desc": "Ideogram alchemy puzzle game! Disassemble Chinese characters into radicals, synthesize new glyphs, and trigger physical reactions in ink-wash landscapes."
+      }
+    },
+    {
       "title": "魔塔 50 层",
       "slug": "mtower",
       "desc": "经典数值 RPG 策略巅峰！零随机硬核数值推演，50 层地牢层层破关，智能悬停战损预估与攻防暴击阈值推导，手持神剑盾牌封神斩魔！",
