@@ -1,6 +1,25 @@
 {
   "games": [
     {
+      "title": "魔塔 50 层",
+      "slug": "mtower",
+      "desc": "经典数值 RPG 策略巅峰！零随机硬核数值推演，50 层地牢层层破关，智能悬停战损预估与攻防暴击阈值推导，手持神剑盾牌封神斩魔！",
+      "icon": "🏰",
+      "cover": "/assets/covers/mtower.webp",
+      "tags": [
+        "益智",
+        "经典",
+        "解谜",
+        "策略",
+        "街机"
+      ],
+      "url": "/mtower/",
+      "en": {
+        "title": "50-Floor Magic Tower",
+        "desc": "The classic deterministic math RPG! Calculate damage, manage keys and stats across 50 treacherous dungeon floors, and conquer the Demon Lord."
+      }
+    },
+    {
       "title": "双人霓虹气垫球",
       "slug": "airpuck",
       "desc": "极速气垫冰面 2D 刚体冲量物理对决！同屏双人红蓝对抗或大战 22 关电脑球王，迎球前冲爆发音速重扣，轰破对方霓虹球门！",
