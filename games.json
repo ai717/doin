@@ -1,6 +1,25 @@
 {
   "games": [
     {
+      "title": "双人霓虹气垫球",
+      "slug": "airpuck",
+      "desc": "极速气垫冰面 2D 刚体冲量物理对决！同屏双人红蓝对抗或大战 22 关电脑球王，迎球前冲爆发音速重扣，轰破对方霓虹球门！",
+      "icon": "🏒",
+      "cover": "/assets/covers/airpuck.webp",
+      "tags": [
+        "对战",
+        "双人",
+        "反应",
+        "物理",
+        "街机"
+      ],
+      "url": "/airpuck/",
+      "en": {
+        "title": "Neon Air Hockey",
+        "desc": "Ultra-fast air hockey physics! 2-player local party clash or conquer 22 solo ladder stages. Master dash smashes to blast the puck into the goal!"
+      }
+    },
+    {
       "title": "见缝插针",
       "slug": "pin",
       "desc": "找准旋转齿轮的狭窄空隙，单键射出针头扎入圆盘，严防针头互撞！23 关精密机械钟表工坊挑战，沉浸黄铜机芯美学与连击音阶奖励。",

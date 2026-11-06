@@ -3,6 +3,7 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "test:airpuck": "node --test games/airpuck/tests/*.test.mjs",
     "test:pin": "node --test games/pin/tests/*.test.mjs",
     "test:tidy": "node --test games/tidy/tests/*.test.mjs",
     "test:bumper": "node --test games/bumper/tests/*.test.mjs",
