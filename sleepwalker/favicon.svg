@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <defs>
+    <linearGradient id="bgGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#1b2038"/>
+      <stop offset="100%" stop-color="#0a0d18"/>
+    </linearGradient>
+    <linearGradient id="moonGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#fff0a6"/>
+      <stop offset="100%" stop-color="#f5ba31"/>
+    </linearGradient>
+    <linearGradient id="capGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#ff4b5c"/>
+      <stop offset="100%" stop-color="#b81d24"/>
+    </linearGradient>
+  </defs>
+  <!-- Background rounded pill -->
+  <rect width="64" height="64" rx="16" fill="url(#bgGrad)"/>
+  
+  <!-- Tiny stars -->
+  <circle cx="14" cy="18" r="1.5" fill="#ffe680" opacity="0.8"/>
+  <circle cx="50" cy="14" r="1.2" fill="#ffe680" opacity="0.7"/>
+  <circle cx="52" cy="46" r="1" fill="#ffe680" opacity="0.6"/>
+
+  <!-- Golden Crescent Moon -->
+  <path d="M 32 10 A 18 18 0 0 0 46 44 A 20 20 0 1 1 32 10 Z" fill="url(#moonGrad)"/>
+
+  <!-- Nightcap on the moon tip -->
+  <path d="M 32 10 C 26 8, 18 14, 16 22 C 15 24, 20 23, 23 20 C 26 17, 30 15, 34 14 Z" fill="url(#capGrad)"/>
+  <path d="M 18 20 C 20 18, 25 15, 29 15" stroke="#ffffff" stroke-width="1.8" stroke-linecap="round"/>
+  <!-- Pompom -->
+  <circle cx="16" cy="22" r="3" fill="#ffffff"/>
+
+  <!-- Sleeping peaceful face -->
+  <path d="M 35 28 Q 38 31 41 28" fill="none" stroke="#6b4c10" stroke-width="2" stroke-linecap="round"/>
+  <!-- Cute rosy cheek -->
+  <circle cx="41" cy="34" r="2" fill="#f0932b" opacity="0.5"/>
+</svg>

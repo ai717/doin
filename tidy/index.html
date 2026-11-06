@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-D67E3XTNSS"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-D67E3XTNSS');
+  </script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="description" content="严丝合缝嵌入几何凹槽，治愈强迫症！24 关五大生活流主题微缩收纳盒，零广告纯净体验。" data-i18n="tagline">
+  <title data-i18n="title">沉浸收纳达人</title>
+  <link rel="icon" type="image/svg+xml" href="favicon.svg?v=5c854aab4d93">
+  <link rel="stylesheet" href="css/style.css?v=5c854aab4d93">
+</head>
+<body>
+  <noscript>
+    <div class="noscript-tip">
+      <h2 data-i18n="title">沉浸收纳达人</h2>
+      <p>请启用 JavaScript 以进入沉浸收纳书桌。</p>
+    </div>
+  </noscript>
+
+  <div id="game-app">
+    <!-- 顶部皮革印花操作条 -->
+    <header id="game-header">
+      <div class="header-left">
+        <a href="/" id="back-home" class="tactile-btn back-btn" data-i18n="backHome">首页</a>
+        <div class="header-title-box">
+          <h1 id="game-title" data-i18n="title">沉浸收纳达人</h1>
+        </div>
+      </div>
+
+      <div class="header-controls">
+        <button id="btn-hint" class="tactile-btn icon-btn" title="透视槽位" data-i18n="hintBtn">透视</button>
+        <button id="btn-levels" class="tactile-btn" data-i18n="levels">关卡</button>
+        <button id="btn-album" class="tactile-btn" data-i18n="albumTitle">强迫症相册</button>
+        <button id="btn-restart" class="tactile-btn icon-btn" title="重置本关">↺</button>
+        <button id="btn-pause" class="tactile-btn" data-i18n="pause">暂停</button>
+        <button id="btn-sound" class="tactile-btn" data-i18n="soundOn">音效: 开</button>
+        <button id="btn-lang" class="tactile-btn lang-btn" aria-label="Toggle Language">English</button>
+      </div>
+    </header>
+
+    <!-- 桌面双栏收纳工作台 -->
+    <main id="game-workspace">
+      <!-- 左侧收纳记录翼栏 -->
+      <aside id="hud-left" class="workspace-wing">
+        <div class="wing-card">
+          <div class="wing-label" data-i18n="chapterBadge">章节</div>
+          <div id="hud-act" class="wing-value">第一章 · 午后文具袋</div>
+        </div>
+        <div class="wing-card">
+          <div class="wing-label" data-i18n="levelBadge">关卡</div>
+          <div id="hud-level" class="wing-value highlight">关卡 1</div>
+        </div>
+        <div class="wing-card">
+          <div class="wing-label" data-i18n="remainingItems">待收纳</div>
+          <div id="hud-remaining" class="wing-value">3 / 3</div>
+        </div>
+      </aside>
+
+      <!-- 中央实木工作台视窗 -->
+      <section id="canvas-container">
+        <canvas id="game-canvas"></canvas>
+      </section>
+
+      <!-- 右侧质感工坊翼栏 -->
+      <aside id="hud-right" class="workspace-wing">
+        <div class="wing-card">
+          <div class="wing-label" data-i18n="movesCount">步数</div>
+          <div id="hud-moves" class="wing-value">0</div>
+        </div>
+        <div class="wing-card">
+          <div class="wing-label" data-i18n="timeElapsed">用时</div>
+          <div id="hud-time" class="wing-value">00:00</div>
+        </div>
+        <div class="wing-card tips-card">
+          <div class="tip-line" data-i18n="dragTip">拖拽精准卡入几何凹槽</div>
+          <div class="tip-line" data-i18n="rotateTip">点击 / 滚轮 / R 键旋转</div>
+        </div>
+      </aside>
+    </main>
+
+    <!-- 暂停遮罩弹窗 -->
+    <dialog id="dialog-pause" class="game-dialog">
+      <div class="dialog-content">
+        <h2 data-i18n="pause">暂停</h2>
+        <p data-i18n="howToPlayDesc">【拖拽】拾起生活好物放入收纳盒对应凹槽；【点击/R键/滚轮】旋转物件角度；【透视】微光透视槽位位置。全量归位合盖即通关！</p>
+        <div class="dialog-actions">
+          <button id="btn-resume" class="tactile-btn primary-btn" data-i18n="resume">继续整理</button>
+        </div>
+      </div>
+    </dialog>
+
+    <!-- 关卡选择弹窗 -->
+    <dialog id="dialog-levels" class="game-dialog wide-dialog">
+      <div class="dialog-content">
+        <div class="dialog-header">
+          <h2 data-i18n="levels">关卡</h2>
+          <button id="btn-close-levels" class="close-x" aria-label="Close">✕</button>
+        </div>
+        <div id="levels-grid" class="levels-scroll-grid"></div>
+      </div>
+    </dialog>
+
+    <!-- 强迫症治愈相册弹窗 -->
+    <dialog id="dialog-album" class="game-dialog wide-dialog">
+      <div class="dialog-content">
+        <div class="dialog-header">
+          <h2 data-i18n="albumTitle">强迫症治愈相册</h2>
+          <span id="album-progress-text" class="dialog-sub">0 / 24</span>
+          <button id="btn-close-album" class="close-x" aria-label="Close">✕</button>
+        </div>
+        <div id="album-grid" class="album-scroll-grid"></div>
+      </div>
+    </dialog>
+
+    <!-- 通关定格拍立得弹窗 (Polaroid Showcase) -->
+    <dialog id="dialog-clear" class="game-dialog polaroid-dialog">
+      <div class="polaroid-wrapper">
+        <div class="polaroid-photo-frame">
+          <div class="polaroid-stamp" data-i18n="perfectTidy">✨ PERFECT TIDY</div>
+          <div class="polaroid-box-preview">
+            <span class="polaroid-icon">🎁</span>
+          </div>
+          <div class="polaroid-stars-row" id="polaroid-stars">★★★</div>
+        </div>
+        <div class="polaroid-caption-area">
+          <h3 id="polaroid-level-name">第一章 · 关卡 1</h3>
+          <div class="polaroid-stats-row">
+            <div><span data-i18n="clearTime">通关耗时</span>: <strong id="polaroid-time">00:24</strong></div>
+            <div><span data-i18n="clearMoves">操作步数</span>: <strong id="polaroid-moves">8</strong></div>
+          </div>
+          <div class="polaroid-actions">
+            <button id="btn-retry-level" class="tactile-btn" data-i18n="retryLevel">再整一次</button>
+            <button id="btn-next-level" class="tactile-btn primary-btn" data-i18n="nextLevel">下一盒</button>
+            <button id="btn-close-clear" class="tactile-btn" data-i18n="closeBtn">关闭</button>
+          </div>
+        </div>
+      </div>
+    </dialog>
+  </div>
+
+  <script type="module" src="js/main.mjs?v=5c854aab4d93"></script>
+</body>
+</html>

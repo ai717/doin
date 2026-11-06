@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-D67E3XTNSS"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-D67E3XTNSS');
+  </script>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="description" content="指尖拔河 Tug of War — 同屏双人或单人挑战 22 关手速天梯！疯狂狂点对抗，掐准节拍触发金色暴击，把中心红巾扯过胜负线！">
+  <meta name="theme-color" content="#0a0e17">
+  <meta name="color-scheme" content="dark">
+  <title>指尖拔河 · Tug of War · DOIN</title>
+  <link rel="icon" href="favicon.svg?v=5c854aab4d93" type="image/svg+xml">
+  <link rel="stylesheet" href="css/style.css?v=5c854aab4d93">
+</head>
+<body>
+  <noscript>
+    <div style="padding: 24px; text-align: center; color: #fff; background: #0a0e17;">
+      <h2>请启用 JavaScript 以游玩《指尖拔河》</h2>
+      <p>Please enable JavaScript to play Tug of War.</p>
+    </div>
+  </noscript>
+
+  <div id="app" class="app-container">
+    <!-- 顶部微缩控制栏 -->
+    <header id="topbar" class="topbar-console">
+      <div class="topbar-left">
+        <a href="/" id="back-home" class="home-badge">
+          <span class="home-arrow" aria-hidden="true">&#8592;</span>
+          <span data-i18n="home">返回门户</span>
+        </a>
+        <button id="btn-mode" type="button" class="btn-tactile mode-pill" data-i18n-aria="aria.modeToggle" aria-label="切换单双人模式">
+          <span id="mode-text" data-i18n="modes.single">单人天梯</span>
+        </button>
+      </div>
+
+      <div class="topbar-center">
+        <h1 id="app-title" class="brand-title" data-i18n="title">指尖拔河</h1>
+        <span id="app-subtitle" class="brand-subtitle" data-i18n="subtitle">微缩红蓝机台 · 手速与节拍对决</span>
+      </div>
+
+      <div class="topbar-right">
+        <button id="btn-lang" type="button" class="btn-tactile" data-i18n-aria="aria.lang" aria-label="切换语言">EN</button>
+        <button id="btn-sound" type="button" class="btn-tactile" data-i18n-aria="aria.sound" aria-label="音效开关" aria-pressed="true">
+          <span id="sound-icon" aria-hidden="true">&#128266;</span>
+        </button>
+        <button id="btn-help" type="button" class="btn-tactile" data-i18n-aria="aria.help" aria-label="玩法规则">?</button>
+      </div>
+    </header>
+
+    <!-- 核心对称红蓝竞技机台 -->
+    <main class="arena-assembly">
+      <!-- 左侧红方操控翼栏 -->
+      <aside class="versus-wing wing-red" aria-label="红方操控台">
+        <div class="wing-card">
+          <div class="wing-header">
+            <span class="wing-badge">P1 RED</span>
+            <span class="wing-player-name" id="name-red">Player 1</span>
+          </div>
+
+          <div class="pull-pedestal">
+            <button id="btn-pull-red" type="button" class="btn-pull-giant btn-pull-red" data-i18n-aria="aria.pullRed" aria-label="红方拉力按键 (键盘 A)">
+              <span data-i18n="btns.pull">拉！</span>
+              <span class="key-hint">[A]</span>
+            </button>
+          </div>
+
+          <div class="cps-meter">
+            <span id="cps-red-val" class="cps-number">0.0</span>
+            <span class="cps-unit-label" data-i18n="hud.cpsUnit">次/秒</span>
+            <div class="perfect-counter">
+              <span>&#9733;</span>
+              <span id="perfect-red-val">0</span>
+              <span data-i18n="hud.perfect">完美暴击!</span>
+            </div>
+          </div>
+        </div>
+      </aside>
+
+      <!-- 中央拔河擂台视窗 -->
+      <section class="stage-assembly">
+        <!-- 顶棚比分牌 -->
+        <div class="scoreboard-canopy">
+          <div class="score-cluster">
+            <span id="score-red-val" class="score-digit score-red">0</span>
+            <div class="bo3-dots" id="bo3-dots-red">
+              <span class="bo3-dot" id="dot-r1"></span>
+              <span class="bo3-dot" id="dot-r2"></span>
+            </div>
+          </div>
+
+          <div class="stage-title-wrap">
+            <div id="stage-act-title" class="current-stage-title">Stage 1: 慢半拍小明</div>
+            <div id="stage-round-desc" class="round-indicator">BO3 · Round 1</div>
+          </div>
+
+          <div class="score-cluster">
+            <div class="bo3-dots" id="bo3-dots-blue">
+              <span class="bo3-dot" id="dot-b1"></span>
+              <span class="bo3-dot" id="dot-b2"></span>
+            </div>
+            <span id="score-blue-val" class="score-digit score-blue">0</span>
+          </div>
+        </div>
+
+        <!-- Canvas 画布 -->
+        <div class="stage-frame">
+          <canvas id="stage" tabindex="0" role="application" data-i18n-aria="aria.stage" aria-label="拔河擂台主舞台"></canvas>
+          <div id="stage-toast" class="stage-toast" role="status" aria-live="polite" hidden></div>
+        </div>
+
+        <!-- 底部控制底座 -->
+        <nav class="console-pedestal" aria-label="游戏操作栏">
+          <button id="btn-pause" type="button" class="btn-pedestal" data-i18n-aria="aria.pause" aria-label="暂停或继续" aria-pressed="false">
+            <span id="pause-icon" aria-hidden="true">&#9208;</span>
+            <span id="pause-text" data-i18n="btns.pause">暂停</span>
+          </button>
+
+          <button id="btn-restart" type="button" class="btn-pedestal" data-i18n-aria="aria.restart" aria-label="重开本局">
+            <span aria-hidden="true">&#8635;</span>
+            <span data-i18n="btns.restart">重开</span>
+          </button>
+
+          <button id="btn-levels" type="button" class="btn-pedestal btn-primary" data-i18n-aria="aria.levels" aria-label="关卡选择">
+            <span aria-hidden="true">&#9776;</span>
+            <span data-i18n="btns.levels">选关</span>
+          </button>
+        </nav>
+      </section>
+
+      <!-- 右侧蓝方操控翼栏 -->
+      <aside class="versus-wing wing-blue" aria-label="蓝方操控台">
+        <div class="wing-card">
+          <div class="wing-header">
+            <span class="wing-badge">P2 BLUE</span>
+            <span class="wing-player-name" id="name-blue">AI Master</span>
+          </div>
+
+          <div class="pull-pedestal">
+            <button id="btn-pull-blue" type="button" class="btn-pull-giant btn-pull-blue" data-i18n-aria="aria.pullBlue" aria-label="蓝方拉力按键 (键盘 L)">
+              <span data-i18n="btns.pull">拉！</span>
+              <span class="key-hint" id="blue-key-hint">[L]</span>
+            </button>
+          </div>
+
+          <div class="cps-meter">
+            <span id="cps-blue-val" class="cps-number">0.0</span>
+            <span class="cps-unit-label" data-i18n="hud.cpsUnit">次/秒</span>
+            <div class="perfect-counter">
+              <span>&#9733;</span>
+              <span id="perfect-blue-val">0</span>
+              <span data-i18n="hud.perfect">完美暴击!</span>
+            </div>
+          </div>
+        </div>
+      </aside>
+    </main>
+
+    <!-- 弹窗 1：玩法规则 (Native <dialog>) -->
+    <dialog id="modal-help" class="diorama-modal" aria-labelledby="help-title">
+      <div class="modal-box">
+        <h2 id="help-title" class="modal-title" data-i18n="help.title">玩法说明</h2>
+        <div class="modal-content">
+          <h3 data-i18n="help.introTitle">热血指尖拔河</h3>
+          <p data-i18n="help.introDesc">同屏双人狂按对抗，或在单人模式中挑战 22 位身怀绝技的拔河大师！率先将绳索中心红巾拉过己方胜负线即赢下一小局，BO3 三局两胜制。</p>
+
+          <h3 data-i18n="help.rule1Title">狂点与按键分配</h3>
+          <p data-i18n="help.rule1Desc">红方（P1）狂按键盘【A】键或屏幕红色【拉！】大按钮；蓝方（P2）狂按键盘【L】键或屏幕蓝色【拉！】按钮。手速越快，瞬间冲量越大！</p>
+
+          <h3 data-i18n="help.rule2Title">节奏光环与暴击</h3>
+          <p data-i18n="help.rule2Desc">角色脚底有随着节奏收缩的金色光环。在光环收缩至脚下的瞬间敲击，可触发【PERFECT!】暴击，带来 1.8x 强力拉扯并喷溅火花！</p>
+
+          <h3 data-i18n="help.rule3Title">五大主题擂台</h3>
+          <p data-i18n="help.rule3Desc">单人天梯包含校园运动会、湿滑泥潭（摩擦力降低）、海盗摇摆甲板（左右倾斜）、蒸汽工坊（爆发加速）与巅峰引力场等 22 关阶梯挑战！</p>
+        </div>
+        <div class="modal-actions">
+          <form method="dialog">
+            <button id="btn-close-help" type="submit" class="btn-pedestal btn-primary" data-i18n="btns.close" autofocus>关闭</button>
+          </form>
+        </div>
+      </div>
+    </dialog>
+
+    <!-- 弹窗 2：关卡选择抽屉 (Native <dialog>) -->
+    <dialog id="modal-levels" class="diorama-modal modal-wide" aria-labelledby="levels-title">
+      <div class="modal-box">
+        <div class="modal-header-row" style="display: flex; justify-content: space-between; align-items: center;">
+          <h2 id="levels-title" class="modal-title" data-i18n="btns.levels">关卡选择</h2>
+          <span id="levels-summary-badge" class="home-badge">0 / 66 ★</span>
+        </div>
+        <div id="levels-grid" class="levels-grid">
+          <!-- 动态填充 22 关卡片 -->
+        </div>
+        <div class="modal-actions">
+          <form method="dialog">
+            <button id="btn-close-levels" type="submit" class="btn-pedestal" data-i18n="btns.close" autofocus>关闭</button>
+          </form>
+        </div>
+      </div>
+    </dialog>
+
+    <!-- 弹窗 3：获胜结算弹窗 (Native <dialog>) -->
+    <dialog id="modal-win" class="diorama-modal" aria-labelledby="win-title">
+      <div class="modal-box">
+        <h2 id="win-title" class="modal-title" data-i18n="win.titleSingleWin" style="color: var(--gold-primary);">恭喜通关！</h2>
+        <p id="win-subtitle" style="text-align: center; color: var(--text-muted);" data-i18n="win.subtitleRed">红方大力士以惊人手速赢得了本场拔河！</p>
+
+        <div class="stars-breakdown" id="win-stars-wrap">
+          <div class="star-row" id="win-star-1">
+            <span class="star-icon">&#9733;</span>
+            <span data-i18n="win.star1">拔河胜利：赢得本场 BO3 对决</span>
+          </div>
+          <div class="star-row" id="win-star-2">
+            <span class="star-icon">&#9733;</span>
+            <span data-i18n="win.star2">完胜零封：2-0 未失一小局</span>
+          </div>
+          <div class="star-row" id="win-star-3">
+            <span class="star-icon">&#9733;</span>
+            <span data-i18n="win.star3">手速大师：打出 ≥5 次完美节拍暴击</span>
+          </div>
+        </div>
+
+        <div class="modal-actions">
+          <button id="btn-win-replay" type="button" class="btn-pedestal" data-i18n="btns.retry">再来一局</button>
+          <button id="btn-win-levels" type="button" class="btn-pedestal" data-i18n="btns.levels">选关</button>
+          <button id="btn-win-next" type="button" class="btn-pedestal btn-primary" data-i18n="btns.next" autofocus>下一关</button>
+        </div>
+      </div>
+    </dialog>
+  </div>
+
+  <script type="module" src="js/main.mjs?v=5c854aab4d93"></script>
+</body>
+</html>

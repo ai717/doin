@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <defs>
+    <linearGradient id="felt" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#1f7a55"/>
+      <stop offset="1" stop-color="#0d4230"/>
+    </linearGradient>
+    <radialGradient id="ball" cx="0.34" cy="0.3" r="0.72">
+      <stop offset="0" stop-color="#ffffff"/>
+      <stop offset="0.45" stop-color="#f3ead9"/>
+      <stop offset="1" stop-color="#c6bda9"/>
+    </radialGradient>
+    <linearGradient id="brass" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#f0d59a"/>
+      <stop offset="1" stop-color="#a37b34"/>
+    </linearGradient>
+  </defs>
+  <rect width="64" height="64" rx="12" fill="#3b2415"/>
+  <rect x="6" y="6" width="52" height="52" rx="8" fill="url(#felt)"/>
+  <rect x="6" y="6" width="52" height="52" rx="8" fill="none" stroke="url(#brass)" stroke-width="2"/>
+  <circle cx="14" cy="14" r="4" fill="#08120e"/>
+  <circle cx="50" cy="14" r="4" fill="#08120e"/>
+  <circle cx="14" cy="50" r="4" fill="#08120e"/>
+  <circle cx="50" cy="50" r="4" fill="#08120e"/>
+  <path d="M32 6v52" stroke="rgba(255,255,255,0.12)" stroke-width="1"/>
+  <circle cx="28" cy="36" r="11" fill="url(#ball)"/>
+  <circle cx="24" cy="31" r="3.2" fill="rgba(255,255,255,0.75)"/>
+  <rect x="41" y="14" width="4" height="34" rx="2" transform="rotate(24 43 31)" fill="#c99f56"/>
+  <rect x="40.5" y="12" width="5" height="6" rx="2" transform="rotate(24 43 15)" fill="#3a4356"/>
+</svg>

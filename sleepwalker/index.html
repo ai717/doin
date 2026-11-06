@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-D67E3XTNSS"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-D67E3XTNSS');
+  </script>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="description" content="梦游先生 Sleepwalker — 经典微缩剧场时机解谜游戏。观察梦游先生的路线，掐准时机点击场景中的井盖、雨棚与机关，铺路避险，护送他安然入梦！支持5秒时光倒带与22关五大主题奇妙夜。">
+  <meta name="theme-color" content="#0d111a">
+  <meta name="color-scheme" content="dark">
+  <title>梦游先生 · Sleepwalker · DOIN</title>
+  <link rel="icon" href="favicon.svg?v=5c854aab4d93" type="image/svg+xml">
+  <link rel="stylesheet" href="css/style.css?v=5c854aab4d93">
+</head>
+<body>
+  <noscript>
+    <div style="padding: 24px; text-align: center; color: #fff; background: #0d111a;">
+      <h2>请启用 JavaScript 以游玩《梦游先生》</h2>
+      <p>Please enable JavaScript to play Sleepwalker.</p>
+    </div>
+  </noscript>
+
+  <div id="app" class="app-container">
+    <!-- 顶部微雕控制栏 -->
+    <header id="topbar" class="topbar-diorama">
+      <div class="topbar-left">
+        <a href="/" id="back-home" class="home-badge">
+          <span class="home-arrow" aria-hidden="true">&#8592;</span>
+          <span data-i18n="home">返回门户</span>
+        </a>
+      </div>
+
+      <div class="topbar-center">
+        <h1 id="app-title" class="brand-title" data-i18n="title">梦游先生</h1>
+        <span id="app-subtitle" class="brand-subtitle" data-i18n="subtitle">微缩透视剧场 · 时机解谜</span>
+      </div>
+
+      <div class="topbar-right">
+        <button id="btn-lang" type="button" class="btn-tactile icon-pill" data-i18n-aria="aria.lang" aria-label="切换语言">EN</button>
+        <button id="btn-sound" type="button" class="btn-tactile icon-pill" data-i18n-aria="aria.sound" aria-label="音效开关" aria-pressed="true">
+          <span id="sound-icon" aria-hidden="true">&#128266;</span>
+        </button>
+        <button id="btn-help" type="button" class="btn-tactile icon-pill" data-i18n-aria="aria.help" aria-label="玩法规则">?</button>
+      </div>
+    </header>
+
+    <!-- 主展示区：剧场左翼 + 中央主舞台 + 剧场右翼 -->
+    <main class="theater-assembly">
+      <!-- 左侧状态翼栏：梦境记录簿 -->
+      <aside id="hud-left-wing" class="diorama-wing wing-left" aria-label="梦境记录簿">
+        <div class="wing-card parchment-card">
+          <div class="card-header">
+            <span class="wing-label" data-i18n="hud.chapter">章节</span>
+            <span id="hud-chapter-badge" class="badge-gold">Act I</span>
+          </div>
+          <div class="stage-info">
+            <h2 id="hud-level-name" class="level-name-display">—</h2>
+            <span id="hud-stage-num" class="stage-num-display">Stage 1/22</span>
+          </div>
+        </div>
+
+        <div class="wing-card parchment-card">
+          <div class="card-header">
+            <span class="wing-label" data-i18n="hud.bpm">心率</span>
+            <span id="hud-bpm-text" class="bpm-state-text" data-i18n="hud.bpmNormal">安详熟睡</span>
+          </div>
+          <div class="heart-monitor" aria-hidden="true">
+            <span id="hud-bpm-val" class="bpm-number">60</span>
+            <span class="bpm-unit">BPM</span>
+            <div class="ecg-track">
+              <div id="ecg-wave" class="ecg-wave"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="wing-card parchment-card">
+          <div class="card-header">
+            <span class="wing-label" data-i18n="hud.bubbles">梦境泡泡</span>
+            <span id="hud-bubbles-count" class="badge-bubble">0/3</span>
+          </div>
+          <div class="bubbles-slot" id="hud-bubbles-slot" aria-hidden="true">
+            <span class="bubble-icon slot-0">&#9733;</span>
+            <span class="bubble-icon slot-1">&#9733;</span>
+            <span class="bubble-icon slot-2">&#9733;</span>
+          </div>
+        </div>
+      </aside>
+
+      <!-- 中央微缩剧场主视窗 -->
+      <section class="theater-stage-container">
+        <div class="stage-frame">
+          <canvas id="stage" tabindex="0" role="application" data-i18n-aria="aria.stage" aria-label="梦境微缩剧场主舞台"></canvas>
+          <div id="stage-toast" class="stage-toast" role="status" aria-live="polite" hidden></div>
+        </div>
+
+        <!-- 舞台内嵌实体操作底座 (触屏与桌面通用) -->
+        <nav class="console-pedestal" aria-label="剧场操控台">
+          <button id="btn-rewind" type="button" class="btn-pedestal btn-rewind" data-i18n-aria="aria.rewind" aria-label="倒带 5 秒">
+            <span class="btn-icon" aria-hidden="true">&#9194;</span>
+            <span data-i18n="btns.rewind">倒带 5 秒</span>
+          </button>
+
+          <button id="btn-restart" type="button" class="btn-pedestal" data-i18n-aria="aria.restart" aria-label="重新开始本关">
+            <span class="btn-icon" aria-hidden="true">&#8635;</span>
+            <span data-i18n="btns.restart">重开</span>
+          </button>
+
+          <button id="btn-fast" type="button" class="btn-pedestal" data-i18n-aria="aria.fast" aria-label="1.5倍速快进" aria-pressed="false">
+            <span class="btn-icon" aria-hidden="true">&#9193;</span>
+            <span data-i18n="btns.fast">快进</span>
+          </button>
+
+          <button id="btn-pause" type="button" class="btn-pedestal" data-i18n-aria="aria.pause" aria-label="暂停或继续" aria-pressed="false">
+            <span id="pause-icon" class="btn-icon" aria-hidden="true">&#9208;</span>
+            <span id="pause-text" data-i18n="btns.pause">暂停</span>
+          </button>
+
+          <button id="btn-levels" type="button" class="btn-pedestal btn-gold-accent" data-i18n-aria="aria.levels" aria-label="关卡选择">
+            <span class="btn-icon" aria-hidden="true">&#9776;</span>
+            <span data-i18n="btns.levels">选关</span>
+          </button>
+        </nav>
+      </section>
+
+      <!-- 右侧雷达翼栏：机关解构与快捷指南 -->
+      <aside id="hud-right-wing" class="diorama-wing wing-right" aria-label="机关解构镜">
+        <div class="wing-card parchment-card">
+          <div class="card-header">
+            <span class="wing-label" data-i18n="hud.gadgetsReady">机关就绪</span>
+            <span id="hud-gadgets-count" class="badge-gold">0</span>
+          </div>
+          <ul id="hud-gadgets-list" class="gadgets-status-list">
+            <!-- 动态填充机关状态 -->
+          </ul>
+        </div>
+
+        <div class="wing-card parchment-card shortcuts-card">
+          <div class="card-header">
+            <span class="wing-label" data-i18n="hud.shortcuts">快捷键</span>
+          </div>
+          <ul class="shortcuts-list">
+            <li data-i18n="hud.keySpace">长按【空格】1.5x 倍速</li>
+            <li data-i18n="hud.keyZ">按【Z】时光倒流 5 秒</li>
+            <li data-i18n="hud.keyR">按【R】快速重开</li>
+            <li data-i18n="hud.keyP">按【P】暂停 / 继续</li>
+          </ul>
+        </div>
+      </aside>
+    </main>
+
+    <!-- 弹窗 1：玩法规则 (Native <dialog>) -->
+    <dialog id="modal-help" class="diorama-modal" aria-labelledby="help-title">
+      <div class="modal-box">
+        <h2 id="help-title" class="modal-title" data-i18n="help.title">玩法说明</h2>
+        <div class="modal-content">
+          <h3 data-i18n="help.introTitle">梦境守护神法则</h3>
+          <p data-i18n="help.introDesc">梦游先生正处于深度漫步状态，对万丈深渊与机关毫无察觉。玩家无法直接控制梦游先生，必须通过观察路线，在黄金时机点击环境机关为他铺平道路！</p>
+
+          <h3 data-i18n="help.rule1Title">自主漫步与遇阻折返</h3>
+          <p data-i18n="help.rule1Desc">小人以恒定速度匀速前行，踏空下落。下落高度在安全范围内可安稳着陆；若过高摔落或跌出屏幕则会惊醒受惊。遇到竖直障碍会挠头转身。</p>
+
+          <h3 data-i18n="help.rule2Title">场景机关与因果链</h3>
+          <p data-i18n="help.rule2Desc">井盖（限时关闭）、遮阳蓬（弹簧跳板）、引开恶犬的肉骨头、排气扇浮力风。点早了机关会复位，点晚了踩空坠落！</p>
+
+          <h3 data-i18n="help.rule3Title">时光倒带与倍速</h3>
+          <p data-i18n="help.rule3Desc">失误时随时按【Z】或点击“倒带 5 秒”修正刚才的操作时机；长按【空格键】或点击“快进”可 1.5x 加速。</p>
+        </div>
+        <div class="modal-actions">
+          <form method="dialog">
+            <button id="btn-close-help" type="submit" class="btn-pedestal btn-primary" data-i18n="btns.close" autofocus>关闭</button>
+          </form>
+        </div>
+      </div>
+    </dialog>
+
+    <!-- 弹窗 2：关卡选择抽屉 (Native <dialog>) -->
+    <dialog id="modal-levels" class="diorama-modal modal-wide" aria-labelledby="levels-title">
+      <div class="modal-box">
+        <div class="modal-header-row">
+          <h2 id="levels-title" class="modal-title" data-i18n="btns.levels">关卡选择</h2>
+          <span id="levels-summary-badge" class="badge-gold">0 / 66 ★</span>
+        </div>
+        <div id="levels-grid" class="levels-grid">
+          <!-- 动态渲染 22 关五大章节选择卡片 -->
+        </div>
+        <div class="modal-actions">
+          <form method="dialog">
+            <button id="btn-close-levels" type="submit" class="btn-pedestal" data-i18n="btns.close" autofocus>关闭</button>
+          </form>
+        </div>
+      </div>
+    </dialog>
+
+    <!-- 弹窗 3：通关胜利结算 (Native <dialog>) -->
+    <dialog id="modal-win" class="diorama-modal" aria-labelledby="win-title">
+      <div class="modal-box modal-win-box">
+        <div class="win-crown" aria-hidden="true">&#127775;</div>
+        <h2 id="win-title" class="modal-title text-gold" data-i18n="win.title">安然入梦！</h2>
+        <p id="win-subtitle" class="modal-subtitle" data-i18n="win.subtitle">梦游先生已安全返回温暖软床，香甜打呼噜中...</p>
+
+        <div class="stars-breakdown">
+          <div class="star-row" id="win-star-1">
+            <span class="star-icon">&#9733;</span>
+            <span data-i18n="win.star1">梦境生还：抵达终点软床</span>
+          </div>
+          <div class="star-row" id="win-star-2">
+            <span class="star-icon">&#9733;</span>
+            <span data-i18n="win.star2">深度睡眠：全程未受惊吓</span>
+          </div>
+          <div class="star-row" id="win-star-3">
+            <span class="star-icon">&#9733;</span>
+            <span data-i18n="win.star3">梦境收藏家：收集全部 3 颗金泡泡</span>
+          </div>
+        </div>
+
+        <div class="clear-stats">
+          <span data-i18n="win.time">耗时</span>: <strong id="win-time-val">00.0s</strong>
+        </div>
+
+        <div class="modal-actions">
+          <button id="btn-win-replay" type="button" class="btn-pedestal" data-i18n="btns.retry">重试本关</button>
+          <button id="btn-win-levels" type="button" class="btn-pedestal" data-i18n="btns.levels">选关</button>
+          <button id="btn-win-next" type="button" class="btn-pedestal btn-primary" data-i18n="btns.next" autofocus>下一关</button>
+        </div>
+      </div>
+    </dialog>
+
+    <!-- 弹窗 4：失误惊醒结算 (Native <dialog>) -->
+    <dialog id="modal-fail" class="diorama-modal" aria-labelledby="fail-title">
+      <div class="modal-box modal-fail-box">
+        <div class="fail-icon" aria-hidden="true">&#128562;</div>
+        <h2 id="fail-title" class="modal-title text-danger" data-i18n="fail.title">呀！惊醒了！</h2>
+        <p id="fail-subtitle" class="modal-subtitle" data-i18n="fail.subtitle">梦游先生踩空摔了个屁墩，睡帽都飞走了...</p>
+        <p class="fail-tip" data-i18n="fail.tip">小提示：掐准时机点击机关，或者按【Z】键回溯 5 秒重新微调！</p>
+
+        <div class="modal-actions">
+          <button id="btn-fail-rewind" type="button" class="btn-pedestal btn-primary" data-i18n="fail.rewindBtn" autofocus>时光倒流 5 秒 (Z)</button>
+          <button id="btn-fail-restart" type="button" class="btn-pedestal" data-i18n="btns.retry">重试本关</button>
+          <button id="btn-fail-levels" type="button" class="btn-pedestal" data-i18n="btns.levels">选关</button>
+        </div>
+      </div>
+    </dialog>
+  </div>
+
+  <script type="module" src="js/main.mjs?v=5c854aab4d93"></script>
+</body>
+</html>

@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-D67E3XTNSS"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-D67E3XTNSS');
+  </script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="description" content="极速气垫冰面刚体碰撞，同屏双人对决或大战 22 关电脑球王！" data-i18n="tagline">
+  <title data-i18n="title">双人霓虹气垫球</title>
+  <link rel="icon" type="image/svg+xml" href="favicon.svg?v=5c854aab4d93">
+  <link rel="stylesheet" href="css/style.css?v=5c854aab4d93">
+</head>
+<body>
+  <noscript>
+    <div class="noscript-tip">
+      <h2 data-i18n="title">双人霓虹气垫球</h2>
+      <p>请启用 JavaScript 以进入赛博电玩球台对决。</p>
+    </div>
+  </noscript>
+
+  <div id="game-app">
+    <!-- 顶部电玩机台霓虹灯牌操作栏 -->
+    <header id="game-header">
+      <div class="header-left">
+        <a href="/" id="back-home" class="tactile-btn back-btn" data-i18n="backHome">首页</a>
+        <div class="header-title-box">
+          <h1 id="game-title" data-i18n="title">双人霓虹气垫球</h1>
+        </div>
+      </div>
+
+      <div class="header-controls">
+        <button id="btn-mode" class="tactile-btn mode-btn" data-i18n="mode2p">双人同屏</button>
+        <button id="btn-rules" class="tactile-btn rules-btn" data-i18n="rules">📖 玩法</button>
+        <button id="btn-levels" class="tactile-btn" data-i18n="levels">关卡</button>
+        <button id="btn-restart" class="tactile-btn icon-btn" title="瞬时重开" data-i18n="restart">↺ 重开</button>
+        <button id="btn-pause" class="tactile-btn" data-i18n="pause">暂停</button>
+        <button id="btn-sound" class="tactile-btn" data-i18n="soundOn">音效: 开</button>
+        <button id="btn-lang" class="tactile-btn lang-btn" aria-label="Toggle Language">English</button>
+      </div>
+    </header>
+
+    <!-- 赛博电玩主工作台视窗：一体化全景台面与悬挂数码管记分桥 -->
+    <main id="game-workspace">
+      <!-- 街机空中数码管悬挂记分桥 (Arcade Overhead Score Bridge) -->
+      <section id="arcade-scoreboard" aria-label="Arcade Scoreboard">
+        <!-- 红方 P1 驾驶区 -->
+        <div class="score-team team-red">
+          <div class="team-meta">
+            <span class="team-name" data-i18n="p1Name">红方 P1 (WASD)</span>
+            <span class="team-controls" data-i18n="p1Controls">WASD / 拖拽</span>
+          </div>
+          <div class="team-score-box">
+            <span id="hud-p1-score" class="digital-score red-score">0</span>
+            <div id="hud-p1-dash-badge" class="dash-pill ready">
+              <span class="dash-dot"></span>
+              <span id="hud-p1-dash" data-i18n="dashReady">扣杀就绪</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 中央对阵与球速情报区 -->
+        <div class="scoreboard-center">
+          <div class="match-info">
+            <span id="hud-act" class="act-text">第一季 · 经典电玩街机厅</span>
+            <span class="vs-badge">VS</span>
+            <span id="hud-level" class="level-text">关卡 1 · 凯文</span>
+          </div>
+          <div class="speed-cluster">
+            <span class="speed-icon">⚡</span>
+            <span id="hud-speed" class="speed-number">0</span>
+            <span class="speed-unit">KM/H</span>
+          </div>
+          <div class="target-rule" data-i18n="targetScoreBadge">抢 5 分制</div>
+        </div>
+
+        <!-- 蓝方 P2 / AI 驾驶区 -->
+        <div class="score-team team-blue">
+          <div class="team-score-box">
+            <div id="hud-p2-dash-badge" class="dash-pill ready">
+              <span class="dash-dot"></span>
+              <span id="hud-p2-dash" data-i18n="dashReady">扣杀就绪</span>
+            </div>
+            <span id="hud-p2-score" class="digital-score blue-score">0</span>
+          </div>
+          <div class="team-meta">
+            <span id="hud-p2-title" class="team-name" data-i18n="aiName">赛博 AI</span>
+            <span id="hud-p2-ctrl" class="team-controls" data-i18n="aiControls">赛博智能</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- 中央舞台 Canvas 视窗 -->
+      <section id="canvas-container">
+        <canvas id="game-canvas"></canvas>
+      </section>
+    </main>
+
+    <!-- 玩法介绍与规则指南弹窗 -->
+    <dialog id="dialog-rules" class="game-dialog wide-dialog">
+      <div class="dialog-content rules-dialog-content">
+        <div class="dialog-header">
+          <h2 data-i18n="rulesTitle">📖 玩法指南 & 规则秘籍</h2>
+          <button id="btn-close-rules" class="close-x" aria-label="Close">✕</button>
+        </div>
+        <div class="rules-body">
+          <div class="rule-card">
+            <div class="rule-icon">🏆</div>
+            <div class="rule-info">
+              <h3 data-i18n="ruleGoalTitle">抢 5 分决胜制（First to 5）</h3>
+              <p data-i18n="ruleGoalDesc">双方在专属半场内截击极速飞驰的气垫小球，精准轰入对方球门！率先斩获 5 分的一方问鼎冠军；单人天梯模式下失球 ≤ 1 或速通可摘取 3 星荣耀！</p>
+            </div>
+          </div>
+
+          <div class="rule-card">
+            <div class="rule-icon">🎮</div>
+            <div class="rule-info">
+              <h3 data-i18n="ruleCtrlTitle">双轨操控 & 突进重扣</h3>
+              <div class="ctrl-grid">
+                <div class="ctrl-row"><span class="ctrl-badge red" data-i18n="ctrlBadgeP1">红方 P1</span>: <span data-i18n="ruleCtrlP1">红方 (P1): WASD 走位，空格键 Space 突进重扣（瞬间爆出 1.5 倍球速与激光火花！）</span></div>
+                <div class="ctrl-row"><span class="ctrl-badge blue" data-i18n="ctrlBadgeP2">蓝方 P2/AI</span>: <span data-i18n="ruleCtrlP2">蓝方 (P2 / AI): 方向键走位，Shift 键 / Enter 突进重扣</span></div>
+                <div class="ctrl-row"><span class="ctrl-badge yellow" data-i18n="ctrlBadgeTouch">触屏 / 鼠标</span>: <span data-i18n="ruleCtrlTouch">触屏 / 鼠标: 在己方半场按住拖拽推盘，随手指快速甩动即可暴力扣杀！</span></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="rule-card">
+            <div class="rule-icon">⚡</div>
+            <div class="rule-info">
+              <h3 data-i18n="ruleGadgetTitle">高能赛博台面机关</h3>
+              <p data-i18n="ruleGadgetDesc">⚡ 加速风道带：小球掠过时脉冲超载加速并附带烈焰拖尾；🌀 强弹橡胶柱：高弹性障碍桩，打出刁钻神仙折射角；❄️ 极地冰面：零阻尼台面，小球永不衰减！</p>
+            </div>
+          </div>
+        </div>
+        <div class="dialog-actions">
+          <button id="btn-start-play" class="tactile-btn primary-btn" data-i18n="knowRules">我知道了，开战！</button>
+        </div>
+      </div>
+    </dialog>
+
+    <!-- 暂停遮罩弹窗 -->
+    <dialog id="dialog-pause" class="game-dialog">
+      <div class="dialog-content">
+        <h2 data-i18n="pause">暂停</h2>
+        <p data-i18n="howToPlayDesc">【红方P1】WASD 移动，空格突进扣杀；【蓝方P2/AI】方向键移动，Shift/Enter 突进扣杀。在己方半场截击小球轰入对方球门，抢先斩获 5 分获胜！</p>
+        <div class="dialog-actions">
+          <button id="btn-resume" class="tactile-btn primary-btn" data-i18n="resume">继续对决</button>
+        </div>
+      </div>
+    </dialog>
+
+    <!-- 关卡选择弹窗 -->
+    <dialog id="dialog-levels" class="game-dialog wide-dialog">
+      <div class="dialog-content">
+        <div class="dialog-header">
+          <h2 data-i18n="levels">关卡</h2>
+          <button id="btn-close-levels" class="close-x" aria-label="Close">✕</button>
+        </div>
+        <div id="levels-grid" class="levels-scroll-grid">
+          <!-- JS 动态灌入 22 关卡片 -->
+        </div>
+      </div>
+    </dialog>
+
+    <!-- 终局结算胜利弹窗 -->
+    <dialog id="dialog-won" class="game-dialog won-dialog">
+      <div class="dialog-content won-card">
+        <div class="won-badge">🏆</div>
+        <h2 id="won-title" data-i18n="wonTitle">金杯夺冠 · 巅峰加冕</h2>
+        <div id="won-stars" class="won-stars-row">★★★</div>
+
+        <div class="won-stats-grid">
+          <div class="stat-item">
+            <span class="stat-lbl" data-i18n="matchScore">最终比分</span>
+            <strong id="won-score" class="stat-num">5 - 2</strong>
+          </div>
+          <div class="stat-item">
+            <span class="stat-lbl" data-i18n="matchTime">比赛用时</span>
+            <strong id="won-time" class="stat-num">00:48</strong>
+          </div>
+          <div class="stat-item">
+            <span class="stat-lbl" data-i18n="maxSpeedStat">最快球速</span>
+            <strong id="won-speed" class="stat-num">108 km/h</strong>
+          </div>
+        </div>
+
+        <div class="won-actions">
+          <button id="btn-retry-match" class="tactile-btn" data-i18n="retryMatch">再战一局</button>
+          <button id="btn-next-level" class="tactile-btn primary-btn" data-i18n="nextLevel">下一关</button>
+          <button id="btn-close-won" class="tactile-btn icon-btn" data-i18n="closeBtn">关闭</button>
+        </div>
+      </div>
+    </dialog>
+  </div>
+
+  <script type="module" src="js/main.mjs?v=5c854aab4d93"></script>
+</body>
+</html>

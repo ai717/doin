@@ -1,0 +1,580 @@
+/* 积木爆破 · 霓虹积木工坊 —— 深夜游戏厅玻璃展示柜视窗
+   统一底蕴：沉浸暗色底、实体微浮雕、柔和光晕；独立个性：街机玻璃柜 + LED 计分牌 */
+
+:root {
+  --bg-deep: #070b16;
+  --bg-room: #0b1224;
+  --neon: #4df3ff;
+  --neon-soft: rgba(77, 243, 255, 0.55);
+  --magenta: #ff4dd2;
+  --amber: #ffd166;
+  --ink: #e8f4ff;
+  --ink-dim: #9fb3cc;
+  --panel: rgba(13, 20, 38, 0.86);
+  --panel-edge: rgba(94, 234, 255, 0.22);
+  --shadow-deep: 0 18px 48px rgba(0, 0, 0, 0.55);
+  --font-led: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  --font-ui: system-ui, -apple-system, "Segoe UI", Roboto, "PingFang SC", "Microsoft YaHei", sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  min-height: 100%;
+}
+
+body {
+  font-family: var(--font-ui);
+  color: var(--ink);
+  background:
+    radial-gradient(1200px 700px at 18% -10%, rgba(77, 243, 255, 0.14), transparent 60%),
+    radial-gradient(1000px 620px at 88% 8%, rgba(255, 77, 210, 0.12), transparent 62%),
+    radial-gradient(900px 900px at 50% 120%, rgba(24, 40, 80, 0.5), transparent 60%),
+    linear-gradient(180deg, var(--bg-room), var(--bg-deep) 70%);
+  background-attachment: fixed;
+  min-height: 100vh;
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 18px 16px calc(16px + env(safe-area-inset-bottom));
+  overscroll-behavior: none;
+}
+
+/* ---------------------------------------------------------------- 微尘氛围 */
+
+.arcade-room {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+  z-index: 0;
+}
+
+.arcade-room .dust {
+  position: absolute;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--neon);
+  opacity: 0.25;
+  filter: blur(1px);
+  animation: drift 14s ease-in-out infinite;
+}
+
+.arcade-room .d1 { left: 12%; top: 22%; animation-delay: 0s; background: var(--neon); }
+.arcade-room .d2 { left: 78%; top: 16%; animation-delay: -3s; background: var(--magenta); }
+.arcade-room .d3 { left: 34%; top: 68%; animation-delay: -6s; }
+.arcade-room .d4 { left: 62%; top: 52%; animation-delay: -9s; background: var(--amber); }
+.arcade-room .d5 { left: 88%; top: 74%; animation-delay: -2s; }
+.arcade-room .d6 { left: 22%; top: 44%; animation-delay: -11s; background: var(--magenta); }
+
+@keyframes drift {
+  0%, 100% { transform: translate3d(0, 0, 0); opacity: 0.12; }
+  50% { transform: translate3d(14px, -26px, 0); opacity: 0.34; }
+}
+
+/* ---------------------------------------------------------------- 布局骨架 */
+
+#game-app {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: 560px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+/* ---------------------------------------------------------------- 柜顶状态条 */
+
+#stage-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  background: linear-gradient(180deg, rgba(20, 30, 56, 0.92), rgba(11, 17, 33, 0.92));
+  border: 1px solid var(--panel-edge);
+  border-radius: 16px;
+  box-shadow:
+    var(--shadow-deep),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06),
+    0 0 24px rgba(77, 243, 255, 0.1);
+}
+
+#stage-title {
+  flex: 1;
+  min-width: 0;
+  margin: 0;
+  font-size: 20px;
+  letter-spacing: 0.04em;
+  display: flex;
+  flex-direction: column;
+  line-height: 1.15;
+  text-shadow: 0 0 14px rgba(77, 243, 255, 0.45);
+}
+
+#stage-title small {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--ink-dim);
+  letter-spacing: 0.08em;
+  text-shadow: none;
+}
+
+.stage-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.bar-btn {
+  appearance: none;
+  border: 1px solid var(--panel-edge);
+  background: linear-gradient(180deg, rgba(38, 54, 92, 0.9), rgba(20, 30, 56, 0.9));
+  color: var(--ink);
+  font-size: 13px;
+  padding: 7px 11px;
+  border-radius: 10px;
+  cursor: pointer;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: transform 0.12s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+  box-shadow: 0 3px 0 rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+.bar-btn:hover {
+  border-color: var(--neon-soft);
+  box-shadow: 0 3px 0 rgba(0, 0, 0, 0.45), 0 0 16px rgba(77, 243, 255, 0.28), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+.bar-btn:active {
+  transform: translateY(2px);
+  box-shadow: 0 1px 0 rgba(0, 0, 0, 0.45), inset 0 2px 6px rgba(0, 0, 0, 0.4);
+}
+
+.bar-btn:focus-visible,
+.cab-btn:focus-visible,
+.mode-card:focus-visible {
+  outline: none;
+  border-color: var(--neon);
+  box-shadow: 0 0 0 2px rgba(77, 243, 255, 0.35), 0 0 22px rgba(77, 243, 255, 0.4);
+}
+
+/* ---------------------------------------------------------------- LED 计分牌 */
+
+#led-board {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+  padding: 12px;
+  background:
+    linear-gradient(180deg, rgba(8, 12, 24, 0.95), rgba(14, 20, 40, 0.95));
+  border: 1px solid rgba(77, 243, 255, 0.28);
+  border-radius: 14px;
+  box-shadow:
+    inset 0 2px 14px rgba(0, 0, 0, 0.75),
+    0 0 26px rgba(77, 243, 255, 0.12),
+    var(--shadow-deep);
+}
+
+.led-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  padding: 7px 4px;
+  background: rgba(6, 10, 20, 0.6);
+  border-radius: 9px;
+  border: 1px solid rgba(94, 234, 255, 0.12);
+}
+
+.led-tag {
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  color: var(--ink-dim);
+  white-space: nowrap;
+}
+
+.led-value {
+  font-family: var(--font-led);
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--neon);
+  text-shadow: 0 0 10px rgba(77, 243, 255, 0.75), 0 0 22px rgba(77, 243, 255, 0.35);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---------------------------------------------------------------- 玻璃展示柜 */
+
+#cabinet {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+#cabinet-glass {
+  position: relative;
+  border-radius: 20px;
+  padding: 10px;
+  background:
+    linear-gradient(160deg, rgba(30, 44, 82, 0.55), rgba(10, 15, 30, 0.85));
+  border: 1px solid rgba(77, 243, 255, 0.32);
+  box-shadow:
+    var(--shadow-deep),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1),
+    inset 0 0 42px rgba(77, 243, 255, 0.07),
+    0 0 34px rgba(77, 243, 255, 0.16),
+    0 0 64px rgba(255, 77, 210, 0.08);
+  overflow: hidden;
+}
+
+/* 玻璃反光：左上斜向柔光带 */
+.glass-sheen {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(115deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.02) 28%, transparent 45%);
+  z-index: 2;
+}
+
+#stage {
+  display: block;
+  width: 100%;
+  height: min(62vh, 540px);
+  min-height: 380px;
+  touch-action: none;
+  overscroll-behavior: none;
+  cursor: pointer;
+  border-radius: 14px;
+}
+
+#stage:focus-visible {
+  outline: 2px solid var(--neon);
+  outline-offset: 2px;
+}
+
+/* ---------------------------------------------------------------- 柜体底座 */
+
+#cabinet-base {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+  padding: 12px;
+  background: linear-gradient(180deg, rgba(24, 34, 62, 0.9), rgba(12, 18, 36, 0.92));
+  border: 1px solid var(--panel-edge);
+  border-radius: 16px;
+  box-shadow: var(--shadow-deep), inset 0 1px 0 rgba(255, 255, 255, 0.07);
+}
+
+.cab-btn {
+  appearance: none;
+  border: 1px solid rgba(94, 234, 255, 0.26);
+  background: linear-gradient(180deg, rgba(44, 62, 104, 0.95), rgba(22, 32, 60, 0.95));
+  color: var(--ink);
+  font-family: var(--font-ui);
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  padding: 11px 8px;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: transform 0.12s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+  box-shadow: 0 4px 0 rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+.cab-btn:hover {
+  border-color: var(--neon-soft);
+  box-shadow: 0 4px 0 rgba(0, 0, 0, 0.5), 0 0 18px rgba(77, 243, 255, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.12);
+}
+
+.cab-btn:active {
+  transform: translateY(2px);
+  box-shadow: 0 2px 0 rgba(0, 0, 0, 0.5), inset 0 2px 8px rgba(0, 0, 0, 0.45);
+}
+
+.cab-btn.primary {
+  background: linear-gradient(180deg, rgba(77, 243, 255, 0.32), rgba(34, 120, 160, 0.5));
+  border-color: rgba(77, 243, 255, 0.6);
+  color: #f2ffff;
+  text-shadow: 0 0 10px rgba(77, 243, 255, 0.6);
+}
+
+/* ---------------------------------------------------------------- 吐司 */
+
+#toast {
+  position: fixed;
+  left: 50%;
+  bottom: calc(96px + env(safe-area-inset-bottom));
+  transform: translateX(-50%) translateY(8px);
+  margin: 0;
+  padding: 9px 18px;
+  background: rgba(10, 16, 32, 0.92);
+  border: 1px solid var(--neon-soft);
+  border-radius: 999px;
+  color: var(--ink);
+  font-size: 14px;
+  letter-spacing: 0.04em;
+  box-shadow: 0 0 22px rgba(77, 243, 255, 0.35), var(--shadow-deep);
+  opacity: 0;
+  transition: opacity 0.18s ease, transform 0.18s ease;
+  z-index: 40;
+  pointer-events: none;
+}
+
+#toast.show {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+/* ---------------------------------------------------------------- 弹层 */
+
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: rgba(4, 7, 14, 0.72);
+  backdrop-filter: blur(6px);
+}
+
+.overlay[hidden] {
+  display: none;
+}
+
+.overlay-panel {
+  width: 100%;
+  max-width: 420px;
+  max-height: 86vh;
+  overflow-y: auto;
+  padding: 22px;
+  background: linear-gradient(180deg, rgba(18, 27, 50, 0.97), rgba(10, 15, 30, 0.97));
+  border: 1px solid rgba(77, 243, 255, 0.35);
+  border-radius: 20px;
+  box-shadow: var(--shadow-deep), 0 0 44px rgba(77, 243, 255, 0.18);
+  text-align: center;
+}
+
+.overlay-panel h2 {
+  margin: 0 0 6px;
+  font-size: 22px;
+  letter-spacing: 0.05em;
+  text-shadow: 0 0 16px rgba(77, 243, 255, 0.5);
+}
+
+.overlay-note {
+  margin: 4px 0 12px;
+  font-size: 13px;
+  color: var(--ink-dim);
+}
+
+.overlay-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: center;
+  margin-top: 16px;
+}
+
+/* 模式卡（难度卡复用） */
+.mode-cards {
+  display: grid;
+  gap: 12px;
+  margin-top: 14px;
+}
+
+.mode-card {
+  appearance: none;
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 16px;
+  border-radius: 14px;
+  border: 1px solid rgba(94, 234, 255, 0.24);
+  background: linear-gradient(180deg, rgba(34, 48, 84, 0.8), rgba(16, 24, 46, 0.9));
+  color: var(--ink);
+  cursor: pointer;
+  transition: transform 0.12s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+  box-shadow: 0 4px 0 rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+.mode-card b {
+  font-size: 17px;
+  letter-spacing: 0.04em;
+}
+
+.mode-card span {
+  font-size: 13px;
+  color: var(--ink-dim);
+}
+
+.mode-card em {
+  font-style: normal;
+  font-family: var(--font-led);
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  color: var(--neon);
+}
+
+.mode-card:hover {
+  border-color: var(--neon);
+  box-shadow: 0 4px 0 rgba(0, 0, 0, 0.45), 0 0 22px rgba(77, 243, 255, 0.3);
+}
+
+.mode-card:active {
+  transform: translateY(2px);
+}
+
+/* 当前难度卡：无边界径向柔光标记，禁硬描边圈 */
+.mode-card.current {
+  border-color: rgba(255, 209, 102, 0.55);
+  background:
+    radial-gradient(120px 60px at 50% 0%, rgba(255, 209, 102, 0.16), transparent 70%),
+    linear-gradient(180deg, rgba(34, 48, 84, 0.8), rgba(16, 24, 46, 0.9));
+}
+
+.mode-card.current em {
+  color: var(--amber);
+}
+
+/* 结算 */
+.result-badge {
+  display: inline-block;
+  margin: 0 0 8px;
+  padding: 6px 16px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 209, 102, 0.55);
+  color: var(--amber);
+  font-family: var(--font-led);
+  font-size: 16px;
+  letter-spacing: 0.1em;
+  text-shadow: 0 0 12px rgba(255, 209, 102, 0.6);
+}
+
+.result-badge.record {
+  border-color: var(--magenta);
+  color: #ffd8f4;
+  text-shadow: 0 0 14px rgba(255, 77, 210, 0.8);
+  animation: recordPulse 0.9s ease-in-out 3;
+}
+
+@keyframes recordPulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.08); }
+}
+
+.result-sub {
+  margin: 0 0 12px;
+  font-size: 14px;
+  color: var(--ink-dim);
+}
+
+.result-rows {
+  display: grid;
+  gap: 6px;
+  text-align: left;
+}
+
+.result-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 8px 12px;
+  background: rgba(8, 12, 24, 0.65);
+  border: 1px solid rgba(94, 234, 255, 0.12);
+  border-radius: 9px;
+  font-size: 13px;
+}
+
+.result-row b {
+  font-family: var(--font-led);
+  color: var(--neon);
+}
+
+/* 玩法说明 */
+.help-list {
+  text-align: left;
+  margin: 12px 0 0;
+  padding-left: 20px;
+  display: grid;
+  gap: 8px;
+  font-size: 13.5px;
+  line-height: 1.55;
+  color: #cfe2f5;
+}
+
+.noscript-note {
+  position: relative;
+  z-index: 1;
+  color: var(--ink-dim);
+  font-size: 14px;
+}
+
+/* ---------------------------------------------------------------- 移动端 */
+
+@media (max-width: 768px) {
+  body {
+    padding: 12px 10px max(68px, calc(16px + env(safe-area-inset-bottom)));
+  }
+
+  #game-app {
+    max-width: 100%;
+    gap: 10px;
+  }
+
+  #stage {
+    height: min(56vh, 460px);
+    min-height: 340px;
+  }
+
+  #led-board {
+    grid-template-columns: repeat(4, 1fr);
+    gap: 6px;
+    padding: 10px;
+  }
+
+  .led-value {
+    font-size: 15px;
+  }
+
+  #stage-title {
+    font-size: 17px;
+  }
+
+  #toast {
+    bottom: calc(84px + env(safe-area-inset-bottom));
+  }
+}
+
+@media (max-width: 380px) {
+  .led-tag {
+    font-size: 9px;
+  }
+}
+
+/* ---------------------------------------------------------------- 动效降级 */
+
+@media (prefers-reduced-motion: reduce) {
+  .arcade-room .dust {
+    animation: none;
+  }
+
+  .result-badge.record {
+    animation: none;
+  }
+
+  .bar-btn,
+  .cab-btn,
+  .mode-card,
+  #toast {
+    transition: none;
+  }
+}
