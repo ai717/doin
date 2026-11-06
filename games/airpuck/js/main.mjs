@@ -45,6 +45,7 @@ window.addEventListener('DOMContentLoaded', () => {
     btnRestart: document.getElementById('btn-restart'),
     btnLevels: document.getElementById('btn-levels'),
     btnMode: document.getElementById('btn-mode'),
+    btnRules: document.getElementById('btn-rules'),
     btnSound: document.getElementById('btn-sound'),
     btnLang: document.getElementById('btn-lang'),
 
@@ -52,11 +53,17 @@ window.addEventListener('DOMContentLoaded', () => {
     hudLevel: document.getElementById('hud-level'),
     hudP1Score: document.getElementById('hud-p1-score'),
     hudP2Score: document.getElementById('hud-p2-score'),
-    hudP1Speed: document.getElementById('hud-p1-speed'),
-    hudP2Speed: document.getElementById('hud-p2-speed'),
+    hudSpeed: document.getElementById('hud-speed'),
     hudP1Dash: document.getElementById('hud-p1-dash'),
     hudP2Dash: document.getElementById('hud-p2-dash'),
+    hudP1DashBadge: document.getElementById('hud-p1-dash-badge'),
+    hudP2DashBadge: document.getElementById('hud-p2-dash-badge'),
     hudP2Title: document.getElementById('hud-p2-title'),
+    hudP2Ctrl: document.getElementById('hud-p2-ctrl'),
+
+    dialogRules: document.getElementById('dialog-rules'),
+    btnCloseRules: document.getElementById('btn-close-rules'),
+    btnStartPlay: document.getElementById('btn-start-play'),
 
     dialogPause: document.getElementById('dialog-pause'),
     btnResume: document.getElementById('btn-resume'),
@@ -217,21 +224,30 @@ window.addEventListener('DOMContentLoaded', () => {
     if (dom.hudP2Score) dom.hudP2Score.textContent = state.scoreP2.toString();
 
     const speedKmH = Math.round(state.maxPuckSpeed * 0.1);
-    if (dom.hudP1Speed) dom.hudP1Speed.textContent = `${speedKmH} km/h`;
-    if (dom.hudP2Speed) dom.hudP2Speed.textContent = `${speedKmH} km/h`;
+    if (dom.hudSpeed) dom.hudSpeed.textContent = speedKmH.toString();
 
-    // 突进扣杀状态指示
+    // 突进扣杀状态指示（杜绝文本重复，高亮脉冲点）
+    const p1Ready = state.p1.dashCooldown <= 0;
     if (dom.hudP1Dash) {
-      dom.hudP1Dash.textContent = state.p1.dashCooldown <= 0 ? t('dashReady', currentLang) : t('dashCooldown', currentLang);
-      dom.hudP1Dash.className = state.p1.dashCooldown <= 0 ? 'wing-value ready' : 'wing-value charging';
+      dom.hudP1Dash.textContent = p1Ready ? t('dashReady', currentLang) : t('dashCooldown', currentLang);
     }
+    if (dom.hudP1DashBadge) {
+      dom.hudP1DashBadge.className = `dash-pill ${p1Ready ? 'ready' : 'charging'}`;
+    }
+
+    const p2Ready = state.p2.dashCooldown <= 0;
     if (dom.hudP2Dash) {
-      dom.hudP2Dash.textContent = state.p2.dashCooldown <= 0 ? t('dashReady', currentLang) : t('dashCooldown', currentLang);
-      dom.hudP2Dash.className = state.p2.dashCooldown <= 0 ? 'wing-value ready' : 'wing-value charging';
+      dom.hudP2Dash.textContent = p2Ready ? t('dashReady', currentLang) : t('dashCooldown', currentLang);
+    }
+    if (dom.hudP2DashBadge) {
+      dom.hudP2DashBadge.className = `dash-pill ${p2Ready ? 'ready' : 'charging'}`;
     }
 
     if (dom.hudP2Title) {
       dom.hudP2Title.textContent = controller.mode === 'ai' ? t('aiName', currentLang) : t('p2Name', currentLang);
+    }
+    if (dom.hudP2Ctrl) {
+      dom.hudP2Ctrl.textContent = controller.mode === 'ai' ? t('aiControls', currentLang) : t('p2Controls', currentLang);
     }
 
     if (controller.mode === 'ai') {
@@ -356,6 +372,24 @@ window.addEventListener('DOMContentLoaded', () => {
   }
 
   // 按键与弹窗监听绑定
+  if (dom.btnRules) {
+    dom.btnRules.addEventListener('click', () => {
+      if (dom.dialogRules && typeof dom.dialogRules.showModal === 'function') {
+        dom.dialogRules.showModal();
+      }
+    });
+  }
+  if (dom.btnCloseRules) {
+    dom.btnCloseRules.addEventListener('click', () => {
+      if (dom.dialogRules && dom.dialogRules.open) dom.dialogRules.close();
+    });
+  }
+  if (dom.btnStartPlay) {
+    dom.btnStartPlay.addEventListener('click', () => {
+      if (dom.dialogRules && dom.dialogRules.open) dom.dialogRules.close();
+    });
+  }
+
   if (dom.btnPause) dom.btnPause.addEventListener('click', togglePause);
   if (dom.btnResume) dom.btnResume.addEventListener('click', togglePause);
   if (dom.btnRestart) {
@@ -435,18 +469,21 @@ window.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  // 主循环
+  // 主循环：切后台或暂停时跳过物理密集运算与重绘，彻底杜绝风扇狂转
   let lastTime = performance.now();
   function gameLoop(timestamp) {
     const dt = Math.min(0.05, (timestamp - lastTime) / 1000);
     lastTime = timestamp;
 
-    pollKeyboardInputs();
-    controller.step(dt);
-    renderer.update(dt);
-    renderer.render(controller.getState());
-
-    handleEvents();
+    if (!document.hidden) {
+      if (!controller.isPaused()) {
+        pollKeyboardInputs();
+        controller.step(dt);
+        renderer.update(dt);
+        handleEvents();
+      }
+      renderer.render(controller.getState());
+    }
 
     requestAnimationFrame(gameLoop);
   }

@@ -28,6 +28,7 @@
 
       <div class="header-controls">
         <button id="btn-mode" class="tactile-btn mode-btn" data-i18n="mode2p">双人同屏</button>
+        <button id="btn-rules" class="tactile-btn rules-btn" data-i18n="rules">📖 玩法</button>
         <button id="btn-levels" class="tactile-btn" data-i18n="levels">关卡</button>
         <button id="btn-restart" class="tactile-btn icon-btn" title="瞬时重开" data-i18n="restart">↺ 重开</button>
         <button id="btn-pause" class="tactile-btn" data-i18n="pause">暂停</button>
@@ -36,52 +37,103 @@
       </div>
     </header>
 
-    <!-- 赛博电玩主工作台视窗 -->
+    <!-- 赛博电玩主工作台视窗：一体化全景台面与悬挂数码管记分桥 -->
     <main id="game-workspace">
-      <!-- 左侧红方 P1 驾驶席仪表 (Red Wing) -->
-      <aside id="hud-left" class="workspace-wing red-wing">
-        <div class="wing-card player-card">
-          <div class="wing-label" data-i18n="p1Name">红方 P1 (WASD)</div>
-          <div id="hud-p1-score" class="wing-value score-val red-score">0</div>
+      <!-- 街机空中数码管悬挂记分桥 (Arcade Overhead Score Bridge) -->
+      <section id="arcade-scoreboard" aria-label="Arcade Scoreboard">
+        <!-- 红方 P1 驾驶区 -->
+        <div class="score-team team-red">
+          <div class="team-meta">
+            <span class="team-name" data-i18n="p1Name">红方 P1 (WASD)</span>
+            <span class="team-controls" data-i18n="p1Controls">WASD / 拖拽</span>
+          </div>
+          <div class="team-score-box">
+            <span id="hud-p1-score" class="digital-score red-score">0</span>
+            <div id="hud-p1-dash-badge" class="dash-pill ready">
+              <span class="dash-dot"></span>
+              <span id="hud-p1-dash" data-i18n="dashReady">扣杀就绪</span>
+            </div>
+          </div>
         </div>
-        <div class="wing-card">
-          <div class="wing-label" data-i18n="dashReady">扣杀就绪</div>
-          <div id="hud-p1-dash" class="wing-value ready" data-i18n="dashReady">扣杀就绪</div>
-          <div class="wing-sub" data-i18n="p1DashTip">空格: 突进重扣</div>
+
+        <!-- 中央对阵与球速情报区 -->
+        <div class="scoreboard-center">
+          <div class="match-info">
+            <span id="hud-act" class="act-text">第一季 · 经典电玩街机厅</span>
+            <span class="vs-badge">VS</span>
+            <span id="hud-level" class="level-text">关卡 1 · 凯文</span>
+          </div>
+          <div class="speed-cluster">
+            <span class="speed-icon">⚡</span>
+            <span id="hud-speed" class="speed-number">0</span>
+            <span class="speed-unit">KM/H</span>
+          </div>
+          <div class="target-rule" data-i18n="targetScoreBadge">抢 5 分制</div>
         </div>
-        <div class="wing-card">
-          <div class="wing-label" data-i18n="speedometer">球速</div>
-          <div id="hud-p1-speed" class="wing-value speed-val">0 km/h</div>
+
+        <!-- 蓝方 P2 / AI 驾驶区 -->
+        <div class="score-team team-blue">
+          <div class="team-score-box">
+            <div id="hud-p2-dash-badge" class="dash-pill ready">
+              <span class="dash-dot"></span>
+              <span id="hud-p2-dash" data-i18n="dashReady">扣杀就绪</span>
+            </div>
+            <span id="hud-p2-score" class="digital-score blue-score">0</span>
+          </div>
+          <div class="team-meta">
+            <span id="hud-p2-title" class="team-name" data-i18n="aiName">赛博 AI</span>
+            <span id="hud-p2-ctrl" class="team-controls" data-i18n="aiControls">赛博智能</span>
+          </div>
         </div>
-      </aside>
+      </section>
 
       <!-- 中央舞台 Canvas 视窗 -->
       <section id="canvas-container">
-        <!-- 悬挂机台顶比分牌 -->
-        <div id="match-banner">
-          <span id="hud-act" class="banner-act">第一季 · 经典电玩街机厅</span>
-          <span id="hud-level" class="banner-level">关卡 1 · 凯文</span>
-        </div>
         <canvas id="game-canvas"></canvas>
       </section>
-
-      <!-- 右侧蓝方 P2 / AI 驾驶席仪表 (Blue Wing) -->
-      <aside id="hud-right" class="workspace-wing blue-wing">
-        <div class="wing-card player-card">
-          <div id="hud-p2-title" class="wing-label" data-i18n="aiName">赛博 AI</div>
-          <div id="hud-p2-score" class="wing-value score-val blue-score">0</div>
-        </div>
-        <div class="wing-card">
-          <div class="wing-label" data-i18n="dashReady">扣杀就绪</div>
-          <div id="hud-p2-dash" class="wing-value ready" data-i18n="dashReady">扣杀就绪</div>
-          <div class="wing-sub" data-i18n="p2DashTip">Shift: 突进重扣</div>
-        </div>
-        <div class="wing-card">
-          <div class="wing-label" data-i18n="speedometer">球速</div>
-          <div id="hud-p2-speed" class="wing-value speed-val">0 km/h</div>
-        </div>
-      </aside>
     </main>
+
+    <!-- 玩法介绍与规则指南弹窗 -->
+    <dialog id="dialog-rules" class="game-dialog wide-dialog">
+      <div class="dialog-content rules-dialog-content">
+        <div class="dialog-header">
+          <h2 data-i18n="rulesTitle">📖 玩法指南 & 规则秘籍</h2>
+          <button id="btn-close-rules" class="close-x" aria-label="Close">✕</button>
+        </div>
+        <div class="rules-body">
+          <div class="rule-card">
+            <div class="rule-icon">🏆</div>
+            <div class="rule-info">
+              <h3 data-i18n="ruleGoalTitle">抢 5 分决胜制（First to 5）</h3>
+              <p data-i18n="ruleGoalDesc">双方在专属半场内截击极速飞驰的气垫小球，精准轰入对方球门！率先斩获 5 分的一方问鼎冠军；单人天梯模式下失球 ≤ 1 或速通可摘取 3 星荣耀！</p>
+            </div>
+          </div>
+
+          <div class="rule-card">
+            <div class="rule-icon">🎮</div>
+            <div class="rule-info">
+              <h3 data-i18n="ruleCtrlTitle">双轨操控 & 突进重扣</h3>
+              <div class="ctrl-grid">
+                <div class="ctrl-row"><span class="ctrl-badge red" data-i18n="ctrlBadgeP1">红方 P1</span>: <span data-i18n="ruleCtrlP1">红方 (P1): WASD 走位，空格键 Space 突进重扣（瞬间爆出 1.5 倍球速与激光火花！）</span></div>
+                <div class="ctrl-row"><span class="ctrl-badge blue" data-i18n="ctrlBadgeP2">蓝方 P2/AI</span>: <span data-i18n="ruleCtrlP2">蓝方 (P2 / AI): 方向键走位，Shift 键 / Enter 突进重扣</span></div>
+                <div class="ctrl-row"><span class="ctrl-badge yellow" data-i18n="ctrlBadgeTouch">触屏 / 鼠标</span>: <span data-i18n="ruleCtrlTouch">触屏 / 鼠标: 在己方半场按住拖拽推盘，随手指快速甩动即可暴力扣杀！</span></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="rule-card">
+            <div class="rule-icon">⚡</div>
+            <div class="rule-info">
+              <h3 data-i18n="ruleGadgetTitle">高能赛博台面机关</h3>
+              <p data-i18n="ruleGadgetDesc">⚡ 加速风道带：小球掠过时脉冲超载加速并附带烈焰拖尾；🌀 强弹橡胶柱：高弹性障碍桩，打出刁钻神仙折射角；❄️ 极地冰面：零阻尼台面，小球永不衰减！</p>
+            </div>
+          </div>
+        </div>
+        <div class="dialog-actions">
+          <button id="btn-start-play" class="tactile-btn primary-btn" data-i18n="knowRules">我知道了，开战！</button>
+        </div>
+      </div>
+    </dialog>
 
     <!-- 暂停遮罩弹窗 -->
     <dialog id="dialog-pause" class="game-dialog">
