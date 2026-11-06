@@ -1,6 +1,25 @@
 {
   "games": [
     {
+      "title": "摸鱼开箱修仙传",
+      "slug": "immortal",
+      "desc": "无限开鼎爆神装，暗黑六维词条克制，离线挂机聚灵石，渡九重天劫飞升！纯单机零广告打造，21 阶境界大关与无尽试炼天梯等你登仙！",
+      "icon": "🏺",
+      "cover": "/assets/covers/immortal.webp",
+      "tags": [
+        "放置",
+        "角色扮演",
+        "休闲",
+        "策略",
+        "养成"
+      ],
+      "url": "/immortal/",
+      "en": {
+        "title": "Immortal Box",
+        "desc": "Infinite cauldron looting, Diablo-style hex-synergy builds, and offline AFK rewards! Overcome 21 tribulations and ascend to immortality."
+      }
+    },
+    {
       "title": "字灵拆拆乐",
       "slug": "hanzi",
       "desc": "将汉字自由拆解为偏旁、重新组合成新字，拖入水墨山水触发真实物理反应（加火烧木、三水成河、日月为明），妙解 22 关东方炼金谜题！",
