@@ -54,3 +54,18 @@ test("htmlLang：zh → zh-CN，en → en", () => {
   assert.equal(htmlLang("zh"), "zh-CN");
   assert.equal(htmlLang("en"), "en");
 });
+
+test("friendLinks：中英文友链数量一致，URL对齐且名称非空", () => {
+  const zhLinks = strings("zh").friendLinks;
+  const enLinks = strings("en").friendLinks;
+  assert.ok(Array.isArray(zhLinks) && zhLinks.length > 0);
+  assert.ok(Array.isArray(enLinks) && enLinks.length > 0);
+  assert.equal(zhLinks.length, enLinks.length);
+  for (let i = 0; i < zhLinks.length; i++) {
+    assert.equal(zhLinks[i].url, enLinks[i].url);
+    assert.ok(zhLinks[i].name.length > 0);
+    assert.ok(enLinks[i].name.length > 0);
+    // 英文链接名无中文字符
+    assert.ok(!/[\u4e00-\u9fa5]/.test(enLinks[i].name), `en link name 不能含汉字: ${enLinks[i].name}`);
+  }
+});

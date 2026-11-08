@@ -38,6 +38,14 @@ const STRINGS = {
     emptyTitle: "未找到相关游戏",
     emptyHint: "换个关键词或分类试试吧",
     gameCount: "款游戏",
+    friendLinks: [
+      { name: "摸鱼杂货店", url: "https://www.moyunews.com/" },
+      { name: "Muse实战案例库", url: "https://muse.itis.chat/" },
+      { name: "免费开源数字资源", url: "https://free.itis.chat/" },
+      { name: "搞钱实验室", url: "https://m.ucncn.cn/" },
+      { name: "小游戏大全", url: "https://doin.win/" },
+      { name: "AI资源导航", url: "https://itis.chat/" },
+    ],
   },
   en: {
     docTitle: "DOIN · Free Online Mini Games - Play Instantly",
@@ -69,6 +77,14 @@ const STRINGS = {
     emptyTitle: "No games found",
     emptyHint: "Try another keyword or category",
     gameCount: "games",
+    friendLinks: [
+      { name: "MoyuNews", url: "https://www.moyunews.com/" },
+      { name: "Muse Case", url: "https://muse.itis.chat/" },
+      { name: "ITIS Free", url: "https://free.itis.chat/" },
+      { name: "MoneyLab", url: "https://m.ucncn.cn/" },
+      { name: "Free Mini Games", url: "https://doin.win/" },
+      { name: "AI Navigation", url: "https://itis.chat/" },
+    ],
   },
 };
 

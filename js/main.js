@@ -86,6 +86,18 @@ function applyStaticTexts() {
     langButton.setAttribute("aria-label", t.langAria);
     langButton.title = t.langLabel;
   }
+
+  // 底部友情链接按当前语言渲染
+  const friendLinksNav = document.querySelector("#friend-links");
+  if (friendLinksNav && Array.isArray(t.friendLinks)) {
+    friendLinksNav.setAttribute("aria-label", locale === "zh" ? "友情链接" : "Friend Links");
+    friendLinksNav.innerHTML = t.friendLinks.map((item, index) => {
+      const isInternal = item.url.includes("doin.win");
+      const targetAttr = isInternal ? "" : ' target="_blank" rel="noopener"';
+      const sep = index < t.friendLinks.length - 1 ? '<span class="friend-sep" aria-hidden="true">·</span>' : "";
+      return `<a href="${item.url}"${targetAttr}>${item.name}</a>${sep}`;
+    }).join("");
+  }
 }
 
 const langPicker = document.querySelector(".lang-picker");
