@@ -45,6 +45,7 @@ const STRINGS = {
       { name: "搞钱实验室", url: "https://m.ucncn.cn/" },
       { name: "小游戏大全", url: "https://doin.win/" },
       { name: "AI资源导航", url: "https://itis.chat/" },
+      { name: "薅羊毛日报", url: "https://hao.itis.chat/" },
     ],
   },
   en: {
@@ -84,6 +85,7 @@ const STRINGS = {
       { name: "MoneyLab", url: "https://m.ucncn.cn/" },
       { name: "Free Mini Games", url: "https://doin.win/" },
       { name: "AI Navigation", url: "https://itis.chat/" },
+      { name: "Deals Daily", url: "https://hao.itis.chat/" },
     ],
   },
 };
