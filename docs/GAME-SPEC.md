@@ -215,7 +215,8 @@ function storage() {
 5. **安全避让**：移动端底部预留 `≥68px` 安全距离，画布声明 `touch-action: none;`；
 6. **零外链**：零 CDN、零外链字体音视频，资源附加 `?v=dev`；
 7. **实时性游戏暂停与失焦保护**：含倒计时或连续运动的游戏具备暂停按钮、快捷键（P/Esc/Space）与切后台（visibilitychange）自动暂停；
-8. **门禁自测**：通过 `node scripts/check-game.mjs <slug>` 校验（T1 零 fail，T2 零 warn）。
+8. **门禁自测**：通过 `node scripts/check-game.mjs <slug>` 校验（T1 零 fail，T2 零 warn）；
+9. **策划归档**：开发测试完成并上架后，若该游戏有 `docs/plans/<slug>-prd.md`，立即将其移动至 `docs/plans/已开发/` 目录归档。
 
 ---
 

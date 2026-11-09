@@ -18,9 +18,9 @@ DOIN（`doin.win`）是集合型独立网页小游戏门户，`main` 分支触�
 
 ## 2 · 三种敏捷开发协作模式
 
-- **模式 A（本地端到端，默认推荐）**：对标原型 ➔ 编写代码（`games/<slug>/`）➔ 原生四类单测 ➔ 门户登记（`games.json`、封面、根测试脚本）➔ 门禁验证（`check-game.mjs` + `build`）。
-- **模式 B（策划立项先行，复杂创新首选）**：调用 `/doin-cehua` 产出 PRD（`docs/plans/<slug>-prd.md`）拍板后转模式 A 或 C。
-- **模式 C（外包任务书发包，多端协作）**：调用 `/doin-waibao` 产出三轮交付任务书（`docs/outsource/<slug>-spec.md`），外部仅交付 `games/<slug>/` 内文件，门户方负责验收集成。
+- **模式 A（本地端到端，默认推荐）**：对标原型 ➔ 编写代码（`games/<slug>/`）➔ 原生四类单测 ➔ 门户登记（`games.json`、封面、根测试脚本）➔ 门禁验证（`check-game.mjs` + `build`）➔ **若存在策划文档，完成后归档至 `docs/plans/已开发/<slug>-prd.md`**。
+- **模式 B（策划立项先行，复杂创新首选）**：调用 `/doin-cehua` 产出 PRD（`docs/plans/<slug>-prd.md`）拍板后转模式 A 或 C；**开发上线完成后必须立即将该 PRD 移入 `docs/plans/已开发/` 归档**。
+- **模式 C（外包任务书发包，多端协作）**：调用 `/doin-waibao` 产出三轮交付任务书（`docs/outsource/<slug>-spec.md`），外部仅交付 `games/<slug>/` 内文件，门户方负责验收集成并归档对应 PRD 至 `docs/plans/已开发/`。
 
 ***
 
@@ -148,7 +148,7 @@ equestAnimationFrame 驱动的计时器（dt 累加清零）与 WebAudio 播放�
 
 ## 7 · 验证与工作纪律
 
-- **单任务原子递增**：一次专注一个游戏或特性，修改后及时同步 `PROJECT_LOG.md`。
+- **单任务原子递增**：一次专注一个游戏或特性，开发完成上线后，**立即将 `docs/plans/<slug>-prd.md` 移动到 `docs/plans/已开发/` 归档**，并及时同步 `PROJECT_LOG.md`。
 - **改动必测门禁**：
   - 改动子游戏 ➔ `npm run test:<slug>`；
   - 接入新游戏 ➔ `node scripts/check-game.mjs <slug>` 必须全绿（T1 零 fail、T2 零 warn）；
