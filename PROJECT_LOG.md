@@ -138,6 +138,108 @@ DOIN（`doin.win`）是静态集合型独立网页小游戏门户。
   - `npm run build`：通过并生成 `dist/screw/`；
   - `assets/covers/screw.webp`：640×640 软胶 3D 封面，去水印落盘。
 
+### 新游戏上架：方块对轰 / Block Duel (`blockduel`)（2026-11-10 入库补记）
+
+根据 `docs/plans/已开发/blockduel-prd.md` 策划案，在 `games/blockduel/` 独立上线平台首款下落式同屏对战 `blockduel`。舞台为**双子赛博机台**：840×560 双矩阵对峙、中央对攻激光管道与连击浮字、两侧垂直垃圾警戒槽、左上 Hold 槽与右上 Next 4 预览；Canvas 2D 程序化方块与激光粒子，零外部素材。
+
+- **核心玩法与确定性规则**：
+  - 10×20 双矩阵同屏对轰，P1 用左半键盘（A/D/S/W/Q/Space/C）、P2 用右半键盘（方向键/Enter/右 Shift/小键盘 0），单人模式右阵自动托管给 AI；
+  - 国际 7-Bag 随机袋 + SRS 旋转系统，复用 `games/tetris-neo/js/engine.mjs` 成熟实现，支持传入种子重放同一序列；
+  - 消行化作垃圾行轰向对手，攻防抵消满足代数守恒 `NetGarbage = Incoming − Outgoing`，不存在吞伤害或错算；
+  - BO3 / BO5 赛制，一方矩阵溢出顶部即 KO，先到赛点者胜；
+  - 22 关单人天梯按 5/4/4/5/4 分五段（bronze/silver/gold/platinum/diamond），AI 自然下落间隔从 800ms 逐关压到 185ms、乱走概率从 0.42 归零，抵消意识（garbageAware 0.15→0.92）与保留长条蓄力 Tetris 的倾向同步提升。
+- **模块与声学契约**：
+  - `engine.mjs` 纯函数矩阵/旋转/消行/垃圾行守恒状态机，含 ≥1000 步随机游走不变式；
+  - `levels.mjs` 22 关五档参数、`ai.mjs` 分档 AI、`game.mjs` DOM-free 控制器、`render.mjs` Canvas 2D 双矩阵与激光渲染；
+  - `storage.mjs` 使用 `doin.blockduel.v1`，坏数据归一化与内存降级；`i18n.mjs` 共享 `doin.lang`，原地热更新零汉字；
+  - `audio.mjs` 噪声缓冲 + 正弦/FM：硬降金属落地、钢化玻璃碎裂、四行重炮轰鸣、垃圾行齿轮挤压与警戒槽心跳倒计时。
+- **门禁全绿交付**：
+  - `npm run test:blockduel`：51/51 项单测通过；
+  - `node scripts/check-game.mjs blockduel`：21 PASS / 0 FAIL / 0 WARN；
+  - `npm run build` 通过并生成 `dist/blockduel/`；`assets/covers/blockduel.webp` 为 640×640 软胶 3D 封面。
+
+### 新游戏上架：中国跳棋 / Chinese Checkers (`checkers`)（2026-11-10 入库补记）
+
+根据 `docs/plans/已开发/checkers-prd.md` 策划案，在 `games/checkers/` 独立上线 121 孔六角星盘棋 `checkers`。舞台为**古雅红木棋室**：红木棋案、双色琉璃弹珠、凹槽微浮雕与可点击目标孔光晕，全盘以内联 SVG 绘制，无 Canvas、无外部图片。
+
+- **核心玩法与确定性规则**：
+  - 121 孔六角星盘，双方各 10 颗弹珠抢渡正对面星角，先全员入营者胜；
+  - 单步挪移 + 隔子连跳（可借敌我任意棋子，可随时在任一跳跃节点落定）；选中弹珠后直接铺出全部可达目标孔，点最远目标自动播放连跳弧线动画；
+  - 反死锁规则：对方滞留大本营不出时，以其入营棋子数 + 滞留数达 10 颗判定积极进攻方胜，杜绝耍赖和局；
+  - 1v1 四档 AI（beginner / intermediate / advanced / master，Minimax + 启发式）+ 同屏双人轮流执子；
+  - 20 关连跳残局按四章编排，每关限 1~3 步；`solver.mjs` 以 BFS 穷举 121 孔最优连跳路径，逐关验算唯一最优解。
+- **模块与声学契约**：
+  - `engine.mjs` 纯函数六角坐标与连跳合法性状态机，含 ≥1000 步随机游走不变式；
+  - `puzzles.mjs` 20 关残局棋谱、`solver.mjs` BFS 最优路径求解、`ai.mjs` 四档评估、`game.mjs` DOM-free 控制器与无限悔棋；
+  - `storage.mjs` 使用 `doin.checkers.v1`；`i18n.mjs` 共享 `doin.lang` 原地热更新零汉字；`ui.mjs` 内联 SVG 琉璃弹珠与木盘渲染；
+  - `audio.mjs` 噪声 + 正弦 + FM：选子水滴、连跳编钟升调（每跃一颗爬一级音阶）、落孔实木磕碰、大捷折扇烟花。
+- **门禁全绿交付**：
+  - `npm run test:checkers`：123/123 项单测通过（含 20 关 BFS 最优解验算与连跳合法性）；
+  - `node scripts/check-game.mjs checkers`：21 PASS / 0 FAIL / 0 WARN；
+  - `npm run build` 通过并生成 `dist/checkers/`；`assets/covers/checkers.webp` 为 640×640 软胶 3D 封面。
+
+### 新游戏上架：弹珠落钉 / Peg Fall (`pegfall`)（2026-11-10 入库补记）
+
+根据 `docs/plans/已开发/pegfall-prd.md` 策划案，在 `games/pegfall/` 独立上线物理弹射清屏 `pegfall`。舞台为**维多利亚铜管微缩弹珠机台**：铜质加农炮、发光钉阵、底部移动接球斗与五个分值漏斗，Canvas 2D 渲染光晕钉群与反弹拖尾。
+
+- **核心玩法与确定性规则**：
+  - 加农炮在 −80°~+80° 区间瞄准（鼠标/触屏跟随，桌面端 ←/→ 或 A/D 以 0.5° 微调），空格或点击击发 V₀=750px/s 的银珠；
+  - 60Hz 固定步长 `stepFrame` 刚体碰撞，重力与恢复系数严格确定；击中的钉子即时点亮，待本轮弹珠出界后统一「消解碎裂」结算分数；
+  - 底部接球斗以 160px/s 正弦摆动，接住返一颗球；两侧漏斗落入奖励 1,000 / 5,000 / 10,000 分；
+  - 全清橙色目标钉即过关，10 颗弹珠耗尽而仍有残留则失败；终局狂喜触发 5 倍慢动作 + 漏斗分值 10 倍（上限 100,000）；
+  - 21 关五篇章 4/5/4/5/3：青铜学徒靶场 ➔ 彩虹几何回廊（长条药丸钉）➔ 旋转风车工坊（旋转挡板）➔ 星云引力深渊（重力偏转场）➔ 万神殿终极狂欢。钉阵经拓扑密度检验，保证 10 颗球在合理预判下 100% 可全清。
+- **模块与声学契约**：
+  - `engine.mjs` 纯函数固定步长物理与点亮/结算/胜负状态机，含碰撞反弹守恒与 ≥1000 步随机游走不变式；
+  - `levels.mjs` 21 关钉阵与障碍数据、`render.mjs` Canvas 2D 弹珠光晕与粒子、`score.mjs` 计分与星评、`game.mjs` DOM-free 控制器；
+  - `storage.mjs` 使用 `doin.pegfall.v1`；`i18n.mjs` 共享 `doin.lang` 原地热更新零汉字；
+  - `audio.mjs` 噪声 + 正弦 + FM：气动炮击破空、连环击钉水晶交鸣（命中越多音阶越高）、接球铃铛、消解爆米花音簇。
+- **门禁全绿交付**：
+  - `npm run test:pegfall`：51/51 项单测通过；
+  - `node scripts/check-game.mjs pegfall`：21 PASS / 0 FAIL / 0 WARN；
+  - `npm run build` 通过并生成 `dist/pegfall/`；`assets/covers/pegfall.webp` 为 640×640 软胶 3D 封面。
+
+### 新游戏上架：编程机器人 / Robot Lab (`robot`)（2026-11-10 入库补记）
+
+根据 `docs/plans/已开发/robot-prd.md` 策划案，在 `games/robot/` 独立上线平台首款指令编程解谜 `robot`。舞台为**复古微缩极客工坊**：2.5D 等轴测浮岛、散热网孔地砖、点阵 LED 小机器人、右侧实体磁贴卡带控制台，全盘内联 SVG 绘制，无 Canvas。
+
+- **核心玩法与确定性规则**：
+  - 8×8 网格、0~3 层台阶，机器人占 1 格带四向朝向；目标是把关卡内所有蓝色能量灯砖点亮；
+  - 指令磁贴填入 `MAIN` 与 `PROC 1` 两个卡带槽，可删除/替换/拖拽重排，并可为指令附加红/蓝条件色块做分支；
+  - RUN / STEP / PAUSE / RESET 四键调试，1x / 2x / 4x 倍速；撞墙或坠渊即中止并让指令指针亮红；
+  - 推进完全离散：`nextState = stepInstruction(state, instruction)` 纯函数，无任何浮点随机；
+  - 21 关五工坊 4/5/4/5/3：初级工蜂（前进/转向/点亮）➔ 高度跃迁（跳台阶与俯冲）➔ 循环子程序（PROC 1 压缩槽位）➔ 色彩条件分支 ➔ 图灵总装线（推箱压开关 + 递归子程序 + 条件分支复合）。`solver.mjs` 以 BFS/DFS 逐关验算官方最简指令解。
+- **模块与声学契约**：
+  - `engine.mjs` 纯函数指令解释器（含 PROC 递归与条件分支），含 21 关官方最短解断言与 ≥1000 步随机游走不变式；
+  - `levels.mjs` 21 关浮岛数据零硬编码中文、`solver.mjs` 关卡求解与回放验证、`game.mjs` DOM-free 控制器；
+  - `storage.mjs` 使用 `doin.robot.v1`；`i18n.mjs` 共享 `doin.lang` 原地热更新零汉字；`ui.mjs` 内联 SVG 等轴测网格与磁贴交互；
+  - `audio.mjs` 噪声 + 正弦 + FM：磁石吸附「咔哒」、伺服电机步进、气动活塞跳跃、灯砖水晶泛音、撞墙短促柔和报错音（不制造挫败感）。
+- **门禁全绿交付**：
+  - `npm run test:robot`：95/95 项单测通过（含 21 关官方最简解断言）；
+  - `node scripts/check-game.mjs robot`：21 PASS / 0 FAIL / 0 WARN；
+  - `npm run build` 通过并生成 `dist/robot/`；`assets/covers/robot.webp` 为 640×640 软胶 3D 封面。
+
+### 新游戏上架：终极井字棋 / Ultimate Tic-Tac-Toe (`ultimate`)（2026-11-10 入库补记）
+
+根据 `docs/plans/已开发/ultimate-prd.md` 策划案，在 `games/ultimate/` 独立上线分形递归棋 `ultimate`。舞台为**玄铁暗金分形机台**：大九宫格粗玄铁线、81 个落子位细金属线、当前战场聚光灯平滑飞掠，纯 DOM + CSS 渲染（无 Canvas、无 SVG）。
+
+- **核心玩法与确定性规则**：
+  - 大九宫格套小九宫格共 81 位，X 先手；你在小格里的落子位置强制决定对手下一步只能去哪个大格战场 —— 一步棋同时在下两层的棋；
+  - 目标大格已被占领或填满时放开限制，全盘未终结大格泛微光，可任意落子（Wildcard）；
+  - 小格三连即攻克该大格，大格三连即终极大胜；填满无大三连则比大格数量，相同判和局；
+  - 1v1 四档 AI（novice / duelist / master / infallible，MCTS + 启发式）+ 同屏双人；单人模式 Z 键无限深度悔棋；
+  - 21 关残局 4/5/4/5/3：引蛇出洞 ➔ 围魏救赵（弃小格换自由落子权）➔ 连环烽火（连触发对手死锁战场）➔ 大江截流（封对手三连通路）➔ 天元绝杀。残局全部经 MCTS 验证存在确定性致胜路线。
+- **模块与声学契约**：
+  - `engine.mjs` 纯函数 81 格递归状态机与战场导向合法性判定，含导向战场合法性断言与 ≥1000 步随机游走不变式；
+  - `puzzles.mjs` 21 关残局、`ai.mjs` 四档 MCTS/启发式、`game.mjs` DOM-free 控制器、`score.mjs` 计分与星评；
+  - `storage.mjs` 使用 `doin.ultimate.v1`；`i18n.mjs` 共享 `doin.lang` 原地热更新零汉字；`ui.mjs` 纯 DOM 网格与聚光灯；
+  - `audio.mjs` 噪声 + 正弦 + FM：玉石落子「嗒」、攻克大格重锤钢印「砰——轰」、战场切换气流破空、终极大胜金色脉冲。
+- **门禁全绿交付**：
+  - `npm run test:ultimate`：64/64 项单测通过；
+  - `node scripts/check-game.mjs ultimate`：21 PASS / 0 FAIL / 0 WARN；
+  - `npm run build` 通过并生成 `dist/ultimate/`；`assets/covers/ultimate.webp` 为 640×640 软胶 3D 封面。
+
+> 上述五款开发时点早于入库，本节按各自 PRD 与代码实测（关卡数、存档键、模块构成、测试总数、门禁结果）于 2026-11-10 封装核查时补记，不复述开发过程的踩坑细节。
+
 ### 策划目录分层与技能全链路资产库基线更新（2026-11-10）
 
 根据平台已开发与已策划项目的最新资产现状，全面理顺策划案目录分层，并联动更新所有策划与调研技能：
