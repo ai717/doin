@@ -28,12 +28,12 @@ const CATEGORIES = [
 // 精选大卡 (2x2)、宽卡 (2x1) 与角标定义
 const FEATURED_SLUGS = ["mow", "watermelon-2048", "backpack", "gold-miner"];
 const WIDE_SLUGS = ["pinball", "spider", "sokoban", "tetris-neo", "blind-auction", "lineride", "cut-the-rope"];
-const NEW_SLUGS = ["mow", "pinball", "backpack", "blind-auction", "sokoban", "lineride", "guess", "frog", "mole"];
+const NEW_SLUGS = ["blockduel", "mow", "pinball", "backpack", "blind-auction", "sokoban", "lineride", "guess", "frog", "mole"];
 const HOT_SLUGS = ["watermelon-2048", "gold-miner", "spider", "tetris-neo", "2048", "zuma", "pinball", "mow"];
 
 // 首页推荐排序优先级：最新力作与高热度经典交替置顶，错落排布品类色彩
 const CURATED_ORDER = [
-  "mow", "picross", "pinball", "calc24", "guess", "watermelon-2048",
+  "blockduel", "mow", "picross", "pinball", "calc24", "guess", "watermelon-2048",
   "spider", "frog", "mole", "backpack", "sokoban", "ramen-idle",
   "freecell", "lineride", "cloud-merge", "jump-jump", "gold-miner",
   "blind-auction", "zuma", "2048", "tetris-neo", "cut-the-rope",

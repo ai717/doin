@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>终极井字棋 · DOIN 在线小游戏</title>
+  <meta name="description" content="九宫格里再套九宫格：你落子的小格位置，决定对手下一步只能去哪个大格战场。四档 AI、同屏双人、21 关残局解穴，玄铁暗金分形棋台即点即玩。">
+  <link rel="canonical" href="https://doin.win/ultimate/">
+  <meta name="theme-color" content="#10141b">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="DOIN">
+  <meta property="og:title" content="终极井字棋 · DOIN 在线小游戏">
+  <meta property="og:description" content="81 格分形战场，四档 AI，同屏双人，21 关求解器验证残局。">
+  <meta property="og:url" content="https://doin.win/ultimate/">
+  <meta property="og:locale" content="zh_CN">
+  <meta property="og:image" content="https://doin.win/assets/og-image.png">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="终极井字棋 · DOIN 在线小游戏">
+  <meta name="twitter:description" content="81 格分形战场，四档 AI，同屏双人，21 关求解器验证残局。">
+  <meta name="twitter:image" content="https://doin.win/assets/og-image.png">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="css/style.css?v=dev">
+</head>
+<body>
+  <noscript><p class="noscript" data-i18n="noscript">需要启用 JavaScript 才能游玩终极井字棋。</p></noscript>
+
+  <div class="cabinet" id="game-app">
+    <header class="topbar">
+      <a href="/" id="back-home" class="bar-btn" data-i18n="backHome">返回门户</a>
+      <div class="brand">
+        <h1 class="title" id="app-title" data-i18n="title">终极井字棋</h1>
+        <p class="subtitle" data-i18n="subtitle">分形战棋 · 玄铁机台</p>
+      </div>
+      <div class="topbar-tools">
+        <button type="button" id="sound-btn" class="bar-btn" aria-pressed="true" data-i18n-aria="ariaSound">♪</button>
+        <button type="button" id="lang-btn" class="bar-btn" data-i18n-aria="ariaLang">EN</button>
+        <button type="button" id="help-btn" class="bar-btn" data-i18n-aria="ariaHelp">?</button>
+      </div>
+    </header>
+
+    <main class="arena">
+      <aside class="wing wing-left" aria-labelledby="turn-label">
+        <div class="gauge">
+          <span class="wing-label" id="turn-label" data-i18n="turnLabel">行动方</span>
+          <div class="turn-plate" id="turn-plate" data-side="x">
+            <span class="turn-mark" id="turn-mark">X</span>
+            <span class="turn-name" id="turn-name">红方 X · 先攻</span>
+          </div>
+          <div class="readout">
+            <span class="readout-cell"><em data-i18n="movesLabel">手数</em><b id="moves-value">0</b></span>
+            <span class="readout-cell"><em data-i18n="boardsLabel">大格</em><b id="boards-value">0 : 0</b></span>
+            <span class="readout-cell"><em data-i18n="statsLabel">战绩</em><b id="stats-value">0 - 0 - 0</b></span>
+          </div>
+          <p class="wildcard-tag" id="wildcard-tag" hidden data-i18n="wildcardOn">自由落子</p>
+        </div>
+        <p class="status" id="status" role="status" aria-live="polite"></p>
+        <p class="campaign-line" id="campaign-line"></p>
+      </aside>
+
+      <section class="board-stage">
+        <h2 class="sr-only" data-i18n="boardAria">终极井字棋棋盘，共 81 个落子位</h2>
+        <div class="board-frame">
+          <span class="rivet rivet-tl" aria-hidden="true"></span>
+          <span class="rivet rivet-tr" aria-hidden="true"></span>
+          <span class="rivet rivet-bl" aria-hidden="true"></span>
+          <span class="rivet rivet-br" aria-hidden="true"></span>
+          <div class="board" id="board" role="grid" data-i18n-aria="boardAria"></div>
+        </div>
+      </section>
+
+      <aside class="wing wing-right">
+        <h2 class="wing-title" data-i18n="radarTitle">大九宫态势</h2>
+        <div class="radar" id="radar" data-i18n-aria="ariaRadar" aria-hidden="true"></div>
+        <p class="wing-note" data-i18n="radarCaption">缩略雷达同步显示九个战场的归属与当前聚光灯位置。</p>
+        <ul class="legend">
+          <li class="legend-x" data-i18n="legendX">红 X 已占领</li>
+          <li class="legend-o" data-i18n="legendO">蓝 O 已占领</li>
+          <li class="legend-lock" data-i18n="legendLocked">灰格已封盘</li>
+          <li class="legend-live" data-i18n="legendPar">金格为当前活跃战场</li>
+        </ul>
+      </aside>
+    </main>
+
+    <footer class="instrument-bar" data-i18n-aria="ariaToolbar">
+      <div class="mode-group" role="group">
+        <button type="button" class="seg" id="mode-duel" data-mode="duel" data-i18n="modeDuel">巅峰对弈</button>
+        <button type="button" class="seg" id="mode-campaign" data-mode="campaign" data-i18n="modeCampaign">残局解穴</button>
+      </div>
+      <div class="key-row">
+        <button type="button" class="key" id="undo-btn" data-i18n="undo">悔棋</button>
+        <button type="button" class="key" id="hint-btn" data-i18n="hint">提示</button>
+        <button type="button" class="key" id="levels-btn" data-i18n="levels">选关</button>
+        <button type="button" class="key" id="restart-btn" data-i18n="restart">重开</button>
+        <button type="button" class="key" id="settings-btn" data-i18n="settings">设置</button>
+      </div>
+    </footer>
+  </div>
+
+  <div class="layer" id="levels-layer" hidden role="dialog" aria-modal="true" aria-labelledby="levels-title">
+    <div class="panel panel-levels">
+      <h2 id="levels-title" data-i18n="levelsTitle">残局选穴</h2>
+      <p class="levels-total" id="levels-total"></p>
+      <div class="levels-grid" id="levels-grid"></div>
+      <div class="layer-actions">
+        <button type="button" class="key key-primary" id="levels-close" data-i18n="close">关闭</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="layer" id="settings-layer" hidden role="dialog" aria-modal="true" aria-labelledby="settings-title">
+    <div class="panel">
+      <h2 id="settings-title" data-i18n="settings">设置</h2>
+      <div class="field">
+        <span class="field-label" data-i18n="tierLabel">AI 档位</span>
+        <div class="tier-group" id="tier-group" role="group">
+          <button type="button" class="seg" data-tier="novice" data-i18n="tier_novice">试剑童子</button>
+          <button type="button" class="seg" data-tier="duelist" data-i18n="tier_duelist">棋馆门生</button>
+          <button type="button" class="seg" data-tier="master" data-i18n="tier_master">战术宗师</button>
+          <button type="button" class="seg" data-tier="infallible" data-i18n="tier_infallible">终极天网</button>
+        </div>
+      </div>
+      <div class="field">
+        <label class="check" for="pvp-toggle">
+          <input type="checkbox" id="pvp-toggle">
+          <span data-i18n="pvpLabel">同屏双人</span>
+        </label>
+        <p class="field-note" data-i18n="pvpHint">同一设备交替执子，不计战绩</p>
+      </div>
+      <div class="field">
+        <span class="field-label" data-i18n="recordLabel">累计战绩</span>
+        <p class="record-line" id="record-line"></p>
+        <button type="button" class="key key-danger" id="clear-btn" data-i18n="clearRecords">清空战绩与残局星数</button>
+      </div>
+      <div class="layer-actions">
+        <button type="button" class="key key-primary" id="settings-close" data-i18n="close">关闭</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="layer" id="help-layer" hidden role="dialog" aria-modal="true" aria-labelledby="help-title">
+    <div class="panel">
+      <h2 id="help-title" data-i18n="helpTitle">玩法说明</h2>
+      <pre class="help-body" id="help-body"></pre>
+      <p class="field-note" id="help-keys"></p>
+      <p class="field-note" id="help-wildcard"></p>
+      <div class="layer-actions">
+        <button type="button" class="key key-primary" id="help-close" data-i18n="close">关闭</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="layer" id="result-layer" hidden role="dialog" aria-modal="true" aria-labelledby="result-title">
+    <div class="panel">
+      <p class="result-badge" id="result-badge"></p>
+      <h2 id="result-title"></h2>
+      <p class="result-stars" id="result-stars" hidden></p>
+      <div class="report" id="result-report">
+        <div class="report-row"><span id="report-used-label"></span><b id="report-used">0</b></div>
+        <div class="report-row"><span id="report-par-label"></span><b id="report-par">0</b></div>
+      </div>
+      <div class="breakdown" id="result-breakdown"></div>
+      <div class="layer-actions">
+        <button type="button" class="key key-primary" id="result-again"></button>
+        <button type="button" class="key" id="result-next" hidden></button>
+        <button type="button" class="key" id="result-close"></button>
+      </div>
+    </div>
+  </div>
+
+  <div class="layer" id="confirm-layer" hidden role="dialog" aria-modal="true" aria-labelledby="confirm-title">
+    <div class="panel">
+      <h2 id="confirm-title" data-i18n="confirmClear">确定清空全部战绩与残局进度？</h2>
+      <div class="layer-actions">
+        <button type="button" class="key key-danger" id="confirm-yes" data-i18n="confirm">确定</button>
+        <button type="button" class="key" id="confirm-no" data-i18n="cancel">取消</button>
+      </div>
+    </div>
+  </div>
+
+  <p class="toast" id="toast" role="status" aria-live="polite" hidden></p>
+
+  <script type="module" src="js/main.mjs?v=dev"></script>
+</body>
+</html>

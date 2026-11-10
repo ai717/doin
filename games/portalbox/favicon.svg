@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Portal Box icon">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#26303f"/>
+      <stop offset="1" stop-color="#0b0f15"/>
+    </linearGradient>
+    <linearGradient id="crate" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#c8d3e0"/>
+      <stop offset="0.45" stop-color="#808c9b"/>
+      <stop offset="1" stop-color="#48525f"/>
+    </linearGradient>
+    <radialGradient id="blue" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0" stop-color="#d6f6ff"/>
+      <stop offset="0.55" stop-color="#00a8ff"/>
+      <stop offset="1" stop-color="#003c66"/>
+    </radialGradient>
+    <radialGradient id="orange" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0" stop-color="#fff0d6"/>
+      <stop offset="0.55" stop-color="#e84118"/>
+      <stop offset="1" stop-color="#6e1604"/>
+    </radialGradient>
+  </defs>
+  <rect x="2" y="2" width="60" height="60" rx="13" fill="url(#bg)" stroke="#3c4a5d" stroke-width="2"/>
+  <ellipse cx="18" cy="32" rx="7" ry="16" fill="url(#blue)" opacity="0.95"/>
+  <ellipse cx="46" cy="32" rx="7" ry="16" fill="url(#orange)" opacity="0.95"/>
+  <ellipse cx="18" cy="32" rx="3.2" ry="10" fill="#061019"/>
+  <ellipse cx="46" cy="32" rx="3.2" ry="10" fill="#180805"/>
+  <g transform="rotate(-8 32 32)">
+    <rect x="21" y="20" width="24" height="24" rx="5" fill="url(#crate)" stroke="#dbe8f4" stroke-width="1.4"/>
+    <path d="M27 32h12M33 26v12" stroke="#7fe6ff" stroke-width="2.2" stroke-linecap="round"/>
+    <circle cx="33" cy="32" r="2" fill="#d8f7ff"/>
+    <circle cx="25" cy="24" r="1.3" fill="#2b3440"/>
+    <circle cx="41" cy="24" r="1.3" fill="#2b3440"/>
+    <circle cx="25" cy="40" r="1.3" fill="#2b3440"/>
+    <circle cx="41" cy="40" r="1.3" fill="#2b3440"/>
+  </g>
+  <circle cx="18" cy="32" r="9" fill="none" stroke="#8fe9ff" stroke-width="1" opacity="0.5"/>
+  <circle cx="46" cy="32" r="9" fill="none" stroke="#ffc27a" stroke-width="1" opacity="0.5"/>
+</svg>

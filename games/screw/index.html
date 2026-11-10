@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title data-i18n="docTitle">拧螺丝解谜 · DOIN 在线小游戏</title>
+  <meta name="description" content="拧出彩色螺栓，让交错面板在重力下连锁坠落，拆空 21 关微缩机械装置！" data-i18n-content="tagline">
+  <link rel="icon" href="favicon.svg?v=dev" type="image/svg+xml">
+  <link rel="stylesheet" href="css/style.css?v=dev">
+</head>
+<body>
+  <noscript><p class="noscript-tip">请启用 JavaScript 才能进入微缩五金工坊。</p></noscript>
+
+  <div id="game-app">
+    <header id="site-bar">
+      <a href="/" id="back-home" class="tool-btn back-btn" data-i18n="backHome">← 门户</a>
+
+      <div class="brand">
+        <span class="brand-gear" aria-hidden="true">⚙</span>
+        <div class="brand-copy">
+          <h1 id="stage-title" data-i18n="title">拧螺丝解谜</h1>
+          <span class="brand-sub" data-i18n="subtitle">微缩五金工坊</span>
+        </div>
+      </div>
+
+      <nav class="toolbar" aria-label="Workshop controls">
+        <button id="btn-levels" class="tool-btn" type="button" data-i18n="levels">关卡</button>
+        <button id="btn-undo" class="tool-btn" type="button" data-i18n="undo">撤销</button>
+        <button id="btn-magnet" class="tool-btn magnet-btn" type="button" data-i18n="magnet">磁吸</button>
+        <button id="btn-restart" class="tool-btn" type="button" data-i18n="restart">重开</button>
+        <button id="btn-pause" class="tool-btn" type="button" data-i18n="pause">暂停</button>
+        <button id="btn-sound" class="tool-btn" type="button" data-i18n="soundOn">音效 开</button>
+        <button id="btn-help" class="tool-btn" type="button" data-i18n="help">玩法</button>
+        <button id="btn-lang" class="tool-btn lang-btn" type="button" aria-label="Toggle language">EN</button>
+      </nav>
+    </header>
+
+    <main id="workbench">
+      <aside id="hud-left" class="wing ledger" aria-label="Teardown ledger">
+        <div class="panel-title">
+          <span class="panel-icon" aria-hidden="true">📋</span>
+          <span data-i18n="hudLedger">拆解簿</span>
+        </div>
+        <div class="chapter-line">
+          <span class="chapter-label" data-i18n="chapterLabel">篇章</span>
+          <strong id="hud-chapter">—</strong>
+        </div>
+        <p id="hud-chapter-sub" class="chapter-sub"></p>
+
+        <div class="ledger-grid">
+          <div class="ledger-stat wide">
+            <span data-i18n="remain">剩余螺栓</span>
+            <strong id="hud-remain" class="big-num">0</strong>
+          </div>
+          <div class="ledger-stat">
+            <span data-i18n="platesCleared">已拆面板</span>
+            <strong id="hud-plates">0/0</strong>
+          </div>
+          <div class="ledger-stat">
+            <span data-i18n="movesLabel">步数</span>
+            <strong id="hud-moves">0</strong>
+          </div>
+          <div class="ledger-stat">
+            <span data-i18n="undosLabel">撤销次数</span>
+            <strong id="hud-undos">0</strong>
+          </div>
+          <div class="ledger-stat">
+            <span data-i18n="timeLabel">用时</span>
+            <strong id="hud-time">00:00</strong>
+          </div>
+        </div>
+
+        <div class="ledger-footer">
+          <span class="ledger-stamp" aria-hidden="true">DOIN</span>
+          <span class="ledger-note" data-i18n="hintUndo">Z 无限撤销 · P 暂停 · R 重开</span>
+        </div>
+      </aside>
+
+      <section id="stage-shell" aria-label="Assembly workstation">
+        <div id="stage-frame">
+          <canvas id="stage-canvas" width="900" height="1200" data-i18n-aria="boardAria"></canvas>
+
+          <div id="pause-veil" class="pause-veil" hidden>
+            <div class="pause-card">
+              <div class="pause-badge" aria-hidden="true">⏸</div>
+              <h2 data-i18n="pausedTitle">已暂停</h2>
+              <p data-i18n="pausedDesc">工坊暂时停工，螺栓与面板都冻结在原位。</p>
+              <div class="pause-actions">
+                <button id="btn-resume" class="tool-btn primary" type="button" data-i18n="continueBtn">继续拆解</button>
+                <button id="btn-pause-restart" class="tool-btn" type="button" data-i18n="restartBtn">重新开始</button>
+                <button id="btn-pause-levels" class="tool-btn" type="button" data-i18n="levelsBtn">选关</button>
+                <button id="btn-pause-sound" class="tool-btn" type="button" data-i18n="soundOn">音效 开</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <aside id="hud-right" class="wing radar" aria-label="Socket radar">
+        <div class="panel-title">
+          <span class="panel-icon" aria-hidden="true">🔍</span>
+          <span data-i18n="hudRadar">螺孔透视台</span>
+        </div>
+        <div class="queue-head" data-i18n="queueLabel">收纳盒队列</div>
+        <div id="hud-queue" class="queue-list"></div>
+        <div class="buffer-line">
+          <span data-i18n="bufferLabel">备用孔</span>
+          <strong id="hud-buffer">0/4</strong>
+        </div>
+        <div class="magnet-chip" id="hud-magnet">—</div>
+        <div class="tips">
+          <p data-i18n="hintTap"></p>
+          <p data-i18n="hintBuffer"></p>
+          <p data-i18n="hintMagnet"></p>
+        </div>
+      </aside>
+    </main>
+  </div>
+
+  <dialog id="dialog-rules" class="workshop-dialog">
+    <div class="dialog-inner">
+      <div class="dialog-head">
+        <h2 data-i18n="rulesTitle">工坊拆解手册</h2>
+        <button id="btn-close-rules" class="close-x" type="button" aria-label="Close">✕</button>
+      </div>
+      <div class="rule-grid">
+        <article class="rule-card">
+          <span class="rule-icon" aria-hidden="true">🧰</span>
+          <h3 data-i18n="ruleGoalTitle">拆空整个装置</h3>
+          <p data-i18n="ruleGoalDesc"></p>
+        </article>
+        <article class="rule-card">
+          <span class="rule-icon" aria-hidden="true">🔩</span>
+          <h3 data-i18n="ruleTapTitle">拧出螺栓</h3>
+          <p data-i18n="ruleTapDesc"></p>
+        </article>
+        <article class="rule-card">
+          <span class="rule-icon" aria-hidden="true">📦</span>
+          <h3 data-i18n="ruleBufferTitle">收纳盒与备用孔</h3>
+          <p data-i18n="ruleBufferDesc"></p>
+        </article>
+        <article class="rule-card">
+          <span class="rule-icon" aria-hidden="true">🎛️</span>
+          <h3 data-i18n="ruleSwingTitle">单钉悬挂</h3>
+          <p data-i18n="ruleSwingDesc"></p>
+        </article>
+      </div>
+      <div class="dialog-actions">
+        <button id="btn-start-work" class="tool-btn primary" type="button" data-i18n="knowRules">开工</button>
+      </div>
+    </div>
+  </dialog>
+
+  <dialog id="dialog-levels" class="workshop-dialog wide">
+    <div class="dialog-inner">
+      <div class="dialog-head">
+        <h2 data-i18n="levelsTitle">关卡相册</h2>
+        <button id="btn-close-levels" class="close-x" type="button" aria-label="Close">✕</button>
+      </div>
+      <p class="dialog-hint" data-i18n="levelsHint">点击已解锁关卡立即开拆。</p>
+      <div id="levels-content" class="levels-content"></div>
+    </div>
+  </dialog>
+
+  <dialog id="dialog-won" class="workshop-dialog">
+    <div class="dialog-inner won-inner">
+      <div class="won-badge" aria-hidden="true">🏆</div>
+      <h2 data-i18n="wonTitle">装置拆解完成！</h2>
+      <p data-i18n="wonDesc"></p>
+      <div id="won-stars" class="won-stars">★★★</div>
+      <div class="result-grid">
+        <div><span data-i18n="timeLabel">用时</span><strong id="won-time">00:00</strong></div>
+        <div><span data-i18n="movesLabel">步数</span><strong id="won-moves">0</strong></div>
+        <div><span data-i18n="undosLabel">撤销次数</span><strong id="won-undos">0</strong></div>
+      </div>
+      <div id="won-record" class="record-line"></div>
+      <div class="dialog-actions">
+        <button id="btn-next-level" class="tool-btn primary" type="button" data-i18n="nextLevel">下一关</button>
+        <button id="btn-replay-won" class="tool-btn" type="button" data-i18n="replay">重玩本关</button>
+        <button id="btn-levels-won" class="tool-btn" type="button" data-i18n="levelsBtn">选关</button>
+        <button id="btn-close-won" class="tool-btn" type="button" data-i18n="close">关闭</button>
+      </div>
+    </div>
+  </dialog>
+
+  <dialog id="dialog-lost" class="workshop-dialog">
+    <div class="dialog-inner lost-inner">
+      <div class="lost-badge" aria-hidden="true">🧯</div>
+      <h2 data-i18n="lostTitle">备用孔卡死</h2>
+      <p data-i18n="lostDesc"></p>
+      <div class="dialog-actions">
+        <button id="btn-undo-lost" class="tool-btn primary" type="button" data-i18n="undoOne">撤销一步</button>
+        <button id="btn-replay-lost" class="tool-btn" type="button" data-i18n="replay">重玩本关</button>
+        <button id="btn-levels-lost" class="tool-btn" type="button" data-i18n="levelsBtn">选关</button>
+      </div>
+    </div>
+  </dialog>
+
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+  <script type="module" src="js/main.mjs?v=dev"></script>
+</body>
+</html>

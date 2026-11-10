@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>中国跳棋 · 琉璃星盘 · DOIN 在线小游戏</title>
+  <meta name="description" content="121 孔六角星盘上的中国跳棋：点选弹珠即刻高亮全部连跳落点，一键飞跃全盘。四档棋力 AI、同屏双人、20 关经穷举验证唯一解的连跳残局、无限悔棋与棋谱回放，配上红木棋案与琉璃弹珠的温润手感。">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="css/style.css?v=dev">
+</head>
+<body>
+  <div id="tea-room">
+    <header id="plaque" class="plaque">
+      <a href="/" id="back-home" class="plaque-btn plaque-home" data-i18n="back">← 门户</a>
+      <h1 id="game-title" class="plaque-title" data-i18n="appTitle">中国跳棋</h1>
+
+      <div class="plaque-tools">
+        <div class="tool-group">
+          <span class="tool-label" data-i18n="modeLabel">对局</span>
+          <div class="chip-row" id="mode-row">
+            <button class="chip is-on" type="button" data-mode="pve" data-i18n="mode.pve">人机对弈</button>
+            <button class="chip" type="button" data-mode="pvp" data-i18n="mode.pvp">同屏双人</button>
+            <button class="chip" type="button" data-mode="puzzle" data-i18n="mode.puzzle">连跳残局</button>
+          </div>
+        </div>
+
+        <div class="tool-group" id="difficulty-group">
+          <span class="tool-label" data-i18n="difficultyLabel">棋力</span>
+          <div class="chip-row" id="difficulty-row">
+            <button class="chip" type="button" data-difficulty="beginner" data-i18n="diff.beginner">启蒙童子</button>
+            <button class="chip" type="button" data-difficulty="intermediate" data-i18n="diff.intermediate">棋馆门生</button>
+            <button class="chip" type="button" data-difficulty="advanced" data-i18n="diff.advanced">阵法大师</button>
+            <button class="chip" type="button" data-difficulty="master" data-i18n="diff.master">棋圣无双</button>
+          </div>
+        </div>
+
+        <div class="tool-group" id="side-group">
+          <span class="tool-label" data-i18n="sideLabel">选边</span>
+          <div class="chip-row" id="side-row">
+            <button class="chip is-on" type="button" data-side="red" data-i18n="side.red">红玛瑙</button>
+            <button class="chip" type="button" data-side="blue" data-i18n="side.blue">青金琉璃</button>
+          </div>
+        </div>
+
+        <div class="plaque-actions">
+          <button id="btn-undo" class="plaque-btn" type="button" data-i18n="undo" data-i18n-aria="undoTitle">悔棋</button>
+          <button id="btn-restart" class="plaque-btn" type="button" data-i18n="restart" data-i18n-aria="restartConfirm">重开</button>
+          <button id="btn-sound" class="plaque-btn plaque-icon" type="button" data-i18n-aria="sound">🔊</button>
+          <button id="btn-lang" class="plaque-btn plaque-icon" type="button" data-i18n-aria="langName">EN</button>
+          <button id="btn-help" class="plaque-btn plaque-icon" type="button" data-i18n-aria="help">?</button>
+        </div>
+      </div>
+    </header>
+
+    <main id="chess-table">
+      <div class="table-rim table-rim-top">
+        <section id="scorebook" class="inlay inlay-paper" aria-live="polite">
+          <div class="scorebook-head">
+            <span id="turn-side" class="turn-side">红玛瑙</span>
+            <span class="turn-caption" data-i18n="turnLabel">执棋</span>
+          </div>
+          <div id="puzzle-info" class="puzzle-info" hidden>
+            <span data-i18n="puzzleLevel">关卡</span><b id="puzzle-level">—</b>
+            <span data-i18n="puzzlePar">限步</span><b id="puzzle-par">0</b>
+            <span data-i18n="puzzleLeft">余步</span><b id="puzzle-left">0</b>
+          </div>
+          <div class="ticks" id="ticks-row">
+            <div class="tick tick-red">
+              <span class="tick-name" data-i18n="side.red">红玛瑙</span>
+              <b id="red-camp">0/10</b>
+              <i class="tick-bar"><em id="red-bar"></em></i>
+            </div>
+            <div class="tick tick-blue">
+              <span class="tick-name" data-i18n="side.blue">青金琉璃</span>
+              <b id="blue-camp">0/10</b>
+              <i class="tick-bar"><em id="blue-bar"></em></i>
+            </div>
+          </div>
+          <div class="counters">
+            <span data-i18n="statInCamp">入营</span>
+            <span class="counter-sep">·</span>
+            <span data-i18n="statPlies">手数</span><b id="plies-value">0</b>
+            <span class="counter-sep">·</span>
+            <span data-i18n="statMaxHops">最长连跳</span><b id="max-hops-value">0</b>
+          </div>
+        </section>
+
+        <div id="hop-banner" class="hop-banner" hidden></div>
+
+        <section id="recordbook" class="inlay inlay-brass">
+          <span class="inlay-label" data-i18n="bestTitle">本机战绩</span>
+          <p><span data-i18n="bestWins">胜局</span><b id="best-wins">0</b></p>
+          <p><span data-i18n="bestPlies">最少手数</span><b id="best-plies">—</b></p>
+          <p><span data-i18n="bestHops">最长连跳</span><b id="best-hops">0</b></p>
+        </section>
+      </div>
+
+      <div id="board-stage">
+        <svg id="board" viewBox="-300 -300 600 600" role="img" aria-label="121-hole Chinese Checkers star board">
+          <defs>
+            <radialGradient id="wood-grad" cx="42%" cy="34%" r="78%">
+              <stop offset="0%" stop-color="#6b3f2d"/>
+              <stop offset="55%" stop-color="#4a2c22"/>
+              <stop offset="100%" stop-color="#341e17"/>
+            </radialGradient>
+            <radialGradient id="hole-grad" cx="36%" cy="28%" r="82%">
+              <stop offset="0%" stop-color="#1a0d09"/>
+              <stop offset="62%" stop-color="#2c1710"/>
+              <stop offset="100%" stop-color="#59382a"/>
+            </radialGradient>
+            <radialGradient id="red-glass" cx="33%" cy="25%" r="78%">
+              <stop offset="0%" stop-color="#ffd9b8"/>
+              <stop offset="22%" stop-color="#ff7b4e"/>
+              <stop offset="62%" stop-color="#e84118"/>
+              <stop offset="100%" stop-color="#8f1f0b"/>
+            </radialGradient>
+            <radialGradient id="blue-glass" cx="33%" cy="25%" r="78%">
+              <stop offset="0%" stop-color="#d9f6ff"/>
+              <stop offset="22%" stop-color="#6ed4ff"/>
+              <stop offset="62%" stop-color="#00a8ff"/>
+              <stop offset="100%" stop-color="#064a86"/>
+            </radialGradient>
+            <radialGradient id="gold-glow" cx="50%" cy="50%" r="50%">
+              <stop offset="0%" stop-color="rgba(255,224,150,0.55)"/>
+              <stop offset="100%" stop-color="rgba(255,224,150,0)"/>
+            </radialGradient>
+            <filter id="marble-shadow" x="-60%" y="-60%" width="220%" height="220%">
+              <feDropShadow dx="0" dy="3" stdDeviation="3" flood-color="#150a06" flood-opacity="0.65"/>
+            </filter>
+            <filter id="soft-glow" x="-80%" y="-80%" width="260%" height="260%">
+              <feGaussianBlur stdDeviation="4"/>
+            </filter>
+          </defs>
+
+          <polygon id="star-plate" class="star-plate" points=""/>
+          <polygon id="star-inlay" class="star-inlay" points=""/>
+          <g id="hole-layer"></g>
+          <g id="trail-layer" aria-hidden="true"></g>
+          <g id="target-layer"></g>
+          <g id="marble-layer"></g>
+          <g id="flyer-layer" aria-hidden="true"></g>
+        </svg>
+
+        <div id="thinking" class="thinking" hidden>
+          <span class="thinking-dots" aria-hidden="true"><i></i><i></i><i></i></span>
+          <span data-i18n="thinking">对手运子中…</span>
+          <small id="thinking-sub" data-i18n="thinkingSub">推演连跳路径</small>
+        </div>
+      </div>
+
+      <div class="table-rim table-rim-bottom">
+        <p id="hint" class="hint" data-i18n="hintSelect">点击己方弹珠</p>
+        <section id="movelog" class="inlay inlay-paper">
+          <span class="inlay-label" data-i18n="logTitle">棋谱</span>
+          <ol id="log-list"><li class="log-empty" data-i18n="logEmpty">尚未落子</li></ol>
+        </section>
+        <p class="key-hint" data-i18n="hintUndo">Z 键悔棋 · 无限回退</p>
+      </div>
+    </main>
+  </div>
+
+  <div id="help-panel" class="overlay" hidden>
+    <div class="sheet">
+      <h2 data-i18n="helpTitle">玩法说明</h2>
+      <ul class="help-list">
+        <li data-i18n="helpMove">点击己方弹珠，再点相邻空孔即可单步挪移。</li>
+        <li data-i18n="helpJump">隔着任意一子即可跳跃；落定前还能继续连跳，可在任意节点停步。</li>
+        <li data-i18n="helpAssist">选中后所有可达落点会亮起，点击最远光圈一口气完成多段飞跃。</li>
+        <li data-i18n="helpUndo">按 Z 无限悔棋；人机对局一次回退玩家与 AI 各一手。</li>
+        <li data-i18n="helpSave">进度自动保存在本机浏览器，换设备不会同步。</li>
+        <li data-i18n="helpRule">填满目标营中对手未占的孔即胜；入营的子不得再移出，也不得退回己方起始营。</li>
+        <li data-i18n="helpPuzzle">残局中蓝子只作桥、永不移动，红方连续行棋；在限步内把任意红弹珠送进金色目标孔即破局。</li>
+      </ul>
+      <button id="help-close" class="sheet-btn" type="button" data-i18n="close">关闭</button>
+    </div>
+  </div>
+
+  <div id="result-panel" class="overlay" hidden>
+    <div class="sheet fan-sheet">
+      <h2 id="result-title" data-i18n="winTitle">大捷</h2>
+      <p id="result-line" class="sheet-desc"></p>
+      <dl class="result-stats">
+        <div><dt data-i18n="statPlies">手数</dt><dd id="result-plies">0</dd></div>
+        <div><dt data-i18n="statMaxHops">最长连跳</dt><dd id="result-hops">0</dd></div>
+      </dl>
+      <p id="result-best" class="result-best" hidden data-i18n="newBest">新纪录</p>
+      <button id="result-next" class="sheet-btn" type="button" data-i18n="nextLevel" hidden>下一关</button>
+      <button id="result-again" class="sheet-btn" type="button" data-i18n="playAgain">再弈一局</button>
+    </div>
+  </div>
+
+  <div id="level-panel" class="overlay" hidden>
+    <div class="sheet level-sheet">
+      <h2 data-i18n="puzzleTitle">连跳残局 · 二十关</h2>
+      <p class="sheet-desc" data-i18n="puzzleIntro">蓝子只作桥，红方连续行棋。点选红弹珠，借桥一路飞跃到金色目标孔。</p>
+      <p id="level-progress" class="level-progress"></p>
+      <div id="level-grid" class="level-grid"></div>
+      <button id="level-close" class="sheet-btn" type="button" data-i18n="close" data-i18n-aria="levelClose">关闭</button>
+    </div>
+  </div>
+
+  <div id="toast" class="toast" hidden></div>
+
+  <noscript><p>需要启用 JavaScript 才能游玩。</p></noscript>
+  <script type="module" src="js/main.mjs?v=dev"></script>
+</body>
+</html>
