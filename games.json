@@ -1624,6 +1624,25 @@
         "title": "Thief Arms",
         "desc": "Drag a thief's rubber arm around marble pillars and past lasers, tripwires and sleeping dogs to hook the loot home. The cord folds around pillars and unwinds as you pull back; 20 mansion stages across five volumes, sweeping spotlights on a timed window, stars rated by arm travel. Instant ad-free play."
       }
+    },
+    {
+      "title": "侦探推演",
+      "slug": "detective",
+      "desc": "摊开牛皮纸案卷，读证词、验物证、盖印章：每宗悬案只有一组凶手、凶器与关键证据能同时自洽，错判当场驳回。三卷十二案全部逻辑唯一可解，按用时与误判评星，零广告即开即玩。",
+      "icon": "🔍",
+      "cover": "/assets/covers/detective.webp",
+      "tags": [
+        "推理",
+        "逻辑",
+        "解谜",
+        "益智",
+        "单机"
+      ],
+      "url": "/detective/",
+      "en": {
+        "title": "Detective Deduction",
+        "desc": "Open a manila case file, read the testimonies, test the evidence and stamp your verdict: each case has exactly one killer, weapon and keystone clue that holds together, and a wrong call is bounced on the spot. Twelve cases across three volumes, all provably solvable, stars rated on time and errors. Instant ad-free play."
+      }
     }
   ]
 }

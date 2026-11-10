@@ -4,6 +4,7 @@
   "type": "module",
   "scripts": {
     "test:cube": "node --test games/cube/tests/*.test.mjs",
+    "test:detective": "node --test games/detective/tests/engine.test.mjs games/detective/tests/cases.test.mjs games/detective/tests/score.test.mjs games/detective/tests/game.test.mjs games/detective/tests/audio.test.mjs games/detective/tests/storage.test.mjs games/detective/tests/i18n.test.mjs games/detective/tests/markup.test.mjs games/detective/tests/smoke.test.mjs",
     "test:thief": "node --test games/thief/tests/engine.test.mjs games/thief/tests/levels.test.mjs games/thief/tests/score.test.mjs games/thief/tests/game.test.mjs games/thief/tests/audio.test.mjs games/thief/tests/storage.test.mjs games/thief/tests/i18n.test.mjs games/thief/tests/markup.test.mjs games/thief/tests/smoke.test.mjs",
     "test:screw": "node --test games/screw/tests/engine.test.mjs games/screw/tests/solvable.test.mjs games/screw/tests/anim.test.mjs games/screw/tests/score.test.mjs games/screw/tests/game.test.mjs games/screw/tests/storage.test.mjs games/screw/tests/i18n.test.mjs games/screw/tests/markup.test.mjs",
     "test:immortal": "node --test games/immortal/tests/*.test.mjs",

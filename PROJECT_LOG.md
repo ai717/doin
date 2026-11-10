@@ -17,6 +17,36 @@ DOIN（`doin.win`）是静态集合型独立网页小游戏门户。
 
 ## 2 · 最近里程碑与核心治理记录
 
+### 新游戏上架：侦探推演 / Detective Deduction (`detective`)（2026-11-10）
+
+按 `docs/plans/已开发/detective-prd.md` 在 `games/detective/` 上线第 93 款游戏。视窗为**侦探橡木桌台 + 牛皮纸档案袋**：黄铜铭牌顶栏、摊开的牛皮纸案卷、横线信笺案情摘要（别着黄铜回形针）、木刻档案照嫌疑人卡、穿孔物证吊牌、木质印章托盘——一打开就是已经摊好的 Case 01，无选关遮罩。
+
+### 玩法与工程要点
+- **先证明再画界面**：`cases.mjs` 只写数据结构，`engine.mjs` 把每案表达为约束集合，对 `suspects × weapons × evidence` 全笛卡尔积枚举过滤。12 案全部 `count === 1`，唯一解是**枚举证明**出来的，不是声明出来的；`cases.test.mjs` 还断言 12 案累计候选解恰好 12 组。
+- **四重可证伪约束**：口供（`sighting` / `impossible` 两类事实，都指向在场物证）、凶器物理痕迹（`class` + `detail` 双字段，只认「材质对且痕迹对」）、接触权矩阵（`access[weapon]`，凶手必须够得着这件凶器）、证据链（`points` 映射）。首轮 12 案只有 9 案唯一解，病根正是三名凶手不在自己所用凶器的 contact 名单里，补齐后 12/12。
+- **盲区证人**：`blindSpot: true` 的嫌疑人虽然口供被推翻，但属客观视线局限、不算伪证，因此不进凶手候选（第 9 案海关员）。
+- **错判不泄露答案**：`evaluateAnswer` 逐维度返回 `flaw.dim/code/why`，界面翻成人话（「X 的不在场证明站得住 —— 见〈某物证〉」）；绅士规则：只扣信誉星、指出一处漏洞，印章不清空。
+- **点击互斥柔光**：点口供时 `relatedEvidence(who)` 给出支持/矛盾两组物证，UI 只负责加 `.glow-support` / `.glow-contra`。
+- **全量 i18n**：506 个键 zh/en 严格对齐，`cases.mjs` 零裸写中文（用 `case_01.clue_alibi_gardener` 这类语义键）；英文模式零汉字，切换走原地重铺 `syncCaseText`，**不 reload、不重置盘面**。
+- **肖像不是鸡蛋头**：首版嫌疑人像被真机截图否决，重写为木刻档案照——4 种帽型（高礼帽/圆顶硬礼帽/女帽+面纱+珠饰/鸭舌帽）、2 种面部特征（髭须/圆框眼镜）、领口脖颈、双层渐晕，每组渐变 id 带实例后缀防冲突。
+- **首屏一屏装得下**：初版 1280×900 下卷宗高 904px、结案按钮整块掉到折叠线以下。把「盖章结案」并入判词行第 4 格（`grid-template-columns: 3×1fr auto`）、压缩纵向节奏（1085 → 932），并把印章托盘改成桌面端也 sticky 吸底——CTA 与操作提示常驻，不必滚动即可结案。
+
+### 验收
+- 单测 **83/83**（engine 16、cases 11、score 6、game 13、audio 6、storage 10、i18n 9、markup 8、smoke 4）。
+- `node scripts/check-game.mjs detective` **21 pass / 0 fail(T1) / 0 warn(T2)**。
+- `npm run build` 通过，`dist/detective/` 9 个模块 + `dist/games.json` 93 条 + `dist/sitemap.xml` 含 `/detective/`。
+- CDP 真机（1280×900 / 390×844）走完「落印 → 判词 → 结案 → 卷宗抽屉 → 英文热切换」，`overflowX: 0`、控制台零异常。
+- 封面 `assets/covers/detective.webp` 640×640 WebP q90：靛蓝→薄荷青亮渐变 + 牛皮纸案卷袋 + 火漆印 + 黄铜放大镜，角部色相 230°/166°（避开已占用色带），零文字、水印已按固定 bbox inpaint 清除（首版背景偏暗、主体误生成为信封，已重生成）。
+- PRD 已归档至 `docs/plans/已开发/detective-prd.md`（归档库 78 份）；`package.json` 注册 `test:detective`。
+
+### 修复 cube 拖动转层"瞬移"（2026-11-10）
+
+现象：魔方拖动时层颜色突然跳变，看不出跟随手指转动。根因在 `games/cube/js/main.mjs` 的拖动换算：用 `screenAxis()` 返回的屏幕方向向量（未归一化，长约 50~60px）直接与拖动位移做点积，量级被放大数十倍，手指移动 2~3px 角度即饱和到 ±180°，层瞬间翻半圈、失败面颜色整体换位。另有一处方向错误：旋转轴叉乘用的是"世界轴方向"而非"实际拖动方向"，竖直拖动转向相反。
+
+- 抽出纯函数 `resolveDragTurn` / `dragAngle`（`js/render.mjs`）并单测：方向向量先归一化（满 `pxPerQuarter` 像素 = 90°）；叉乘改用 ±轴的真实拖动方向；`ux/uy` 存拖动方向单位向量，反向拖动角度自然翻符号；保留 ±180° 截断与"起手锁定轴/层"语义。
+- 转层动画 118ms → 190ms、松手回弹 110ms → 150ms，四分之一转肉眼可辨。
+- 验收：新增 `tests/drag.test.mjs` 7 用例（含归一化回归、竖直方向、反向拖动、截断），`npm run test:cube` 58/58 全绿，`check-game cube` 21 项全绿，`npm run build` 通过。
+
 ### 新游戏上架：魔方工坊 / Cube Workshop (`cube`)（2026-11-10）
 
 根据 `docs/plans/已开发/cube-prd.md` 策划案，在 `games/cube/` 独立上线平台首款真三维空间解谜 `cube`。舞台为**暗调极客磁吸工坊**：单一垂直机台、顶栏 2×2 / 3×3 / 学院模式切换、WCA 计时仪表轨与下沉式打乱/提示/撤销/重置/选关底座；Canvas 以纯代码三维投影（面法线透视 + 画家算法 + 圆角贴纸 + 程序化软胶机身）渲染，**零外部模型、零纹理、零 Three.js 依赖**。
