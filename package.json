@@ -3,6 +3,9 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "test:cube": "node --test games/cube/tests/*.test.mjs",
+    "test:thief": "node --test games/thief/tests/engine.test.mjs games/thief/tests/levels.test.mjs games/thief/tests/score.test.mjs games/thief/tests/game.test.mjs games/thief/tests/audio.test.mjs games/thief/tests/storage.test.mjs games/thief/tests/i18n.test.mjs games/thief/tests/markup.test.mjs games/thief/tests/smoke.test.mjs",
+    "test:screw": "node --test games/screw/tests/engine.test.mjs games/screw/tests/solvable.test.mjs games/screw/tests/anim.test.mjs games/screw/tests/score.test.mjs games/screw/tests/game.test.mjs games/screw/tests/storage.test.mjs games/screw/tests/i18n.test.mjs games/screw/tests/markup.test.mjs",
     "test:immortal": "node --test games/immortal/tests/*.test.mjs",
     "test:hanzi": "node --test games/hanzi/tests/*.test.mjs",
     "test:mtower": "node --test games/mtower/tests/*.test.mjs",
@@ -25,6 +28,7 @@
     "test:winmine": "node --test games/winmine/tests/engine.test.mjs games/winmine/tests/storage.test.mjs games/winmine/tests/i18n.test.mjs games/winmine/tests/markup.test.mjs",
     "test:gold-miner": "node --test games/gold-miner/tests/engine.test.mjs games/gold-miner/tests/score.test.mjs games/gold-miner/tests/storage.test.mjs games/gold-miner/tests/i18n.test.mjs games/gold-miner/tests/markup.test.mjs",
     "test:tetris-neo": "node --test games/tetris-neo/tests/engine.test.mjs games/tetris-neo/tests/storage.test.mjs games/tetris-neo/tests/i18n.test.mjs games/tetris-neo/tests/markup.test.mjs",
+    "test:blockduel": "node --test games/blockduel/tests/*.test.mjs",
     "test:freecell": "node --test games/freecell/tests/engine.test.mjs games/freecell/tests/storage.test.mjs games/freecell/tests/i18n.test.mjs games/freecell/tests/markup.test.mjs",
     "test:zuma": "node --test games/zuma/tests/engine.test.mjs",
     "test:Gravity-Echoes": "node --test games/Gravity-Echoes/tests/engine.test.mjs games/Gravity-Echoes/tests/storage.test.mjs games/Gravity-Echoes/tests/i18n.test.mjs games/Gravity-Echoes/tests/markup.test.mjs",
@@ -92,6 +96,12 @@
     "test:coin-pusher": "node --test games/coin-pusher/tests/engine.test.mjs games/coin-pusher/tests/score.test.mjs games/coin-pusher/tests/levels.test.mjs games/coin-pusher/tests/game.test.mjs games/coin-pusher/tests/storage.test.mjs games/coin-pusher/tests/render.test.mjs games/coin-pusher/tests/markup.test.mjs",
     "test:shaft": "node --test games/shaft/tests/*.test.mjs",
     "test:xiangqi": "node --test games/xiangqi/tests/engine.test.mjs games/xiangqi/tests/solver.test.mjs games/xiangqi/tests/ai.test.mjs games/xiangqi/tests/game.test.mjs games/xiangqi/tests/score.test.mjs games/xiangqi/tests/storage.test.mjs games/xiangqi/tests/i18n.test.mjs games/xiangqi/tests/markup.test.mjs",
-    "test:magic-tower": "node --test games/magic-tower/tests/engine.test.mjs games/magic-tower/tests/levels.test.mjs games/magic-tower/tests/solver.test.mjs games/magic-tower/tests/game.test.mjs games/magic-tower/tests/storage.test.mjs games/magic-tower/tests/i18n.test.mjs games/magic-tower/tests/markup.test.mjs"
+    "test:magic-tower": "node --test games/magic-tower/tests/engine.test.mjs games/magic-tower/tests/levels.test.mjs games/magic-tower/tests/solver.test.mjs games/magic-tower/tests/game.test.mjs games/magic-tower/tests/storage.test.mjs games/magic-tower/tests/i18n.test.mjs games/magic-tower/tests/markup.test.mjs",
+    "test:ultimate": "node --test games/ultimate/tests/*.test.mjs",
+    "test:pegfall": "node --test games/pegfall/tests/*.test.mjs",
+    "test:digger": "node --test games/digger/tests/*.test.mjs",
+    "test:portalbox": "node --test games/portalbox/tests/*.test.mjs",
+    "test:checkers": "node --test games/checkers/tests/engine.test.mjs games/checkers/tests/ai.test.mjs games/checkers/tests/game.test.mjs games/checkers/tests/i18n.test.mjs games/checkers/tests/storage.test.mjs games/checkers/tests/audio.test.mjs games/checkers/tests/ui.test.mjs games/checkers/tests/markup.test.mjs games/checkers/tests/smoke.test.mjs games/checkers/tests/puzzles.test.mjs games/checkers/tests/puzzle-game.test.mjs",
+    "test:robot": "node --test games/robot/tests/engine.test.mjs games/robot/tests/solver.test.mjs games/robot/tests/levels.test.mjs games/robot/tests/game.test.mjs games/robot/tests/i18n.test.mjs games/robot/tests/storage.test.mjs games/robot/tests/audio.test.mjs games/robot/tests/ui.test.mjs games/robot/tests/markup.test.mjs games/robot/tests/smoke.test.mjs"
   }
 }

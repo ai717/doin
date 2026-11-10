@@ -1,6 +1,104 @@
 {
   "games": [
     {
+      "title": "魔方工坊",
+      "slug": "cube",
+      "desc": "在暗调极客工坊里丝滑转动真三维魔方：2×2 口袋速拧、3×3 每日同题与 19 关魔方学院残局。拖动贴片磁吸转层、WCA 计时、一步提示，零广告即开即玩。",
+      "icon": "🧊",
+      "cover": "/assets/covers/cube.webp",
+      "tags": [
+        "益智",
+        "魔方",
+        "3D",
+        "竞速",
+        "经典"
+      ],
+      "url": "/cube/",
+      "en": {
+        "title": "Cube Workshop",
+        "desc": "Twist a true 3D cube in a dark geek workshop: 2x2 pocket speedsolve, 3x3 daily seeded races and a 19-stage academy ladder. Magnetic sticker dragging, WCA timer and one-tap hints. Instant ad-free play."
+      }
+    },
+    {
+      "title": "传送门推箱",
+      "slug": "portalbox",
+      "desc": "在光圈科技测试舱里推动能量箱，让蓝橙与紫绿传送门折叠空间，把箱子隔空送进绿色核心槽。20 关非欧拓扑谜题、BFS 验证官方最优步数、无限撤销与零广告即开即玩。",
+      "icon": "🌀",
+      "cover": "/assets/covers/portalbox.webp",
+      "tags": [
+        "益智",
+        "解谜",
+        "推箱",
+        "空间",
+        "逻辑"
+      ],
+      "url": "/portalbox/",
+      "en": {
+        "title": "Portal Box",
+        "desc": "Push energy crates through blue-orange and purple-green portals in an Aperture-style lab, folding space to seat every core. 20 non-Euclidean puzzles with BFS-proven optimal steps, unlimited undo and instant ad-free play."
+      }
+    },
+    {
+      "title": "挖掘者",
+      "slug": "digger",
+      "desc": "在自然历史博物馆的地层剖面里自由开凿隧道，气泵三连充气爆破红怪与喷火绿龙，挖空悬空巨石诱敌砸落。20 关五大考古地层、3 枚隐藏化石与三倍落石积分，零广告即开即玩。",
+      "icon": "⛏️",
+      "cover": "/assets/covers/digger.webp",
+      "tags": [
+        "街机",
+        "经典",
+        "动作",
+        "挖掘",
+        "解谜"
+      ],
+      "url": "/digger/",
+      "en": {
+        "title": "Digger",
+        "desc": "Carve your own tunnels through a museum strata cabinet, inflate Pookas and fire-breathing Fygars with a hand pump, and drop suspended boulders for triple score. 20 stages across five eras, 3 hidden fossils and instant ad-free play."
+      }
+    },
+    {
+      "title": "弹珠落钉",
+      "slug": "pegfall",
+      "desc": "黄铜加农炮打出弹珠，在钉阵里连撞带弹点亮全部橙钉；绿钉发放双球与超长导轨，最后一颗橙钉引爆五倍慢动作的极限狂喜，21 关维多利亚机台零广告即开即玩。",
+      "icon": "🎯",
+      "cover": "/assets/covers/pegfall.webp",
+      "tags": [
+        "物理",
+        "弹珠",
+        "休闲",
+        "街机",
+        "解压"
+      ],
+      "url": "/pegfall/",
+      "en": {
+        "title": "Peg Fall",
+        "desc": "Fire chrome balls from a brass cannon, light every orange peg and trigger a fivefold slow-motion Fever when the last one falls. 21 Victorian boards with split-ball and long-guide powers, pure and ad-free."
+      }
+    },
+    {
+      "title": "拧螺丝解谜",
+      "slug": "screw",
+      "desc": "拧出彩色螺栓，让交错面板在重力下连锁坠落，拆空 21 关微缩机械装置！单钉铰链物理摆动、三色收纳盒与备用孔调度，零广告纯净拆解解压。",
+      "icon": "🔩",
+      "cover": "/assets/covers/screw.webp",
+      "tags": [
+        "益智",
+        "解谜",
+        "物理",
+        "休闲",
+        "收纳"
+      ],
+      "url": "/screw/",
+      "exclude": [
+        "tools"
+      ],
+      "en": {
+        "title": "Screw Jam Workshop",
+        "desc": "Unscrew colorful bolts, drop layered plates with gravity, and strip 21 miniature machines. Single-screw hinges, color boxes and buffer slots in a pure ad-free teardown."
+      }
+    },
+    {
       "title": "摸鱼开箱修仙传",
       "slug": "immortal",
       "desc": "无限开鼎爆神装，暗黑六维词条克制，离线挂机聚灵石，渡九重天劫飞升！纯单机零广告打造，21 阶境界大关与无尽试炼天梯等你登仙！",
@@ -1428,6 +1526,103 @@
       "en": {
         "title": "Down 100",
         "desc": "A modern remake of the classic Down 100: a hydraulic spike ceiling presses down while the abyss rises, and you hop between rock ledges, springs, spike boards, conveyor belts and crumbling crystal platforms. 23 stages across five geological chapters, the classic hundred-floor run and an endless abyss, with life-restoring ledges, fast dives and 120Hz fixed-step deterministic physics. Progress saves locally."
+      }
+    },
+    {
+      "title": "方块对轰",
+      "slug": "blockduel",
+      "desc": "双人同屏俄罗斯方块对轰：7-Bag 国际随机、SRS 墙踢与 Hold 手感齐全，消行火力先进入 1.5 秒预警缓冲，可 1:1 抵消对手攻势再把差额反轰回去。22 关五段位 AI 天梯、BO3/BO5 同屏对战，红蓝双矩阵夹着中轴激光管道，垃圾行升起即见真章。",
+      "icon": "🧨",
+      "cover": "/assets/covers/blockduel.webp",
+      "tags": [
+        "益智",
+        "对战",
+        "街机",
+        "消除",
+        "双人"
+      ],
+      "url": "/blockduel/",
+      "exclude": [
+        "scripts"
+      ],
+      "en": {
+        "title": "Block Duel",
+        "desc": "Same-screen competitive Tetris: 7-bag randomizer, SRS wall kicks and hold, with cleared lines queued into a 1.5-second garbage buffer that cancels incoming attacks one for one before firing the remainder back. A 22-stage five-tier AI ladder, best-of-three and best-of-five duels, twin red and blue matrices framing a central laser conduit."
+      }
+    },
+    {
+      "title": "终极井字棋",
+      "slug": "ultimate",
+      "desc": "九宫格里再套九宫格：你落子的小格位置，决定对手下一步只能去哪个大格战场，被指向的大格封盘时还能拿到全盘自由落子权。四档 AI（试剑童子到终极天网）、同屏双人与 21 道求解器验证的残局解穴，聚光灯锁定活跃战场，钢印砸下即占大格。",
+      "icon": "🔳",
+      "cover": "/assets/covers/ultimate.webp",
+      "tags": [
+        "益智",
+        "对战",
+        "棋类",
+        "双人"
+      ],
+      "url": "/ultimate/",
+      "en": {
+        "title": "Ultimate Tic-Tac-Toe",
+        "desc": "A nine-grid inside every nine-grid: the cell you take decides which sector your opponent must play next, and a closed sector hands over the wildcard. Four AI tiers from Apprentice to Infallible, a same-screen duel and 21 solver-verified endgame puzzles, with a spotlight on the live sector and a metal stamp for every capture."
+      }
+    },
+    {
+      "title": "中国跳棋",
+      "slug": "checkers",
+      "desc": "121 孔六角星盘上的琉璃跳棋：点选弹珠即高亮全部连跳落点，一键飞跃全盘，红弹珠划出金色弧线。四档棋力 AI、同屏双人、20 关经 BFS 穷举验证唯一解的连跳残局，无限悔棋与棋谱回放，配红木棋案与琉璃弹珠的温润手感。",
+      "icon": "🔴",
+      "cover": "/assets/covers/checkers.webp",
+      "tags": [
+        "棋类",
+        "策略",
+        "益智",
+        "双人",
+        "解谜"
+      ],
+      "url": "/checkers/",
+      "en": {
+        "title": "Chinese Checkers",
+        "desc": "Glass marbles on a 121-hole hexagram: select a marble to light up every chain-hop landing, then fly the whole golden arc in one click. Four AI tiers, local two-player, 20 BFS-verified unique-solution studies, unlimited undo and a full move log, all on a rosewood chess table."
+      }
+    },
+    {
+      "title": "指令机器人",
+      "slug": "robot",
+      "desc": "给微缩机器人编程的解谜游戏：点选磁贴填入 MAIN 与 PROC1 卡带，运行、暂停、单步逐帧回放。点亮灯砖、越级跳跃、子程序循环、色块分流与推箱开门，五卷二十一关逐层加深，按最优行数评星的 Code Golf 挑战。",
+      "icon": "🤖",
+      "cover": "/assets/covers/robot.webp",
+      "tags": [
+        "编程",
+        "解谜",
+        "益智",
+        "逻辑",
+        "单机"
+      ],
+      "url": "/robot/",
+      "en": {
+        "title": "Instruction Robot",
+        "desc": "Program a pocket robot with magnetic tiles: fill the MAIN and PROC1 cartridge, then run, pause or single-step through an isometric floating island. Light lamps, hop stairs, loop subroutines, route colored commands and push crates across five volumes of 21 solver-verified stages, star-rated as a code-golf challenge."
+      }
+    },
+    {
+      "title": "神偷手臂",
+      "slug": "thief",
+      "desc": "拖住神偷的橡胶长臂绕过石柱、躲开激光铁丝网与睡犬，把宝物勾回怀里。手臂会自动绕柱折角，回拉就解扣；20 关怪盗洋馆分五卷递进，探照灯按时间窗扫过，按臂展评星，零广告即开即玩。",
+      "icon": "🧤",
+      "cover": "/assets/covers/thief.webp",
+      "tags": [
+        "解谜",
+        "物理",
+        "动作",
+        "机关",
+        "单机"
+      ],
+      "url": "/thief/",
+      "en": {
+        "title": "Thief Arms",
+        "desc": "Drag a thief's rubber arm around marble pillars and past lasers, tripwires and sleeping dogs to hook the loot home. The cord folds around pillars and unwinds as you pull back; 20 mansion stages across five volumes, sweeping spotlights on a timed window, stars rated by arm travel. Instant ad-free play."
       }
     }
   ]
