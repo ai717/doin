@@ -99,6 +99,25 @@
       }
     },
     {
+      "title": "雀神听牌王 · 听牌速判",
+      "slug": "tenpai",
+      "desc": "在绿呢麻将桌上挑战听牌速判与最高番抉择！面对复杂手牌，限时30秒点出全部可胡听牌，选出最高番路线。涵盖基础形、多面听与十三幺九莲大番，60关段位进阶！",
+      "icon": "🀄",
+      "cover": "/assets/covers/tenpai.webp",
+      "tags": [
+        "棋牌",
+        "麻将",
+        "益智",
+        "速算",
+        "竞技"
+      ],
+      "url": "/tenpai/",
+      "en": {
+        "title": "Tenpai King · Wait Finder",
+        "desc": "Train your Mahjong instincts on a green felt table! Identify all winning waits within 30s and pinpoint the highest Fan value across 60 tiered levels from Novice to Master."
+      }
+    },
+    {
       "title": "千层瓦片 · 叠叠消",
       "slug": "tilestack",
       "desc": "在典雅原木茶桌上解构千层青瓷瓦片塔！点选自由瓦片放入七格木托，凑齐三张同色即消。逆向生成保证100%可解，5大章节40关特色机制，尽享剥层心流！",
