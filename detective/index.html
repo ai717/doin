@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-D67E3XTNSS"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-D67E3XTNSS');
+  </script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>侦探推演 · DOIN 在线小游戏</title>
+  <meta name="description" content="摊开牛皮纸案卷，读证词、验物证、盖印章，十二宗维多利亚悬案全部逻辑唯一可解。">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="css/style.css?v=b4b5e58af7f3">
+</head>
+<body>
+  <div id="desk">
+    <header id="desk-bar">
+      <a href="/" id="back-home" class="brass-btn" data-i18n="backHome">门户</a>
+      <div id="brand">
+        <h1 id="app-title" data-i18n="appTitle">侦探推演</h1>
+        <span id="brand-tag" data-i18n="tagline">档案 · 证词 · 印章</span>
+      </div>
+      <div class="bar-cluster">
+        <div id="watch" class="watch" aria-live="off">
+          <span id="watch-time">00:00</span>
+        </div>
+        <button id="btn-cases" class="brass-btn" type="button" data-i18n="cases" data-i18n-aria="casesTitle">卷宗</button>
+        <button id="btn-pause" class="brass-btn icon" type="button" data-i18n-aria="pause" aria-label="暂停">❙❙</button>
+        <button id="btn-sound" class="brass-btn icon" type="button" data-i18n-aria="sound" aria-label="音效">♪</button>
+        <button id="btn-lang" class="brass-btn" type="button">EN</button>
+        <button id="btn-help" class="brass-btn icon" type="button" data-i18n-aria="help" aria-label="玩法">?</button>
+      </div>
+    </header>
+
+    <main id="folder">
+      <div id="folder-tab">
+        <span id="case-no">CASE #01</span>
+        <span id="case-title"></span>
+        <span id="case-flag" class="flag" data-i18n="caseOpen">在办</span>
+      </div>
+
+      <section id="brief" class="slip" aria-labelledby="brief-title">
+        <h2 id="brief-title" class="slip-title" data-i18n="briefTitle">案情摘要</h2>
+        <p id="brief-hook"></p>
+        <dl id="brief-meta">
+          <div><dt data-i18n="victimLabel">死者</dt><dd id="brief-victim"></dd></div>
+          <div><dt data-i18n="sceneLabel">现场</dt><dd id="brief-scene"></dd></div>
+          <div><dt data-i18n="windowLabel">推定死亡时间</dt><dd id="brief-window"></dd></div>
+        </dl>
+      </section>
+
+      <h2 class="rail-title" data-i18n="lineupTitle">嫌疑人档案</h2>
+      <div id="lineup"></div>
+
+      <h2 class="rail-title" data-i18n="evidenceTitle">物证与随身检查</h2>
+      <div id="evidence-rail"></div>
+
+      <section id="indictment" aria-labelledby="indictment-title">
+        <h2 id="indictment-title" class="slip-title" data-i18n="indictmentTitle">结案判词</h2>
+        <div id="slots">
+          <button id="slot-killer" class="seal-slot" type="button"></button>
+          <button id="slot-weapon" class="seal-slot" type="button"></button>
+          <button id="slot-clue" class="seal-slot" type="button"></button>
+          <button id="seal-btn" type="button" disabled>
+            <span class="seal-face" aria-hidden="true"></span>
+            <span id="seal-label" data-i18n="seal">盖章结案</span>
+          </button>
+        </div>
+      </section>
+
+      <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
+    </main>
+
+    <footer id="tray">
+      <div class="stamp-rack">
+        <button class="stamp-tool" type="button" data-stamp="clear">
+          <span class="stamp-head"></span>
+          <span class="stamp-cap" data-i18n="stampClearLong">清白 CLEAR</span>
+        </button>
+        <button class="stamp-tool" type="button" data-stamp="guilty">
+          <span class="stamp-head"></span>
+          <span class="stamp-cap" data-i18n="stampGuiltyLong">真凶 GUILTY</span>
+        </button>
+      </div>
+      <p id="tray-hint" data-i18n="trayHint">执起印章，点向嫌疑人卡片</p>
+      <button id="btn-reset" class="brass-btn" type="button" data-i18n="clearAll">重置本案</button>
+    </footer>
+  </div>
+
+  <div id="inspector" class="inspector" role="dialog" aria-modal="false" hidden>
+    <div class="inspector-head">
+      <h2 id="inspect-title"></h2>
+      <button id="inspect-close" class="brass-btn" type="button" data-i18n="inspectClose">收起</button>
+    </div>
+    <p id="inspect-body"></p>
+    <button id="inspect-pick" class="brass-btn wide" type="button" data-i18n="slotClue">关键证据</button>
+  </div>
+
+  <div id="picker" class="picker" role="dialog" aria-modal="false" hidden>
+    <div class="picker-head">
+      <h2 id="picker-title"></h2>
+      <button id="picker-close" class="brass-btn" type="button" data-i18n="inspectClose">收起</button>
+    </div>
+    <div id="picker-list"></div>
+  </div>
+
+  <div id="drawer" class="drawer" role="dialog" aria-modal="false" hidden>
+    <div class="drawer-head">
+      <h2 data-i18n="casesTitle">卷宗目录</h2>
+      <button id="drawer-close" class="brass-btn" type="button" data-i18n="inspectClose">收起</button>
+    </div>
+    <p class="drawer-hint" data-i18n="casesHint">十二宗悬案，随时重勘</p>
+    <div id="case-groups"></div>
+  </div>
+
+  <div id="help" class="overlay" role="dialog" aria-modal="true" hidden>
+    <div class="sheet">
+      <h2 data-i18n="helpTitle">办案须知</h2>
+      <p data-i18n="help1"></p>
+      <p data-i18n="help2"></p>
+      <p data-i18n="help3"></p>
+      <p data-i18n="help4"></p>
+      <p data-i18n="help5"></p>
+      <p class="keys" data-i18n="helpKeys"></p>
+      <button id="help-close" class="brass-btn wide" type="button" data-i18n="inspectClose">收起</button>
+    </div>
+  </div>
+
+  <div id="pause" class="overlay" role="dialog" aria-modal="true" hidden>
+    <div class="sheet">
+      <h2 data-i18n="pauseTitle">已暂停</h2>
+      <p data-i18n="pauseBody"></p>
+      <button id="pause-resume" class="brass-btn wide" type="button" data-i18n="resume">继续</button>
+      <button id="pause-reset" class="brass-btn wide" type="button" data-i18n="restart">重置本案</button>
+    </div>
+  </div>
+
+  <div id="result" class="overlay" role="dialog" aria-modal="true" hidden>
+    <div class="sheet certificate">
+      <span class="wax-seal" aria-hidden="true"></span>
+      <h2 id="result-title" data-i18n="winTitle">结案</h2>
+      <p id="result-sub" class="sub" data-i18n="winSub">CASE CLOSED</p>
+      <dl class="result-stats">
+        <div><dt data-i18n="winTime">用时</dt><dd id="result-time">00:00</dd></div>
+        <div><dt data-i18n="winMistakes">误判</dt><dd id="result-mistakes">0</dd></div>
+        <div><dt data-i18n="winRank">评级</dt><dd id="result-rank"></dd></div>
+      </dl>
+      <p id="result-case" class="caption"></p>
+      <div class="sheet-actions">
+        <button id="result-next" class="brass-btn wide" type="button" data-i18n="nextCase">下一案</button>
+        <button id="result-cases" class="brass-btn wide" type="button" data-i18n="toCases">卷宗目录</button>
+      </div>
+    </div>
+  </div>
+
+  <noscript><p>需要启用 JavaScript 才能翻阅卷宗。</p></noscript>
+  <script type="module" src="js/main.mjs?v=b4b5e58af7f3"></script>
+</body>
+</html>

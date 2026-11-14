@@ -1,0 +1,589 @@
+/**
+ * Glyph Craft (字灵拆拆乐) - Aesthetic Stylesheet
+ * Song Dynasty Xuan Paper & Cinnabar Seal Aesthetic
+ */
+
+:root {
+  --bg-dark: #12181b;
+  --bg-cabinet: #1e262c;
+  --paper-bg: #f4efe6;
+  --paper-fiber: #e8dfcf;
+  --ink-primary: #2d3436;
+  --ink-light: #636e72;
+  --pine-green: #10ac84;
+  --cinnabar-red: #ee5253;
+  --celadon-stone: #576574;
+  --gold-accent: #ffa502;
+  --border-subtle: rgba(255, 255, 255, 0.08);
+  --font-serif: "Songti SC", "SimSun", "STSong", serif;
+  --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+body {
+  background: var(--bg-dark);
+  color: #dfe6e9;
+  font-family: var(--font-sans);
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow-x: hidden;
+  touch-action: manipulation;
+}
+
+#game-app {
+  width: 100%;
+  max-width: 640px;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  padding: 12px 14px 24px;
+}
+
+/* Header & Controls */
+#top-nav-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 12px;
+  background: var(--bg-cabinet);
+  border-radius: 12px;
+  border: 1px solid var(--border-subtle);
+  margin-bottom: 12px;
+  gap: 8px;
+}
+
+.nav-left, .nav-right {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.nav-center h1 {
+  font-size: 1.05rem;
+  font-family: var(--font-serif);
+  color: #f5f6fa;
+  letter-spacing: 2px;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+  white-space: nowrap;
+}
+
+/* Tactile Buttons */
+.tactile-btn {
+  background: #2f3640;
+  color: #f5f6fa;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 8px;
+  font-size: 0.78rem;
+  padding: 6px 10px;
+  cursor: pointer;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  transition: transform 0.1s ease, background 0.15s ease, border-color 0.15s ease;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.tactile-btn:hover {
+  background: #353b48;
+  border-color: rgba(255, 255, 255, 0.25);
+}
+
+.tactile-btn:active {
+  transform: translateY(2px);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+.action-gold-btn {
+  background: #e67e22;
+  color: #ffffff;
+  font-weight: bold;
+  border-color: #f39c12;
+}
+
+.action-gold-btn:hover {
+  background: #d35400;
+}
+
+/* Cabinet & Main Content */
+#main-cabinet {
+  background: var(--bg-cabinet);
+  border: 1px solid var(--border-subtle);
+  border-radius: 16px;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+}
+
+/* Status Bar */
+#hud-status-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: rgba(18, 24, 27, 0.6);
+  border-radius: 10px;
+  padding: 8px 12px;
+  font-size: 0.84rem;
+  border: 1px solid var(--border-subtle);
+}
+
+.hud-pill {
+  color: #a4b0be;
+}
+
+.hud-pill.highlight {
+  color: var(--gold-accent);
+  font-weight: bold;
+  font-family: var(--font-serif);
+}
+
+.hud-label {
+  color: #747d8c;
+  font-size: 0.76rem;
+}
+
+/* Stage Canvas Wrapper */
+#stage-wrapper {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 2 / 1;
+  background: var(--paper-bg);
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.15), 0 4px 12px rgba(0, 0, 0, 0.2);
+  border: 2px solid #576574;
+}
+
+#stage-canvas {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+/* Glyph Altar / Tray (Bottom) */
+#glyph-altar {
+  background: rgba(18, 24, 27, 0.7);
+  border-radius: 12px;
+  padding: 12px;
+  border: 1px solid var(--border-subtle);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.altar-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.altar-title {
+  font-size: 0.82rem;
+  color: var(--gold-accent);
+  font-family: var(--font-serif);
+}
+
+.altar-tip {
+  font-size: 0.7rem;
+  color: #747d8c;
+}
+
+.tray-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  min-height: 80px;
+  background: #182025;
+  border-radius: 10px;
+  padding: 10px;
+  align-items: center;
+  border: 1px dashed rgba(255, 255, 255, 0.1);
+}
+
+/* Glyph Seal Cards (Celadon Stone Stamp Style) */
+.glyph-seal-card {
+  width: 68px;
+  height: 68px;
+  background: linear-gradient(135deg, #576574, #353b48);
+  border: 2px solid #718093;
+  border-radius: 12px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3), inset 0 1px 2px rgba(255, 255, 255, 0.2);
+  cursor: grab;
+  position: relative;
+  transition: transform 0.12s ease, box-shadow 0.12s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.glyph-seal-card:hover {
+  transform: translateY(-2px);
+  border-color: var(--gold-accent);
+  box-shadow: 0 6px 12px rgba(255, 165, 2, 0.25);
+}
+
+.glyph-seal-card.dragging {
+  opacity: 0.4;
+  cursor: grabbing;
+}
+
+.glyph-seal-card.drag-over {
+  border-color: #2ed573;
+  box-shadow: 0 0 12px rgba(46, 213, 115, 0.6);
+  transform: scale(1.06);
+}
+
+.seal-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+}
+
+.seal-char {
+  font-family: var(--font-serif);
+  font-size: 1.65rem;
+  color: #f5f6fa;
+  line-height: 1.1;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.6);
+}
+
+.seal-meta {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 0.62rem;
+  color: #ced6e0;
+  margin-top: 2px;
+}
+
+.seal-icon {
+  font-size: 0.72rem;
+}
+
+.seal-en {
+  font-size: 0.62rem;
+  letter-spacing: 0.2px;
+  white-space: nowrap;
+}
+
+/* Modals / Dialogs */
+.oriental-modal {
+  margin: auto;
+  border: none;
+  background: transparent;
+  padding: 0;
+  max-width: 90vw;
+  width: 480px;
+}
+
+.oriental-modal::backdrop {
+  background: rgba(10, 15, 18, 0.85);
+  backdrop-filter: blur(4px);
+}
+
+.modal-box {
+  background: #1e262c;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 16px;
+  padding: 20px;
+  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.6);
+  color: #dfe6e9;
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 14px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  padding-bottom: 8px;
+}
+
+.modal-header h2 {
+  font-family: var(--font-serif);
+  font-size: 1.15rem;
+  color: var(--gold-accent);
+}
+
+.modal-close-x {
+  background: transparent;
+  border: none;
+  color: #a4b0be;
+  font-size: 1.2rem;
+  cursor: pointer;
+  padding: 4px;
+}
+
+.modal-close-x:hover {
+  color: #ff4757;
+}
+
+/* Rules Scroll */
+.rules-scroll {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  max-height: 60vh;
+  overflow-y: auto;
+}
+
+.rule-item {
+  display: flex;
+  gap: 12px;
+  background: #182025;
+  border-radius: 10px;
+  padding: 10px 12px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.rule-icon {
+  font-size: 1.5rem;
+}
+
+.rule-text h3 {
+  font-size: 0.9rem;
+  color: var(--gold-accent);
+  margin-bottom: 4px;
+}
+
+.rule-text p {
+  font-size: 0.8rem;
+  color: #a4b0be;
+  line-height: 1.4;
+}
+
+/* Levels Grid */
+.levels-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(64px, 1fr));
+  gap: 10px;
+  max-height: 55vh;
+  overflow-y: auto;
+  padding: 4px;
+}
+
+.level-pill {
+  aspect-ratio: 1;
+  background: #2f3640;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 10px;
+  color: #f5f6fa;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  transition: transform 0.1s ease, background 0.15s ease;
+}
+
+.level-pill.unlocked:hover {
+  background: #353b48;
+  transform: translateY(-2px);
+  border-color: var(--gold-accent);
+}
+
+.level-pill.current {
+  border-color: var(--gold-accent);
+  box-shadow: 0 0 8px rgba(255, 165, 2, 0.4);
+}
+
+.level-pill.locked {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.pill-num {
+  font-size: 1.05rem;
+  font-weight: bold;
+}
+
+.pill-stars {
+  font-size: 0.65rem;
+  color: var(--gold-accent);
+}
+
+/* Codex Grid */
+.codex-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 60vh;
+  overflow-y: auto;
+}
+
+.codex-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: #182025;
+  border-radius: 10px;
+  padding: 8px 12px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.codex-card.locked {
+  opacity: 0.4;
+}
+
+.codex-seal-icon {
+  width: 40px;
+  height: 40px;
+  background: #576574;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-serif);
+  font-size: 1.3rem;
+  color: #fff;
+  flex-shrink: 0;
+}
+
+.codex-name {
+  font-size: 0.88rem;
+  font-weight: bold;
+  color: var(--gold-accent);
+}
+
+.codex-desc {
+  font-size: 0.78rem;
+  color: #a4b0be;
+  margin-top: 2px;
+  line-height: 1.35;
+}
+
+/* Won Modal */
+.won-box {
+  text-align: center;
+}
+
+.won-seal {
+  width: 60px;
+  height: 60px;
+  margin: 0 auto 10px;
+  background: var(--cinnabar-red);
+  color: #ffffff;
+  font-family: var(--font-serif);
+  font-size: 2rem;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 12px rgba(238, 82, 83, 0.4);
+}
+
+.won-poem {
+  font-family: var(--font-serif);
+  font-size: 1.15rem;
+  color: var(--gold-accent);
+  margin: 8px 0 14px;
+  letter-spacing: 2px;
+}
+
+.won-stars {
+  font-size: 1.8rem;
+  color: var(--gold-accent);
+  margin-bottom: 14px;
+}
+
+.won-eval-list {
+  background: #182025;
+  border-radius: 10px;
+  padding: 10px 14px;
+  margin-bottom: 16px;
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.eval-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.82rem;
+  color: #747d8c;
+}
+
+.eval-row.active {
+  color: #2ed573;
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.text-center {
+  text-align: center;
+}
+
+/* Scrollbar Customization */
+.rules-scroll::-webkit-scrollbar,
+.levels-grid::-webkit-scrollbar,
+.codex-grid::-webkit-scrollbar {
+  width: 6px;
+}
+
+.rules-scroll::-webkit-scrollbar-track,
+.levels-grid::-webkit-scrollbar-track,
+.codex-grid::-webkit-scrollbar-track {
+  background: #12181b;
+  border-radius: 3px;
+}
+
+.rules-scroll::-webkit-scrollbar-thumb,
+.levels-grid::-webkit-scrollbar-thumb,
+.codex-grid::-webkit-scrollbar-thumb {
+  background: #2f3640;
+  border-radius: 3px;
+}
+
+.rules-scroll::-webkit-scrollbar-thumb:hover,
+.levels-grid::-webkit-scrollbar-thumb:hover,
+.codex-grid::-webkit-scrollbar-thumb:hover {
+  background: var(--gold-accent);
+}
+
+/* Responsive & Mobile Safe Area Inset */
+@media (max-width: 768px) {
+  #game-app {
+    padding-bottom: max(68px, calc(16px + env(safe-area-inset-bottom)));
+  }
+
+  .nav-left, .nav-right {
+    gap: 4px;
+  }
+
+  .tactile-btn {
+    padding: 5px 8px;
+    font-size: 0.72rem;
+  }
+}
+
+/* Accessibility: Reduced Motion */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

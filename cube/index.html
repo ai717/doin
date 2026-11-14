@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-D67E3XTNSS"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-D67E3XTNSS');
+  </script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>魔方工坊 · DOIN 在线小游戏</title>
+  <meta name="description" content="在暗调极客工坊里丝滑转动三维魔方：2×2 口袋速拧、3×3 经典竞速与 19 关魔方学院残局。拖动贴片转层、WCA 计时、一步提示与每日同题，零广告即开即玩。">
+  <link rel="canonical" href="https://doin.win/cube/">
+  <meta name="theme-color" content="#0b0e13">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="DOIN">
+  <meta property="og:title" content="魔方工坊 · DOIN 在线小游戏">
+  <meta property="og:description" content="真三维磁吸速拧：2×2 口袋魔方、3×3 每日同题与 19 关魔方学院残局。">
+  <meta property="og:url" content="https://doin.win/cube/">
+  <meta property="og:locale" content="zh_CN">
+  <meta property="og:image" content="https://doin.win/assets/og-image.png">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="魔方工坊 · DOIN 在线小游戏">
+  <meta name="twitter:description" content="真三维磁吸速拧：2×2 口袋魔方、3×3 每日同题与 19 关魔方学院残局。">
+  <meta name="twitter:image" content="https://doin.win/assets/og-image.png">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="css/style.css?v=b4b5e58af7f3">
+</head>
+<body>
+  <noscript><p class="noscript" data-i18n="noscript">需要启用 JavaScript 才能游玩魔方工坊。</p></noscript>
+
+  <div class="workshop" id="game-app">
+    <header class="rig-bar">
+      <a href="/" id="back-home" class="chip chip-home" data-i18n="backHome">返回门户</a>
+      <div class="brand">
+        <h1 class="brand-title" data-i18n="title">魔方工坊</h1>
+        <p class="brand-sub" data-i18n="subtitle">磁吸速拧 · 三维空间工作台</p>
+      </div>
+      <div class="mode-switch" role="group" data-i18n-aria="modeAria">
+        <button type="button" class="mode-btn is-active" data-mode="2" id="mode-2">2×2</button>
+        <button type="button" class="mode-btn" data-mode="3" id="mode-3">3×3</button>
+        <button type="button" class="mode-btn" data-mode="academy" id="mode-academy" data-i18n="academy">学院</button>
+      </div>
+      <div class="bar-tools">
+        <button type="button" class="chip" id="levels-btn" data-i18n="levels">选关</button>
+        <button type="button" class="chip chip-icon" id="sound-btn" aria-pressed="true" data-i18n-aria="ariaSound">♪</button>
+        <button type="button" class="chip chip-icon" id="lang-btn" data-i18n-aria="ariaLang">EN</button>
+        <button type="button" class="chip chip-icon" id="help-btn" data-i18n-aria="ariaHelp">?</button>
+      </div>
+    </header>
+
+    <section class="hud-rail">
+      <div class="timer-cell">
+        <span class="hud-label" data-i18n="timerLabel">计时</span>
+        <b class="timer-digits" id="timer-value">00:00.00</b>
+        <span class="timer-state" id="timer-state" data-i18n="readyHint">滑动魔方开始</span>
+      </div>
+      <div class="metric">
+        <em data-i18n="movesLabel">步数</em>
+        <b id="moves-value">0</b>
+      </div>
+      <div class="metric">
+        <em data-i18n="tpsLabel">TPS</em>
+        <b id="tps-value">0.00</b>
+      </div>
+      <div class="metric">
+        <em data-i18n="pbLabel">最佳</em>
+        <b id="pb-value">—</b>
+      </div>
+      <div class="metric">
+        <em data-i18n="ao5Label">Ao5</em>
+        <b id="ao5-value">—</b>
+      </div>
+    </section>
+
+    <main class="bench">
+      <section class="bay-wrap" aria-labelledby="mode-tag">
+        <div class="bay">
+          <span class="bay-plate" id="mode-tag">2×2 POCKET CUBE</span>
+          <canvas id="stage" data-i18n-aria="ariaCanvas" aria-label="三维魔方舞台"></canvas>
+          <p class="bay-hint" data-i18n="dragHint">拖动贴片转层 · 拖动空白转视角</p>
+        </div>
+      </section>
+
+      <section class="deck">
+        <div class="scramble-cell">
+          <span class="hud-label" data-i18n="scrambleLabel">打乱公式</span>
+          <b class="scramble-line" id="scramble-value">—</b>
+          <span class="scramble-note" id="scramble-note"></span>
+        </div>
+        <div class="deck-keys">
+          <button type="button" class="key" id="hint-btn" data-i18n="hint">提示</button>
+          <button type="button" class="key" id="undo-btn" data-i18n="undo">撤销</button>
+          <button type="button" class="key" id="reset-btn" data-i18n="reset">重置</button>
+          <button type="button" class="key key-primary" id="scramble-btn" data-i18n="scramble">打乱</button>
+          <button type="button" class="key" id="levels-btn-2" data-i18n="levels">选关</button>
+        </div>
+      </section>
+
+      <p class="tip-line" id="chapter-tip" hidden></p>
+      <p class="foot-note" data-i18n="keyboardHint">U/D/L/R/F/B 转层 · Shift 逆时针 · Z 撤销 · Esc 收起弹层</p>
+    </main>
+  </div>
+
+  <div class="layer" id="levels-layer" hidden role="dialog" aria-modal="true" aria-labelledby="levels-title">
+    <div class="panel panel-levels">
+      <header class="panel-head">
+        <h2 id="levels-title" data-i18n="levelsTitle">选择玩法</h2>
+        <button type="button" class="x-btn" id="levels-close" data-i18n-aria="close">×</button>
+      </header>
+      <div class="free-row" id="free-row"></div>
+      <div class="academy-head">
+        <h3 data-i18n="levelsAcademy">魔方学院</h3>
+        <span class="stars-total" id="academy-stars"></span>
+      </div>
+      <p class="academy-banner" data-i18n="academyBanner">魔方学院 · 19 关残局阶梯</p>
+      <div class="academy-list" id="academy-list"></div>
+      <div class="layer-actions">
+        <button type="button" class="key key-primary" id="levels-done" data-i18n="close">关闭</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="layer" id="result-layer" hidden role="dialog" aria-modal="true" aria-labelledby="result-title">
+    <div class="panel result-panel">
+      <p class="result-kicker" data-i18n="resultTitle">复原完成</p>
+      <h2 class="result-clock" id="result-title">00:00.00</h2>
+      <p class="result-stars" id="result-stars"></p>
+      <div class="report">
+        <div><span data-i18n="resultMoves">步数</span><b id="result-moves">0</b></div>
+        <div><span data-i18n="resultTps">TPS</span><b id="result-tps">0.00</b></div>
+        <div><span data-i18n="resultScore">得分</span><b id="result-score">0</b></div>
+        <div><span data-i18n="resultBest">个人最佳</span><b id="result-best">—</b></div>
+      </div>
+      <p class="result-new" id="result-new" hidden data-i18n="resultNewRecord">新纪录</p>
+      <div class="layer-actions">
+        <button type="button" class="key key-primary" id="result-next" data-i18n="next">下一关</button>
+        <button type="button" class="key" id="result-again" data-i18n="again">再来一次</button>
+        <button type="button" class="key" id="result-close" data-i18n="close">关闭</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="layer" id="help-layer" hidden role="dialog" aria-modal="true" aria-labelledby="help-title">
+    <div class="panel">
+      <header class="panel-head">
+        <h2 id="help-title" data-i18n="helpTitle">玩法说明</h2>
+        <button type="button" class="x-btn" id="help-close" data-i18n-aria="close">×</button>
+      </header>
+      <pre class="help-body" id="help-body"></pre>
+      <p class="field-note" data-i18n="helpKeys"></p>
+      <p class="field-note" data-i18n="helpDrag"></p>
+      <p class="field-note" data-i18n="helpTimer"></p>
+      <p class="field-note" data-i18n="helpSaved"></p>
+      <div class="layer-actions">
+        <button type="button" class="key key-primary" id="help-done" data-i18n="close">关闭</button>
+      </div>
+    </div>
+  </div>
+
+  <p class="toast" id="toast" role="status" aria-live="polite" hidden></p>
+
+  <script type="module" src="js/main.mjs?v=b4b5e58af7f3"></script>
+</body>
+</html>

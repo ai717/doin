@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-D67E3XTNSS"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-D67E3XTNSS');
+  </script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title data-i18n="game_title">摸鱼开箱修仙传</title>
+  <meta name="description" content="摸鱼开箱修仙传 - 无限开鼎爆神装，暗黑六维词条克制，离线挂机聚灵石，渡九重天劫飞升！">
+  <link rel="icon" href="favicon.svg?v=b4b5e58af7f3" type="image/svg+xml">
+  <link rel="stylesheet" href="css/style.css?v=b4b5e58af7f3">
+</head>
+<body>
+  <noscript>
+    <div style="padding: 24px; text-align: center; color: #fff; background: #0c141d;">
+      请启用 JavaScript 以体验《摸鱼开箱修仙传》修真开鼎与渡劫玩法。
+    </div>
+  </noscript>
+
+  <div id="game-app">
+    <!-- Top System Nav Header -->
+    <header id="top-nav-bar">
+      <div class="nav-left">
+        <a href="/" id="back-home" class="tactile-btn nav-btn" data-i18n="back_home">首页</a>
+        <button id="rules-btn" class="tactile-btn nav-btn" data-i18n="rules_btn">修真指南</button>
+        <button id="tribulation-btn" class="tactile-btn nav-btn action-trib-btn" data-i18n="tribulation_btn">渡劫引雷</button>
+        <button id="abyss-btn" class="tactile-btn nav-btn" data-i18n="abyss_btn">试炼天梯</button>
+      </div>
+
+      <div class="nav-center">
+        <h1 id="game-title-text" data-i18n="game_title">摸鱼开箱修仙传</h1>
+      </div>
+
+      <div class="nav-right">
+        <button id="cauldron-btn" class="tactile-btn nav-btn" data-i18n="cauldron_btn">鼎炉进阶</button>
+        <button id="auto-btn" class="tactile-btn nav-btn" data-i18n="auto_btn">智能开鼎</button>
+        <button id="sound-toggle" class="tactile-btn nav-btn" data-i18n="sound_on">音效: 开</button>
+        <button id="lang-toggle" class="tactile-btn nav-btn">English</button>
+      </div>
+    </header>
+
+    <!-- Main Cabinet -->
+    <main id="main-cabinet">
+      <!-- Resource HUD -->
+      <section id="resource-hud">
+        <div class="hud-item">
+          <span class="hud-label" data-i18n="spirit_stones">灵石</span>
+          <strong id="spirit-stones-val" class="hud-num gold">0</strong>
+        </div>
+        <div class="hud-item">
+          <span class="hud-label" data-i18n="cauldron_stones">鼎石</span>
+          <strong id="cauldron-stones-val" class="hud-num cyan">0</strong>
+        </div>
+        <div class="hud-item">
+          <span class="hud-label" data-i18n="combat_power">战力</span>
+          <strong id="player-cp-val" class="hud-num red">0</strong>
+        </div>
+        <div class="hud-item">
+          <span class="hud-label" data-i18n="realm_label">境界</span>
+          <strong id="realm-title-val" class="hud-num purple">🌱 炼气期散修</strong>
+        </div>
+      </section>
+
+      <!-- EXP Progress Bar -->
+      <section id="exp-bar-section">
+        <div class="exp-bar-header">
+          <span id="realm-name-val" class="realm-subtitle">炼气一层</span>
+          <span id="exp-progress-text" class="exp-pct">0 / 100</span>
+        </div>
+        <div class="exp-track">
+          <div id="exp-progress-bar" class="exp-fill"></div>
+        </div>
+      </section>
+
+      <!-- Sanctuary Canvas Stage -->
+      <div id="stage-wrapper">
+        <canvas id="stage-canvas" width="520" height="260"></canvas>
+      </div>
+
+      <!-- Action Button Area -->
+      <section id="forge-action-area">
+        <button id="open-box-btn" class="tactile-btn forge-main-btn" data-i18n="open_box_btn">叩击开鼎 (消耗1鼎石)</button>
+      </section>
+
+      <!-- Newly Dropped Loot Card (Comparison) -->
+      <section id="loot-card" class="loot-card hidden">
+        <div class="loot-card-header">
+          <span id="loot-icon" class="loot-icon">🗡️</span>
+          <div class="loot-title-group">
+            <h3 id="loot-name" class="loot-name">极品飞剑</h3>
+            <span id="loot-cp" class="loot-cp-text">战力: 1,200</span>
+          </div>
+        </div>
+
+        <div id="loot-stats-compare" class="loot-stats-grid">
+          <!-- Populated dynamically -->
+        </div>
+
+        <div id="loot-affixes" class="loot-affixes-row">
+          <!-- Populated dynamically -->
+        </div>
+
+        <div class="loot-actions">
+          <button id="equip-btn" class="tactile-btn equip-action-btn" data-i18n="equip_btn">穿戴替换</button>
+          <button id="smelt-btn" class="tactile-btn smelt-action-btn" data-i18n="smelt_btn">炼化熔铸</button>
+        </div>
+      </section>
+
+      <!-- 8-Slot Equipment Matrix -->
+      <section id="equipment-slots-grid" class="equipment-grid">
+        <!-- 8 slots populated dynamically -->
+      </section>
+
+      <!-- Hex-Synergy Affixes Summary -->
+      <section id="affixes-summary" class="affixes-bar">
+        <!-- 6 affixes chips -->
+      </section>
+    </main>
+  </div>
+
+  <!-- Dialog 1: 修真指南 -->
+  <dialog id="rules-modal" class="oriental-modal">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h2 data-i18n="rules_btn">修真指南</h2>
+        <button id="close-rules-btn" class="modal-close-x">✕</button>
+      </div>
+      <div class="modal-body rules-scroll">
+        <div class="rule-item">
+          <div class="rule-icon">🏺</div>
+          <div class="rule-text">
+            <h3 data-i18n="rule_cauldron_title">叩鼎得宝 · 暗黑神装</h3>
+            <p data-i18n="rule_cauldron_desc">轻点青铜古鼎即可炼化天地灵气，随机爆出飞剑、法袍、道冠等八大法宝，品质横跨凡品、仙品至先天至宝。</p>
+          </div>
+        </div>
+        <div class="rule-item">
+          <div class="rule-icon">⚡</div>
+          <div class="rule-text">
+            <h3 data-i18n="rule_synergy_title">六维流派 · 相生相克</h3>
+            <p data-i18n="rule_synergy_desc">暴击爆发流、御剑极限闪避流、金钟反伤流、雷法连击追击流、定身击晕控制流、幽冥吸血续航流。六大流派相克循环，针对性换装逆袭强敌。</p>
+          </div>
+        </div>
+        <div class="rule-item">
+          <div class="rule-icon">🌩️</div>
+          <div class="rule-text">
+            <h3 data-i18n="rule_tribulation_title">九重天劫 · 破境飞升</h3>
+            <p data-i18n="rule_tribulation_desc">修为圆满后引动天劫雷坛，击败守劫神魔突破 21 阶境界，从炼气筑基直抵大乘飞升。</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </dialog>
+
+  <!-- Dialog 2: 渡劫引雷 -->
+  <dialog id="tribulation-modal" class="oriental-modal">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h2 data-i18n="tribulation_title">九重天劫 · 破境登仙</h2>
+        <button id="close-trib-btn" class="modal-close-x">✕</button>
+      </div>
+      <div class="modal-body text-center">
+        <p class="modal-tip" data-i18n="tribulation_desc">引动九霄玄雷，大战守劫神魔！胜则晋升大境界，败则稳固根基卷土重来。</p>
+        <div class="boss-preview-card">
+          <h3 id="trib-boss-name">护洞灵猿</h3>
+          <p id="trib-boss-stats">气血: 350 | 攻击: 45 | 防御: 15</p>
+        </div>
+        <div class="modal-actions">
+          <button id="challenge-boss-btn" class="tactile-btn action-trib-btn" data-i18n="challenge_boss_btn">引动雷劫</button>
+        </div>
+        <div id="trib-combat-log" class="combat-log-container"></div>
+      </div>
+    </div>
+  </dialog>
+
+  <!-- Dialog 3: 试炼天梯 -->
+  <dialog id="abyss-modal" class="oriental-modal">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h2 data-i18n="abyss_title">无尽试炼天梯</h2>
+        <button id="close-abyss-btn" class="modal-close-x">✕</button>
+      </div>
+      <div class="modal-body text-center">
+        <p class="modal-tip" data-i18n="abyss_desc">挑战万古镇压的域外妖仙，验证极致流派构筑！</p>
+        <div class="boss-preview-card">
+          <div id="abyss-floor-text" class="abyss-floor-title">当前层数: 1</div>
+          <h3 id="abyss-boss-name">试炼层妖仙</h3>
+          <p id="abyss-boss-stats">气血: 1,000 | 攻击: 120 | 防御: 50</p>
+        </div>
+        <div class="modal-actions">
+          <button id="challenge-abyss-btn" class="tactile-btn action-gold-btn" data-i18n="abyss_challenge_btn">挑战守关妖仙</button>
+        </div>
+        <div id="abyss-combat-log" class="combat-log-container"></div>
+      </div>
+    </div>
+  </dialog>
+
+  <!-- Dialog 4: 鼎炉进阶 -->
+  <dialog id="cauldron-modal" class="oriental-modal">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h2 data-i18n="cauldron_upgrade_title">神鼎进阶</h2>
+        <button id="close-cauldron-btn" class="modal-close-x">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="cauldron-level-row">
+          <span data-i18n="cauldron_level">鼎炉阶位</span>:
+          <strong id="cauldron-cur-level" class="gold">1 / 15</strong>
+        </div>
+        <div class="cauldron-cost-row">
+          <span data-i18n="cauldron_upgrade_cost">升级所需灵石</span>:
+          <strong id="cauldron-cost-val" class="cyan">100 灵石</strong>
+        </div>
+        <div class="modal-actions">
+          <button id="upgrade-cauldron-btn" class="tactile-btn action-gold-btn" data-i18n="cauldron_upgrade_action">淬炼进阶</button>
+        </div>
+        <div class="cauldron-rates-box">
+          <h4 data-i18n="cauldron_rate_preview">极品出世概率预览</h4>
+          <div id="cauldron-rates-list" class="rates-list"></div>
+        </div>
+      </div>
+    </div>
+  </dialog>
+
+  <!-- Dialog 5: 离线收益 -->
+  <dialog id="offline-modal" class="oriental-modal">
+    <div class="modal-box text-center">
+      <div class="offline-icon">✨</div>
+      <h2 data-i18n="offline_title">闭关洞府归来</h2>
+      <p class="modal-tip" data-i18n="offline_reward_desc">离线挂机静修，聚灵阵持续运转，收获丰厚灵力！</p>
+      <div class="offline-reward-box">
+        <div><span data-i18n="offline_spirit_lbl">灵石</span>: +<strong id="offline-stones-val" class="gold">0</strong></div>
+        <div><span data-i18n="offline_cauldron_lbl">鼎石</span>: +<strong id="offline-cauldron-val" class="cyan">0</strong></div>
+      </div>
+      <div class="modal-actions">
+        <button id="claim-offline-btn" class="tactile-btn action-gold-btn" data-i18n="claim_offline_btn">出关纳宝</button>
+      </div>
+    </div>
+  </dialog>
+
+  <!-- Dialog 6: 智能开鼎设置 -->
+  <dialog id="auto-modal" class="oriental-modal">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h2 data-i18n="auto_modal_title">智能开鼎设置</h2>
+        <button id="close-auto-btn" class="modal-close-x">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="setting-row">
+          <label data-i18n="auto_min_quality_label">停于品质以上</label>
+          <select id="auto-quality-select" class="form-select">
+            <option value="rare" data-i18n="quality_rare">宝品</option>
+            <option value="epic" data-i18n="quality_epic">仙品</option>
+            <option value="legendary" data-i18n="quality_legendary">神品</option>
+            <option value="mythic" data-i18n="quality_mythic">先天至宝</option>
+          </select>
+        </div>
+        <div class="setting-row">
+          <label data-i18n="auto_stop_upgrade_label">遇到更高战力装备自动暂停</label>
+          <input type="checkbox" id="auto-upgrade-check" checked>
+        </div>
+        <div class="modal-actions">
+          <button id="start-auto-btn" class="tactile-btn action-gold-btn" data-i18n="auto_start_confirm_btn">开始托管开鼎</button>
+        </div>
+      </div>
+    </div>
+  </dialog>
+
+  <script type="module" src="js/main.mjs?v=b4b5e58af7f3"></script>
+</body>
+</html>

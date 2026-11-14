@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-D67E3XTNSS"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-D67E3XTNSS');
+  </script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>挖掘者 · DOIN 在线小游戏</title>
+  <meta name="description" content="在自然博物馆的地层剖面中自由开凿隧道，用气泵把红怪与喷火绿龙充气爆破，挖空巨石下方诱敌砸落。20 关五大考古地层、3 枚隐藏化石与零广告即开即玩。">
+  <link rel="canonical" href="https://doin.win/digger/">
+  <meta name="theme-color" content="#15100b">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="DOIN">
+  <meta property="og:title" content="挖掘者 · DOIN 在线小游戏">
+  <meta property="og:description" content="自由开凿地层隧道，打气爆破地底怪物，巧用悬空巨石一砸成名。20 关考古地层。">
+  <meta property="og:url" content="https://doin.win/digger/">
+  <meta property="og:locale" content="zh_CN">
+  <meta property="og:image" content="https://doin.win/assets/og-image.png">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="挖掘者 · DOIN 在线小游戏">
+  <meta name="twitter:description" content="自由开凿地层隧道，打气爆破地底怪物，巧用悬空巨石一砸成名。">
+  <meta name="twitter:image" content="https://doin.win/assets/og-image.png">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="css/style.css?v=b4b5e58af7f3">
+</head>
+<body>
+  <noscript><p class="noscript" data-i18n="noscript">需要启用 JavaScript 才能游玩挖掘者。</p></noscript>
+
+  <div class="cabinet" id="game-app">
+    <header class="topbar">
+      <a href="/" id="back-home" class="bar-btn" data-i18n="backHome">返回门户</a>
+      <div class="brand">
+        <h1 class="title" id="app-title" data-i18n="title">挖掘者</h1>
+        <p class="subtitle" data-i18n="subtitle">自然历史博物馆 · 地层发掘现场</p>
+      </div>
+      <div class="topbar-tools">
+        <button type="button" id="pause-btn" class="bar-btn" data-i18n-aria="pause">⏸</button>
+        <button type="button" id="sound-btn" class="bar-btn" aria-pressed="true" data-i18n-aria="ariaSound">♪</button>
+        <button type="button" id="lang-btn" class="bar-btn" data-i18n-aria="ariaLang">EN</button>
+        <button type="button" id="help-btn" class="bar-btn" data-i18n-aria="ariaHelp">?</button>
+      </div>
+    </header>
+
+    <main class="arena">
+      <aside class="wing wing-left" aria-labelledby="era-label">
+        <div class="plaque">
+          <span class="wing-label" id="era-label" data-i18n="eraLabel">地质年代</span>
+          <b class="era-value" id="era-value">ERA I · MODERN</b>
+        </div>
+
+        <div class="readout-cell">
+          <em data-i18n="monstersLabel">地底生物</em>
+          <div class="radar">
+            <span class="monster-chip chip-pooka"><i aria-hidden="true"></i><b id="pooka-count">0</b><span data-i18n="pookaLabel">红怪</span></span>
+            <span class="monster-chip chip-fygar"><i aria-hidden="true"></i><b id="fygar-count">0</b><span data-i18n="fygarLabel">绿龙</span></span>
+          </div>
+        </div>
+
+        <div class="readout-cell">
+          <em data-i18n="livesLabel">探险帽</em>
+          <div class="hats" id="lives-dots" aria-hidden="true"></div>
+        </div>
+
+        <div class="readout-cell">
+          <em data-i18n="scoreLabel">发掘分</em>
+          <b id="score-value">0</b>
+        </div>
+
+        <div class="readout-cell">
+          <em data-i18n="bestLabel">最高</em>
+          <b id="best-value">0</b>
+        </div>
+
+        <p class="status" id="status-line" role="status" aria-live="polite"></p>
+      </aside>
+
+      <section class="board-stage">
+        <h2 class="sr-only" data-i18n="boardAria">挖掘者地层剖面</h2>
+        <div class="machine-frame">
+          <span class="frame-plate" id="level-plate">STAGE 01</span>
+          <canvas id="stage" width="840" height="560" data-i18n-aria="ariaCanvas"></canvas>
+        </div>
+      </section>
+
+      <aside class="wing wing-right" aria-labelledby="fossils-label">
+        <h2 class="wing-title" id="fossils-label" data-i18n="fossilsLabel">化石</h2>
+        <div class="fossil-slots" id="fossil-slots">
+          <span class="fossil-slot" data-slot="1" data-i18n="fossilSlot" data-i18n-args="1">化石 1</span>
+          <span class="fossil-slot" data-slot="2" data-i18n="fossilSlot" data-i18n-args="2">化石 2</span>
+          <span class="fossil-slot" data-slot="3" data-i18n="fossilSlot" data-i18n-args="3">化石 3</span>
+        </div>
+        <p class="fossil-count" id="fossil-count">0 / 3</p>
+        <p class="wing-note" data-i18n="pumpHint">靠近怪物，朝它连打三次气</p>
+        <p class="wing-note" data-i18n="moveHint">走进泥土自动开凿</p>
+        <p class="wing-note wing-keys" data-i18n="helpKeys">快捷键：方向键 / WASD 移动 · 空格打气 · P / Esc 暂停 · R 重开</p>
+        <p class="saved" data-i18n="saved">进度、星评与最高分保存在本机浏览器，可离线游玩。</p>
+      </aside>
+
+      <footer class="instrument-bar" data-i18n-aria="ariaHud">
+        <div class="pad-wrap">
+          <div class="move-pad" id="move-pad" role="group" data-i18n-aria="dpadLabel">
+            <button type="button" class="pad-key pad-up" data-dir="up" aria-label="Up">▲</button>
+            <button type="button" class="pad-key pad-left" data-dir="left" aria-label="Left">◀</button>
+            <span class="pad-core" aria-hidden="true">✦</span>
+            <button type="button" class="pad-key pad-right" data-dir="right" aria-label="Right">▶</button>
+            <button type="button" class="pad-key pad-down" data-dir="down" aria-label="Down">▼</button>
+          </div>
+        </div>
+        <div class="key-row">
+          <button type="button" class="key" id="levels-btn" data-i18n="levels">选关</button>
+          <button type="button" class="key" id="restart-btn" data-i18n="restart">重开</button>
+        </div>
+        <button type="button" class="key key-primary pump-btn" id="pump-btn" data-i18n="pump">打气</button>
+      </footer>
+    </main>
+  </div>
+
+  <div class="layer" id="levels-layer" hidden role="dialog" aria-modal="true" aria-labelledby="levels-title">
+    <div class="panel panel-levels">
+      <h2 id="levels-title" data-i18n="levelsTitle">地层发掘档案</h2>
+      <p class="levels-total" id="levels-total"></p>
+      <div class="levels-grid" id="levels-grid"></div>
+      <div class="layer-actions">
+        <button type="button" class="key key-primary" id="levels-close" data-i18n="close">关闭</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="layer" id="pause-layer" hidden role="dialog" aria-modal="true" aria-labelledby="pause-title">
+    <div class="panel">
+      <h2 id="pause-title" data-i18n="pauseTitle">已暂停</h2>
+      <p class="field-note" data-i18n="pausedHint">剖面与怪物已冻结，随时回来继续发掘。</p>
+      <div class="layer-actions">
+        <button type="button" class="key key-primary" id="pause-resume" data-i18n="continueLabel">继续游戏</button>
+        <button type="button" class="key" id="pause-restart" data-i18n="pauseRestart">重新开始</button>
+        <button type="button" class="key" id="pause-sound">音效开</button>
+        <button type="button" class="key" id="pause-levels" data-i18n="pauseLevels">返回选关</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="layer" id="result-layer" hidden role="dialog" aria-modal="true" aria-labelledby="result-title">
+    <div class="panel">
+      <p class="result-badge" id="result-badge"></p>
+      <h2 id="result-title"></h2>
+      <p class="result-stars" id="result-stars"></p>
+      <div class="report">
+        <div class="report-row"><span data-i18n="resultScore">本关发掘分</span><b id="result-score">0</b></div>
+        <div class="report-row"><span data-i18n="resultFossils">化石标本</span><b id="result-fossils">0 / 3</b></div>
+        <div class="report-row"><span data-i18n="resultBest">历史最高</span><b id="result-best">0</b></div>
+      </div>
+      <div class="layer-actions">
+        <button type="button" class="key key-primary" id="result-next" data-i18n="next">下一关</button>
+        <button type="button" class="key" id="result-again" data-i18n="again">再来一次</button>
+        <button type="button" class="key" id="result-close" data-i18n="close">关闭</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="layer" id="help-layer" hidden role="dialog" aria-modal="true" aria-labelledby="help-title">
+    <div class="panel">
+      <h2 id="help-title" data-i18n="helpTitle">玩法说明</h2>
+      <pre class="help-body" id="help-body"></pre>
+      <p class="field-note" id="help-keys"></p>
+      <p class="field-note" id="help-monsters"></p>
+      <p class="field-note" id="help-rocks"></p>
+      <p class="field-note" id="help-fossils"></p>
+      <div class="layer-actions">
+        <button type="button" class="key key-primary" id="help-close" data-i18n="close">关闭</button>
+      </div>
+    </div>
+  </div>
+
+  <p class="toast" id="toast" role="status" aria-live="polite" hidden></p>
+
+  <script type="module" src="js/main.mjs?v=b4b5e58af7f3"></script>
+</body>
+</html>

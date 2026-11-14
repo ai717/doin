@@ -1,0 +1,734 @@
+/* ==========================================================================
+   games/airpuck/css/style.css
+   双人霓虹气垫球：赛博电玩球台、红蓝发光机甲、激光拖尾与触感按键
+   ========================================================================== */
+
+:root {
+  --bg-dark: #070a10;
+  --bg-panel: #0d121c;
+  --border-neon: #1f293d;
+  --red-primary: #ff2d55;
+  --red-glow: rgba(255, 45, 85, 0.45);
+  --blue-primary: #00d2d3;
+  --blue-glow: rgba(0, 210, 211, 0.45);
+  --gold-primary: #ffd54f;
+  --text-main: #f0f4f8;
+  --text-muted: #8395a7;
+
+  --btn-bg: #141c2b;
+  --btn-border: #2c3a52;
+  --btn-shadow: #04060a;
+
+  --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html, body {
+  width: 100%;
+  height: 100%;
+  overflow-x: hidden;
+  background-color: var(--bg-dark);
+  background: radial-gradient(circle at 50% 30%, #101929 0%, var(--bg-dark) 65%, #030508 100%);
+  color: var(--text-main);
+  font-family: var(--font-family);
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+}
+
+#game-app {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  width: 100%;
+  max-width: 1260px;
+  margin: 0 auto;
+  padding: 8px 14px;
+  padding-bottom: max(68px, calc(16px + env(safe-area-inset-bottom)));
+}
+
+/* 顶部操作条 */
+#game-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 8px 14px;
+  background: var(--bg-panel);
+  border: 1.5px solid var(--border-neon);
+  border-radius: 14px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  margin-bottom: 8px;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+#game-title {
+  font-size: 1.2rem;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  background: linear-gradient(90deg, #ff2d55, #ffd54f, #00d2d3);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  text-shadow: 0 0 16px rgba(0, 210, 211, 0.25);
+}
+
+.header-controls {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+/* 实体触感按键 (Tactile Buttons) */
+.tactile-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px 12px;
+  background: linear-gradient(to bottom, #1c273a, var(--btn-bg));
+  border: 1px solid var(--btn-border);
+  border-radius: 9px;
+  color: var(--text-main);
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 3px 0 var(--btn-shadow), 0 4px 8px rgba(0, 0, 0, 0.4);
+  transition: transform 0.08s ease, box-shadow 0.08s ease, background 0.15s ease;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.tactile-btn:hover {
+  background: linear-gradient(to bottom, #26354f, #182336);
+  border-color: var(--blue-primary);
+}
+
+.tactile-btn:active {
+  transform: translateY(2px);
+  box-shadow: 0 1px 0 var(--btn-shadow), 0 2px 4px rgba(0, 0, 0, 0.25);
+}
+
+.tactile-btn.primary-btn {
+  background: linear-gradient(to bottom, #ffd54f, #d4af37);
+  border-color: #ffd54f;
+  color: #0b0f19;
+  box-shadow: 0 3px 0 #8c6e23;
+  text-shadow: none;
+}
+
+.tactile-btn.primary-btn:hover {
+  background: linear-gradient(to bottom, #ffdf79, #dfba42);
+}
+
+.tactile-btn.mode-btn {
+  color: var(--blue-primary);
+  border-color: rgba(0, 210, 211, 0.4);
+}
+
+/* 工作台主容器：纵向一体化开阔视窗 */
+#game-workspace {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 10px;
+  flex: 1;
+  width: 100%;
+}
+
+/* 街机空中数码管悬挂记分桥 (Arcade Overhead Score Bridge) */
+#arcade-scoreboard {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  width: 100%;
+  max-width: 960px;
+  background: linear-gradient(180deg, #101624 0%, #0a0e18 100%);
+  border: 1.5px solid var(--border-neon);
+  border-radius: 14px;
+  padding: 8px 16px;
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  gap: 12px;
+}
+
+/* 队伍比分与状态区 */
+.score-team {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.score-team.team-red {
+  justify-content: flex-start;
+}
+
+.score-team.team-blue {
+  justify-content: flex-end;
+}
+
+.team-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.score-team.team-blue .team-meta {
+  text-align: right;
+}
+
+.team-name {
+  font-size: 0.82rem;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+}
+
+.team-red .team-name {
+  color: var(--red-primary);
+}
+
+.team-blue .team-name {
+  color: var(--blue-primary);
+}
+
+.team-controls {
+  font-size: 0.68rem;
+  color: var(--text-muted);
+}
+
+.team-score-box {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.digital-score {
+  font-size: 2.4rem;
+  font-weight: 900;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+  min-width: 1.3ch;
+  text-align: center;
+}
+
+.red-score {
+  color: var(--red-primary);
+  text-shadow: 0 0 16px var(--red-glow);
+}
+
+.blue-score {
+  color: var(--blue-primary);
+  text-shadow: 0 0 16px var(--blue-glow);
+}
+
+/* 重扣冲刺胶囊指示器 (Dash Status Pill) */
+.dash-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 8px;
+  border-radius: 20px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  transition: all 0.15s ease;
+}
+
+.dash-pill.ready {
+  background: rgba(46, 213, 115, 0.15);
+  border: 1px solid rgba(46, 213, 115, 0.5);
+  color: #2ed573;
+}
+
+.dash-pill.charging {
+  background: rgba(131, 149, 167, 0.12);
+  border: 1px solid rgba(131, 149, 167, 0.3);
+  color: var(--text-muted);
+}
+
+.dash-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.dash-pill.ready .dash-dot {
+  box-shadow: 0 0 6px #2ed573;
+}
+
+/* 中央情报区 */
+.scoreboard-center {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  text-align: center;
+}
+
+.match-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.act-text {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+}
+
+.vs-badge {
+  font-size: 0.74rem;
+  font-weight: 900;
+  color: var(--gold-primary);
+  background: rgba(255, 213, 79, 0.15);
+  padding: 1px 5px;
+  border-radius: 4px;
+}
+
+.level-text {
+  font-size: 0.74rem;
+  font-weight: 700;
+  color: var(--text-main);
+}
+
+.speed-cluster {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 3px;
+  padding: 2px 10px;
+  background: rgba(20, 28, 44, 0.85);
+  border: 1px solid rgba(255, 215, 79, 0.35);
+  border-radius: 20px;
+}
+
+.speed-icon {
+  font-size: 0.72rem;
+  color: var(--gold-primary);
+}
+
+.speed-number {
+  font-size: 1.15rem;
+  font-weight: 900;
+  color: var(--gold-primary);
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+}
+
+.speed-unit {
+  font-size: 0.65rem;
+  font-weight: 700;
+  color: var(--text-muted);
+}
+
+.target-rule {
+  font-size: 0.66rem;
+  color: var(--text-muted);
+  letter-spacing: 0.5px;
+}
+
+/* Canvas 视窗容器：全景居中，无黑边无压抑感 */
+#canvas-container {
+  position: relative;
+  width: 100%;
+  max-width: 960px;
+  aspect-ratio: 840 / 480;
+  max-height: calc(100vh - 175px);
+  margin: 0 auto;
+  border-radius: 18px;
+  border: 2px solid rgba(0, 210, 211, 0.35);
+  background: #06080e;
+  box-shadow: 
+    0 10px 32px rgba(0, 0, 0, 0.6),
+    0 0 20px rgba(0, 210, 211, 0.15),
+    inset 0 0 20px rgba(0, 0, 0, 0.8);
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  touch-action: none;
+}
+
+#game-canvas {
+  width: 100%;
+  height: 100%;
+  display: block;
+  touch-action: none;
+  overscroll-behavior: none;
+}
+
+/* 模态弹窗系统 */
+.game-dialog {
+  border: none;
+  border-radius: 20px;
+  padding: 0;
+  background: transparent;
+  margin: auto;
+  max-width: 94vw;
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.85);
+}
+
+.game-dialog::backdrop {
+  background: rgba(3, 5, 8, 0.82);
+}
+
+.dialog-content {
+  background: #0c121e;
+  border: 2px solid var(--border-neon);
+  border-radius: 20px;
+  padding: 22px 26px;
+  color: var(--text-main);
+  max-width: 440px;
+  box-sizing: border-box;
+}
+
+.game-dialog.wide-dialog {
+  width: min(640px, 94vw);
+}
+
+.wide-dialog .dialog-content {
+  width: 100%;
+  max-width: 100%;
+}
+
+.dialog-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.dialog-header h2 {
+  font-size: 1.25rem;
+  color: var(--blue-primary);
+  font-weight: 800;
+}
+
+.close-x {
+  background: none;
+  border: none;
+  font-size: 1.25rem;
+  cursor: pointer;
+  color: var(--text-muted);
+  padding: 4px;
+}
+
+.close-x:hover {
+  color: var(--text-main);
+}
+
+.dialog-actions {
+  display: flex;
+  justify-content: center;
+  margin-top: 18px;
+}
+
+/* 玩法说明弹窗内容 */
+.rules-body {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  max-height: 56vh;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.rule-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  background: rgba(18, 26, 40, 0.75);
+  border: 1px solid rgba(0, 210, 211, 0.2);
+  border-radius: 12px;
+  padding: 12px 14px;
+}
+
+.rule-icon {
+  font-size: 1.6rem;
+  line-height: 1;
+  flex-shrink: 0;
+  padding-top: 2px;
+}
+
+.rule-info {
+  flex: 1;
+}
+
+.rule-info h3 {
+  font-size: 0.92rem;
+  color: var(--gold-primary);
+  margin-bottom: 5px;
+  font-weight: 700;
+}
+
+.rule-info p {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  line-height: 1.48;
+}
+
+.ctrl-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 4px;
+}
+
+.ctrl-row {
+  font-size: 0.78rem;
+  color: var(--text-main);
+  line-height: 1.42;
+}
+
+.ctrl-badge {
+  display: inline-block;
+  padding: 1px 6px;
+  border-radius: 4px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  margin-right: 2px;
+}
+
+.ctrl-badge.red {
+  background: rgba(255, 45, 85, 0.18);
+  color: #ff2d55;
+  border: 1px solid rgba(255, 45, 85, 0.4);
+}
+
+.ctrl-badge.blue {
+  background: rgba(0, 210, 211, 0.18);
+  color: #00d2d3;
+  border: 1px solid rgba(0, 210, 211, 0.4);
+}
+
+.ctrl-badge.yellow {
+  background: rgba(255, 215, 79, 0.18);
+  color: #ffd54f;
+  border: 1px solid rgba(255, 215, 79, 0.4);
+}
+
+/* 关卡网格：彻底修复 1 列缩水 bug，保证至少 5-6 列整齐铺展 */
+.levels-scroll-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(88px, 1fr));
+  gap: 10px;
+  max-height: 52vh;
+  overflow-y: auto;
+  padding: 6px 4px;
+}
+
+.levels-scroll-grid::-webkit-scrollbar,
+.rules-body::-webkit-scrollbar {
+  width: 6px;
+}
+
+.levels-scroll-grid::-webkit-scrollbar-track,
+.rules-body::-webkit-scrollbar-track {
+  background: #080d16;
+  border-radius: 3px;
+}
+
+.levels-scroll-grid::-webkit-scrollbar-thumb,
+.rules-body::-webkit-scrollbar-thumb {
+  background: #1e2c40;
+  border-radius: 3px;
+}
+
+.levels-scroll-grid::-webkit-scrollbar-thumb:hover,
+.rules-body::-webkit-scrollbar-thumb:hover {
+  background: #00d2d3;
+}
+
+.level-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 4px;
+  background: #111824;
+  border: 1.5px solid #233146;
+  border-radius: 12px;
+  cursor: pointer;
+  box-shadow: 0 3px 0 #05080e;
+  transition: transform 0.08s ease, background 0.15s ease, border-color 0.15s ease;
+}
+
+.level-card:hover:not(:disabled) {
+  background: #1a263a;
+  border-color: var(--blue-primary);
+}
+
+.level-card:active:not(:disabled) {
+  transform: translateY(2px);
+  box-shadow: 0 1px 0 #05080e;
+}
+
+.level-card.active {
+  border-color: var(--blue-primary);
+  background: #1c2e47;
+  box-shadow: 0 0 12px rgba(0, 210, 211, 0.35);
+}
+
+.level-card:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.level-num {
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: var(--text-main);
+  line-height: 1;
+}
+
+.level-stars {
+  font-size: 0.72rem;
+  color: var(--gold-primary);
+  margin-top: 4px;
+}
+
+.level-num {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--text-main);
+}
+
+.level-stars {
+  font-size: 0.72rem;
+  color: var(--gold-primary);
+  margin-top: 4px;
+}
+
+/* 结算胜利铭牌 */
+.won-dialog .won-card {
+  background: #0e1422;
+  border: 2px solid rgba(0, 210, 211, 0.6);
+  border-radius: 20px;
+  padding: 24px 26px;
+  text-align: center;
+  color: var(--text-main);
+  width: 360px;
+  max-width: 90vw;
+  box-shadow: 0 0 24px rgba(0, 210, 211, 0.3);
+}
+
+.won-badge {
+  font-size: 3.2rem;
+  margin-bottom: 8px;
+}
+
+.won-card h2 {
+  font-size: 1.25rem;
+  color: var(--gold-primary);
+  margin-bottom: 10px;
+}
+
+.won-stars-row {
+  font-size: 1.5rem;
+  color: var(--gold-primary);
+  letter-spacing: 4px;
+  margin-bottom: 14px;
+}
+
+.won-stats-grid {
+  display: flex;
+  justify-content: space-around;
+  font-size: 0.9rem;
+  color: var(--text-muted);
+  margin-bottom: 20px;
+}
+
+.stat-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.stat-num {
+  color: var(--text-main);
+  font-size: 1.05rem;
+}
+
+.won-actions {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+}
+
+/* 响应式媒体查询 */
+@media (max-width: 960px) {
+  #game-workspace {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .workspace-wing {
+    width: 100%;
+    max-width: 860px;
+    flex-direction: row;
+    justify-content: space-between;
+  }
+
+  .wing-card {
+    flex: 1;
+    padding: 6px 8px;
+  }
+
+  .score-val {
+    font-size: 1.6rem;
+  }
+
+  .wing-sub {
+    display: none;
+  }
+}
+
+@media (max-width: 600px) {
+  #game-header {
+    padding: 6px 10px;
+  }
+
+  #game-title {
+    font-size: 1.05rem;
+  }
+
+  .tactile-btn {
+    padding: 4px 8px;
+    font-size: 0.76rem;
+  }
+
+  .workspace-wing {
+    gap: 6px;
+  }
+
+  .wing-card {
+    padding: 4px 6px;
+  }
+
+  .wing-value {
+    font-size: 0.88rem;
+  }
+
+  .score-val {
+    font-size: 1.3rem;
+  }
+}
+
+/* 动效降级 */
+@media (prefers-reduced-motion: reduce) {
+  .tactile-btn,
+  .level-card {
+    transition: none !important;
+  }
+}

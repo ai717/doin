@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-D67E3XTNSS"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-D67E3XTNSS');
+  </script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>神偷手臂 · DOIN 在线小游戏</title>
+  <meta name="description" content="拖拽神偷的橡胶长臂，绕过石柱、躲开激光与恶犬，把宝物勾回怀里。20 关怪盗洋馆解谜，纯手绘舞台，零广告。">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="css/style.css?v=b4b5e58af7f3">
+</head>
+<body>
+  <div id="app">
+    <div id="cabinet">
+      <header id="stage-bar">
+        <a href="/" id="back-home" class="bar-btn" data-i18n="backHome">← 门户</a>
+        <div id="brand">
+          <h1 id="app-title" data-i18n="appTitle">神偷手臂</h1>
+          <p id="app-subtitle" data-i18n="appSubtitle">橡胶长臂 · 绕柱取宝</p>
+        </div>
+        <div class="bar-actions">
+          <button id="btn-levels" class="bar-btn" type="button" data-i18n="btnLevels">关卡</button>
+          <button id="btn-pause" class="bar-btn" type="button" data-i18n="btnPause">暂停</button>
+          <button id="btn-sound" class="bar-btn" type="button" data-i18n-aria="btnSound" aria-label="音效">♪</button>
+          <button id="btn-lang" class="bar-btn" type="button">EN</button>
+          <button id="btn-help" class="bar-btn" type="button" data-i18n-aria="btnHelp" aria-label="玩法">?</button>
+        </div>
+      </header>
+
+      <div id="arena">
+        <canvas id="stage" width="840" height="560" aria-label="怪盗舞台"></canvas>
+        <div id="toast" hidden></div>
+        <div id="pause-layer" hidden>
+          <div class="pause-card">
+            <h2 data-i18n="pausedTitle">已暂停</h2>
+            <p data-i18n="pausedHint">按 P 或 Esc 继续</p>
+            <div class="pause-actions">
+              <button id="btn-resume" class="ghost-btn accent" type="button" data-i18n="btnResume">继续</button>
+              <button id="btn-restart-pause" class="ghost-btn" type="button" data-i18n="btnRetry">重来</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <footer id="footrail">
+        <div class="readout target-readout">
+          <span class="readout-label" data-i18n="targetLabel">目标</span>
+          <span id="target-name" class="readout-value">—</span>
+        </div>
+        <div class="readout alarm-readout">
+          <span class="readout-label" data-i18n="alarmLabel">警报</span>
+          <span class="alarm-lamps" id="alarm-lamps">
+            <i class="lamp on"></i><i class="lamp"></i><i class="lamp"></i>
+          </span>
+          <span id="alarm-text" class="readout-note" data-i18n="alarmCalm">安静</span>
+        </div>
+        <div class="readout reach-readout">
+          <span class="readout-label" data-i18n="travelLabel">手臂长度</span>
+          <span id="travel-value" class="readout-value">0</span>
+          <span id="stage-stars" class="mini-stars" aria-label="stars">★★★</span>
+        </div>
+        <div id="loot-shelf" class="shelf" data-i18n-aria="lootTitle" aria-label="战利品陈列"></div>
+        <button id="btn-retry" class="rail-btn" type="button" data-i18n="btnRetry">重来</button>
+      </footer>
+    </div>
+
+    <div id="drawer" class="overlay" hidden>
+      <div class="sheet">
+        <div class="sheet-head">
+          <h2 data-i18n="drawerTitle">怪盗行程</h2>
+          <button class="close-btn" id="btn-drawer-close" type="button" data-i18n-aria="btnClose" aria-label="关闭">×</button>
+        </div>
+        <p class="sheet-sub" id="drawer-sub" data-i18n="drawerHint">挑一票下手</p>
+        <div id="level-grid" class="level-grid"></div>
+      </div>
+    </div>
+
+    <div id="help" class="overlay" hidden>
+      <div class="sheet help-sheet">
+        <div class="sheet-head">
+          <h2 data-i18n="helpTitle">怪盗手册</h2>
+          <button class="close-btn" id="btn-help-close" type="button" data-i18n-aria="btnClose" aria-label="关闭">×</button>
+        </div>
+        <ul class="help-list">
+          <li data-i18n="help1">按住舞台任意位置拖动，神偷的橡胶手臂会跟着走。</li>
+          <li data-i18n="help2">手臂碰到石柱、雕像、吊灯时会自动绕住，绕过障碍全靠这个折角。</li>
+          <li data-i18n="help3">把长臂往回拖，折角会自动松开，手臂重新绷直。</li>
+          <li data-i18n="help4">红色激光、通电铁丝网、睡着的恶犬和探照灯都会让这一票失败。</li>
+          <li data-i18n="help5">探照灯只照手掌，等光锥扫开再伸手。</li>
+          <li data-i18n="help6">先用手掌按下面板上的电闸，成组的激光就会熄灭。</li>
+          <li data-i18n="help7">手臂越短越漂亮，星级按拖拽长度评定。</li>
+        </ul>
+      </div>
+    </div>
+
+    <div id="result" class="overlay" hidden>
+      <div class="sheet result-sheet">
+        <h2 id="result-title">得手！</h2>
+        <p id="result-note" class="result-note"></p>
+        <div id="result-stars" class="big-stars">★★★</div>
+        <p class="result-meta"><span data-i18n="winTravel">臂展</span> <b id="result-travel">0</b></p>
+        <div class="result-actions">
+          <button id="btn-next" class="ghost-btn accent" type="button" data-i18n="btnNext">下一件</button>
+          <button id="btn-replay" class="ghost-btn" type="button" data-i18n="btnReplay">再来一次</button>
+          <button id="btn-result-levels" class="ghost-btn" type="button" data-i18n="btnLevels">关卡</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <noscript><p>需要启用 JavaScript 才能游玩。</p></noscript>
+  <script type="module" src="js/main.mjs?v=b4b5e58af7f3"></script>
+</body>
+</html>

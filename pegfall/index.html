@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-D67E3XTNSS"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-D67E3XTNSS');
+  </script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>弹珠落钉 · DOIN 在线小游戏</title>
+  <meta name="description" content="旋转黄铜加农炮，一发弹珠在发光钉阵间长链反弹，点亮全部橙色目标钉触发极限狂喜时刻。21 关维多利亚铜管弹珠工坊，四色钉、移动接球斗与免费弹珠，固定步长物理即点即玩。">
+  <link rel="canonical" href="https://doin.win/pegfall/">
+  <meta name="theme-color" content="#2c0b0e">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="DOIN">
+  <meta property="og:title" content="弹珠落钉 · DOIN 在线小游戏">
+  <meta property="og:description" content="21 关维多利亚铜管弹珠工坊：四色钉、接球斗、极限狂喜慢动作。">
+  <meta property="og:url" content="https://doin.win/pegfall/">
+  <meta property="og:locale" content="zh_CN">
+  <meta property="og:image" content="https://doin.win/assets/og-image.png">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="弹珠落钉 · DOIN 在线小游戏">
+  <meta name="twitter:description" content="21 关维多利亚铜管弹珠工坊：四色钉、接球斗、极限狂喜慢动作。">
+  <meta name="twitter:image" content="https://doin.win/assets/og-image.png">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="css/style.css?v=b4b5e58af7f3">
+</head>
+<body>
+  <noscript><p class="noscript" data-i18n="noscript">需要启用 JavaScript 才能游玩弹珠落钉。</p></noscript>
+
+  <div class="cabinet" id="game-app">
+    <header class="topbar">
+      <a href="/" id="back-home" class="bar-btn" data-i18n="backHome">返回门户</a>
+      <div class="brand">
+        <h1 class="title" id="app-title" data-i18n="title">弹珠落钉</h1>
+        <p class="subtitle" data-i18n="subtitle">维多利亚铜管弹珠工坊</p>
+      </div>
+      <div class="topbar-tools">
+        <button type="button" id="pause-btn" class="bar-btn" data-i18n-aria="pause">⏸</button>
+        <button type="button" id="sound-btn" class="bar-btn" aria-pressed="true" data-i18n-aria="ariaSound">♪</button>
+        <button type="button" id="lang-btn" class="bar-btn" data-i18n-aria="ariaLang">EN</button>
+        <button type="button" id="help-btn" class="bar-btn" data-i18n-aria="ariaHelp">?</button>
+      </div>
+    </header>
+
+    <main class="arena">
+      <aside class="wing wing-left" aria-labelledby="balls-label">
+        <div class="gauge">
+          <span class="wing-label" id="balls-label" data-i18n="ballsLabel">弹珠</span>
+          <div class="ball-readout">
+            <span class="ball-count" id="balls-value">10</span>
+            <div class="ball-dots" id="ball-dots" aria-hidden="true"></div>
+          </div>
+          <div class="progress-block">
+            <div class="progress-head">
+              <span data-i18n="orangeLabel">橙钉</span>
+              <b id="orange-value">0 / 0</b>
+            </div>
+            <div class="progress-rail"><span class="progress-fill" id="orange-bar"></span></div>
+          </div>
+          <div class="readout-cell">
+            <em data-i18n="scoreLabel">得分</em>
+            <b id="score-value">0</b>
+          </div>
+          <div class="readout-cell">
+            <em data-i18n="bestLabel">最高</em>
+            <b id="best-value">0</b>
+          </div>
+        </div>
+        <p class="status" id="status-line" role="status" aria-live="polite"></p>
+      </aside>
+
+      <section class="board-stage">
+        <h2 class="sr-only" data-i18n="boardAria">弹珠落钉钉板</h2>
+        <div class="machine-frame">
+          <span class="bolt bolt-tl" aria-hidden="true"></span>
+          <span class="bolt bolt-tr" aria-hidden="true"></span>
+          <span class="bolt bolt-bl" aria-hidden="true"></span>
+          <span class="bolt bolt-br" aria-hidden="true"></span>
+          <canvas id="stage" width="840" height="560" data-i18n-aria="ariaCanvas"></canvas>
+        </div>
+      </section>
+
+      <aside class="wing wing-right" aria-labelledby="combo-label">
+        <h2 class="wing-title" id="combo-label" data-i18n="comboLabel">连击</h2>
+        <div class="combo-value" id="combo-value">0</div>
+        <div class="power-block">
+          <span class="wing-label" data-i18n="powerLabel">异能</span>
+          <p class="power-value" id="power-value">待激活</p>
+        </div>
+        <p class="wing-note" data-i18n="flightHint">按住屏幕 / 空格 2 倍速快进</p>
+        <p class="wing-note wing-keys" data-i18n="keyboardHint">方向键 / A D 微调 0.5° · 空格发射 · P 暂停</p>
+        <p class="saved" data-i18n="saved">进度与最高分保存在本机浏览器，可离线游玩。</p>
+      </aside>
+    </main>
+
+    <footer class="instrument-bar" data-i18n-aria="ariaHud">
+      <div class="key-row">
+        <button type="button" class="key" id="levels-btn" data-i18n="levels">选关</button>
+        <button type="button" class="key key-primary" id="fire-btn" data-i18n="fireButton">发射</button>
+        <button type="button" class="key" id="restart-btn" data-i18n="restart">重开</button>
+      </div>
+      <p class="aim-hint" id="aim-hint" data-i18n="aimHint">拖动瞄准 · 松手发射</p>
+    </footer>
+  </div>
+
+  <div class="layer" id="levels-layer" hidden role="dialog" aria-modal="true" aria-labelledby="levels-title">
+    <div class="panel panel-levels">
+      <h2 id="levels-title" data-i18n="levelsTitle">钉板工坊</h2>
+      <p class="levels-total" id="levels-total"></p>
+      <div class="levels-grid" id="levels-grid"></div>
+      <div class="layer-actions">
+        <button type="button" class="key key-primary" id="levels-close" data-i18n="close">关闭</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="layer" id="pause-layer" hidden role="dialog" aria-modal="true" aria-labelledby="pause-title">
+    <div class="panel">
+      <h2 id="pause-title" data-i18n="pauseTitle">已暂停</h2>
+      <p class="field-note" data-i18n="pausedHint">弹珠与接球斗已冻结，随时回来继续。</p>
+      <div class="layer-actions">
+        <button type="button" class="key key-primary" id="pause-resume" data-i18n="continueLabel">继续游戏</button>
+        <button type="button" class="key" id="pause-restart" data-i18n="pauseRestart">重新开始</button>
+        <button type="button" class="key" id="pause-levels" data-i18n="pauseLevels">返回选关</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="layer" id="result-layer" hidden role="dialog" aria-modal="true" aria-labelledby="result-title">
+    <div class="panel">
+      <p class="result-badge" id="result-badge"></p>
+      <h2 id="result-title"></h2>
+      <p class="result-stars" id="result-stars"></p>
+      <div class="report">
+        <div class="report-row"><span data-i18n="resultScore">本关得分</span><b id="result-score">0</b></div>
+        <div class="report-row"><span data-i18n="resultBalls">剩余弹珠</span><b id="result-balls">0</b></div>
+        <div class="report-row"><span data-i18n="resultBest">历史最高</span><b id="result-best">0</b></div>
+      </div>
+      <div class="layer-actions">
+        <button type="button" class="key key-primary" id="result-next" data-i18n="next">下一关</button>
+        <button type="button" class="key" id="result-again" data-i18n="again">再来一次</button>
+        <button type="button" class="key" id="result-close" data-i18n="close">关闭</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="layer" id="help-layer" hidden role="dialog" aria-modal="true" aria-labelledby="help-title">
+    <div class="panel">
+      <h2 id="help-title" data-i18n="helpTitle">玩法说明</h2>
+      <pre class="help-body" id="help-body"></pre>
+      <p class="field-note" id="help-keys"></p>
+      <p class="field-note" id="help-pegs"></p>
+      <p class="field-note" id="help-fever"></p>
+      <p class="field-note" id="help-bucket"></p>
+      <div class="layer-actions">
+        <button type="button" class="key key-primary" id="help-close" data-i18n="close">关闭</button>
+      </div>
+    </div>
+  </div>
+
+  <p class="toast" id="toast" role="status" aria-live="polite" hidden></p>
+
+  <script type="module" src="js/main.mjs?v=b4b5e58af7f3"></script>
+</body>
+</html>

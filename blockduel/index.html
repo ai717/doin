@@ -1,0 +1,195 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-D67E3XTNSS"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-D67E3XTNSS');
+  </script>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title data-i18n="docTitle">方块对轰 · Block Duel | DOIN</title>
+  <meta name="description" content="方块对轰 Block Duel：7-Bag 俄罗斯方块双人同屏对战，垃圾行 1:1 抵消、22 关 AI 天梯、Canvas 激光对轰。" />
+  <link rel="icon" href="./favicon.svg" type="image/svg+xml" />
+  <link rel="stylesheet" href="./css/style.css?v=b4b5e58af7f3" />
+</head>
+<body>
+  <div class="page" id="app">
+    <header class="marquee">
+      <a href="/" id="back-home" class="tool ghost" data-i18n="backHome">← 门户</a>
+      <div class="brand">
+        <span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
+        <div class="brand-text">
+          <h1 data-i18n="brand">方块对轰</h1>
+          <p data-i18n="tagline">7-Bag 俄罗斯方块对轰 · 22 位 AI 擂主</p>
+        </div>
+      </div>
+      <div class="toolbar" role="toolbar" aria-label="controls">
+        <div class="seg" id="mode-seg">
+          <button type="button" id="btn-mode-solo" class="tool is-on" data-i18n="modeSolo">天梯</button>
+          <button type="button" id="btn-mode-versus" class="tool" data-i18n="modeVersus">双人</button>
+        </div>
+        <button type="button" id="btn-bestof" class="tool chip">BO3</button>
+        <button type="button" id="btn-levels" class="tool" data-i18n="levels" data-i18n-attr="aria-label:ariaLevels">选关</button>
+        <button type="button" id="btn-pause" class="tool" data-i18n="pause" data-i18n-attr="aria-label:ariaPause">暂停</button>
+        <button type="button" id="btn-sound" class="tool icon" data-i18n-attr="aria-label:ariaSound" aria-label="音效开关">♪</button>
+        <button type="button" id="btn-lang" class="tool icon" data-i18n="langBtn" data-i18n-attr="aria-label:ariaLang">EN</button>
+        <button type="button" id="btn-help" class="tool" data-i18n="help" data-i18n-attr="aria-label:ariaHelp">玩法</button>
+      </div>
+    </header>
+
+    <section class="scorebridge" aria-live="polite">
+      <div class="team red">
+        <div class="team-id">
+          <span class="team-dot" aria-hidden="true"></span>
+          <b data-i18n="player1">红方</b>
+          <span id="tag-p1" class="tag" data-i18n="you">你</span>
+        </div>
+        <div class="metrics">
+          <div class="metric"><span data-i18n="score">得分</span><strong id="p1-score">0</strong></div>
+          <div class="metric"><span data-i18n="lines">消行</span><strong id="p1-lines">0</strong></div>
+          <div class="metric"><span data-i18n="combo">连击</span><strong id="p1-combo">0</strong></div>
+          <div class="metric"><span data-i18n="garbage">垃圾</span><strong id="p1-garbage">0</strong></div>
+        </div>
+      </div>
+
+      <div class="series">
+        <span id="chip-stage" class="chip">第 1 关</span>
+        <div class="series-score">
+          <strong id="score-p1">0</strong>
+          <i aria-hidden="true">:</i>
+          <strong id="score-p2">0</strong>
+        </div>
+        <span id="chip-round" class="chip">第 1 回合</span>
+        <div class="pips">
+          <span id="pips-p1" class="pip-row" aria-hidden="true"></span>
+          <span id="pips-p2" class="pip-row" aria-hidden="true"></span>
+        </div>
+      </div>
+
+      <div class="team blue">
+        <div class="team-id">
+          <span class="team-dot" aria-hidden="true"></span>
+          <b data-i18n="player2">蓝方</b>
+          <span id="tag-p2" class="tag" data-i18n="aiLabel">AI 对手</span>
+        </div>
+        <div class="metrics">
+          <div class="metric"><span data-i18n="score">得分</span><strong id="p2-score">0</strong></div>
+          <div class="metric"><span data-i18n="lines">消行</span><strong id="p2-lines">0</strong></div>
+          <div class="metric"><span data-i18n="combo">连击</span><strong id="p2-combo">0</strong></div>
+          <div class="metric"><span data-i18n="garbage">垃圾</span><strong id="p2-garbage">0</strong></div>
+        </div>
+      </div>
+    </section>
+
+    <main class="arena" data-i18n-attr="aria-label:ariaArena">
+      <div class="cabinet">
+        <canvas id="arena-canvas" width="840" height="560" data-i18n-attr="aria-label:ariaCanvas"></canvas>
+        <div id="banner" class="banner" aria-live="assertive"><span id="banner-text"></span></div>
+      </div>
+
+      <div class="touch" id="touch">
+        <div class="touch-pad" data-player="0">
+          <button type="button" class="pad-key" data-player="0" data-act="hold" data-i18n-attr="aria-label:touchHold">⇄</button>
+          <button type="button" class="pad-key" data-player="0" data-act="rotateCCW" data-i18n-attr="aria-label:touchRotateCCW">⟲</button>
+          <button type="button" class="pad-key" data-player="0" data-act="rotateCW" data-i18n-attr="aria-label:touchRotate">⟳</button>
+          <button type="button" class="pad-key" data-player="0" data-act="hard" data-i18n-attr="aria-label:touchHard">⤓</button>
+          <button type="button" class="pad-key" data-player="0" data-act="left" data-i18n-attr="aria-label:touchLeft">◀</button>
+          <button type="button" class="pad-key" data-player="0" data-act="soft" data-i18n-attr="aria-label:touchSoft">▼</button>
+          <button type="button" class="pad-key" data-player="0" data-act="right" data-i18n-attr="aria-label:touchRight">▶</button>
+          <button type="button" class="pad-key pad-pause" data-act="pause" data-i18n-attr="aria-label:ariaPause">❚❚</button>
+        </div>
+        <div class="touch-pad" data-player="1">
+          <button type="button" class="pad-key" data-player="1" data-act="hold" data-i18n-attr="aria-label:touchHold">⇄</button>
+          <button type="button" class="pad-key" data-player="1" data-act="rotateCCW" data-i18n-attr="aria-label:touchRotateCCW">⟲</button>
+          <button type="button" class="pad-key" data-player="1" data-act="rotateCW" data-i18n-attr="aria-label:touchRotate">⟳</button>
+          <button type="button" class="pad-key" data-player="1" data-act="hard" data-i18n-attr="aria-label:touchHard">⤓</button>
+          <button type="button" class="pad-key" data-player="1" data-act="left" data-i18n-attr="aria-label:touchLeft">◀</button>
+          <button type="button" class="pad-key" data-player="1" data-act="soft" data-i18n-attr="aria-label:touchSoft">▼</button>
+          <button type="button" class="pad-key" data-player="1" data-act="right" data-i18n-attr="aria-label:touchRight">▶</button>
+          <button type="button" class="pad-key pad-pause" data-act="pause" data-i18n-attr="aria-label:ariaPause">❚❚</button>
+        </div>
+      </div>
+    </main>
+
+    <footer class="legend">
+      <p data-i18n="legendSolo">单人：击破 AI 一次即过关，逐关解锁 22 位擂主。</p>
+      <p data-i18n="legendVersus">双人：左红右蓝同屏对轰，BO3 抢二 / BO5 抢三。</p>
+      <span class="hint" data-i18n="footerHint">P / Esc 暂停 · 切后台自动冻结</span>
+    </footer>
+  </div>
+
+  <div class="overlay" id="ov-help" hidden>
+    <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="help-title">
+      <div class="sheet-head">
+        <h2 id="help-title" data-i18n="helpTitle">玩法说明</h2>
+        <button type="button" class="x" data-close data-i18n-attr="aria-label:ariaClose">×</button>
+      </div>
+      <div class="sheet-body">
+        <p data-i18n="helpGoal">把对手顶穿即 KO。消 2 行开始反轰垃圾，消 4 行重炮 4 格。</p>
+        <p data-i18n="helpSolo">天梯 22 关：每关击破 AI 一次即过关，并解锁下一位擂主。</p>
+        <p data-i18n="helpVersus">双人同屏：左红右蓝，BO3 抢二、BO5 抢三。</p>
+        <p data-i18n="helpGarbage">受到的垃圾先进入缓冲槽，1.5 秒后或你锁定下一块时升起；期间任何消行都能 1:1 抵消，多余火力反打对手。</p>
+        <p data-i18n="helpScoring">攻击表：双行 1 / 三行 2 / Tetris 4；T-Spin 双 4、三 6；Back-to-Back 与连击再追加。单行不产生垃圾。</p>
+        <div class="keys">
+          <div><span class="key-dot red" aria-hidden="true"></span><p data-i18n="helpKeysP1">红方：A / D 横移，S 软降，W 顺转，Q 逆转，空格硬降，C 暂存。</p></div>
+          <div><span class="key-dot blue" aria-hidden="true"></span><p data-i18n="helpKeysP2">蓝方：← / → 横移，↓ 软降，↑ 顺转，0 逆转，Enter 硬降，Shift 暂存。</p></div>
+        </div>
+        <p class="muted" data-i18n="helpPause">P / Esc 随时暂停；切标签页或窗口失焦会自动冻结；单人模式方向键也可操作红方。</p>
+      </div>
+      <div class="sheet-foot">
+        <button type="button" class="primary" data-close data-i18n="helpClose">知道了</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="overlay" id="ov-pause" hidden>
+    <div class="sheet narrow" role="dialog" aria-modal="true" aria-labelledby="pause-title">
+      <div class="pause-glyph" aria-hidden="true">❚❚</div>
+      <h2 id="pause-title" data-i18n="pauseTitle">已暂停</h2>
+      <p class="muted" data-i18n="pauseHint">计时、重力与 AI 已全部冻结。</p>
+      <div class="sheet-foot column">
+        <button type="button" id="btn-resume" class="primary" data-i18n="resumeGame">继续游戏</button>
+        <button type="button" id="btn-restart" data-i18n="restartMatch">重开本局</button>
+        <button type="button" id="btn-pause-levels" data-i18n="pauseToLevels">返回选关</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="overlay" id="ov-levels" hidden>
+    <div class="sheet wide" role="dialog" aria-modal="true" aria-labelledby="levels-title">
+      <div class="sheet-head">
+        <h2 id="levels-title" data-i18n="levels">选关</h2>
+        <span id="level-progress" class="muted"></span>
+        <button type="button" class="x" data-close data-i18n-attr="aria-label:ariaClose">×</button>
+      </div>
+      <div class="level-grid" id="level-grid"></div>
+      <div class="sheet-foot">
+        <button type="button" id="btn-reset-save" class="danger" data-i18n="resetSave">重置天梯进度</button>
+        <button type="button" data-close data-i18n="btnClose">关闭</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="overlay" id="ov-result" hidden>
+    <div class="sheet narrow result" role="dialog" aria-modal="true" aria-labelledby="result-title">
+      <span id="result-eyebrow" class="eyebrow"></span>
+      <h2 id="result-title"></h2>
+      <p id="result-detail" class="muted"></p>
+      <div class="sheet-foot column">
+        <button type="button" id="btn-result-primary" class="primary"></button>
+        <button type="button" id="btn-result-secondary"></button>
+        <button type="button" id="btn-result-levels" data-i18n="btnToLevels">返回选关</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast" class="toast" hidden></div>
+
+  <noscript>方块对轰需要 JavaScript 才能运行。请开启浏览器脚本后刷新页面。</noscript>
+  <script type="module" src="./js/main.mjs?v=b4b5e58af7f3"></script>
+</body>
+</html>

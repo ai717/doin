@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-D67E3XTNSS"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-D67E3XTNSS');
+  </script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="description" content="零随机经典固定数值算步 RPG：严密规划每一把钥匙、每一颗宝石与攻防临界值，无伤清怪、收集神装、直抵 50 层击破魔王！" data-i18n="tagline">
+  <title data-i18n="title">魔塔 50 层</title>
+  <link rel="icon" type="image/svg+xml" href="favicon.svg?v=b4b5e58af7f3">
+  <link rel="stylesheet" href="css/style.css?v=b4b5e58af7f3">
+</head>
+<body>
+  <noscript>
+    <div class="noscript-tip">
+      <h2 data-i18n="title">魔塔 50 层</h2>
+      <p>请启用 JavaScript 以进入黑曜石地牢开启魔塔探险。</p>
+    </div>
+  </noscript>
+
+  <div id="game-app">
+    <!-- 顶部黑曜石机台操控牌 -->
+    <header id="game-header">
+      <div class="header-left">
+        <a href="/" id="back-home" class="tactile-btn back-btn" data-i18n="backHome">首页</a>
+        <div class="header-title-box">
+          <h1 id="game-title" data-i18n="title">魔塔 50 层</h1>
+        </div>
+      </div>
+
+      <div class="header-controls">
+        <button id="btn-mode" class="tactile-btn mode-btn" data-i18n="modeClassic">50层全量</button>
+        <button id="btn-rules" class="tactile-btn" data-i18n="rules">📖 玩法</button>
+        <button id="btn-manual" class="tactile-btn" data-i18n="manual">📜 图鉴(M)</button>
+        <button id="btn-fly" class="tactile-btn" data-i18n="fly" disabled>🕊️ 罗盘(F)</button>
+        <button id="btn-undo" class="tactile-btn undo-btn" data-i18n="undo">↺ 撤销(Z)</button>
+        <button id="btn-restart" class="tactile-btn icon-btn" title="瞬时重开" data-i18n="restart">↺ 重开</button>
+        <button id="btn-pause" class="tactile-btn" data-i18n="pause">暂停</button>
+        <button id="btn-sound" class="tactile-btn" data-i18n="soundOn">音效: 开</button>
+        <button id="btn-lang" class="tactile-btn lang-btn" aria-label="Toggle Language">English</button>
+      </div>
+    </header>
+
+    <!-- 主工作台：黑曜石地牢机台 -->
+    <main id="game-workspace">
+      <!-- 机顶羊皮纸勇者属性栏 -->
+      <section id="hud-status-bar" aria-label="Hero Status Bar">
+        <div class="status-chip floor-chip">
+          <span class="chip-icon">🏰</span>
+          <span id="hud-floor" class="chip-val highlight">1 层</span>
+        </div>
+
+        <div class="status-chip hp-chip">
+          <span class="chip-icon">❤️</span>
+          <span class="chip-lbl" data-i18n="hp">生命</span>
+          <span id="hud-hp" class="chip-val hp-val">1000</span>
+        </div>
+
+        <div class="status-chip atk-chip">
+          <span class="chip-icon">⚔️</span>
+          <span class="chip-lbl" data-i18n="atk">攻击</span>
+          <span id="hud-atk" class="chip-val atk-val">10</span>
+        </div>
+
+        <div class="status-chip def-chip">
+          <span class="chip-icon">🛡️</span>
+          <span class="chip-lbl" data-i18n="def">防御</span>
+          <span id="hud-def" class="chip-val def-val">10</span>
+        </div>
+
+        <div class="status-chip gold-chip">
+          <span class="chip-icon">💰</span>
+          <span class="chip-lbl" data-i18n="gold">金币</span>
+          <span id="hud-gold" class="chip-val gold-val">0</span>
+        </div>
+
+        <div class="status-chip keys-chip">
+          <span class="key-pill key-y">🟡 <strong id="hud-key-y">1</strong></span>
+          <span class="key-pill key-b">🔵 <strong id="hud-key-b">0</strong></span>
+          <span class="key-pill key-r">🔴 <strong id="hud-key-r">0</strong></span>
+        </div>
+
+        <div id="hud-relics-list" class="relics-container" aria-label="Relics Inventory">
+          <!-- 动态展示获得的圣水、十字架、屠龙剑、卷轴等 -->
+        </div>
+      </section>
+
+      <!-- 中央 11x11 黑曜石地牢视窗 -->
+      <section id="canvas-container">
+        <canvas id="game-canvas"></canvas>
+        <!-- 悬停临界值算盘浮层 -->
+        <div id="threshold-tooltip" class="threshold-card" style="display: none;"></div>
+      </section>
+
+      <!-- 移动端虚拟十字操控底座 -->
+      <section id="virtual-dpad" aria-label="Virtual D-Pad Controls">
+        <button id="dpad-up" class="dpad-btn up" aria-label="Move Up">▲</button>
+        <div class="dpad-row">
+          <button id="dpad-left" class="dpad-btn left" aria-label="Move Left">◀</button>
+          <button id="dpad-undo" class="dpad-btn center-undo" aria-label="Undo Step">↺</button>
+          <button id="dpad-right" class="dpad-btn right" aria-label="Move Right">▶</button>
+        </div>
+        <button id="dpad-down" class="dpad-btn down" aria-label="Move Down">▼</button>
+      </section>
+    </main>
+
+    <!-- 玩法介绍与规则指南弹窗 -->
+    <dialog id="dialog-rules" class="game-dialog wide-dialog">
+      <div class="dialog-content rules-dialog-content">
+        <div class="dialog-header">
+          <h2 data-i18n="rulesTitle">📖 玩法指南 & 数值秘籍</h2>
+          <button id="btn-close-rules" class="close-x" aria-label="Close">✕</button>
+        </div>
+        <div class="rules-body">
+          <div class="rule-card">
+            <div class="rule-icon">⚔️</div>
+            <div class="rule-info">
+              <h3 data-i18n="ruleCalcTitle">纯确定性零随机战斗</h3>
+              <p data-i18n="ruleCalcDesc">绝无随机闪避或暴击！勇者每次攻击扣除 (攻击-怪物防御) 点血，无法破防则禁止战斗；怪物每次反击扣除 (怪物攻击-勇者防御) 点血。一击秒杀则 0 战损！</p>
+            </div>
+          </div>
+
+          <div class="rule-card">
+            <div class="rule-icon">📊</div>
+            <div class="rule-info">
+              <h3 data-i18n="ruleThresholdTitle">临界值悬停算盘</h3>
+              <p data-i18n="ruleThresholdDesc">光标悬停或长按魔物，即可直接查阅确切战损与下一攻防质变点（如“攻+4少打1回合省160血”），告别实体计算器繁琐计算。</p>
+            </div>
+          </div>
+
+          <div class="rule-card">
+            <div class="rule-icon">🧪</div>
+            <div class="rule-info">
+              <h3 data-i18n="ruleRelicsTitle">神装与神圣法宝</h3>
+              <p data-i18n="ruleRelicsDesc">圣水令当前生命翻倍（越晚喝收益越高！）；神圣十字架永久提升 1/3 全属性；屠龙匕首对魔龙造成双倍致命打击；地震卷轴震碎当前楼层所有普通石墙！</p>
+            </div>
+          </div>
+        </div>
+        <div class="dialog-actions">
+          <button id="btn-start-quest" class="tactile-btn primary-btn" data-i18n="knowRules">我知道了，开启攀登！</button>
+        </div>
+      </div>
+    </dialog>
+
+    <!-- 楼层传送罗盘弹窗 -->
+    <dialog id="dialog-fly" class="game-dialog">
+      <div class="dialog-content fly-dialog-content">
+        <div class="dialog-header">
+          <h2 data-i18n="flyTitle">🕊️ 楼层传送罗盘</h2>
+          <button id="btn-close-fly" class="close-x" aria-label="Close">✕</button>
+        </div>
+        <p class="dialog-tip" data-i18n="flyDesc">选择已踏足探索过的楼层瞬间穿梭：</p>
+        <div id="fly-floors-grid" class="fly-grid"></div>
+      </div>
+    </dialog>
+
+    <!-- 当前楼层魔物图鉴弹窗 -->
+    <dialog id="dialog-manual" class="game-dialog wide-dialog">
+      <div class="dialog-content">
+        <div class="dialog-header">
+          <h2 data-i18n="manualTitle">📜 当前楼层魔物图鉴与临界值</h2>
+          <button id="btn-close-manual" class="close-x" aria-label="Close">✕</button>
+        </div>
+        <div id="manual-list" class="manual-scroll-list"></div>
+      </div>
+    </dialog>
+
+    <!-- 暂停遮罩弹窗 -->
+    <dialog id="dialog-pause" class="game-dialog">
+      <div class="dialog-content">
+        <h2 data-i18n="pause">暂停</h2>
+        <p data-i18n="ruleCalcDesc">绝无随机闪避或暴击！勇者每次攻击扣除 (攻击-怪物防御) 点血，无法破防则禁止战斗；怪物每次反击扣除 (怪物攻击-勇者防御) 点血。一击秒杀则 0 战损！</p>
+        <div class="dialog-actions">
+          <button id="btn-resume" class="tactile-btn primary-btn" data-i18n="resume">继续探险</button>
+        </div>
+      </div>
+    </dialog>
+
+    <!-- 通关登顶封神弹窗 -->
+    <dialog id="dialog-won" class="game-dialog won-dialog">
+      <div class="dialog-content won-card">
+        <div class="won-badge">👑</div>
+        <h2 data-i18n="wonTitle">破封弑魔 · 救世登顶</h2>
+        <p data-i18n="wonDesc">您已击溃真·终极魔王，解开魔塔千年诅咒，拯救了整座王国！</p>
+        <div id="won-stars" class="won-stars-row">★★★</div>
+
+        <div class="won-stats-grid">
+          <div class="stat-item">
+            <span class="stat-lbl" data-i18n="finalScore">最终战力总分</span>
+            <strong id="won-score" class="stat-num">28500</strong>
+          </div>
+          <div class="stat-item">
+            <span class="stat-lbl" data-i18n="rankTitle">魔塔封号段位</span>
+            <strong id="won-rank" class="stat-num highlight">封神剑圣</strong>
+          </div>
+        </div>
+
+        <div class="won-actions">
+          <button id="btn-play-again" class="tactile-btn primary-btn" data-i18n="playAgain">再战一局</button>
+          <button id="btn-close-won" class="tactile-btn" data-i18n="closeBtn">关闭</button>
+        </div>
+      </div>
+    </dialog>
+  </div>
+
+  <script type="module" src="js/main.mjs?v=b4b5e58af7f3"></script>
+</body>
+</html>

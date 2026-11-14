@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-D67E3XTNSS"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-D67E3XTNSS');
+  </script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="description" content="找准旋转齿轮的狭窄空隙，单键射出针头扎入圆盘，严防针头互撞！23 关精密钟表工坊挑战。" data-i18n="tagline">
+  <title data-i18n="title">见缝插针</title>
+  <link rel="icon" type="image/svg+xml" href="favicon.svg?v=b4b5e58af7f3">
+  <link rel="stylesheet" href="css/style.css?v=b4b5e58af7f3">
+</head>
+<body>
+  <noscript>
+    <div class="noscript-tip">
+      <h2 data-i18n="title">见缝插针</h2>
+      <p>请启用 JavaScript 以进入钟表机械工坊。</p>
+    </div>
+  </noscript>
+
+  <div id="game-app">
+    <!-- 顶部黄铜机芯挂牌条 -->
+    <header id="game-header">
+      <div class="header-left">
+        <a href="/" id="back-home" class="tactile-btn back-btn" data-i18n="backHome">首页</a>
+        <div class="header-title-box">
+          <h1 id="game-title" data-i18n="title">见缝插针</h1>
+        </div>
+      </div>
+
+      <div class="header-controls">
+        <button id="btn-mode" class="tactile-btn mode-btn" data-i18n="modeEndless">无尽轮盘</button>
+        <button id="btn-levels" class="tactile-btn" data-i18n="levels">关卡</button>
+        <button id="btn-restart" class="tactile-btn icon-btn" title="瞬时重开" data-i18n="restart">↺ 重开</button>
+        <button id="btn-pause" class="tactile-btn" data-i18n="pause">暂停</button>
+        <button id="btn-sound" class="tactile-btn" data-i18n="soundOn">音效: 开</button>
+        <button id="btn-lang" class="tactile-btn lang-btn" aria-label="Toggle Language">English</button>
+      </div>
+    </header>
+
+    <!-- 纵向一体化精密工坊机台 -->
+    <main id="game-workspace">
+      <!-- 机顶一体化 HUD 仪表条 -->
+      <div id="cabinet-hud">
+        <div class="hud-item hud-level-box">
+          <span class="hud-label" data-i18n="levelBadge">关卡</span>
+          <span id="hud-level" class="hud-value highlight">关卡 1</span>
+          <span id="hud-act" class="hud-sub">第一章 · 钟表学徒</span>
+        </div>
+        <div class="hud-item hud-remain-box">
+          <span class="hud-label" data-i18n="remainPins">待射发条针</span>
+          <span id="hud-remain" class="hud-value big-number">6</span>
+          <span id="hud-combo" class="hud-combo-badge">-</span>
+        </div>
+        <div class="hud-item hud-speed-box">
+          <span class="hud-label" data-i18n="speedLabel">转速与方向</span>
+          <span id="hud-speed" class="hud-value">1.3 rad/s</span>
+          <span id="hud-dir" class="hud-sub highlight" data-i18n="cwLabel">顺时针</span>
+        </div>
+      </div>
+
+      <!-- 中央舞台 Canvas 视窗 -->
+      <section id="canvas-container">
+        <canvas id="game-canvas"></canvas>
+      </section>
+
+      <!-- 底部实体击发底座 -->
+      <div id="launch-dock">
+        <button id="btn-launch-pad" class="tactile-launch-pad" aria-label="Launch Needle">
+          <span class="launch-icon">⚡</span>
+          <span class="launch-text" data-i18n="launchTip">点击屏幕 / 空格键 击发针头</span>
+          <span class="launch-sub" data-i18n="instantRetryTip">按 R 键秒速重开</span>
+        </button>
+      </div>
+    </main>
+
+    <!-- 暂停遮罩弹窗 -->
+    <dialog id="dialog-pause" class="game-dialog">
+      <div class="dialog-content">
+        <h2 data-i18n="pause">暂停</h2>
+        <p data-i18n="howToPlayDesc">【点击屏幕 / 空格键】射出底部针头扎入旋转齿轮；避开既有针头，缝隙狭窄时预判转速节奏；清空待射弹夹即过关，针尖互撞立即失败！</p>
+        <div class="dialog-actions">
+          <button id="btn-resume" class="tactile-btn primary-btn" data-i18n="resume">继续挑战</button>
+        </div>
+      </div>
+    </dialog>
+
+    <!-- 关卡选择弹窗 -->
+    <dialog id="dialog-levels" class="game-dialog wide-dialog">
+      <div class="dialog-content">
+        <div class="dialog-header">
+          <h2 data-i18n="levels">关卡</h2>
+          <button id="btn-close-levels" class="close-x" aria-label="Close">✕</button>
+        </div>
+        <div id="levels-grid" class="levels-scroll-grid"></div>
+      </div>
+    </dialog>
+
+    <!-- 通关荣耀铭牌弹窗 -->
+    <dialog id="dialog-won" class="game-dialog won-dialog">
+      <div class="won-card">
+        <div class="won-badge">⚙️</div>
+        <h2 id="won-level-title" data-i18n="levelWonTitle">齿轮合璧 · 完美通关</h2>
+        <div class="won-stars-row" id="won-stars">★★★</div>
+        <div class="won-stats-grid">
+          <div><span data-i18n="clearTime">通关用时</span>: <strong id="won-time">00:15</strong></div>
+          <div><span data-i18n="maxCombo">最高连击</span>: <strong id="won-combo">5</strong></div>
+        </div>
+        <div class="won-actions">
+          <button id="btn-retry-level" class="tactile-btn" data-i18n="retryLevel">再来一次</button>
+          <button id="btn-next-level" class="tactile-btn primary-btn" data-i18n="nextLevel">下一关</button>
+          <button id="btn-close-won" class="tactile-btn" data-i18n="closeBtn">关闭</button>
+        </div>
+      </div>
+    </dialog>
+  </div>
+
+  <script type="module" src="js/main.mjs?v=b4b5e58af7f3"></script>
+</body>
+</html>

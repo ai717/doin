@@ -1,0 +1,658 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-D67E3XTNSS"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-D67E3XTNSS');
+  </script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>DOIN · Free Online Mini Games - Play Instantly</title>
+  <meta name="description" content="Play free online mini games on DOIN. Puzzle, arcade, match & physics games — no download, instant play in browser on mobile and desktop.">
+  <link rel="canonical" href="https://doin.win/">
+  <link rel="alternate" hreflang="x-default" href="https://doin.win/">
+  <link rel="alternate" hreflang="en" href="https://doin.win/">
+  <link rel="alternate" hreflang="zh-CN" href="https://doin.win/">
+  <meta name="theme-color" content="#6fe4cb">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="DOIN">
+  <meta property="og:title" content="DOIN · Free Online Mini Games - Play Instantly">
+  <meta property="og:description" content="Play free online mini games on DOIN. Puzzle, arcade, match & physics games — no download, instant play in browser on mobile and desktop.">
+  <meta property="og:url" content="https://doin.win/">
+  <meta property="og:locale" content="en_US">
+  <meta property="og:image" content="https://doin.win/assets/og-image.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="DOIN Free Mini Games">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="DOIN · Free Online Mini Games - Play Instantly">
+  <meta name="twitter:description" content="Play free online mini games on DOIN. Puzzle, arcade, match & physics games — no download, instant play in browser on mobile and desktop.">
+  <meta name="twitter:image" content="https://doin.win/assets/og-image.png">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
+</head>
+<body>
+  <div class="bg-pattern" aria-hidden="true"></div>
+  <main class="page">
+    <header class="page-head">
+      <div class="head-row">
+        <a class="site-title" href="/" aria-label="DOIN Homepage">Doin<span class="site-title-tld">.win</span></a>
+        <div class="search-bar" role="search">
+          <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <circle cx="11" cy="11" r="8"></circle>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+          </svg>
+          <input type="search" id="search-input" class="search-input" placeholder="Search games..." autocomplete="off" spellcheck="false" aria-label="Search games">
+          <button type="button" id="search-clear" class="search-clear" aria-label="Clear search" hidden>×</button>
+        </div>
+        <div class="lang-picker">
+          <button type="button" id="lang-button" class="lang-toggle" aria-haspopup="true" aria-expanded="false" aria-controls="lang-menu" aria-label="Switch language">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+              <circle cx="12" cy="12" r="9"/>
+              <path d="M3 12h18M12 3c2.5 2.6 3.8 5.7 3.8 9s-1.3 6.4-3.8 9M12 3c-2.5 2.6-3.8 5.7-3.8 9s1.3 6.4 3.8 9"/>
+            </svg>
+          </button>
+          <div class="lang-menu" id="lang-menu" role="menu" hidden>
+            <button type="button" class="lang-option" role="menuitemradio" aria-checked="false" data-lang="zh">中文</button>
+            <button type="button" class="lang-option" role="menuitemradio" aria-checked="false" data-lang="en">EN</button>
+          </div>
+        </div>
+      </div>
+      <div class="sub-head">
+        <h1>Free Mini Games <span class="head-chip">Play Instantly</span></h1>
+        <span class="games-counter" id="games-counter" aria-live="polite"></span>
+      </div>
+      <nav class="category-tabs" id="category-tabs" aria-label="Game categories"></nav>
+    </header>
+    <section class="game-grid" id="game-grid" aria-label="Game list">
+      <a class="game-card" href="/cube/" aria-label="Cube Workshop">
+        <picture class="game-card__picture">
+          <img class="game-card__cover" src="/assets/covers/cube.webp" alt="Cube Workshop" width="640" height="640" loading="lazy" decoding="async">
+        </picture>
+        <span class="game-card__title">魔方工坊</span>
+      </a>
+      <a class="game-card" href="/portalbox/" aria-label="Portal Box">
+        <picture class="game-card__picture">
+          <img class="game-card__cover" src="/assets/covers/portalbox.webp" alt="Portal Box" width="640" height="640" loading="lazy" decoding="async">
+        </picture>
+        <span class="game-card__title">传送门推箱</span>
+      </a>
+      <a class="game-card" href="/digger/" aria-label="Digger">
+        <picture class="game-card__picture">
+          <img class="game-card__cover" src="/assets/covers/digger.webp" alt="Digger" width="640" height="640" loading="lazy" decoding="async">
+        </picture>
+        <span class="game-card__title">挖掘者</span>
+      </a>
+      <a class="game-card" href="/pegfall/" aria-label="Peg Fall">
+        <picture class="game-card__picture">
+          <img class="game-card__cover" src="/assets/covers/pegfall.webp" alt="Peg Fall" width="640" height="640" loading="lazy" decoding="async">
+        </picture>
+        <span class="game-card__title">弹珠落钉</span>
+      </a>
+      <a class="game-card" href="/screw/" aria-label="Screw Jam Workshop">
+        <picture class="game-card__picture">
+          <img class="game-card__cover" src="/assets/covers/screw.webp" alt="Screw Jam Workshop" width="640" height="640" loading="lazy" decoding="async">
+        </picture>
+        <span class="game-card__title">拧螺丝解谜</span>
+      </a>
+      <a class="game-card" href="/immortal/" aria-label="Immortal Box">
+        <picture class="game-card__picture">
+          <img class="game-card__cover" src="/assets/covers/immortal.webp" alt="Immortal Box" width="640" height="640" loading="lazy" decoding="async">
+        </picture>
+        <span class="game-card__title">摸鱼开箱修仙传</span>
+      </a>
+      <a class="game-card" href="/hanzi/" aria-label="Glyph Craft">
+        <picture class="game-card__picture">
+          <img class="game-card__cover" src="/assets/covers/hanzi.webp" alt="Glyph Craft" width="640" height="640" loading="lazy" decoding="async">
+        </picture>
+        <span class="game-card__title">字灵拆拆乐</span>
+      </a>
+      <a class="game-card" href="/mtower/" aria-label="50-Floor Magic Tower">
+        <picture class="game-card__picture">
+          <img class="game-card__cover" src="/assets/covers/mtower.webp" alt="50-Floor Magic Tower" width="640" height="640" loading="lazy" decoding="async">
+        </picture>
+        <span class="game-card__title">魔塔 50 层</span>
+      </a>
+      <a class="game-card" href="/airpuck/" aria-label="Neon Air Hockey">
+        <picture class="game-card__picture">
+          <img class="game-card__cover" src="/assets/covers/airpuck.webp" alt="Neon Air Hockey" width="640" height="640" loading="lazy" decoding="async">
+        </picture>
+        <span class="game-card__title">双人霓虹气垫球</span>
+      </a>
+      <a class="game-card" href="/pin/" aria-label="Pin Circle">
+        <picture class="game-card__picture">
+          <img class="game-card__cover" src="/assets/covers/pin.webp" alt="Pin Circle" width="640" height="640" loading="lazy" decoding="async">
+        </picture>
+        <span class="game-card__title">见缝插针</span>
+      </a>
+      <a class="game-card" href="/tidy/" aria-label="Tidy Master">
+        <picture class="game-card__picture">
+          <img class="game-card__cover" src="/assets/covers/tidy.webp" alt="Tidy Master" width="640" height="640" loading="lazy" decoding="async">
+        </picture>
+        <span class="game-card__title">沉浸收纳达人</span>
+      </a>
+      <a class="game-card" href="/bumper/" aria-label="Micro Bumper">
+        <picture class="game-card__picture">
+          <img class="game-card__cover" src="/assets/covers/bumper.webp" alt="Micro Bumper" width="640" height="640" loading="lazy" decoding="async">
+        </picture>
+        <span class="game-card__title">微型回旋撞车</span>
+      </a>
+      <a class="game-card" href="/tug/" aria-label="Tug of War">
+        <picture class="game-card__picture">
+          <img class="game-card__cover" src="/assets/covers/tug.webp" alt="Tug of War" width="640" height="640" loading="lazy" decoding="async">
+        </picture>
+        <span class="game-card__title">指尖拔河</span>
+      </a>
+      <a class="game-card" href="/sleepwalker/" aria-label="Sleepwalker">
+        <picture class="game-card__picture">
+          <img class="game-card__cover" src="/assets/covers/sleepwalker.webp" alt="Sleepwalker" width="640" height="640" loading="lazy" decoding="async">
+        </picture>
+        <span class="game-card__title">梦游先生</span>
+      </a>
+      <a class="game-card" href="/magic-tower/" aria-label="Magic Tower">
+        <picture class="game-card__picture">
+          <img class="game-card__cover" src="/assets/covers/magic-tower.webp" alt="Magic Tower" width="640" height="640" loading="lazy" decoding="async">
+        </picture>
+        <span class="game-card__title">魔塔：勇者登顶</span>
+      </a>
+      <a class="game-card" href="/invaders/" aria-label="Starport Siege">
+        <picture class="game-card__picture">
+          <img class="game-card__cover" src="/assets/covers/invaders.webp" alt="Starport Siege" width="640" height="640" loading="lazy" decoding="async">
+        </picture>
+        <span class="game-card__title">舷窗防线</span>
+      </a>
+      <a class="game-card" href="/picross/" aria-label="Picross">
+        <picture class="game-card__picture">
+          <img class="game-card__cover" src="/assets/covers/picross.webp" alt="Picross" width="640" height="640" loading="lazy" decoding="async">
+        </picture>
+        <span class="game-card__title">数织</span>
+      </a>
+      <a class="game-card" href="/memory-duel/" aria-label="Memory Duel">
+        <picture class="game-card__picture">
+          <img class="game-card__cover" src="/assets/covers/memory-duel.webp" alt="Memory Duel" width="640" height="640" loading="lazy" decoding="async">
+        </picture>
+        <span class="game-card__title">记忆对决</span>
+      </a>
+      <a class="game-card" href="/memory-flip/" aria-label="Memory Flip">
+        <picture class="game-card__picture">
+          <img class="game-card__cover" src="/assets/covers/memory-flip.webp" alt="Memory Flip" width="640" height="640" loading="lazy" decoding="async">
+        </picture>
+        <span class="game-card__title">盲盒记忆牌</span>
+      </a>
+      <a class="game-card" href="/spider/" aria-label="Spider Solitaire">
+        <picture class="game-card__picture">
+          <img class="game-card__cover" src="/assets/covers/spider.webp" alt="Spider Solitaire" width="640" height="640" loading="lazy" decoding="async">
+        </picture>
+        <span class="game-card__title">蜘蛛纸牌</span>
+      </a>
+      <a class="game-card" href="/catcafe/" aria-label="Mini Cat Cafe">
+        <picture class="game-card__picture">
+          <img class="game-card__cover" src="/assets/covers/catcafe.webp" alt="Mini Cat Cafe" width="640" height="640" loading="lazy" decoding="async">
+        </picture>
+        <span class="game-card__title">迷你猫咖掌柜</span>
+      </a>
+      <a class="game-card" href="/ramen-idle/" aria-label="Midnight Ramen">
+        <picture class="game-card__picture">
+          <img class="game-card__cover" src="/assets/covers/ramen-idle.webp" alt="Midnight Ramen" width="640" height="640" loading="lazy" decoding="async">
+        </picture>
+        <span class="game-card__title">深夜拉面屋</span>
+      </a>
+      <a class="game-card" href="/gomoku/" aria-label="Gomoku Master">
+        <picture class="game-card__picture">
+          <img class="game-card__cover" src="/assets/covers/gomoku.webp" alt="Gomoku Master" width="640" height="640" loading="lazy" decoding="async">
+        </picture>
+        <span class="game-card__title">五子连珠</span>
+      </a>
+      <a class="game-card" href="/xiangqi/" aria-label="Xiangqi">
+        <picture class="game-card__picture">
+          <img class="game-card__cover" src="/assets/covers/xiangqi.webp" alt="Xiangqi" width="640" height="640" loading="lazy" decoding="async">
+        </picture>
+        <span class="game-card__title">中国象棋</span>
+      </a>
+      <a class="game-card" href="/sudoku/" aria-label="Sudoku">
+        <picture class="game-card__picture">
+          <img class="game-card__cover" src="/assets/covers/sudoku.webp" alt="Sudoku" width="640" height="640" loading="lazy" decoding="async">
+        </picture>
+        <span class="game-card__title">数独</span>
+      </a>
+      <a class="game-card" href="/2048/" aria-label="2048">
+        <picture class="game-card__picture">
+          <img class="game-card__cover" src="/assets/covers/2048.webp" alt="2048" width="640" height="640" loading="lazy" decoding="async">
+        </picture>
+        <span class="game-card__title">2048</span>
+      </a>
+      <a class="game-card" href="/calc24/" aria-label="Calc 24 · Flash of Insight">
+        <picture class="game-card__picture">
+          <img class="game-card__cover" src="/assets/covers/calc24.webp" alt="Calc 24 · Flash of Insight" width="640" height="640" loading="lazy" decoding="async">
+        </picture>
+        <span class="game-card__title">24 点 · 灵光一闪</span>
+      </a>
+      <a class="game-card" href="/tic-tac-toe/" aria-label="Tic-Tac-Toe">
+        <picture class="game-card__picture">
+          <img class="game-card__cover" src="/assets/covers/tic-tac-toe.webp" alt="Tic-Tac-Toe" width="640" height="640" loading="lazy" decoding="async">
+        </picture>
+        <span class="game-card__title">井字棋</span>
+      </a>
+      <a class="game-card" href="/freecell/" aria-label="FreeCell">
+        <picture class="game-card__picture">
+          <img class="game-card__cover" src="/assets/covers/freecell.webp" alt="FreeCell" width="640" height="640" loading="lazy" decoding="async">
+        </picture>
+        <span class="game-card__title">空当接龙</span>
+      </a>
+      <a class="game-card" href="/minesweeper/" aria-label="Minesweeper">
+        <picture class="game-card__picture">
+          <img class="game-card__cover" src="/assets/covers/minesweeper.webp" alt="Minesweeper" width="640" height="640" loading="lazy" decoding="async">
+        </picture>
+        <span class="game-card__title">扫雷</span>
+      </a>
+      <a class="game-card" href="/winmine/" aria-label="Classic Minesweeper">
+        <picture class="game-card__picture">
+          <img class="game-card__cover" src="/assets/covers/winmine.webp" alt="Classic Minesweeper" width="640" height="640" loading="lazy" decoding="async">
+        </picture>
+        <span class="game-card__title">经典扫雷</span>
+      </a>
+      <a class="game-card" href="/orbit-sort/" aria-label="Orbit Sort">
+        <picture class="game-card__picture">
+          <img class="game-card__cover" src="/assets/covers/orbit-sort.webp" alt="Orbit Sort" width="640" height="640" loading="lazy" decoding="async">
+        </picture>
+        <span class="game-card__title">星轨调度大师</span>
+      </a>
+      <a class="game-card" href="/gold-miner/" aria-label="Gold Miner">
+        <picture class="game-card__picture">
+          <img class="game-card__cover" src="/assets/covers/gold-miner.webp" alt="Gold Miner" width="640" height="640" loading="lazy" decoding="async">
+        </picture>
+        <span class="game-card__title">黄金矿工</span>
+      </a>
+      <a class="game-card" href="/tetris-neo/" aria-label="Tetris Neo">
+        <picture class="game-card__picture">
+          <img class="game-card__cover" src="/assets/covers/tetris-neo.webp" alt="Tetris Neo" width="640" height="640" loading="lazy" decoding="async">
+        </picture>
+        <span class="game-card__title">俄罗斯方块</span>
+      </a>
+      <a class="game-card" href="/zuma/" aria-label="Zuma Legend">
+        <picture class="game-card__picture">
+          <img class="game-card__cover" src="/assets/covers/zuma.webp" alt="Zuma Legend" width="640" height="640" loading="lazy" decoding="async">
+        </picture>
+        <span class="game-card__title">祖玛传奇</span>
+      </a>
+      <a class="game-card" href="/Gravity-Echoes/" aria-label="Gravity Echoes">
+        <picture class="game-card__picture">
+          <img class="game-card__cover" src="/assets/covers/Gravity-Echoes.webp" alt="Gravity Echoes" width="640" height="640" loading="lazy" decoding="async">
+        </picture>
+        <span class="game-card__title">重力回响</span>
+      </a>
+      <a class="game-card" href="/Tile-Matching/" aria-label="Happy Tile Match">
+        <picture class="game-card__picture">
+          <img class="game-card__cover" src="/assets/covers/Tile-Matching.webp" alt="Happy Tile Match" width="640" height="640" loading="lazy" decoding="async">
+        </picture>
+        <span class="game-card__title">开心消消乐</span>
+      </a>
+      <a class="game-card" href="/snake-orchard/" aria-label="Snake Orchard">
+        <picture class="game-card__picture">
+          <img class="game-card__cover" src="/assets/covers/snake-orchard.webp" alt="Snake Orchard" width="640" height="640" loading="lazy" decoding="async">
+        </picture>
+        <span class="game-card__title">果园贪吃蛇</span>
+      </a>
+      <a class="game-card" href="/one-line/" aria-label="One Line">
+        <picture class="game-card__picture">
+          <img class="game-card__cover" src="/assets/covers/one-line.webp" alt="One Line" width="640" height="640" loading="lazy" decoding="async">
+        </picture>
+        <span class="game-card__title">一笔连线</span>
+      </a>
+      <a class="game-card" href="/klotski/" aria-label="Klotski">
+        <picture class="game-card__picture">
+          <img class="game-card__cover" src="/assets/covers/klotski.webp" alt="Klotski" width="640" height="640" loading="lazy" decoding="async">
+        </picture>
+        <span class="game-card__title">华容道</span>
+      </a>
+      <a class="game-card" href="/jigsaw/" aria-label="Jigsaw">
+        <picture class="game-card__picture">
+          <img class="game-card__cover" src="/assets/covers/jigsaw.webp" alt="Jigsaw" width="640" height="640" loading="lazy" decoding="async">
+        </picture>
+        <span class="game-card__title">拼图</span>
+      </a>
+      <a class="game-card" href="/link-up/" aria-label="Fortune Link">
+        <picture class="game-card__picture">
+          <img class="game-card__cover" src="/assets/covers/link-up.webp" alt="Fortune Link" width="640" height="640" loading="lazy" decoding="async">
+        </picture>
+        <span class="game-card__title">喜福连连看</span>
+      </a>
+      <a class="game-card" href="/pair-link/" aria-label="Pair Link">
+        <picture class="game-card__picture">
+          <img class="game-card__cover" src="/assets/covers/pair-link.webp" alt="Pair Link" width="640" height="640" loading="lazy" decoding="async">
+        </picture>
+        <span class="game-card__title">琉璃灯市·连连看</span>
+      </a>
+      <a class="game-card" href="/bubble-merge/" aria-label="Bubble Merge">
+        <picture class="game-card__picture">
+          <img class="game-card__cover" src="/assets/covers/bubble-merge.webp" alt="Bubble Merge" width="640" height="640" loading="lazy" decoding="async">
+        </picture>
+        <span class="game-card__title">深海合珠</span>
+      </a>
+      <a class="game-card" href="/watermelon-2048/" aria-label="Watermelon 2048">
+        <picture class="game-card__picture">
+          <img class="game-card__cover" src="/assets/covers/watermelon-2048.webp" alt="Watermelon 2048" width="640" height="640" loading="lazy" decoding="async">
+        </picture>
+        <span class="game-card__title">数字合成大西瓜</span>
+      </a>
+      <a class="game-card" href="/bubble-bloom/" aria-label="Bubble Bloom">
+        <picture class="game-card__picture">
+          <img class="game-card__cover" src="/assets/covers/bubble-bloom.webp" alt="Bubble Bloom" width="640" height="640" loading="lazy" decoding="async">
+        </picture>
+        <span class="game-card__title">合成泡泡</span>
+      </a>
+      <a class="game-card" href="/cloud-merge/" aria-label="Cloud Merge">
+        <picture class="game-card__picture">
+          <img class="game-card__cover" src="/assets/covers/cloud-merge.webp" alt="Cloud Merge" width="640" height="640" loading="lazy" decoding="async">
+        </picture>
+        <span class="game-card__title">云朵合成</span>
+      </a>
+      <a class="game-card" href="/water-sort/" aria-label="Water Sort">
+        <picture class="game-card__picture">
+          <img class="game-card__cover" src="/assets/covers/water-sort.webp" alt="Water Sort" width="640" height="640" loading="lazy" decoding="async">
+        </picture>
+        <span class="game-card__title">色彩排序</span>
+      </a>
+      <a class="game-card" href="/piano-tiles/" aria-label="Piano Tiles">
+        <picture class="game-card__picture">
+          <img class="game-card__cover" src="/assets/covers/piano-tiles.webp" alt="Piano Tiles" width="640" height="640" loading="lazy" decoding="async">
+        </picture>
+        <span class="game-card__title">别踩白块儿</span>
+      </a>
+      <a class="game-card" href="/jump-jump/" aria-label="Jump Jump">
+        <picture class="game-card__picture">
+          <img class="game-card__cover" src="/assets/covers/jump-jump.webp" alt="Jump Jump" width="640" height="640" loading="lazy" decoding="async">
+        </picture>
+        <span class="game-card__title">跳一跳</span>
+      </a>
+      <a class="game-card" href="/cut-the-rope/" aria-label="Cut the Rope">
+        <picture class="game-card__picture">
+          <img class="game-card__cover" src="/assets/covers/cut-the-rope.webp" alt="Cut the Rope" width="640" height="640" loading="lazy" decoding="async">
+        </picture>
+        <span class="game-card__title">割绳子</span>
+      </a>
+      <a class="game-card" href="/candy-drop/" aria-label="Candy Drop">
+        <picture class="game-card__picture">
+          <img class="game-card__cover" src="/assets/covers/candy-drop.webp" alt="Candy Drop" width="640" height="640" loading="lazy" decoding="async">
+        </picture>
+        <span class="game-card__title">糖果坠落</span>
+      </a>
+      <a class="game-card" href="/road-bash/" aria-label="Road Bash">
+        <picture class="game-card__picture">
+          <img class="game-card__cover" src="/assets/covers/road-bash.webp" alt="Road Bash" width="640" height="640" loading="lazy" decoding="async">
+        </picture>
+        <span class="game-card__title">暴力摩托</span>
+      </a>
+      <a class="game-card" href="/deep-devour/" aria-label="Deep Devour">
+        <picture class="game-card__picture">
+          <img class="game-card__cover" src="/assets/covers/deep-devour.webp" alt="Deep Devour" width="640" height="640" loading="lazy" decoding="async">
+        </picture>
+        <span class="game-card__title">深海吞噬</span>
+      </a>
+      <a class="game-card" href="/lantern-maze/" aria-label="Lantern Maze">
+        <picture class="game-card__picture">
+          <img class="game-card__cover" src="/assets/covers/lantern-maze.webp" alt="Lantern Maze" width="640" height="640" loading="lazy" decoding="async">
+        </picture>
+        <span class="game-card__title">灯笼巷</span>
+      </a>
+      <a class="game-card" href="/number-klotski/" aria-label="Number Klotski">
+        <picture class="game-card__picture">
+          <img class="game-card__cover" src="/assets/covers/number-klotski.webp" alt="Number Klotski" width="640" height="640" loading="lazy" decoding="async">
+        </picture>
+        <span class="game-card__title">数字华容道</span>
+      </a>
+      <a class="game-card" href="/pong/" aria-label="Pong Neo">
+        <picture class="game-card__picture">
+          <img class="game-card__cover" src="/assets/covers/pong.webp" alt="Pong Neo" width="640" height="640" loading="lazy" decoding="async">
+        </picture>
+        <span class="game-card__title">街机乒乓</span>
+      </a>
+      <a class="game-card" href="/fire-ice/" aria-label="Ember & Tide">
+        <picture class="game-card__picture">
+          <img class="game-card__cover" src="/assets/covers/fire-ice.webp" alt="Ember & Tide" width="640" height="640" loading="lazy" decoding="async">
+        </picture>
+        <span class="game-card__title">森林冰火人</span>
+      </a>
+      <a class="game-card" href="/rune-tower/" aria-label="Rune Tower">
+        <picture class="game-card__picture">
+          <img class="game-card__cover" src="/assets/covers/rune-tower.webp" alt="Rune Tower" width="640" height="640" loading="lazy" decoding="async">
+        </picture>
+        <span class="game-card__title">符文塔防</span>
+      </a>
+      <a class="game-card" href="/devil-run/" aria-label="Devil Run">
+        <picture class="game-card__picture">
+          <img class="game-card__cover" src="/assets/covers/devil-run.webp" alt="Devil Run" width="640" height="640" loading="lazy" decoding="async">
+        </picture>
+        <span class="game-card__title">恶魔迷途</span>
+      </a>
+      <a class="game-card" href="/space-defender/" aria-label="Space Defender">
+        <picture class="game-card__picture">
+          <img class="game-card__cover" src="/assets/covers/space-defender.webp" alt="Space Defender" width="640" height="640" loading="lazy" decoding="async">
+        </picture>
+        <span class="game-card__title">太空防御者</span>
+      </a>
+      <a class="game-card" href="/mole/" aria-label="Berry Bash">
+        <picture class="game-card__picture">
+          <img class="game-card__cover" src="/assets/covers/mole.webp" alt="Berry Bash" width="640" height="640" loading="lazy" decoding="async">
+        </picture>
+        <span class="game-card__title">莓园打地鼠</span>
+      </a>
+      <a class="game-card" href="/frog/" aria-label="Frogger">
+        <picture class="game-card__picture">
+          <img class="game-card__cover" src="/assets/covers/frog.webp" alt="Frogger" width="640" height="640" loading="lazy" decoding="async">
+        </picture>
+        <span class="game-card__title">青蛙过河</span>
+      </a>
+      <a class="game-card" href="/guess/" aria-label="Guess · Sonar Hunt">
+        <picture class="game-card__picture">
+          <img class="game-card__cover" src="/assets/covers/guess.webp" alt="Guess · Sonar Hunt" width="640" height="640" loading="lazy" decoding="async">
+        </picture>
+        <span class="game-card__title">猜数字 · 声呐围猎</span>
+      </a>
+      <a class="game-card" href="/lineride/" aria-label="Line Ride">
+        <picture class="game-card__picture">
+          <img class="game-card__cover" src="/assets/covers/lineride.webp" alt="Line Ride" width="640" height="640" loading="lazy" decoding="async">
+        </picture>
+        <span class="game-card__title">线之骑士</span>
+      </a>
+      <a class="game-card" href="/sokoban/" aria-label="Sokoban">
+        <picture class="game-card__picture">
+          <img class="game-card__cover" src="/assets/covers/sokoban.webp" alt="Sokoban" width="640" height="640" loading="lazy" decoding="async">
+        </picture>
+        <span class="game-card__title">推箱子</span>
+      </a>
+      <a class="game-card" href="/blind-auction/" aria-label="Blind Auction">
+        <picture class="game-card__picture">
+          <img class="game-card__cover" src="/assets/covers/blind-auction.webp" alt="Blind Auction" width="640" height="640" loading="lazy" decoding="async">
+        </picture>
+        <span class="game-card__title">盲盒竞拍</span>
+      </a>
+      <a class="game-card" href="/backpack/" aria-label="Backpack Arena">
+        <picture class="game-card__picture">
+          <img class="game-card__cover" src="/assets/covers/backpack.webp" alt="Backpack Arena" width="640" height="640" loading="lazy" decoding="async">
+        </picture>
+        <span class="game-card__title">背包竞技场</span>
+      </a>
+      <a class="game-card" href="/pinball/" aria-label="Neon Pinball">
+        <picture class="game-card__picture">
+          <img class="game-card__cover" src="/assets/covers/pinball.webp" alt="Neon Pinball" width="640" height="640" loading="lazy" decoding="async">
+        </picture>
+        <span class="game-card__title">霓虹弹珠台</span>
+      </a>
+      <a class="game-card" href="/mow/" aria-label="Mow!">
+        <picture class="game-card__picture">
+          <img class="game-card__cover" src="/assets/covers/mow.webp" alt="Mow!" width="640" height="640" loading="lazy" decoding="async">
+        </picture>
+        <span class="game-card__title">割草！</span>
+      </a>
+      <a class="game-card" href="/breakout/" aria-label="Breakout Relic">
+        <picture class="game-card__picture">
+          <img class="game-card__cover" src="/assets/covers/breakout.webp" alt="Breakout Relic" width="640" height="640" loading="lazy" decoding="async">
+        </picture>
+        <span class="game-card__title">弹球肉鸽防线</span>
+      </a>
+      <a class="game-card" href="/bobble/" aria-label="Bubble Shooter">
+        <picture class="game-card__picture">
+          <img class="game-card__cover" src="/assets/covers/bobble.webp" alt="Bubble Shooter" width="640" height="640" loading="lazy" decoding="async">
+        </picture>
+        <span class="game-card__title">泡泡射手</span>
+      </a>
+      <a class="game-card" href="/laser-reflect/" aria-label="Laser Reflect">
+        <picture class="game-card__picture">
+          <img class="game-card__cover" src="/assets/covers/laser-reflect.webp" alt="Laser Reflect" width="640" height="640" loading="lazy" decoding="async">
+        </picture>
+        <span class="game-card__title">光束折射镜</span>
+      </a>
+      <a class="game-card" href="/uncoil/" aria-label="Uncoil">
+        <picture class="game-card__picture">
+          <img class="game-card__cover" src="/assets/covers/uncoil.webp" alt="Uncoil" width="640" height="640" loading="lazy" decoding="async">
+        </picture>
+        <span class="game-card__title">倒退贪吃蛇</span>
+      </a>
+      <a class="game-card" href="/bomber/" aria-label="Bomber">
+        <picture class="game-card__picture">
+          <img class="game-card__cover" src="/assets/covers/bomber.webp" alt="Bomber" width="640" height="640" loading="lazy" decoding="async">
+        </picture>
+        <span class="game-card__title">炸弹人</span>
+      </a>
+      <a class="game-card" href="/reversi/" aria-label="Reversi · Flip Chess">
+        <picture class="game-card__picture">
+          <img class="game-card__cover" src="/assets/covers/reversi.webp" alt="Reversi · Flip Chess" width="640" height="640" loading="lazy" decoding="async">
+        </picture>
+        <span class="game-card__title">黑白翻转</span>
+      </a>
+      <a class="game-card" href="/pacman/" aria-label="Neon Chomp">
+        <picture class="game-card__picture">
+          <img class="game-card__cover" src="/assets/covers/pacman.webp" alt="Neon Chomp" width="640" height="640" loading="lazy" decoding="async">
+        </picture>
+        <span class="game-card__title">霓虹吃豆</span>
+      </a>
+      <a class="game-card" href="/tank/" aria-label="Tank Assault">
+        <picture class="game-card__picture">
+          <img class="game-card__cover" src="/assets/covers/tank.webp" alt="Tank Assault" width="640" height="640" loading="lazy" decoding="async">
+        </picture>
+        <span class="game-card__title">坦克巷战</span>
+      </a>
+      <a class="game-card" href="/chameleon/" aria-label="Chameleon Hide">
+        <picture class="game-card__picture">
+          <img class="game-card__cover" src="/assets/covers/chameleon.webp" alt="Chameleon Hide" width="640" height="640" loading="lazy" decoding="async">
+        </picture>
+        <span class="game-card__title">变色躲猫猫</span>
+      </a>
+      <a class="game-card" href="/hexfit/" aria-label="Hexfit">
+        <picture class="game-card__picture">
+          <img class="game-card__cover" src="/assets/covers/hexfit.webp" alt="Hexfit" width="640" height="640" loading="lazy" decoding="async">
+        </picture>
+        <span class="game-card__title">六边蜜筑</span>
+      </a>
+      <a class="game-card" href="/blockblast/" aria-label="Block Blast">
+        <picture class="game-card__picture">
+          <img class="game-card__cover" src="/assets/covers/blockblast.webp" alt="Block Blast" width="640" height="640" loading="lazy" decoding="async">
+        </picture>
+        <span class="game-card__title">积木爆破</span>
+      </a>
+      <a class="game-card" href="/ice-slide/" aria-label="Ice Slide">
+        <picture class="game-card__picture">
+          <img class="game-card__cover" src="/assets/covers/ice-slide.webp" alt="Ice Slide" width="640" height="640" loading="lazy" decoding="async">
+        </picture>
+        <span class="game-card__title">滑冰推箱</span>
+      </a>
+      <a class="game-card" href="/billiards/" aria-label="Felt & Cue">
+        <picture class="game-card__picture">
+          <img class="game-card__cover" src="/assets/covers/billiards.webp" alt="Felt & Cue" width="640" height="640" loading="lazy" decoding="async">
+        </picture>
+        <span class="game-card__title">绿呢桌球</span>
+      </a>
+      <a class="game-card" href="/coin-pusher/" aria-label="Coin Pusher">
+        <picture class="game-card__picture">
+          <img class="game-card__cover" src="/assets/covers/coin-pusher.webp" alt="Coin Pusher" width="640" height="640" loading="lazy" decoding="async">
+        </picture>
+        <span class="game-card__title">推币机</span>
+      </a>
+      <a class="game-card" href="/jenga/" aria-label="Jenga Tower">
+        <picture class="game-card__picture">
+          <img class="game-card__cover" src="/assets/covers/jenga.webp" alt="Jenga Tower" width="640" height="640" loading="lazy" decoding="async">
+        </picture>
+        <span class="game-card__title">叠叠乐</span>
+      </a>
+      <a class="game-card" href="/wordle/" aria-label="Daily Word">
+        <picture class="game-card__picture">
+          <img class="game-card__cover" src="/assets/covers/wordle.webp" alt="Daily Word" width="640" height="640" loading="lazy" decoding="async">
+        </picture>
+        <span class="game-card__title">每日猜词</span>
+      </a>
+      <a class="game-card" href="/shaft/" aria-label="Down 100">
+        <picture class="game-card__picture">
+          <img class="game-card__cover" src="/assets/covers/shaft.webp" alt="Down 100" width="640" height="640" loading="lazy" decoding="async">
+        </picture>
+        <span class="game-card__title">深渊百层</span>
+      </a>
+      <a class="game-card" href="/blockduel/" aria-label="Block Duel">
+        <picture class="game-card__picture">
+          <img class="game-card__cover" src="/assets/covers/blockduel.webp" alt="Block Duel" width="640" height="640" loading="lazy" decoding="async">
+        </picture>
+        <span class="game-card__title">方块对轰</span>
+      </a>
+      <a class="game-card" href="/ultimate/" aria-label="Ultimate Tic-Tac-Toe">
+        <picture class="game-card__picture">
+          <img class="game-card__cover" src="/assets/covers/ultimate.webp" alt="Ultimate Tic-Tac-Toe" width="640" height="640" loading="lazy" decoding="async">
+        </picture>
+        <span class="game-card__title">终极井字棋</span>
+      </a>
+      <a class="game-card" href="/checkers/" aria-label="Chinese Checkers">
+        <picture class="game-card__picture">
+          <img class="game-card__cover" src="/assets/covers/checkers.webp" alt="Chinese Checkers" width="640" height="640" loading="lazy" decoding="async">
+        </picture>
+        <span class="game-card__title">中国跳棋</span>
+      </a>
+      <a class="game-card" href="/robot/" aria-label="Instruction Robot">
+        <picture class="game-card__picture">
+          <img class="game-card__cover" src="/assets/covers/robot.webp" alt="Instruction Robot" width="640" height="640" loading="lazy" decoding="async">
+        </picture>
+        <span class="game-card__title">指令机器人</span>
+      </a>
+      <a class="game-card" href="/thief/" aria-label="Thief Arms">
+        <picture class="game-card__picture">
+          <img class="game-card__cover" src="/assets/covers/thief.webp" alt="Thief Arms" width="640" height="640" loading="lazy" decoding="async">
+        </picture>
+        <span class="game-card__title">神偷手臂</span>
+      </a>
+      <a class="game-card" href="/detective/" aria-label="Detective Deduction">
+        <picture class="game-card__picture">
+          <img class="game-card__cover" src="/assets/covers/detective.webp" alt="Detective Deduction" width="640" height="640" loading="lazy" decoding="async">
+        </picture>
+        <span class="game-card__title">侦探推演</span>
+      </a>
+      <noscript><p class="noscript-msg">JavaScript is required for search and filtering.</p></noscript>
+    </section>
+    <div id="empty-state" class="empty-state" hidden>
+      <div class="empty-icon">🎮</div>
+      <h2 class="empty-title" id="empty-title">No games found</h2>
+      <p class="empty-hint" id="empty-hint">Try another keyword or category</p>
+    </div>
+  </main>
+  <footer class="site-footer">
+    <nav class="friend-links" id="friend-links" aria-label="Friend Links">
+      <a href="https://www.moyunews.com/" target="_blank" rel="noopener">MoyuNews</a>
+      <span class="friend-sep" aria-hidden="true">·</span>
+      <a href="https://muse.itis.chat/" target="_blank" rel="noopener">Muse Case</a>
+      <span class="friend-sep" aria-hidden="true">·</span>
+      <a href="https://free.itis.chat/" target="_blank" rel="noopener">ITIS Free</a>
+      <span class="friend-sep" aria-hidden="true">·</span>
+      <a href="https://m.ucncn.cn/" target="_blank" rel="noopener">MoneyLab</a>
+      <span class="friend-sep" aria-hidden="true">·</span>
+      <a href="https://doin.win/">Free Mini Games</a>
+      <span class="friend-sep" aria-hidden="true">·</span>
+      <a href="https://itis.chat/" target="_blank" rel="noopener">AI Navigation</a>
+      <span class="friend-sep" aria-hidden="true">·</span>
+      <a href="https://hao.itis.chat/" target="_blank" rel="noopener">Deals Daily</a>
+    </nav>
+    <p class="copyright">© <span id="year"></span> DOIN · Free Mini Games</p>
+  </footer>
+  <script type="module" src="js/main.js"></script>
+</body>
+</html>

@@ -1,0 +1,1474 @@
+/* ==========================================================================
+   DOIN · 琉璃灯市·连连看 (pair-link) —— 夜市灯牌 / 琉璃瓷片
+   桌面 ≥900px 双栏沉浸舞台 · 移动 ≤768px 单列紧凑
+   ========================================================================== */
+
+:root {
+  --ink-0: #150f0d;
+  --ink-1: #1a1210;
+  --ink-2: #241a15;
+  --ink-3: #33231b;
+  --ink-4: #4a3226;
+
+  --copper: #c9863f;
+  --copper-lt: #e8b768;
+  --copper-dk: #8a5a24;
+  --crimson: #e2503f;
+  --crimson-dk: #a83a2c;
+  --porcelain: #f3e6d2;
+
+  /* 棋盘方格线：极淡，只为便于心算折线路径，不参与任何"格子存在感" */
+  --grid-line: rgba(243, 230, 210, 0.14);
+  --line-soft: rgba(243, 230, 210, 0.12);
+
+  --radius-plaque: 14px;
+  --radius-btn: 12px;
+
+  --shadow-tile: 0 2px 0 rgba(0, 0, 0, 0.45), 0 6px 14px rgba(0, 0, 0, 0.42);
+  --shadow-plaque: inset 0 1px 0 rgba(255, 255, 255, 0.06), 0 8px 20px rgba(0, 0, 0, 0.36);
+  --shadow-btn: 0 2px 0 rgba(0, 0, 0, 0.5), 0 6px 14px rgba(0, 0, 0, 0.34);
+
+  --font: system-ui, -apple-system, "Segoe UI", "PingFang SC", "Hiragino Sans GB",
+    "Microsoft YaHei", "Noto Sans SC", sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  height: 100%;
+  overscroll-behavior: none;
+  background: linear-gradient(165deg, #1a1210 0%, #241a15 52%, #150f0d 100%);
+}
+
+body {
+  min-height: 100vh;
+  min-height: 100dvh;
+  font-family: var(--font);
+  color: var(--porcelain);
+  background: transparent;
+  overflow-x: hidden;
+  overscroll-behavior: none;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  text-rendering: optimizeLegibility;
+}
+
+/* 环境光晕（可 drift）+ 噪点 + 柔和暗角 —— 全部零外链 */
+body::before {
+  content: "";
+  position: fixed;
+  inset: -22%;
+  z-index: -2;
+  pointer-events: none;
+  background:
+    radial-gradient(34% 30% at 22% 18%, rgba(226, 80, 63, 0.22), transparent 70%),
+    radial-gradient(32% 28% at 82% 80%, rgba(201, 134, 63, 0.20), transparent 72%),
+    radial-gradient(26% 22% at 62% 8%, rgba(232, 183, 104, 0.10), transparent 70%);
+  animation: drift 26s ease-in-out infinite alternate;
+}
+
+body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background-image:
+    radial-gradient(120% 100% at 50% 48%, transparent 52%, rgba(0, 0, 0, 0.52) 100%),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)' opacity='0.55'/%3E%3C/svg%3E");
+  background-size: cover, 140px 140px;
+  opacity: 0.9;
+  mix-blend-mode: normal;
+}
+
+@keyframes drift {
+  from {
+    transform: translate3d(-2%, -1.5%, 0) scale(1);
+  }
+  to {
+    transform: translate3d(3%, 2%, 0) scale(1.07);
+  }
+}
+
+/* --------------------------------------------------------------- 顶栏 */
+
+#app {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  min-height: 100dvh;
+}
+
+#topbar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 22px 8px;
+  flex: 0 0 auto;
+}
+
+#app-title {
+  font-size: 19px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  background: linear-gradient(180deg, #f6d79c, #c9863f);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+#app-subtitle {
+  font-size: 12px;
+  letter-spacing: 0.22em;
+  color: rgba(243, 230, 210, 0.42);
+  border-left: 1px solid var(--line-soft);
+  padding-left: 12px;
+}
+
+#topbar-actions {
+  margin-left: auto;
+  display: flex;
+  gap: 8px;
+}
+
+#back-home,
+.icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  border: 1px solid rgba(201, 134, 63, 0.36);
+  background: linear-gradient(180deg, rgba(74, 50, 38, 0.9), rgba(40, 28, 22, 0.9));
+  color: var(--porcelain);
+  text-decoration: none;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: var(--shadow-btn);
+  transition: transform 0.12s ease, filter 0.12s ease, box-shadow 0.12s ease;
+}
+
+#back-home:hover,
+.icon-btn:hover {
+  transform: translateY(-2px);
+  filter: brightness(1.12);
+}
+
+#back-home:active,
+.icon-btn:active {
+  transform: translateY(1px);
+  box-shadow: 0 1px 0 rgba(0, 0, 0, 0.5);
+}
+
+.icon-btn[aria-pressed="true"] {
+  color: rgba(243, 230, 210, 0.35);
+  border-color: rgba(201, 134, 63, 0.18);
+}
+
+/* --------------------------------------------------------------- 舞台 */
+
+#stage {
+  flex: 1 1 auto;
+  display: flex;
+  /* 让「棋盘列 + 侧栏」作为整体居中：否则宽屏下棋盘被高度公式限死后居中，
+     侧栏会被推到很远（1920 下曾出现 230px 空隙）。 */
+  justify-content: center;
+  gap: 18px;
+  min-height: 0;
+  padding: 0 22px 22px;
+}
+
+/* 棋盘列 = 棋盘 + 紧贴其下的操作台。
+   flex-basis 直接取棋盘宽度公式，于是操作台与棋盘同宽、只隔一个 gap。 */
+#board-col {
+  flex: 0 1 calc((100dvh - 150px) * 1.2);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 0;
+  min-height: 0;
+}
+
+#board-wrap {
+  flex: 1 1 auto;
+  min-width: 0;
+  min-height: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+/* 灯箱底盘 */
+#board-wrap::before {
+  content: "";
+  position: absolute;
+  inset: 4% 0;
+  border-radius: 26px;
+  background: radial-gradient(60% 60% at 50% 45%, rgba(232, 183, 104, 0.13), transparent 72%);
+  filter: blur(6px);
+  pointer-events: none;
+}
+
+/* 操作台：横跨棋盘宽度、紧贴棋盘下缘。功能按钮与棋盘的距离就是上面的 12px gap。 */
+#console {
+  flex: 0 0 auto;
+  display: flex;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: var(--radius-plaque);
+  border: 1px solid rgba(201, 134, 63, 0.32);
+  background: linear-gradient(168deg, rgba(58, 40, 31, 0.92), rgba(32, 22, 18, 0.94));
+  box-shadow: var(--shadow-plaque);
+}
+
+/* --------------------------------------------------------------- 棋盘 */
+
+#board {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  grid-template-rows: repeat(10, minmax(0, 1fr));
+  width: 100%;
+  aspect-ratio: 12 / 10;
+  padding: 0;
+  border-radius: 20px;
+  /* ⚠️ 方格线必须由**棋盘容器**统一绘制，不能交给每个格子。
+     1) 画在容器上 → 空格自身仍然"不存在"，`x/pair-link/cdp-smoke.mjs` 里
+        "隐藏全部空格后截图逐字节不变"的真像素等价性断言继续成立；
+     2) 若改成给 .cell 画边框，就又回到"每格一个插座轮廓"的老缺陷上去了。
+     两层 1px 渐变按 (100%/12, 100%/10) 平铺，正好落在格线上；
+     background-origin 默认 padding-box，而 #board 的 padding 为 0，故与格子严格对齐。 */
+  background-color: transparent;
+  background-image:
+    linear-gradient(to right, var(--grid-line) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--grid-line) 1px, transparent 1px),
+    linear-gradient(180deg, rgba(36, 26, 21, 0.86), rgba(21, 15, 13, 0.92));
+  background-size: calc(100% / 12) calc(100% / 10), calc(100% / 12) calc(100% / 10), auto;
+  background-repeat: repeat, repeat, no-repeat;
+  border: 1px solid rgba(201, 134, 63, 0.26);
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.5), 0 18px 44px rgba(0, 0, 0, 0.5);
+  outline: none;
+  touch-action: none;
+}
+
+.cell {
+  position: relative;
+  display: block;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  appearance: none;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+}
+
+.cell.is-void,
+.cell.is-empty {
+  cursor: default;
+}
+
+/* ⚠️ 空格必须"不存在" —— 这条是本游戏最容易回归的地方，改动前先读：
+   1) 瓷片本体：.tile 的 background 用的是 var(--tile-lt, #e8b768) 带**回退色**。
+      paintTile() 消除时只 removeAttribute("style")，于是内联变量没了、
+      回退色还在 —— 每个消除格会继续画出一枚**没有图案的纯金色方块**，
+      整盘看起来永远没被消掉。必须显式把空格的 .tile 关掉。
+   2) 格子自身：已消除格与外圈通道一律纯背景，不画边框、不画伪元素。
+      棋盘方格线是**容器背景**（见 #board 的注释），不属于格子。
+   任何"给空格加回一点装饰"的改动都会与 x/pair-link/cdp-smoke.mjs 里的
+   真像素等价性断言冲突（隐藏空格前后截图必须逐字节相同）。 */
+.cell.is-empty .tile {
+  display: none;
+}
+
+.cell:focus {
+  outline: none;
+}
+
+.tile {
+  position: absolute;
+  inset: 7%;
+  border-radius: 22%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(
+    152deg,
+    var(--tile-lt, #e8b768) 0%,
+    var(--tile-mid, #c9863f) 48%,
+    var(--tile-dk, #8a5a24) 100%
+  );
+  border: 1px solid rgba(255, 255, 255, 0.24);
+  box-shadow: var(--shadow-tile), inset 0 1px 0 rgba(255, 255, 255, 0.42),
+    inset 0 -2px 0 rgba(0, 0, 0, 0.26);
+  transition: transform 0.14s ease, box-shadow 0.14s ease;
+  will-change: transform;
+}
+
+.tile .glyph {
+  width: 74%;
+  height: 74%;
+  display: block;
+}
+
+.tile .glyph path {
+  fill: rgba(24, 15, 11, 0.86);
+}
+
+/* 选中态：铜线呼吸 */
+.cell.is-selected .tile {
+  transform: translateY(-3px) scale(1.04);
+  border-color: rgba(255, 240, 214, 0.72);
+  animation: breathe 1.1s ease-in-out infinite;
+}
+
+@keyframes breathe {
+  0%,
+  100% {
+    box-shadow: 0 0 0 2px rgba(232, 183, 104, 0.7), 0 0 12px rgba(232, 183, 104, 0.35),
+      var(--shadow-tile);
+  }
+  50% {
+    box-shadow: 0 0 0 2px rgba(255, 233, 190, 1), 0 0 28px rgba(232, 183, 104, 0.72),
+      var(--shadow-tile);
+  }
+}
+
+/* 非法配对：朱红抖动 */
+.cell.is-invalid .tile {
+  animation: shake 0.24s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+  border-color: rgba(226, 80, 63, 0.9);
+  box-shadow: 0 0 0 2px rgba(226, 80, 63, 0.7), 0 0 18px rgba(226, 80, 63, 0.45),
+    var(--shadow-tile);
+}
+
+@keyframes shake {
+  10%,
+  90% {
+    transform: translateX(-3px);
+  }
+  20%,
+  80% {
+    transform: translateX(4px);
+  }
+  30%,
+  50%,
+  70% {
+    transform: translateX(-5px);
+  }
+  40%,
+  60% {
+    transform: translateX(5px);
+  }
+}
+
+/* 提示高亮 */
+.cell.is-hint .tile {
+  animation: hintPulse 1.5s ease-out both;
+}
+
+@keyframes hintPulse {
+  0% {
+    box-shadow: 0 0 0 3px rgba(255, 240, 214, 0.95), 0 0 26px rgba(232, 183, 104, 0.8),
+      var(--shadow-tile);
+  }
+  60% {
+    box-shadow: 0 0 0 3px rgba(232, 183, 104, 0.6), 0 0 18px rgba(232, 183, 104, 0.5),
+      var(--shadow-tile);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(232, 183, 104, 0), var(--shadow-tile);
+  }
+}
+
+/* --------------------------------------------------------------- 冰封壳 */
+
+/* 带壳的瓷片：在母题之上盖一层霜（.tile::after），不动母题本身的形状与配色。
+   .is-melted 也要画出同一层霜 —— 它在壳被震碎的瞬间接管，把霜"炸开"淡出。 */
+.cell.is-frozen .tile::after,
+.cell.is-melted .tile::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  background:
+    /* 两道裂纹 */
+    linear-gradient(122deg, transparent 43%, rgba(255, 255, 255, 0.82) 45%, rgba(255, 255, 255, 0.82) 46.4%, transparent 48.4%),
+    linear-gradient(58deg, transparent 61%, rgba(255, 255, 255, 0.55) 62.8%, rgba(255, 255, 255, 0.55) 64%, transparent 65.6%),
+    /* 霜体 */
+    linear-gradient(160deg, rgba(226, 244, 255, 0.76), rgba(158, 205, 235, 0.42) 52%, rgba(238, 250, 255, 0.68));
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.72),
+    inset 0 0 16px rgba(150, 205, 240, 0.55),
+    0 0 10px rgba(160, 214, 245, 0.3);
+}
+
+.cell.is-frozen {
+  cursor: not-allowed;
+}
+
+/* 点不动：冰蓝短促抖动（与"非法配对"的朱红抖动区分开） */
+.cell.is-frozen-hit .tile {
+  animation: iceShake 0.42s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+  border-color: rgba(198, 232, 255, 0.95);
+  box-shadow: 0 0 0 2px rgba(170, 220, 250, 0.8), 0 0 20px rgba(150, 210, 245, 0.6),
+    var(--shadow-tile);
+}
+
+@keyframes iceShake {
+  10%,
+  90% {
+    transform: translateX(-2px);
+  }
+  20%,
+  80% {
+    transform: translateX(3px);
+  }
+  30%,
+  50%,
+  70% {
+    transform: translateX(-4px);
+  }
+  40%,
+  60% {
+    transform: translateX(4px);
+  }
+}
+
+/* 壳被震碎：霜层炸开淡出 */
+.cell.is-melted .tile::after {
+  animation: iceShatter 0.6s cubic-bezier(0.2, 0.8, 0.3, 1) both;
+}
+
+@keyframes iceShatter {
+  from {
+    opacity: 1;
+    transform: scale(1);
+  }
+  60% {
+    opacity: 0.72;
+    transform: scale(1.14);
+  }
+  to {
+    opacity: 0;
+    transform: scale(1.3);
+  }
+}
+
+/* 焦点环：只对还有瓷片的格子生效（空格子不存在，自然也不该有焦点环）。 */
+.cell:focus-visible .tile {
+  box-shadow: 0 0 0 2px rgba(243, 230, 210, 0.95), 0 0 16px rgba(243, 230, 210, 0.5);
+}
+
+#fx {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 3;
+}
+
+/* --------------------------------------------------------------- HUD */
+
+#hud {
+  flex: 0 0 322px;
+  width: 322px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 12px;
+  min-height: 0;
+  overflow-y: auto;
+  padding-right: 2px;
+}
+
+.plaque {
+  position: relative;
+  border-radius: var(--radius-plaque);
+  border: 1px solid rgba(201, 134, 63, 0.32);
+  background: linear-gradient(168deg, rgba(58, 40, 31, 0.92), rgba(32, 22, 18, 0.94));
+  box-shadow: var(--shadow-plaque);
+  padding: 10px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.plaque-label {
+  font-size: 11px;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: rgba(232, 183, 104, 0.7);
+}
+
+.plaque-value {
+  font-size: 24px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.05;
+  color: var(--porcelain);
+}
+
+.plaque-value.big {
+  font-size: 32px;
+  background: linear-gradient(180deg, #fff3d9, #e8b768);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.plaque-sub {
+  font-size: 12px;
+  color: rgba(243, 230, 210, 0.5);
+}
+
+.plaque-level {
+  flex-direction: row;
+  align-items: baseline;
+  gap: 10px;
+}
+
+.plaque-level .plaque-label {
+  flex: 0 0 auto;
+}
+
+.plaque-level .plaque-value {
+  margin-left: auto;
+}
+
+.plaque-level .plaque-sub {
+  flex: 0 0 auto;
+}
+
+.timer-body,
+.combo-body {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+#timer-ring,
+#combo-ring {
+  flex: 0 0 auto;
+  overflow: visible;
+}
+
+#timer-ring {
+  width: 64px;
+  height: 64px;
+  transform: rotate(-90deg);
+}
+
+#combo-ring {
+  width: 44px;
+  height: 44px;
+  transform: rotate(-90deg);
+}
+
+.ring-track {
+  fill: none;
+  stroke: rgba(243, 230, 210, 0.1);
+  stroke-width: 5;
+}
+
+.ring-fill {
+  fill: none;
+  stroke: var(--copper-lt);
+  stroke-width: 5;
+  stroke-linecap: round;
+  stroke-dasharray: 188.5;
+  stroke-dashoffset: 0;
+  transition: stroke-dashoffset 0.24s linear, stroke 0.24s ease;
+}
+
+#combo-ring .ring-fill {
+  stroke-dasharray: 100.5;
+  stroke-dashoffset: 100.5;
+}
+
+#timer-ring.is-low .ring-fill {
+  stroke: var(--crimson);
+}
+
+#timer-text {
+  font-size: 26px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.04em;
+}
+
+#timer-ring.is-low ~ #timer-text {
+  color: var(--crimson);
+  animation: lowTick 1s ease-in-out infinite;
+}
+
+@keyframes lowTick {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.55;
+  }
+}
+
+.combo-lamp {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 48px;
+  height: 40px;
+  padding: 0 12px;
+  border-radius: 12px;
+  font-size: 20px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  color: rgba(243, 230, 210, 0.5);
+  border: 1px solid rgba(201, 134, 63, 0.25);
+  background: rgba(21, 15, 13, 0.6);
+  transition: color 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.combo-lamp.is-hot {
+  color: #fff3d9;
+  border-color: rgba(255, 216, 150, 0.75);
+  box-shadow: 0 0 0 1px rgba(255, 216, 150, 0.4), 0 0 22px rgba(232, 183, 104, 0.6);
+}
+
+.combo-lamp.flash {
+  animation: lampFlash 0.35s ease-out 2;
+}
+
+@keyframes lampFlash {
+  0%,
+  100% {
+    box-shadow: 0 0 0 1px rgba(255, 216, 150, 0.3), 0 0 6px rgba(232, 183, 104, 0.25);
+  }
+  50% {
+    box-shadow: 0 0 0 3px rgba(255, 216, 150, 0.85), 0 0 30px rgba(232, 183, 104, 0.85);
+  }
+}
+
+.star-row {
+  display: flex;
+  gap: 8px;
+}
+
+.star {
+  width: 22px;
+  height: 22px;
+  display: block;
+  background: rgba(243, 230, 210, 0.13);
+  clip-path: polygon(
+    50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%,
+    50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%
+  );
+  transition: background 0.3s ease, filter 0.3s ease, transform 0.3s ease;
+}
+
+.star-row.big .star {
+  width: 38px;
+  height: 38px;
+}
+
+.star.is-on {
+  background: linear-gradient(180deg, #fff0cd, #d99a45);
+  filter: drop-shadow(0 0 8px rgba(232, 183, 104, 0.75));
+  transform: scale(1.06);
+}
+
+.tool-dock,
+.ctrl-dock {
+  display: flex;
+  gap: 10px;
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+/* 工具盘 / 控制台之间的细分割线，让"道具"与"流程"两组按钮一眼可分 */
+.ctrl-dock {
+  border-left: 1px dashed rgba(201, 134, 63, 0.28);
+  padding-left: 10px;
+}
+
+/* 剩余对数：进度条 + 数值，配合方格线便于心算 */
+.progress-body {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.progress-track {
+  flex: 1 1 auto;
+  height: 6px;
+  border-radius: 999px;
+  background: rgba(243, 230, 210, 0.1);
+  overflow: hidden;
+}
+
+.progress-fill {
+  display: block;
+  width: 0;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #d99a45, #ffe6b0);
+  transition: width 0.24s ease;
+}
+
+.plaque-progress .plaque-value {
+  font-size: 20px;
+  min-width: 2ch;
+}
+
+.btn {
+  flex: 1 1 auto;
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 42px;
+  padding: 10px 14px;
+  border-radius: var(--radius-btn);
+  border: 1px solid rgba(201, 134, 63, 0.4);
+  background: linear-gradient(180deg, rgba(74, 50, 38, 0.96), rgba(43, 30, 24, 0.96));
+  color: var(--porcelain);
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  box-shadow: var(--shadow-btn);
+  transition: transform 0.12s ease, filter 0.12s ease, box-shadow 0.12s ease;
+}
+
+.btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  filter: brightness(1.12);
+}
+
+.btn:active:not(:disabled) {
+  transform: translateY(1px);
+  box-shadow: 0 1px 0 rgba(0, 0, 0, 0.5);
+}
+
+.btn:disabled {
+  opacity: 0.42;
+  cursor: not-allowed;
+  filter: grayscale(0.55);
+}
+
+.btn-primary {
+  border-color: rgba(255, 216, 150, 0.6);
+  background: linear-gradient(180deg, #d99a45, #a86f2a);
+  color: #241a15;
+  text-shadow: 0 1px 0 rgba(255, 240, 214, 0.35);
+}
+
+.seal {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 22px;
+  height: 22px;
+  padding: 0 5px;
+  border-radius: 7px;
+  font-size: 12px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  background: rgba(226, 80, 63, 0.88);
+  color: #fff4ea;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.35);
+}
+
+.btn:disabled .seal {
+  background: rgba(120, 96, 82, 0.7);
+}
+
+.bump {
+  animation: bump 0.34s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes bump {
+  0% {
+    transform: scale(1);
+  }
+  45% {
+    transform: scale(1.24);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+/* --------------------------------------------------------------- 覆盖层 */
+
+#overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  background: radial-gradient(62% 62% at 50% 44%, rgba(36, 26, 21, 0.84), rgba(12, 8, 7, 0.95));
+  backdrop-filter: blur(7px);
+  -webkit-backdrop-filter: blur(7px);
+}
+
+#overlay[hidden] {
+  display: none;
+}
+
+.panel {
+  position: relative;
+  width: min(420px, 100%);
+  max-height: 88vh;
+  overflow-y: auto;
+  border-radius: 20px;
+  border: 1px solid rgba(201, 134, 63, 0.42);
+  background: linear-gradient(168deg, rgba(52, 36, 28, 0.98), rgba(26, 18, 15, 0.99));
+  box-shadow: 0 28px 70px rgba(0, 0, 0, 0.66), inset 0 1px 0 rgba(255, 255, 255, 0.07);
+  padding: 24px 24px 20px;
+  text-align: center;
+  animation: panelIn 0.28s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.panel-wide {
+  width: min(560px, 100%);
+  text-align: left;
+}
+
+.panel[hidden] {
+  display: none;
+}
+
+@keyframes panelIn {
+  from {
+    opacity: 0;
+    transform: translateY(14px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.panel h2 {
+  margin: 0 0 6px;
+  font-size: 24px;
+  letter-spacing: 0.06em;
+  background: linear-gradient(180deg, #fff3d9, #d99a45);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.panel-sub {
+  margin: 0 0 16px;
+  font-size: 13px;
+  line-height: 1.7;
+  color: rgba(243, 230, 210, 0.62);
+}
+
+.panel-progress {
+  font-size: 13px;
+  color: rgba(243, 230, 210, 0.6);
+  margin-bottom: 16px;
+}
+
+.panel-progress strong {
+  color: var(--copper-lt);
+  font-variant-numeric: tabular-nums;
+}
+
+/* 开始面板的「今日一盘」条目：霜蓝色调，与主线/无尽的暖铜色区分开。 */
+.panel-daily {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 12px;
+  padding: 10px 14px;
+  margin-bottom: 16px;
+  border-radius: 12px;
+  background: linear-gradient(140deg, rgba(160, 205, 240, 0.13), rgba(232, 183, 104, 0.07));
+  border: 1px solid rgba(170, 214, 245, 0.24);
+  font-size: 13px;
+  color: rgba(243, 230, 210, 0.72);
+}
+
+.panel-daily .daily-label {
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: rgba(203, 236, 255, 0.94);
+}
+
+.panel-daily .daily-sub {
+  flex: 1 1 auto;
+  font-size: 12px;
+  color: rgba(243, 230, 210, 0.5);
+}
+
+.panel-daily .daily-best {
+  font-variant-numeric: tabular-nums;
+  color: rgba(243, 230, 210, 0.6);
+}
+
+.panel-daily .daily-best strong {
+  color: var(--copper-lt);
+}
+
+.panel-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 18px;
+}
+
+.panel-actions .btn {
+  flex: 1 1 130px;
+}
+
+/* 结算 */
+.result-lines {
+  margin: 16px 0 0;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 6px 12px;
+  font-size: 13px;
+  text-align: left;
+}
+
+.result-lines dt {
+  color: rgba(243, 230, 210, 0.58);
+}
+
+.result-lines dd {
+  margin: 0;
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+  text-align: right;
+  color: rgba(243, 230, 210, 0.92);
+}
+
+.result-lines > * {
+  opacity: 0;
+  animation: lineIn 0.34s ease-out both;
+}
+
+@keyframes lineIn {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.result-total {
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px dashed rgba(201, 134, 63, 0.35);
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  font-size: 13px;
+  color: rgba(243, 230, 210, 0.62);
+}
+
+.result-total strong {
+  font-size: 30px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  background: linear-gradient(180deg, #fff3d9, #e8b768);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.best-badge {
+  margin: 14px auto 0;
+  display: inline-block;
+  padding: 5px 14px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.18em;
+  color: #241a15;
+  background: linear-gradient(180deg, #ffe6b0, #d99a45);
+  box-shadow: 0 0 20px rgba(232, 183, 104, 0.6);
+  animation: bump 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) 0.4s both;
+}
+
+.best-badge[hidden] {
+  display: none;
+}
+
+/* 结算粒子 */
+.burst {
+  position: absolute;
+  left: 50%;
+  top: 34%;
+  width: 0;
+  height: 0;
+  pointer-events: none;
+}
+
+.burst i {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 7px;
+  height: 7px;
+  margin: -3.5px 0 0 -3.5px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 35%, #fff3d9, #e8b768 55%, rgba(201, 134, 63, 0) 72%);
+  opacity: 0;
+  animation: burstOut 0.95s cubic-bezier(0.16, 0.84, 0.44, 1) both;
+  animation-delay: var(--delay, 0s);
+}
+
+@keyframes burstOut {
+  0% {
+    opacity: 0;
+    transform: translate3d(0, 0, 0) scale(0.5);
+  }
+  18% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translate3d(var(--dx, 0), var(--dy, 0), 0) scale(1.1);
+  }
+}
+
+/* 玩法说明 */
+.help-list {
+  margin: 0 0 16px;
+  padding-left: 20px;
+  font-size: 13px;
+  line-height: 1.85;
+  color: rgba(243, 230, 210, 0.78);
+}
+
+.help-list li + li {
+  margin-top: 4px;
+}
+
+.help-keys {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12.5px;
+  margin-bottom: 4px;
+}
+
+.help-keys th,
+.help-keys td {
+  text-align: left;
+  padding: 7px 10px;
+  border-bottom: 1px solid rgba(243, 230, 210, 0.07);
+}
+
+.help-keys th {
+  width: 42%;
+  color: var(--copper-lt);
+  font-weight: 700;
+}
+
+.help-keys td {
+  color: rgba(243, 230, 210, 0.7);
+}
+
+/* 选关 */
+.level-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(64px, 1fr));
+  gap: 8px;
+  max-height: 46vh;
+  overflow-y: auto;
+  padding: 2px;
+}
+
+.level-btn {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  padding: 8px 4px;
+  border-radius: 12px;
+  border: 1px solid rgba(201, 134, 63, 0.32);
+  background: linear-gradient(180deg, rgba(62, 43, 33, 0.95), rgba(35, 24, 19, 0.95));
+  color: var(--porcelain);
+  font-family: inherit;
+  font-size: 15px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  cursor: pointer;
+  box-shadow: var(--shadow-btn);
+  transition: transform 0.12s ease, filter 0.12s ease;
+}
+
+.level-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  filter: brightness(1.14);
+}
+
+.level-btn:disabled {
+  opacity: 0.36;
+  cursor: not-allowed;
+  filter: grayscale(0.7);
+}
+
+.level-btn .level-stars {
+  display: flex;
+  gap: 2px;
+}
+
+.level-btn .level-stars .star {
+  width: 9px;
+  height: 9px;
+}
+
+/* --------------------------------------------------------------- 杂项 */
+
+#toast {
+  position: fixed;
+  /* ⚠️ 不能再用"底部居中"：操作台（提示/洗牌/暂停/重玩）就贴在棋盘下缘、横跨棋盘宽度，
+     而它正好落在视口底部中央 —— 状态提示会盖住按钮、把点击吃掉（玩家用完提示立刻点暂停
+     会点不动）。改到右下角，那里是侧栏下方的空白区。
+     pointer-events: none 是第二道保险：状态提示永远不该拦截任何点击。 */
+  right: 24px;
+  bottom: 26px;
+  z-index: 60;
+  pointer-events: none;
+  padding: 9px 18px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 700;
+  color: #241a15;
+  background: linear-gradient(180deg, #ffe6b0, #d99a45);
+  box-shadow: 0 10px 26px rgba(0, 0, 0, 0.45);
+  animation: toastIn 0.22s ease-out both;
+}
+
+#toast[hidden] {
+  display: none;
+}
+
+@keyframes toastIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+.noscript-tip {
+  margin: 24px auto;
+  max-width: 520px;
+  padding: 18px 22px;
+  border-radius: 14px;
+  border: 1px solid rgba(201, 134, 63, 0.4);
+  background: rgba(36, 26, 21, 0.9);
+  color: #f3e6d2;
+  font-size: 14px;
+  line-height: 1.8;
+  text-align: center;
+}
+
+/* --------------------------------------------------------------- 响应式 */
+
+@media (max-width: 899px) {
+  #hud {
+    flex: 0 0 262px;
+    width: 262px;
+  }
+
+  #stage {
+    gap: 16px;
+    padding: 0 16px 16px;
+  }
+
+  #topbar {
+    padding: 8px 16px 6px;
+  }
+}
+
+@media (max-width: 768px) {
+  #stage {
+    flex-direction: column;
+    justify-content: flex-start;
+    gap: 10px;
+    padding: 0 10px 12px;
+  }
+
+  /* 移动端：棋盘 → 紧贴其下的操作台 → HUD 网格 */
+  #board-col {
+    order: 1;
+    flex: 0 0 auto;
+    width: 100%;
+    gap: 8px;
+  }
+
+  #board-wrap {
+    flex: 0 0 auto;
+  }
+
+  #board {
+    width: min(100%, calc((100dvh - 340px) * 1.2));
+    border-radius: 16px;
+  }
+
+  #console {
+    padding: 8px;
+    gap: 8px;
+  }
+
+  .tool-dock,
+  .ctrl-dock {
+    gap: 8px;
+  }
+
+  .ctrl-dock {
+    padding-left: 8px;
+  }
+
+  #hud {
+    order: 2;
+    flex: 0 0 auto;
+    width: auto;
+    overflow: visible;
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    justify-content: stretch;
+    gap: 8px;
+    padding: 0;
+  }
+
+  .plaque {
+    padding: 7px 9px;
+    gap: 2px;
+  }
+
+  .plaque-label,
+  .plaque-sub,
+  #level-name,
+  #app-subtitle {
+    display: none;
+  }
+
+  /* 显式排布，别依赖 DOM 顺序自动填充（否则「得分」跨 4 列会把「星级」挤成半行）：
+     第 1 行 关卡 / 时间 / 连击 / 星级；第 2 行 得分；第 3 行 剩余对数。 */
+  .plaque-level {
+    grid-area: 1 / 1 / 2 / 2;
+    justify-content: center;
+  }
+
+  .plaque-timer {
+    grid-area: 1 / 2 / 2 / 3;
+    align-items: center;
+  }
+
+  .plaque-combo {
+    grid-area: 1 / 3 / 2 / 4;
+    align-items: center;
+  }
+
+  .plaque-stars {
+    grid-area: 1 / 4 / 2 / 5;
+    justify-content: center;
+  }
+
+  .plaque-score {
+    grid-area: 2 / 1 / 3 / 5;
+    flex-direction: row;
+    align-items: baseline;
+    justify-content: center;
+    gap: 10px;
+  }
+
+  /* 剩余对数整行铺开，进度条才有意义 */
+  .plaque-progress {
+    grid-area: 3 / 1 / 4 / 5;
+  }
+
+  .plaque-progress .plaque-value {
+    font-size: 17px;
+  }
+
+  .plaque-level .plaque-value {
+    margin-left: 0;
+  }
+
+  .plaque-value {
+    font-size: 19px;
+    text-align: center;
+  }
+
+  .plaque-value.big {
+    font-size: 22px;
+  }
+
+  .timer-body,
+  .combo-body {
+    justify-content: center;
+    gap: 6px;
+  }
+
+  #timer-ring {
+    width: 44px;
+    height: 44px;
+  }
+
+  #combo-ring {
+    display: none;
+  }
+
+  #timer-text {
+    font-size: 17px;
+  }
+
+  .combo-lamp {
+    min-width: 34px;
+    height: 30px;
+    padding: 0 8px;
+    font-size: 16px;
+  }
+
+  .star-row {
+    justify-content: center;
+  }
+
+  .star {
+    width: 18px;
+    height: 18px;
+  }
+
+  .btn {
+    min-height: 38px;
+    font-size: 13px;
+    padding: 8px 10px;
+  }
+
+  .panel {
+    padding: 20px 18px 16px;
+  }
+
+  .panel h2 {
+    font-size: 20px;
+  }
+}
+
+@media (max-width: 420px) {
+  #topbar {
+    padding: 6px 10px 4px;
+    gap: 8px;
+  }
+
+  #app-title {
+    font-size: 16px;
+  }
+
+  .icon-btn,
+  #back-home {
+    width: 30px;
+    height: 30px;
+  }
+
+  .level-grid {
+    grid-template-columns: repeat(auto-fill, minmax(56px, 1fr));
+  }
+}
+
+/* 390px 窄屏兜底：保证不横向溢出 */
+@media (max-width: 390px) {
+  #stage {
+    padding: 0 8px 10px;
+  }
+
+  .plaque {
+    padding: 6px 7px;
+  }
+
+  .btn {
+    font-size: 12px;
+    min-height: 34px;
+    padding: 7px 8px;
+  }
+
+  .seal {
+    min-width: 18px;
+    height: 18px;
+    font-size: 11px;
+  }
+
+  #timer-text {
+    font-size: 15px;
+  }
+
+  .level-grid {
+    grid-template-columns: repeat(auto-fill, minmax(52px, 1fr));
+  }
+}
+
+/* --------------------------------------------------------------- 动效降级 */
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  body::before {
+    animation: none;
+  }
+
+  .burst {
+    display: none;
+  }
+
+  .result-lines > * {
+    opacity: 1;
+  }
+
+  .best-badge {
+    opacity: 1;
+  }
+}

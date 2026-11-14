@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-D67E3XTNSS"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-D67E3XTNSS');
+  </script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>指令机器人 · 微缩工作台 · DOIN 在线小游戏</title>
+  <meta name="description" content="用磁贴给微缩机器人编程：前进、转向、跳跃、点亮与子程序，二十一关逐层加码。等轴测浮岛、逐帧回放与单步调试、按最优行数评星的 Code Golf 挑战。">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="css/style.css?v=b4b5e58af7f3">
+</head>
+<body>
+  <div id="workbench">
+    <header id="plaque" class="plaque">
+      <a href="/" id="back-home" class="plaque-btn plaque-home" data-i18n="back">← 门户</a>
+      <h1 id="game-title" class="plaque-title" data-i18n="appTitle">指令机器人</h1>
+
+      <div class="plaque-tools">
+        <button id="btn-levels" class="plaque-btn" type="button" data-i18n="levelSelect">选关</button>
+        <button id="btn-sound" class="plaque-btn plaque-icon" type="button" data-i18n-aria="sound">🔊</button>
+        <button id="btn-lang" class="plaque-btn plaque-icon" type="button" data-i18n-aria="langName">EN</button>
+        <button id="btn-help" class="plaque-btn plaque-icon" type="button" data-i18n-aria="help">?</button>
+      </div>
+    </header>
+
+    <main id="bench">
+      <section id="stage" class="stage">
+        <div id="crt" class="crt">
+          <div class="crt-top">
+            <span id="hud-chapter" class="crt-tag" data-i18n="chapterLabel">卷</span>
+            <span id="hud-chapter-name" class="crt-chapter">初识伺服</span>
+            <span id="hud-status" class="crt-status" data-state="idle">待命</span>
+          </div>
+          <p id="hud-level" class="crt-level">第 1 关 · 点亮第一灯</p>
+          <div class="crt-stats">
+            <span><i data-i18n="parLabel">最优</i><b id="hud-par">0</b></span>
+            <span><i data-i18n="linesLabel">行数</i><b id="hud-lines">0</b></span>
+            <span><i data-i18n="stepsLabel">步数</i><b id="hud-steps">0</b></span>
+            <span><i>ENERGY</i><b id="hud-energy">0/0</b></span>
+          </div>
+          <p id="hud-mission" class="crt-mission"></p>
+        </div>
+
+        <div id="board-wrap" class="board-wrap">
+          <svg id="board" viewBox="0 0 320 200" role="img" data-i18n-aria="ariaBoard" aria-label="机器人棋盘">
+            <defs>
+              <linearGradient id="tile-grad" x1="0" y1="0" x2="0.6" y2="1">
+                <stop offset="0%" stop-color="#3c4453"/>
+                <stop offset="100%" stop-color="#2a303b"/>
+              </linearGradient>
+              <linearGradient id="lamp-on" x1="0" y1="0" x2="0.4" y2="1">
+                <stop offset="0%" stop-color="#ffe89a"/>
+                <stop offset="100%" stop-color="#fbc531"/>
+              </linearGradient>
+              <radialGradient id="lamp-glow-grad" cx="50%" cy="50%" r="50%">
+                <stop offset="0%" stop-color="rgba(251,197,49,0.55)"/>
+                <stop offset="100%" stop-color="rgba(251,197,49,0)"/>
+              </radialGradient>
+              <radialGradient id="robot-shell" cx="34%" cy="26%" r="80%">
+                <stop offset="0%" stop-color="#ffffff"/>
+                <stop offset="62%" stop-color="#e8ebf2"/>
+                <stop offset="100%" stop-color="#b9c0cc"/>
+              </radialGradient>
+              <filter id="soft-drop" x="-50%" y="-50%" width="200%" height="200%">
+                <feDropShadow dx="0" dy="3" stdDeviation="3" flood-color="#05070b" flood-opacity="0.7"/>
+              </filter>
+              <filter id="glow-blur" x="-80%" y="-80%" width="260%" height="260%">
+                <feGaussianBlur stdDeviation="3"/>
+              </filter>
+            </defs>
+            <g id="tile-layer"></g>
+            <g id="object-layer"></g>
+            <g id="robot-layer"></g>
+          </svg>
+        </div>
+
+        <div id="trace" class="trace-panel">
+          <span class="trace-label" data-i18n="traceTitle">执行轨迹</span>
+          <ol id="trace-list" class="trace-list"></ol>
+        </div>
+      </section>
+
+      <section id="console" class="console">
+        <div class="console-head">
+          <span class="console-title" data-i18n="programLabel">指令序列</span>
+          <span class="line-meter">
+            <b id="line-count">0</b>
+            <span data-i18n="linesLabel">行数</span>
+            <span class="line-par">/ <b id="line-par">0</b></span>
+            <em id="line-flag"></em>
+          </span>
+        </div>
+
+        <div class="tape">
+          <div class="proc-block">
+            <span class="proc-label" data-i18n="mainName">MAIN</span>
+            <div id="slots-main" class="slot-row"></div>
+          </div>
+          <div class="proc-block" id="proc-block" hidden>
+            <span class="proc-label" data-i18n="procName">PROC1</span>
+            <div id="slots-proc1" class="slot-row"></div>
+          </div>
+        </div>
+
+        <div class="palette">
+          <span class="palette-label" data-i18n="paletteLabel">磁贴盒</span>
+          <div id="palette-row" class="palette-row"></div>
+        </div>
+
+        <div class="controls">
+          <button id="btn-run" class="ctl ctl-run" type="button" data-i18n="run">运行</button>
+          <button id="btn-step" class="ctl" type="button" data-i18n="stepOnce">单步</button>
+          <button id="btn-speed" class="ctl ctl-speed" type="button" aria-label="Speed">1×</button>
+          <button id="btn-reset" class="ctl" type="button" data-i18n="reset">复位</button>
+          <button id="btn-clear" class="ctl" type="button" data-i18n="clear">清空</button>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <div id="help-panel" class="overlay" hidden>
+    <div class="sheet">
+      <h2 data-i18n="helpTitle">玩法说明</h2>
+      <ul class="help-list">
+        <li data-i18n="helpGoal">点亮盘面上所有灯砖。灯砖被踩上去即点亮，全部点亮立刻通关。</li>
+        <li data-i18n="helpSlot">点选下方磁贴填入空槽；点已填的槽取回，点空槽可指定落位。</li>
+        <li data-i18n="helpRun">按运行逐帧执行；可暂停、单步、调速，随时复位重来。</li>
+        <li data-i18n="helpJump">跳跃越过一格台阶，落差必须正好一层。</li>
+        <li data-i18n="helpAct">动作负责点亮灯砖、推动箱子，原地生效不前进。</li>
+        <li data-i18n="helpColor">带色磁贴只在同色地砖上生效，其余时候自动跳过。</li>
+        <li data-i18n="helpProc">PROC1 是子程序：调用磁贴跳进去执行，执行完自动返回。</li>
+        <li data-i18n="helpCrate">把箱子推到开关上，闸门才会降下放行。</li>
+        <li data-i18n="helpStar">三星 = 最优行数，二星 = 最优 +2 行以内，一星 = 通关即可。</li>
+        <li data-i18n="helpSave">进度与草稿保存在本机浏览器，换设备不会同步。</li>
+      </ul>
+      <button id="help-close" class="sheet-btn" type="button" data-i18n="close">关闭</button>
+    </div>
+  </div>
+
+  <div id="result-panel" class="overlay" hidden>
+    <div class="sheet result-sheet">
+      <h2 id="result-title" data-i18n="winTitle">通关</h2>
+      <p id="result-line" class="sheet-desc"></p>
+      <p id="result-stars" class="result-stars"></p>
+      <p id="result-hint" class="result-hint"></p>
+      <p id="result-best" class="result-best" hidden data-i18n="newBest">新纪录</p>
+      <button id="result-next" class="sheet-btn" type="button" data-i18n="nextLevel" hidden>下一关</button>
+      <button id="result-again" class="sheet-btn" type="button" data-i18n="retryLevel">重试本关</button>
+    </div>
+  </div>
+
+  <div id="level-panel" class="overlay" hidden>
+    <div class="sheet level-sheet">
+      <h2 data-i18n="levelsTitle">关卡谱</h2>
+      <p class="sheet-desc" data-i18n="levelsIntro">五卷共二十一关。点灯、跳跃、子程序、色块与推箱，逐层加深。</p>
+      <p id="level-progress" class="level-progress"></p>
+      <div id="level-grid" class="level-grid"></div>
+      <button id="level-close" class="sheet-btn" type="button" data-i18n="closeLevels">收起关卡谱</button>
+    </div>
+  </div>
+
+  <div id="toast" class="toast" hidden></div>
+
+  <noscript><p>需要启用 JavaScript 才能游玩。</p></noscript>
+  <script type="module" src="js/main.mjs?v=b4b5e58af7f3"></script>
+</body>
+</html>

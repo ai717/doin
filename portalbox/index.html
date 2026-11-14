@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-D67E3XTNSS"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-D67E3XTNSS');
+  </script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>传送门推箱 · DOIN 在线小游戏</title>
+  <meta name="description" content="在光圈科技实验室里推动能量箱，让蓝橙与紫绿传送门折叠空间，把箱子隔空送进绿色核心槽。20 关非欧拓扑谜题、BFS 验证最优步数与无限撤销，零广告即开即玩。">
+  <link rel="canonical" href="https://doin.win/portalbox/">
+  <meta name="theme-color" content="#101217">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="DOIN">
+  <meta property="og:title" content="传送门推箱 · DOIN 在线小游戏">
+  <meta property="og:description" content="折叠空间的推箱谜题：蓝橙与紫绿传送门、20 关非欧拓扑测试舱与无限撤销。">
+  <meta property="og:url" content="https://doin.win/portalbox/">
+  <meta property="og:locale" content="zh_CN">
+  <meta property="og:image" content="https://doin.win/assets/og-image.png">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="传送门推箱 · DOIN 在线小游戏">
+  <meta name="twitter:description" content="折叠空间的推箱谜题：蓝橙与紫绿传送门、20 关非欧拓扑测试舱与无限撤销。">
+  <meta name="twitter:image" content="https://doin.win/assets/og-image.png">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="css/style.css?v=b4b5e58af7f3">
+</head>
+<body>
+  <noscript><p class="noscript" data-i18n="noscript">需要启用 JavaScript 才能游玩传送门推箱。</p></noscript>
+
+  <div class="cabinet" id="game-app">
+    <header class="topbar">
+      <a href="/" id="back-home" class="bar-btn" data-i18n="backHome">返回门户</a>
+      <div class="brand">
+        <h1 class="title" id="app-title" data-i18n="title">传送门推箱</h1>
+        <p class="subtitle" data-i18n="subtitle">光圈科技 · 空间折叠测试舱</p>
+      </div>
+      <div class="topbar-tools">
+        <button type="button" id="sound-btn" class="bar-btn" aria-pressed="true" data-i18n-aria="ariaSound">♪</button>
+        <button type="button" id="lang-btn" class="bar-btn" data-i18n-aria="ariaLang">EN</button>
+        <button type="button" id="help-btn" class="bar-btn" data-i18n-aria="ariaHelp">?</button>
+      </div>
+    </header>
+
+    <main class="arena">
+      <aside class="wing wing-left" aria-labelledby="chamber-label">
+        <div class="plaque">
+          <span class="wing-label" id="chamber-label" data-i18n="chamberLabel">测试舱</span>
+          <b id="chamber-tag">CHAMBER 01 · SINGLE WORMHOLE</b>
+          <em id="level-label">第 1 关</em>
+        </div>
+
+        <div class="readout-cell">
+          <em data-i18n="stepsLabel">步数</em>
+          <b id="steps-value">0</b>
+          <span class="readout-sub" id="best-steps-value">最少 0</span>
+        </div>
+
+        <div class="readout-cell">
+          <em data-i18n="coresLabel">能量核心</em>
+          <b id="cores-value">0/1</b>
+          <div class="core-pips" id="core-pips" aria-hidden="true"></div>
+        </div>
+
+        <div class="readout-cell">
+          <em data-i18n="resultOptimal">官方最优</em>
+          <b id="optimal-value">0</b>
+        </div>
+
+        <div class="readout-cell">
+          <em data-i18n="bestLabel">最高</em>
+          <b id="best-value">0</b>
+        </div>
+
+        <p class="status" id="status-line" role="status" aria-live="polite"></p>
+      </aside>
+
+      <section class="board-stage">
+        <h2 class="sr-only" data-i18n="boardAria">传送门推箱测试舱</h2>
+        <div class="machine-frame">
+          <span class="frame-plate" id="level-plate">CHAMBER 01</span>
+          <canvas id="stage" width="840" height="560" data-i18n-aria="ariaCanvas"></canvas>
+        </div>
+      </section>
+
+      <aside class="wing wing-right" aria-labelledby="portal-title">
+        <h2 class="wing-title" id="portal-title" data-i18n="portalTitle">传送门网络</h2>
+
+        <div class="pair-card" id="pair-a">
+          <span class="pair-name" data-i18n="pairA">蓝 ⇄ 橙</span>
+          <span class="pair-dots" aria-hidden="true"><i class="dot dot-blue"></i><i class="link"></i><i class="dot dot-orange"></i></span>
+          <b class="pair-state" id="pair-a-state">连通</b>
+        </div>
+
+        <div class="pair-card" id="pair-b">
+          <span class="pair-name" data-i18n="pairB">紫 ⇄ 绿</span>
+          <span class="pair-dots" aria-hidden="true"><i class="dot dot-purple"></i><i class="link"></i><i class="dot dot-green"></i></span>
+          <b class="pair-state" id="pair-b-state">连通</b>
+        </div>
+
+        <p class="wing-note" data-i18n="portalHint">走入光圈即穿越；推箱入门只送走箱子</p>
+        <p class="wing-note" data-i18n="hintMove">方向键 / WASD 移动与推箱</p>
+        <p class="wing-note" data-i18n="hintUndo">Z 或下方撤销键无限回退</p>
+        <p class="wing-note wing-keys" data-i18n="hintReset">R 秒级复位当前测试舱</p>
+        <p class="saved" data-i18n="saved">星评与最少步数保存在本机浏览器，可离线游玩。</p>
+      </aside>
+
+      <footer class="instrument-bar" data-i18n-aria="ariaHud">
+        <div class="pad-wrap">
+          <div class="move-pad" id="move-pad" role="group" data-i18n-aria="dpadLabel">
+            <button type="button" class="pad-key pad-up" data-dir="up" aria-label="Up">▲</button>
+            <button type="button" class="pad-key pad-left" data-dir="left" aria-label="Left">◀</button>
+            <span class="pad-core" aria-hidden="true">✦</span>
+            <button type="button" class="pad-key pad-right" data-dir="right" aria-label="Right">▶</button>
+            <button type="button" class="pad-key pad-down" data-dir="down" aria-label="Down">▼</button>
+          </div>
+        </div>
+        <div class="key-row">
+          <button type="button" class="key" id="undo-btn" data-i18n="undo">撤销</button>
+          <button type="button" class="key" id="reset-btn" data-i18n="reset">重置</button>
+          <button type="button" class="key" id="levels-btn" data-i18n="levels">选关</button>
+        </div>
+      </footer>
+    </main>
+  </div>
+
+  <div class="layer" id="levels-layer" hidden role="dialog" aria-modal="true" aria-labelledby="levels-title">
+    <div class="panel panel-levels">
+      <h2 id="levels-title" data-i18n="levelsTitle">测试舱档案</h2>
+      <p class="levels-total" id="levels-total"></p>
+      <div class="levels-grid" id="levels-grid"></div>
+      <div class="layer-actions">
+        <button type="button" class="key key-primary" id="levels-close" data-i18n="close">关闭</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="layer" id="result-layer" hidden role="dialog" aria-modal="true" aria-labelledby="result-title">
+    <div class="panel">
+      <p class="result-badge" id="result-badge" data-i18n="resultClear">测试完成</p>
+      <h2 id="result-title"></h2>
+      <p class="result-stars" id="result-stars"></p>
+      <div class="report">
+        <div class="report-row"><span data-i18n="resultSteps">实际步数</span><b id="result-steps">0</b></div>
+        <div class="report-row"><span data-i18n="resultOptimal">官方最优</span><b id="result-optimal">0</b></div>
+        <div class="report-row"><span data-i18n="resultScore">本关得分</span><b id="result-score">0</b></div>
+        <div class="report-row"><span data-i18n="resultBest">历史最佳</span><b id="result-best">0</b></div>
+      </div>
+      <div class="layer-actions">
+        <button type="button" class="key key-primary" id="result-next" data-i18n="next">下一关</button>
+        <button type="button" class="key" id="result-again" data-i18n="again">再来一次</button>
+        <button type="button" class="key" id="result-close" data-i18n="close">关闭</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="layer" id="help-layer" hidden role="dialog" aria-modal="true" aria-labelledby="help-title">
+    <div class="panel">
+      <h2 id="help-title" data-i18n="helpTitle">玩法说明</h2>
+      <pre class="help-body" id="help-body"></pre>
+      <p class="field-note" id="help-keys"></p>
+      <p class="field-note" id="help-portals"></p>
+      <p class="field-note" id="help-undo"></p>
+      <div class="layer-actions">
+        <button type="button" class="key key-primary" id="help-close" data-i18n="close">关闭</button>
+      </div>
+    </div>
+  </div>
+
+  <p class="toast" id="toast" role="status" aria-live="polite" hidden></p>
+
+  <script type="module" src="js/main.mjs?v=b4b5e58af7f3"></script>
+</body>
+</html>

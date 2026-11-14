@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-D67E3XTNSS"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-D67E3XTNSS');
+  </script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title data-i18n="game_title">字灵拆拆乐</title>
+  <meta name="description" content="字灵拆拆乐 - 东方文字解构与五行物化解谜小游戏，将汉字偏旁自由拆合，拖入水墨山水触发真实物理反应。">
+  <link rel="icon" href="favicon.svg?v=b4b5e58af7f3" type="image/svg+xml">
+  <link rel="stylesheet" href="css/style.css?v=b4b5e58af7f3">
+</head>
+<body>
+  <noscript>
+    <div style="padding: 24px; text-align: center; color: #fff; background: #2d3436;">
+      请启用 JavaScript 以体验《字灵拆拆乐》水墨文字炼金解谜游戏。
+    </div>
+  </noscript>
+
+  <div id="game-app">
+    <!-- Top System Nav Header -->
+    <header id="top-nav-bar">
+      <div class="nav-left">
+        <a href="/" id="back-home" class="tactile-btn nav-btn" data-i18n="back_home">首页</a>
+        <button id="rules-btn" class="tactile-btn nav-btn" data-i18n="rules_btn">玩法</button>
+        <button id="levels-btn" class="tactile-btn nav-btn" data-i18n="levels_btn">卷轴</button>
+        <button id="codex-btn" class="tactile-btn nav-btn" data-i18n="codex_btn">字灵秘典</button>
+      </div>
+
+      <div class="nav-center">
+        <h1 id="game-title-text" data-i18n="game_title">字灵拆拆乐</h1>
+      </div>
+
+      <div class="nav-right">
+        <button id="undo-btn" class="tactile-btn nav-btn" data-i18n="undo_btn">时光印 (Z)</button>
+        <button id="reset-btn" class="tactile-btn nav-btn" data-i18n="reset_btn">重置</button>
+        <button id="sound-toggle" class="tactile-btn nav-btn" data-i18n="sound_on">音效: 开</button>
+        <button id="lang-toggle" class="tactile-btn nav-btn">English</button>
+      </div>
+    </header>
+
+    <!-- Main Cabinet / Scroll Container -->
+    <main id="main-cabinet">
+      <!-- Status Bar -->
+      <section id="hud-status-bar">
+        <div class="hud-pill" id="chapter-display">卷一 · 草木初萌</div>
+        <div class="hud-pill highlight" id="level-name-display">1. 枯木挡道</div>
+        <div class="hud-pill" id="steps-container">
+          <span class="hud-label" data-i18n="steps_label">运笔步数</span>:
+          <strong id="steps-count-display">0 / ★ 1</strong>
+        </div>
+      </section>
+
+      <!-- Ink World Stage (Canvas 2D) -->
+      <div id="stage-wrapper">
+        <canvas id="stage-canvas" width="520" height="260"></canvas>
+      </div>
+
+      <!-- Glyph Altar / Tray (Bottom) -->
+      <section id="glyph-altar">
+        <div class="altar-header">
+          <span class="altar-title" data-i18n="tray_title">字灵案台 (拖叠合字 / 双击拆解)</span>
+          <span class="altar-tip" data-i18n="slice_hint">长按划线可切开场景或案台复合字</span>
+        </div>
+        <div id="tray-glyphs-container" class="tray-container">
+          <!-- Dynamically populated glyph seals -->
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- Dialog 1: 玩法指南 -->
+  <dialog id="rules-dialog" class="oriental-modal">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h2 data-i18n="rules_title">字灵拆拆乐 · 玩赏指南</h2>
+        <button id="close-rules-btn" class="modal-close-x">✕</button>
+      </div>
+      <div class="modal-body rules-scroll">
+        <div class="rule-item">
+          <div class="rule-icon">🔥</div>
+          <div class="rule-text">
+            <h3 data-i18n="rule_alchemy_title">东方字灵炼金术</h3>
+            <p data-i18n="rule_alchemy_desc">将汉字偏旁部首做成实体法宝。拖入场景触发真实物理反应（火烧木、水汇流、明驱暗、出移山）。</p>
+          </div>
+        </div>
+        <div class="rule-item">
+          <div class="rule-icon">🪨</div>
+          <div class="rule-text">
+            <h3 data-i18n="rule_synth_title">案台拖叠合字</h3>
+            <p data-i18n="rule_synth_desc">在下方案台上将两枚相生偏旁拖拽叠合，即可感应熔铸出新汉字（如 木+木=林，日+月=明）。</p>
+          </div>
+        </div>
+        <div class="rule-item">
+          <div class="rule-icon">🗡️</div>
+          <div class="rule-text">
+            <h3 data-i18n="rule_split_title">双击一划拆字</h3>
+            <p data-i18n="rule_split_desc">双击复合字，或用鼠标/手指轻划一刀，即可瞬间拆解回原始偏旁，随意自由拼装！</p>
+          </div>
+        </div>
+        <div class="rule-item">
+          <div class="rule-icon">⏳</div>
+          <div class="rule-text">
+            <h3 data-i18n="rule_undo_title">时光印全时悔棋</h3>
+            <p data-i18n="rule_undo_desc">随时按【Z】或点击时光印回溯上一步，无限自由试错。</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </dialog>
+
+  <!-- Dialog 2: 关卡卷轴 -->
+  <dialog id="levels-dialog" class="oriental-modal">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h2 data-i18n="levels_btn">卷轴</h2>
+        <button id="close-levels-btn" class="modal-close-x">✕</button>
+      </div>
+      <div class="modal-body">
+        <div id="levels-grid" class="levels-grid"></div>
+      </div>
+    </div>
+  </dialog>
+
+  <!-- Dialog 3: 字灵秘典 -->
+  <dialog id="codex-dialog" class="oriental-modal">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h2 data-i18n="codex_title">字灵秘典 (象形源流)</h2>
+        <button id="close-codex-btn" class="modal-close-x">✕</button>
+      </div>
+      <div class="modal-body">
+        <div id="codex-grid" class="codex-grid"></div>
+      </div>
+    </div>
+  </dialog>
+
+  <!-- Dialog 4: 通关墨韵 -->
+  <dialog id="won-dialog" class="oriental-modal">
+    <div class="modal-box won-box">
+      <div class="won-seal" data-i18n="seal_pass">通</div>
+      <h2 data-i18n="won_title">墨韵通关</h2>
+      <p id="won-poem-text" class="won-poem">薪火初燃，通幽辟径。</p>
+
+      <div id="won-stars-display" class="won-stars">★★★</div>
+
+      <div class="won-eval-list">
+        <div id="won-check-1" class="eval-row">
+          <span class="eval-dot">✓</span>
+          <span data-i18n="star_clear">达意通关</span>
+        </div>
+        <div id="won-check-2" class="eval-row">
+          <span class="eval-dot">✓</span>
+          <span data-i18n="star_frugal">惜字如金 (最优步数)</span>
+        </div>
+        <div id="won-check-3" class="eval-row">
+          <span class="eval-dot">✓</span>
+          <span data-i18n="star_egg">造字通幽 (彩蛋文字)</span>
+        </div>
+      </div>
+
+      <div class="modal-actions">
+        <button id="won-next-btn" class="tactile-btn action-gold-btn" data-i18n="won_next_btn">下一卷轴</button>
+        <button id="won-retry-btn" class="tactile-btn nav-btn" data-i18n="won_restart_btn">重玩本关</button>
+        <button id="won-select-btn" class="tactile-btn nav-btn" data-i18n="won_select_btn">关卡名录</button>
+      </div>
+    </div>
+  </dialog>
+
+  <!-- Dialog 5: 暂停 -->
+  <dialog id="pause-dialog" class="oriental-modal">
+    <div class="modal-box text-center">
+      <h2 data-i18n="pause_btn">暂停</h2>
+      <div style="margin: 20px 0;">
+        <button id="resume-btn" class="tactile-btn action-gold-btn" data-i18n="resume_btn">继续</button>
+      </div>
+    </div>
+  </dialog>
+
+  <script type="module" src="js/main.mjs?v=b4b5e58af7f3"></script>
+</body>
+</html>

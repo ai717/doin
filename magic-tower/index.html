@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-D67E3XTNSS"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-D67E3XTNSS');
+  </script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>魔塔：勇者登顶 · DOIN 在线小游戏</title>
+  <meta name="description" content="经典 24 层固定数值魔塔：没有随机暴击与掉落，每只怪的战损都能当场算清。五区递进、三色钥匙、金币商人，用智能战损雷达规划攻防路线；楼层快照与 30 步撤销让你告别一步走错废档。">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="css/style.css?v=b4b5e58af7f3">
+</head>
+<body>
+  <div id="cabinet">
+    <header id="marquee">
+      <a href="/" id="back-home" class="bar-btn" data-i18n="back">← 门户</a>
+      <h1 id="stage-title" data-i18n="appTitle">魔塔：勇者登顶</h1>
+      <div class="marquee-actions">
+        <button id="btn-undo" class="bar-btn" type="button" data-i18n="undo" data-i18n-aria="undoTitle">撤销</button>
+        <button id="btn-compass" class="bar-btn" type="button" aria-label="楼层罗盘">⇅</button>
+        <button id="btn-codex" class="bar-btn" type="button" data-i18n="manual" data-i18n-aria="manualTitle">图鉴</button>
+        <button id="btn-sound" class="bar-btn" type="button" data-i18n-aria="sound">🔊</button>
+        <button id="btn-lang" class="bar-btn" type="button" data-i18n-aria="langName">EN</button>
+        <button id="btn-help" class="bar-btn" type="button" data-i18n-aria="help">?</button>
+      </div>
+    </header>
+
+    <main id="deck">
+      <aside id="wing-left" class="wing">
+        <div class="plate floor-plate">
+          <span class="plate-label" data-i18n="floorLabel">楼层</span>
+          <strong id="floor-value">1</strong>
+          <span id="zone-name">苔痕石厅</span>
+        </div>
+
+        <div class="plate hero-plate">
+          <div class="stat stat-hp">
+            <span class="stat-label" data-i18n="hp">生命</span>
+            <b id="hp-value">1500</b>
+            <div class="hp-track"><i id="hp-fill"></i></div>
+          </div>
+          <div class="stat"><span class="stat-label" data-i18n="atk">攻击</span><b id="atk-value">12</b></div>
+          <div class="stat"><span class="stat-label" data-i18n="def">防御</span><b id="def-value">10</b></div>
+          <div class="stat"><span class="stat-label" data-i18n="gold">金币</span><b id="gold-value">0</b></div>
+        </div>
+
+        <div class="plate keys-plate">
+          <span class="plate-label" data-i18n="keysTitle">钥匙</span>
+          <ul id="key-row">
+            <li class="key key-y" data-i18n-aria="keyY"><i></i><b id="key-y">0</b></li>
+            <li class="key key-b" data-i18n-aria="keyB"><i></i><b id="key-b">0</b></li>
+            <li class="key key-r" data-i18n-aria="keyR"><i></i><b id="key-r">0</b></li>
+          </ul>
+        </div>
+
+        <div class="plate record-plate">
+          <span class="plate-label" data-i18n="bestTitle">本机纪录</span>
+          <p><span data-i18n="bestDamage">最少战损</span><b id="best-damage">—</b></p>
+          <p><span data-i18n="bestSteps">最少步数</span><b id="best-steps">—</b></p>
+        </div>
+      </aside>
+
+      <section id="arena">
+        <div id="board-frame">
+          <canvas id="board" width="616" height="616" role="img" aria-label="11×11 地牢盘面"></canvas>
+          <div id="fx-layer" aria-hidden="true"></div>
+        </div>
+
+        <div id="pads">
+          <button id="btn-undo-2" class="pad-btn" type="button" data-i18n="undo">撤销</button>
+          <div id="dpad">
+            <button class="pad-btn dpad-up" type="button" data-dir="up" aria-label="上">▲</button>
+            <button class="pad-btn dpad-left" type="button" data-dir="left" aria-label="左">◀</button>
+            <button class="pad-btn dpad-down" type="button" data-dir="down" aria-label="下">▼</button>
+            <button class="pad-btn dpad-right" type="button" data-dir="right" aria-label="右">▶</button>
+          </div>
+          <button id="btn-snap" class="pad-btn" type="button" data-i18n="snapBack">重返本层</button>
+        </div>
+      </section>
+
+      <aside id="wing-right" class="wing">
+        <h2 class="plate-label" data-i18n="radarTitle">本层魔物</h2>
+        <ul id="radar"></ul>
+        <p class="radar-hint" data-i18n="radarHint">战损按当前攻防实时推算</p>
+      </aside>
+    </main>
+  </div>
+
+  <div id="shop-panel" class="overlay" hidden>
+    <div class="sheet">
+      <h2 data-i18n="shopTitle">地牢商人</h2>
+      <p class="sheet-desc" data-i18n="shopDesc">金币换实力，每种货品越买越贵。</p>
+      <ul id="shop-list"></ul>
+      <button id="shop-close" class="sheet-btn" type="button" data-i18n="shopLeave">离开</button>
+    </div>
+  </div>
+
+  <div id="compass-panel" class="overlay" hidden>
+    <div class="sheet">
+      <h2 data-i18n="compassTitle">楼层罗盘</h2>
+      <p class="sheet-desc" data-i18n="compassDesc">传送至已探索楼层的楼梯口。</p>
+      <ul id="compass-list" class="floor-list"></ul>
+      <button id="compass-close" class="sheet-btn" type="button" data-i18n="close">关闭</button>
+    </div>
+  </div>
+
+  <div id="codex-panel" class="overlay" hidden>
+    <div class="sheet sheet-wide">
+      <h2 data-i18n="manualTitle">怪物手册</h2>
+      <p class="sheet-desc" data-i18n="radarHint">战损按当前攻防实时推算</p>
+      <ul id="codex-list" class="codex-list"></ul>
+      <button id="codex-close" class="sheet-btn" type="button" data-i18n="close">关闭</button>
+    </div>
+  </div>
+
+  <div id="help-panel" class="overlay" hidden>
+    <div class="sheet">
+      <h2 data-i18n="helpTitle">玩法说明</h2>
+      <ul class="help-list">
+        <li data-i18n="helpMove">方向键 / WASD 移动，Z 撤销；点击任意空地自动寻路。</li>
+        <li data-i18n="helpBattle">撞击怪物即结算：勇者先攻，回合数 = ⌈怪物血量 ÷ 单次伤害⌉，战损 =（回合数 − 1）× 怪物每击伤害。</li>
+        <li data-i18n="helpDoor">撞门消耗 1 把同色钥匙；无法破防或战损会致死时，勇者停在原地不会自杀。</li>
+        <li data-i18n="helpShop">踩上商店可与商人交易；同层同种货品价格逐次递增。</li>
+        <li data-i18n="helpUndo">撤销保留最近 30 步；踏入新楼层会自动留下快照，可随时回到该层初入状态。</li>
+        <li data-i18n="helpSave">进度自动保存在本机浏览器，换设备不会同步。</li>
+      </ul>
+      <button id="help-close" class="sheet-btn" type="button" data-i18n="close">关闭</button>
+    </div>
+  </div>
+
+  <div id="result-panel" class="overlay" hidden>
+    <div class="sheet">
+      <h2 id="result-title" data-i18n="victoryTitle">登顶封魔</h2>
+      <p id="result-ending" class="sheet-desc" data-i18n="endingTrue">真结局</p>
+      <dl id="result-stats" class="result-stats"></dl>
+      <p id="result-rank" class="result-rank"></p>
+      <div class="result-actions">
+        <button id="result-again" class="sheet-btn" type="button" data-i18n="playAgain">重新攀登</button>
+      </div>
+    </div>
+  </div>
+
+  <noscript><p>需要启用 JavaScript 才能游玩。</p></noscript>
+  <script type="module" src="js/main.mjs?v=b4b5e58af7f3"></script>
+</body>
+</html>
