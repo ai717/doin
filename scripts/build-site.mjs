@@ -92,6 +92,34 @@ function buildGlobalSiteTags() {
   return tags.join("\n");
 }
 
+function preRenderGameGrid(directory) {
+  const indexHtmlPath = resolve(directory, "index.html");
+  if (!existsSync(indexHtmlPath)) return;
+  let html = readFileSync(indexHtmlPath, "utf8");
+  const targetTag = '<section class="game-grid" id="game-grid" aria-label="Game list">';
+  if (!html.includes(targetTag)) return;
+
+  const cardsHtml = games.filter(g => !g.comingSoon).map(g => {
+    const titleEn = g.en?.title || g.title;
+    const titleZh = g.title;
+    return `      <a class="game-card" href="${g.url}" aria-label="${titleEn}">
+        <picture class="game-card__picture">
+          <img class="game-card__cover" src="${g.cover}" alt="${titleEn}" width="640" height="640" loading="lazy" decoding="async">
+        </picture>
+        <span class="game-card__title">${titleZh}</span>
+      </a>`;
+  }).join("\n");
+
+  const regex = /<section class="game-grid" id="game-grid" aria-label="Game list">[\s\S]*?<\/section>/;
+  const replacement = `${targetTag}\n${cardsHtml}\n      <noscript><p class="noscript-msg">JavaScript is required for search and filtering.</p></noscript>\n    </section>`;
+
+  if (regex.test(html)) {
+    html = html.replace(regex, replacement);
+    writeFileSync(indexHtmlPath, html, "utf8");
+    console.log(`Pre-rendered ${games.filter(g => !g.comingSoon).length} game cards into ${indexHtmlPath}`);
+  }
+}
+
 const GLOBAL_SITE_TAGS = buildGlobalSiteTags();
 
 function injectGlobalSiteTags(directory) {
@@ -173,6 +201,7 @@ for (const game of games) {
 if (spaFallback) cpSync(spaFallback, resolve(output, "404.html"));
 
 injectGlobalSiteTags(output);
+preRenderGameGrid(output);
 rewriteBuildVersion(output);
 
 execFileSync("node", [resolve(root, "scripts/gen-sitemap.mjs"), resolve(output, "sitemap.xml")], { stdio: "inherit" });
