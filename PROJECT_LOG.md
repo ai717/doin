@@ -17,6 +17,28 @@ DOIN（`doin.win`）是静态集合型独立网页小游戏门户。
 
 ## 2 · 最近里程碑与核心治理记录
 
+### 新游戏上架：千层瓦片 · 叠叠消 / TileStack · Layered Tile Match (`tilestack`)（2026-11-14）
+
+按 `docs/plans/已开发/tilestack-prd.md` 在 `games/tilestack/` 上线第 95 款游戏。视窗为**典雅原木茶桌 + 千层青瓷瓦片塔**：沉浸原木温润茶桌、CSS 3D 多层立体重叠瓦片、凹槽 7 格木托槽位——一打开直接进入第 1 关开始把玩，首屏零门槛开玩。
+
+### 玩法与工程要点
+- **100% 逆向可解性生成（Solvable Reverse Simulation）**：`engine.mjs` 中的 `generateSolvableBoard` 在空盘拓扑上模拟合法正向消除游戏（预先分配完整三消组合），严格控制虚拟托槽占用 $\le 5$，保证任何由引擎发牌的关卡都存在 100% 不卡死的完美通关路径；并通过 1000 步随机游走断言守恒。
+- **五大章节 40 关递进机制**：
+  - Ch 1: 青花瓷坊（经典青瓷三消）
+  - Ch 2: 暖香点心铺（玉匙与秘锁机制）
+  - Ch 3: 雀台翠竹（双重冰晶需两次消除）
+  - Ch 4: 百草锦萃（七彩灵瓦万能配对）
+  - Ch 5: 千层试炼（90 秒极速限时挑战）
+- **真 3D 瓷质光泽与专属音效**：纯 CSS 3D 渲染，瓦片带有微高光轴线、实体微浮雕与柔光径向阴影，自由瓦片鼠标悬停微浮起，被盖瓦片降噪置灰；WebAudio 纯程序化合成过滤木轻叩、托槽落子沉击、FM 晶莹瓷钟、多级连消上扬琶音与槽满警报。
+- **全量热更新 i18n 与存储降级**：双语字典严格对齐，英文词典零汉字，切换语言走原地热更新文本与属性，绝不刷新页面、绝不重置棋盘局势；存储 key `doin.tilestack.v1` 具备完整容错与降级。
+
+### 验收
+- 单测 **28/28**（engine 7、levels 3、score 5、storage 4、i18n 5、game 3、markup 1）。
+- `node scripts/check-game.mjs tilestack` **21 pass / 0 fail(T1) / 0 warn(T2)** 全绿。
+- `npm run test:home` 及 `npm run build` 全量通过，Pre-rendered 94+ 关卡卡片并生成站点地图。
+- 封面 `assets/covers/tilestack.webp` 640×640 WebP 软胶 3D 质感、单一居中主体青花瓷塔、零文字。
+- PRD 归档至 `docs/plans/已开发/tilestack-prd.md`，`package.json` 注册 `test:tilestack`。
+
 ### 新游戏上架：侦探推演 / Detective Deduction (`detective`)（2026-11-10）
 
 按 `docs/plans/已开发/detective-prd.md` 在 `games/detective/` 上线第 93 款游戏。视窗为**侦探橡木桌台 + 牛皮纸档案袋**：黄铜铭牌顶栏、摊开的牛皮纸案卷、横线信笺案情摘要（别着黄铜回形针）、木刻档案照嫌疑人卡、穿孔物证吊牌、木质印章托盘——一打开就是已经摊好的 Case 01，无选关遮罩。

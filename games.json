@@ -99,6 +99,25 @@
       }
     },
     {
+      "title": "千层瓦片 · 叠叠消",
+      "slug": "tilestack",
+      "desc": "在典雅原木茶桌上解构千层青瓷瓦片塔！点选自由瓦片放入七格木托，凑齐三张同色即消。逆向生成保证100%可解，5大章节40关特色机制，尽享剥层心流！",
+      "icon": "🫖",
+      "cover": "/assets/covers/tilestack.webp",
+      "tags": [
+        "益智",
+        "消除",
+        "三消",
+        "解谜",
+        "休闲"
+      ],
+      "url": "/tilestack/",
+      "en": {
+        "title": "TileStack · Layered Tile Match",
+        "desc": "Dismantle layered porcelain pagodas on an elegant wooden tea table! Match 3 identical tiles in the 7-slot tray. Reverse-generated 100% solvable puzzles across 40 tiered stages."
+      }
+    },
+    {
       "title": "摸鱼开箱修仙传",
       "slug": "immortal",
       "desc": "无限开鼎爆神装，暗黑六维词条克制，离线挂机聚灵石，渡九重天劫飞升！纯单机零广告打造，21 阶境界大关与无尽试炼天梯等你登仙！",
