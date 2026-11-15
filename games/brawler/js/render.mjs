@@ -126,14 +126,15 @@ export function createRenderer(refs, options = {}) {
       const shadow = el("div", "shadow");
       const rig = el("div", "rig");
       rig.innerHTML = [
-        '<div class="fig-arm back"><span class="fig-fist"></span></div>',
-        '<div class="fig-leg left"><span class="fig-shoe"></span></div>',
-        '<div class="fig-leg right"><span class="fig-shoe"></span></div>',
-        '<div class="fig-torso"></div>',
-        '<div class="fig-head"></div>',
-        '<div class="fig-hair"></div>',
-        '<div class="fig-face"></div>',
-        '<div class="fig-arm front"><span class="fig-fist"></span></div>',
+        '<div class="fig-arm back"><span class="fig-fist"><span class="fist-wrap"></span></span></div>',
+        '<div class="fig-leg left"><span class="fig-shoe"><span class="shoe-lace"></span></span></div>',
+        '<div class="fig-leg right"><span class="fig-shoe"><span class="shoe-lace"></span></span></div>',
+        '<div class="fig-torso"><div class="torso-collar"></div><div class="torso-belt"></div></div>',
+        '<div class="fig-head"><div class="head-blush left"></div><div class="head-blush right"></div></div>',
+        '<div class="fig-hair"><div class="hair-tuft"></div></div>',
+        '<div class="fig-headband"><div class="headband-tail tail-1"></div><div class="headband-tail tail-2"></div></div>',
+        '<div class="fig-face"><div class="face-eye eye-left"><span class="eye-pupil"></span></div><div class="face-eye eye-right"><span class="eye-pupil"></span></div><div class="face-brow brow-left"></div><div class="face-brow brow-right"></div><div class="face-mouth"></div></div>',
+        '<div class="fig-arm front"><span class="fig-fist"><span class="fist-wrap"></span></span><span class="punch-swoosh"></span></div>',
       ].join("");
       node.appendChild(shadow);
       node.appendChild(rig);
@@ -153,6 +154,7 @@ export function createRenderer(refs, options = {}) {
     node.style.setProperty("--pants", palette.pants);
     node.style.setProperty("--hair", palette.hair);
     node.style.setProperty("--shoe", palette.shoe);
+    node.style.setProperty("--headband", isPlayer ? (fighter.slot === 1 ? "#ffb03a" : "#ff3838") : (fighter.boss ? "#e83b3b" : "rgba(0,0,0,0.18)"));
     node.style.setProperty("--face", String(fighter.facing >= 0 ? 1 : -1));
 
     const scale = (isPlayer ? 1 : (fighter.scale ?? 1)) * (fighter.boss ? 1.06 : 1);
@@ -174,15 +176,26 @@ export function createRenderer(refs, options = {}) {
     else if (fighter.state === "launched") classes.push("is-launch");
     else if (fighter.state === "down" || fighter.dead) classes.push("is-down");
     else if (fighter.attack) {
-      if (fighter.attack.type === "light") classes.push("is-light");
-      else if (fighter.attack.type === "heavy" || fighter.attack.type === "suplex") classes.push("is-heavy");
-      else if (fighter.attack.type === "jump") classes.push("is-jumpkick");
-      else if (fighter.attack.type === "special") classes.push("is-special");
+      if (fighter.attack.type === "light") {
+        classes.push("is-light");
+        const chain = (fighter.attack.chain ?? fighter.combo ?? 0) % 3;
+        classes.push(`is-light-${chain + 1}`);
+      } else if (fighter.attack.type === "heavy") {
+        classes.push("is-heavy");
+      } else if (fighter.attack.type === "suplex") {
+        classes.push("is-heavy");
+        classes.push("is-suplex");
+      } else if (fighter.attack.type === "jump") {
+        classes.push("is-jumpkick");
+      } else if (fighter.attack.type === "special") {
+        classes.push("is-special");
+      }
     } else if (airborne) classes.push("is-jump");
     else if (fighter.state === "hurt" || fighter.stun > 0.05) classes.push("is-hurt");
     else if (fighter.special?.phase === "charge") classes.push("is-charging");
     else if (!isPlayer && fighter.attack) classes.push("is-telegraph");
     else if (Math.abs(fighter.vx) > 8 || Math.abs(fighter.vz) > 0.02) classes.push("is-walk");
+    else classes.push("is-idle");
 
     if (!isPlayer && fighter.attack && fighter.attack.phase === "windup") classes.push("is-telegraph");
 

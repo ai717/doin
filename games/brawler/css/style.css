@@ -589,6 +589,17 @@ button {
   background: linear-gradient(160deg, #fff0dc, var(--skin) 46%, color-mix(in srgb, var(--skin) 80%, #8a5a3c));
   box-shadow: inset -4px -4px 0 rgba(0, 0, 0, 0.07), 0 2px 0 var(--outline);
 }
+.head-blush {
+  position: absolute;
+  top: 19px;
+  width: 4px;
+  height: 2.5px;
+  border-radius: 50%;
+  background: rgba(255, 90, 70, 0.38);
+}
+.head-blush.left { left: 4px; }
+.head-blush.right { right: 4px; }
+
 .fig-hair {
   position: absolute;
   left: 20px;
@@ -599,15 +610,135 @@ button {
   background: var(--hair);
   box-shadow: inset -3px -3px 0 rgba(255, 255, 255, 0.12);
 }
+.hair-tuft {
+  position: absolute;
+  right: -2px;
+  top: 4px;
+  width: 9px;
+  height: 8px;
+  border-radius: 50% 0 50% 0;
+  background: var(--hair);
+  transform: rotate(28deg);
+}
+
+.fig-headband {
+  position: absolute;
+  left: 19px;
+  top: 13px;
+  width: 38px;
+  height: 5px;
+  border-radius: 2px;
+  background: var(--headband, transparent);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.25);
+  z-index: 2;
+  pointer-events: none;
+}
+.headband-tail {
+  position: absolute;
+  left: -2px;
+  top: 1px;
+  width: 13px;
+  height: 4px;
+  border-radius: 2px;
+  background: var(--headband, transparent);
+  transform-origin: 100% 50%;
+}
+.headband-tail.tail-1 {
+  transform: rotate(20deg);
+  animation: ribbonWaveA 0.8s ease-in-out infinite alternate;
+}
+.headband-tail.tail-2 {
+  top: 3px;
+  width: 10px;
+  height: 3px;
+  transform: rotate(36deg);
+  animation: ribbonWaveB 0.65s ease-in-out infinite alternate;
+}
+@keyframes ribbonWaveA {
+  from { transform: rotate(16deg) scaleX(0.9); }
+  to { transform: rotate(32deg) scaleX(1.1); }
+}
+@keyframes ribbonWaveB {
+  from { transform: rotate(30deg) scaleX(1.1); }
+  to { transform: rotate(46deg) scaleX(0.95); }
+}
+
+/* 丰富五官：专注战意的双眼、剑眉、可张合嘴巴 */
 .fig-face {
   position: absolute;
-  left: 43px;
-  top: 17px;
+  left: 36px;
+  top: 15px;
+  width: 17px;
+  height: 14px;
+  background: transparent;
+  box-shadow: none;
+  pointer-events: none;
+  z-index: 3;
+}
+.face-eye {
+  position: absolute;
+  top: 2px;
+  width: 4px;
+  height: 5px;
+  border-radius: 50%;
+  background: #241710;
+  overflow: hidden;
+}
+.face-eye.eye-left { left: 2px; }
+.face-eye.eye-right { left: 9px; }
+.eye-pupil {
+  position: absolute;
+  right: 1px;
+  top: 1px;
+  width: 2px;
+  height: 2px;
+  border-radius: 50%;
+  background: #ffffff;
+}
+
+.face-brow {
+  position: absolute;
+  top: 0;
+  width: 5px;
+  height: 2px;
+  background: var(--hair);
+  border-radius: 1px;
+}
+.face-brow.brow-left { left: 1px; transform: rotate(12deg); }
+.face-brow.brow-right { left: 8px; transform: rotate(-12deg); }
+
+.face-mouth {
+  position: absolute;
+  left: 5px;
+  bottom: 0px;
   width: 6px;
-  height: 4px;
-  border-radius: 3px;
-  background: #3a2a20;
-  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.16);
+  height: 2px;
+  border-radius: 1px;
+  background: #6d3322;
+  transition: all 0.1s ease;
+}
+
+/* 衣服领口与运动腰带 */
+.torso-collar {
+  position: absolute;
+  left: 50%;
+  top: 0;
+  transform: translateX(-50%);
+  width: 14px;
+  height: 7px;
+  border-radius: 0 0 7px 7px;
+  background: var(--skin);
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+.torso-belt {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  height: 6px;
+  border-radius: 0 0 8px 8px;
+  background: rgba(20, 16, 12, 0.45);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.15);
 }
 
 .fig-arm {
@@ -622,7 +753,49 @@ button {
 }
 .fig-arm.back { left: 10px; z-index: 0; }
 .fig-arm.front { left: 52px; z-index: 3; }
-.fig-fist { position: absolute; bottom: -7px; left: -2px; width: 17px; height: 17px; border-radius: 50%; background: var(--skin); box-shadow: inset -3px -3px 0 rgba(0, 0, 0, 0.1), 0 1px 0 var(--outline); }
+.fig-fist {
+  position: absolute;
+  bottom: -7px;
+  left: -2px;
+  width: 17px;
+  height: 17px;
+  border-radius: 50%;
+  background: var(--skin);
+  box-shadow: inset -3px -3px 0 rgba(0, 0, 0, 0.1), 0 1px 0 var(--outline);
+}
+.fist-wrap {
+  position: absolute;
+  inset: 2px;
+  border-radius: 50%;
+  border: 1.5px dashed rgba(255, 255, 255, 0.55);
+  pointer-events: none;
+}
+.shoe-lace {
+  position: absolute;
+  top: 1px;
+  left: 4px;
+  width: 8px;
+  height: 2px;
+  background: rgba(40, 30, 20, 0.4);
+  border-radius: 1px;
+}
+
+/* 出拳破空残影弧线 */
+.punch-swoosh {
+  position: absolute;
+  right: -24px;
+  top: -8px;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  border: 4px solid transparent;
+  border-top-color: rgba(255, 255, 255, 0.85);
+  border-right-color: rgba(255, 220, 120, 0.7);
+  opacity: 0;
+  pointer-events: none;
+  transform: rotate(-35deg) scale(0.6);
+  transition: opacity 0.08s ease, transform 0.08s ease;
+}
 
 .fighter.is-player .rig::after {
   content: "";
@@ -679,60 +852,329 @@ button {
 .fig-hp i { position: absolute; inset: 0 auto 0 0; width: 100%; background: linear-gradient(90deg, #ff8a6b, #ffd25e); }
 .fig-hp.is-boss { width: 92px; height: 7px; }
 
-/* 行走与打击姿态 */
-.fighter.is-walk .fig-leg.left { animation: legStepA 0.32s ease-in-out infinite alternate; }
-.fighter.is-walk .fig-leg.right { animation: legStepB 0.32s ease-in-out infinite alternate; }
-.fighter.is-walk .rig { transform: scaleX(var(--face, 1)) rotate(-1.6deg); }
-@keyframes legStepA { from { transform: rotate(-16deg); } to { transform: rotate(16deg); } }
-@keyframes legStepB { from { transform: rotate(16deg); } to { transform: rotate(-16deg); } }
+/* ================= 灵动动作体系与打击姿态 ================= */
 
-.fighter.is-jump .rig { transform: scaleX(var(--face, 1)) translateY(-4px) rotate(4deg); }
-.fighter.is-jump .fig-leg.left { transform: rotate(-26deg); }
-.fighter.is-jump .fig-leg.right { transform: rotate(18deg); }
+/* 1. 灵动战斗站姿（Idle）：微曲双膝呼吸起伏、双拳高低戒备、发带微风轻荡 */
+.fighter.is-idle .rig,
+.fighter:not(.is-walk):not(.is-down):not(.is-downed):not(.is-launch):not(.is-hurt):not(.is-light):not(.is-heavy):not(.is-jump):not(.is-jumpkick):not(.is-special):not(.is-charging) .rig {
+  animation: fighterStanceBounce 0.85s cubic-bezier(0.4, 0, 0.6, 1) infinite alternate;
+}
+.fighter.is-idle .fig-torso,
+.fighter:not(.is-walk):not(.is-down):not(.is-downed):not(.is-launch):not(.is-hurt):not(.is-light):not(.is-heavy):not(.is-jump):not(.is-jumpkick):not(.is-special):not(.is-charging) .fig-torso {
+  animation: torsoBreathe 0.85s ease-in-out infinite alternate;
+}
+.fighter.is-idle .fig-arm.front,
+.fighter:not(.is-walk):not(.is-down):not(.is-downed):not(.is-launch):not(.is-hurt):not(.is-light):not(.is-heavy):not(.is-jump):not(.is-jumpkick):not(.is-special):not(.is-charging) .fig-arm.front {
+  transform: rotate(-18deg) translateY(-2px);
+  animation: armGuardFront 0.85s ease-in-out infinite alternate;
+}
+.fighter.is-idle .fig-arm.back,
+.fighter:not(.is-walk):not(.is-down):not(.is-downed):not(.is-launch):not(.is-hurt):not(.is-light):not(.is-heavy):not(.is-jump):not(.is-jumpkick):not(.is-special):not(.is-charging) .fig-arm.back {
+  transform: rotate(12deg) translateY(1px);
+  animation: armGuardBack 0.85s ease-in-out infinite alternate;
+}
+.fighter.is-idle .fig-leg.left,
+.fighter:not(.is-walk):not(.is-down):not(.is-downed):not(.is-launch):not(.is-hurt):not(.is-light):not(.is-heavy):not(.is-jump):not(.is-jumpkick):not(.is-special):not(.is-charging) .fig-leg.left {
+  transform: rotate(-4deg);
+}
+.fighter.is-idle .fig-leg.right,
+.fighter:not(.is-walk):not(.is-down):not(.is-downed):not(.is-launch):not(.is-hurt):not(.is-light):not(.is-heavy):not(.is-jump):not(.is-jumpkick):not(.is-special):not(.is-charging) .fig-leg.right {
+  transform: rotate(5deg);
+}
 
+@keyframes fighterStanceBounce {
+  0% { transform: scaleX(var(--face, 1)) translateY(0); }
+  100% { transform: scaleX(var(--face, 1)) translateY(2.5px); }
+}
+@keyframes torsoBreathe {
+  0% { transform: scaleY(1); }
+  100% { transform: scaleY(0.96) translateY(1px); }
+}
+@keyframes armGuardFront {
+  0% { transform: rotate(-16deg) translateY(-2px); }
+  100% { transform: rotate(-24deg) translateY(1px); }
+}
+@keyframes armGuardBack {
+  0% { transform: rotate(10deg) translateY(0); }
+  100% { transform: rotate(16deg) translateY(2px); }
+}
+
+/* 2. 街头健步疾走（Walk）：躯干微倾起伏、双臂前后自然摆动、步履生风 */
+.fighter.is-walk .rig {
+  animation: walkRigTilt 0.32s ease-in-out infinite alternate;
+}
+.fighter.is-walk .fig-torso {
+  animation: walkTorsoBob 0.16s ease-in-out infinite alternate;
+}
+.fighter.is-walk .fig-leg.left {
+  animation: walkLegA 0.32s cubic-bezier(0.4, 0, 0.6, 1) infinite alternate;
+}
+.fighter.is-walk .fig-leg.right {
+  animation: walkLegB 0.32s cubic-bezier(0.4, 0, 0.6, 1) infinite alternate;
+}
+.fighter.is-walk .fig-arm.front {
+  animation: walkArmSwingFront 0.32s ease-in-out infinite alternate;
+}
+.fighter.is-walk .fig-arm.back {
+  animation: walkArmSwingBack 0.32s ease-in-out infinite alternate;
+}
+
+@keyframes walkRigTilt {
+  0% { transform: scaleX(var(--face, 1)) rotate(-3deg); }
+  100% { transform: scaleX(var(--face, 1)) rotate(1deg); }
+}
+@keyframes walkTorsoBob {
+  0% { transform: translateY(0); }
+  100% { transform: translateY(-3.5px); }
+}
+@keyframes walkLegA {
+  0% { transform: rotate(-26deg) translateY(-2px); }
+  100% { transform: rotate(24deg) translateY(0); }
+}
+@keyframes walkLegB {
+  0% { transform: rotate(24deg) translateY(0); }
+  100% { transform: rotate(-26deg) translateY(-2px); }
+}
+@keyframes walkArmSwingFront {
+  0% { transform: rotate(28deg) translateY(2px); }
+  100% { transform: rotate(-36deg) translateY(-3px); }
+}
+@keyframes walkArmSwingBack {
+  0% { transform: rotate(-32deg) translateY(-2px); }
+  100% { transform: rotate(26deg) translateY(2px); }
+}
+
+/* 3. 凌空跳跃与飞踢（Jump & Jumpkick） */
+.fighter.is-jump .rig {
+  transform: scaleX(var(--face, 1)) translateY(-6px) rotate(4deg);
+}
+.fighter.is-jump .fig-leg.left { transform: rotate(-28deg) translateY(-2px); }
+.fighter.is-jump .fig-leg.right { transform: rotate(22deg) translateY(-2px); }
+.fighter.is-jump .fig-arm.front { transform: rotate(-35deg); }
+.fighter.is-jump .fig-arm.back { transform: rotate(25deg); }
+
+.fighter.is-jumpkick .rig {
+  transform: scaleX(var(--face, 1)) rotate(20deg) translateY(-8px);
+}
+.fighter.is-jumpkick .fig-leg.right {
+  animation: flyingKickLeg 0.26s cubic-bezier(0.1, 0.9, 0.2, 1) forwards;
+}
+.fighter.is-jumpkick .fig-leg.left {
+  transform: rotate(-38deg) translateY(-6px);
+}
+.fighter.is-jumpkick .fig-arm.front { transform: rotate(-45deg); }
+.fighter.is-jumpkick .fig-arm.back { transform: rotate(45deg); }
+.fighter.is-jumpkick .punch-swoosh {
+  opacity: 1;
+  right: -30px;
+  top: 44px;
+  border-top-color: #66ccff;
+  border-right-color: #ffffff;
+  transform: rotate(-75deg) scale(1.25);
+}
+@keyframes flyingKickLeg {
+  0% { transform: rotate(0); }
+  40% { transform: rotate(-82deg) translateY(-6px) scaleX(1.25); }
+  100% { transform: rotate(-65deg) translateY(-4px); }
+}
+
+/* 4. 丰富轻拳三连击（Combo 1: 左刺拳 / Combo 2: 右直拳 / Combo 3: 升龙上勾拳） */
 .fighter.is-light .fig-arm.front { animation: jabFront 0.16s ease-out; }
 @keyframes jabFront {
   0% { transform: rotate(8deg); }
-  40% { transform: rotate(-104deg) translateX(6px); }
+  40% { transform: rotate(-104deg) translateX(8px); }
   100% { transform: rotate(8deg); }
 }
 
-.fighter.is-heavy .fig-arm.front { animation: swingFront 0.3s cubic-bezier(0.2, 0.8, 0.3, 1); }
-.fighter.is-heavy .rig { animation: heavyLean 0.3s ease-out; }
-@keyframes swingFront {
-  0% { transform: rotate(28deg); }
-  34% { transform: rotate(-132deg) translateX(10px) scaleY(1.08); }
-  100% { transform: rotate(14deg); }
+/* Combo 1: 左手迅捷刺拳 */
+.fighter.is-light-1 .fig-arm.back {
+  animation: jabBackQuick 0.16s ease-out forwards;
 }
-@keyframes heavyLean {
-  0% { transform: scaleX(var(--face, 1)) rotate(0); }
-  34% { transform: scaleX(var(--face, 1)) rotate(-7deg) translateX(4px); }
-  100% { transform: scaleX(var(--face, 1)) rotate(0); }
+.fighter.is-light-1 .fig-arm.front {
+  transform: rotate(-10deg);
 }
-
-.fighter.is-jumpkick .fig-leg.right { animation: jumpKick 0.24s ease-out; }
-@keyframes jumpKick {
+.fighter.is-light-1 .fig-torso {
+  transform: rotate(-3deg) translateX(3px);
+}
+.fighter.is-light-1 .face-mouth {
+  height: 4px;
+  border-radius: 50%;
+}
+.fighter.is-light-1 .punch-swoosh {
+  opacity: 0.9;
+  transform: rotate(-25deg) scale(0.9);
+}
+@keyframes jabBackQuick {
   0% { transform: rotate(0); }
-  50% { transform: rotate(-68deg) translateY(-3px); }
-  100% { transform: rotate(-10deg); }
+  45% { transform: rotate(-110deg) translateX(12px) scaleY(1.1); }
+  100% { transform: rotate(10deg); }
 }
 
-.fighter.is-special .rig { animation: specialBurst 0.34s ease-out; }
+/* Combo 2: 转体右手重直拳 */
+.fighter.is-light-2 .fig-arm.front {
+  animation: jabFrontPower 0.18s cubic-bezier(0.1, 0.9, 0.2, 1) forwards;
+}
+.fighter.is-light-2 .fig-arm.back {
+  transform: rotate(24deg);
+}
+.fighter.is-light-2 .rig {
+  transform: scaleX(var(--face, 1)) rotate(-6deg) translateX(4px);
+}
+.fighter.is-light-2 .punch-swoosh {
+  opacity: 1;
+  border-top-color: #ffd25e;
+  transform: rotate(-40deg) scale(1.1);
+}
+@keyframes jabFrontPower {
+  0% { transform: rotate(15deg); }
+  40% { transform: rotate(-124deg) translateX(14px) scaleY(1.15); }
+  100% { transform: rotate(-8deg); }
+}
+
+/* Combo 3: 暴烈升龙击飞上勾拳 */
+.fighter.is-light-3 .fig-arm.front {
+  animation: uppercutRising 0.24s cubic-bezier(0.15, 0.85, 0.25, 1) forwards;
+}
+.fighter.is-light-3 .fig-torso {
+  animation: uppercutTorso 0.24s ease-out forwards;
+}
+.fighter.is-light-3 .rig {
+  animation: uppercutLift 0.24s ease-out forwards;
+}
+.fighter.is-light-3 .face-mouth {
+  height: 6px;
+  width: 6px;
+  border-radius: 50%;
+  background: #2a1008;
+}
+.fighter.is-light-3 .punch-swoosh {
+  opacity: 1;
+  border-top-color: #ff5533;
+  border-right-color: #ffe066;
+  transform: rotate(-85deg) scale(1.35);
+}
+@keyframes uppercutRising {
+  0% { transform: rotate(20deg) translateY(4px); }
+  40% { transform: rotate(-155deg) translateY(-14px) scale(1.22); }
+  100% { transform: rotate(-60deg) translateY(-6px); }
+}
+@keyframes uppercutTorso {
+  0% { transform: rotate(6deg) translateY(2px); }
+  40% { transform: rotate(-12deg) translateY(-8px); }
+  100% { transform: rotate(-2deg); }
+}
+@keyframes uppercutLift {
+  0% { transform: scaleX(var(--face, 1)) translateY(0); }
+  40% { transform: scaleX(var(--face, 1)) translateY(-6px); }
+  100% { transform: scaleX(var(--face, 1)) translateY(0); }
+}
+
+/* 5. 蓄力重拳（Heavy Haymaker） */
+.fighter.is-heavy:not(.is-suplex) .rig {
+  animation: heavyPunchBody 0.32s cubic-bezier(0.2, 0.9, 0.3, 1) forwards;
+}
+.fighter.is-heavy:not(.is-suplex) .fig-arm.front {
+  animation: heavyPunchArm 0.32s cubic-bezier(0.2, 0.9, 0.3, 1) forwards;
+}
+.fighter.is-heavy:not(.is-suplex) .face-mouth {
+  height: 5px;
+  width: 6px;
+  border-radius: 3px;
+  background: #3a150c;
+}
+.fighter.is-heavy:not(.is-suplex) .punch-swoosh {
+  opacity: 1;
+  border-top-color: #ff9933;
+  border-right-color: #ffcc00;
+  transform: rotate(-35deg) scale(1.4);
+}
+@keyframes heavyPunchBody {
+  0% { transform: scaleX(var(--face, 1)) rotate(6deg) translateX(-6px); }
+  35% { transform: scaleX(var(--face, 1)) rotate(-14deg) translateX(18px); }
+  100% { transform: scaleX(var(--face, 1)) rotate(-2deg) translateX(4px); }
+}
+@keyframes heavyPunchArm {
+  0% { transform: rotate(38deg) translateX(-4px); }
+  35% { transform: rotate(-142deg) translateX(16px) scale(1.25); }
+  100% { transform: rotate(10deg); }
+}
+
+/* 6. 近身过肩背摔（Suplex） */
+.fighter.is-suplex .rig {
+  animation: suplexSlam 0.36s cubic-bezier(0.2, 0.8, 0.25, 1) forwards;
+}
+.fighter.is-suplex .fig-arm.front,
+.fighter.is-suplex .fig-arm.back {
+  animation: suplexArm 0.36s ease-out forwards;
+}
+@keyframes suplexSlam {
+  0% { transform: scaleX(var(--face, 1)) rotate(0); }
+  30% { transform: scaleX(var(--face, 1)) translateY(-8px) rotate(-35deg); }
+  65% { transform: scaleX(var(--face, 1)) translateY(-14px) rotate(-85deg); }
+  100% { transform: scaleX(var(--face, 1)) translateY(0) rotate(0); }
+}
+@keyframes suplexArm {
+  0% { transform: rotate(-20deg); }
+  45% { transform: rotate(-140deg) scale(1.2); }
+  100% { transform: rotate(10deg); }
+}
+
+/* 7. 怒气必杀全屏旋风（Special） */
+.fighter.is-special .rig {
+  animation: specialBurst 0.34s cubic-bezier(0.1, 0.8, 0.2, 1);
+}
 @keyframes specialBurst {
-  0% { transform: scaleX(var(--face, 1)) scale(1); }
-  40% { transform: scaleX(var(--face, 1)) scale(1.14) rotate(-6deg); }
-  100% { transform: scaleX(var(--face, 1)) scale(1); }
+  0% { transform: scaleX(var(--face, 1)) scale(1) rotate(0); }
+  30% { transform: scaleX(var(--face, 1)) scale(1.22) rotate(-16deg); }
+  60% { transform: scaleX(var(--face, 1)) scale(1.28) rotate(180deg); }
+  100% { transform: scaleX(var(--face, 1)) scale(1) rotate(360deg); }
 }
 
-.fighter.is-hurt .rig { animation: hurtShake 0.26s linear; }
-.fighter.is-hurt .fig-head { background: linear-gradient(160deg, #ffe0cf, #ff9d86); }
-@keyframes hurtShake {
-  0%, 100% { transform: scaleX(var(--face, 1)) translateX(0); }
-  20% { transform: scaleX(var(--face, 1)) translateX(-5px) rotate(-4deg); }
-  55% { transform: scaleX(var(--face, 1)) translateX(5px) rotate(3deg); }
+/* 8. 受击硬直与惨叫表情（Hurt） */
+.fighter.is-hurt .rig {
+  animation: hurtSnapBack 0.26s cubic-bezier(0.1, 0.9, 0.2, 1) forwards;
+}
+.fighter.is-hurt .fig-head {
+  transform: rotate(-16deg) translateX(-4px);
+  filter: brightness(1.25) saturate(1.2);
+}
+.fighter.is-hurt .face-eye {
+  height: 2px;
+  border-radius: 1px;
+}
+.fighter.is-hurt .face-brow.brow-left { transform: rotate(-25deg); }
+.fighter.is-hurt .face-brow.brow-right { transform: rotate(25deg); }
+.fighter.is-hurt .face-mouth {
+  width: 7px;
+  height: 5px;
+  border-radius: 50%;
+  background: #4a1208;
+}
+.fighter.is-hurt .fig-arm.front { transform: rotate(35deg) translateX(-4px); }
+.fighter.is-hurt .fig-arm.back { transform: rotate(42deg) translateX(-6px); }
+
+@keyframes hurtSnapBack {
+  0% { transform: scaleX(var(--face, 1)) translateX(0); }
+  25% { transform: scaleX(var(--face, 1)) translateX(-12px) rotate(9deg); }
+  60% { transform: scaleX(var(--face, 1)) translateX(-6px) rotate(4deg); }
+  100% { transform: scaleX(var(--face, 1)) translateX(0); }
 }
 
-.fighter.is-launch .rig { animation: launchSpin 0.6s linear infinite; }
+/* 9. 敌方蓄力警示（Telegraph） */
+.fighter.is-telegraph .rig {
+  animation: telegraphPulse 0.35s ease-in-out infinite alternate;
+}
+.fighter.is-telegraph .face-eye {
+  background: #ff2222;
+  box-shadow: 0 0 6px #ff0000;
+}
+@keyframes telegraphPulse {
+  from { filter: drop-shadow(0 0 2px rgba(255, 60, 40, 0.4)) brightness(1.05); }
+  to { filter: drop-shadow(0 0 10px rgba(255, 50, 30, 0.85)) brightness(1.3); }
+}
+
+/* 10. 击飞翻滚与倒地（Launch & Down） */
+.fighter.is-launch .rig { animation: launchSpin 0.5s linear infinite; }
 @keyframes launchSpin {
   0% { transform: scaleX(var(--face, 1)) rotate(0); }
   100% { transform: scaleX(var(--face, 1)) rotate(360deg); }
@@ -740,15 +1182,17 @@ button {
 
 .fighter.is-down .rig { transform: scaleX(var(--face, 1)) rotate(84deg) translateY(12px); }
 .fighter.is-down .fig-hp { display: none; }
+.fighter.is-down .face-eye { height: 1px; }
 
 .fighter.is-charging .rig { animation: chargeGlow 0.34s ease-in-out infinite alternate; }
 @keyframes chargeGlow {
   from { filter: brightness(1); }
-  to { filter: brightness(1.2) drop-shadow(0 0 12px rgba(255, 210, 94, 0.7)); }
+  to { filter: brightness(1.24) drop-shadow(0 0 14px rgba(255, 210, 94, 0.85)); }
 }
 
 .fighter.is-downed .rig { transform: scaleX(var(--face, 1)) rotate(88deg) translateY(16px); opacity: 0.86; }
 .fighter.is-downed .fig-hp { display: none; }
+.fighter.is-downed .face-eye { height: 1px; }
 
 /* --------- 地面道具 --------- */
 .world-item {
