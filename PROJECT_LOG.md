@@ -17,6 +17,44 @@ DOIN（`doin.win`）是静态集合型独立网页小游戏门户。
 
 ## 2 · 最近里程碑与核心治理记录
 
+### 新游戏上架：隔山打牛 · 双人抛物轰炸 / Volley Bombard (`volley`)（2026-11-15）
+
+按 `docs/plans/已开发/volley-prd.md` 在 `games/volley/` 上线第 100 款游戏。视窗为**两座积木堡垒隔山对峙的沙盘**：全景木质沙盘居中（明黄→天蓝渐变天空），山顶风旗实时指示风向，红蓝双军信息压上下两条记分桥——打开直接就绪双人第 1 局，零遮罩即开即玩。
+
+### 玩法与工程要点
+- **固定步长弹道引擎（`engine.mjs`，纯函数 DOM-free，47 导出）**：1/60 步长积分，重力 380 + 风力 ±5 档横向加速度；6 种武器（石弹直击/爆裂衰减/分裂顶点分弹/粘弹附着延时/钻地穿透/气球乘风）各有独立 speedMul 与爆炸半径；确定性 PRNG（mulberry32）与 `previewPath` 供 UI 画虚线。
+- **支撑塌落物理**：积木失去下方支撑即确定性垂直下落，旗帜失撑倒落——轰塌堡垒（旗帜倒下）即胜；10 回合未分胜负按剩余积木判胜。事件链 blockDamage→flagDamage→flagDown→explode→matchOver。
+- **三档 AI（`ai.mjs`）**：simulateShot 虚拟积分预测 + 网格搜索（角度×力度×武器）评分（敌伤×2 − 自伤×1.5 + 击旗奖励），rookie/veteran/master 三档误差抖动；AI-vs-AI 平衡验证新手机 5-9 发、大师 3-4 发，难度梯度合理。
+- **纯 DOM + CSS 3D 舞台**：积木块/风旗/炮弹全部 DOM+CSS 变换与裂纹/倒塌动画，Canvas 2D 只画弹道拖尾与爆炸粒子；三山体（矮丘/高峰/双峰）clip-path 切换。
+- **双语与手感**：中英词典 127 key 原地热切换（不重置对局），语言偏好读写全站 `doin.lang`；WebAudio 程序化合成 15 种音效（蓄力 FM 上行/失谐开炮/风声扫频/木质倒塌叠奏/命中闷响/胜利号角）；P/Esc/Space 暂停快捷键 + 失焦自动暂停。
+- **双人键位**：红军 WASD + F 开炮，蓝军方向键 + L 开炮；触屏拖拽调仰角，AI 模式人操东军。
+
+### 验收
+- 单测 **63/63** 通过（engine 19、ai 10、game 10、storage 8、i18n 6、markup 10，含 1200 步引擎随机游走 + 1000 步 AI 规划随机游走不变式）。
+- `node scripts/check-game.mjs volley` **21 pass / 0 fail(T1) / 0 warn(T2)** 全绿通过。
+- `npm run test:volley` 与 `npm run build` 通过，预渲染 100 款游戏卡片与 `sitemap.xml`。
+- 封面 `assets/covers/volley.webp` 640×640 程序化软胶（PIL 1280 超采样）：明黄→天蓝渐变 + 绿山 + 红积木堡垒 + 金色炮弹抛物线，零文字。
+- PRD 归档至 `docs/plans/已开发/volley-prd.md`，`package.json` 注册 `test:volley`。
+
+### 新游戏上架：操场大乱斗 · 放学别走 / Schoolyard Brawl · After School (`brawler`)（2026-11-15）
+
+按 `docs/plans/已开发/brawler-prd.md` 在 `games/brawler/` 上线。视窗为**黄昏操场 + 粉笔记分黑板 + 体育课操作台**的横版清版动作：12 关四章、每关三波递增人数与压轴首领、同屏双人、三分钟街机模式——首屏直接就绪第 1 关，零前置阻塞即开即玩。
+
+### 玩法与工程要点
+- **固定步长纯函数清版引擎（`engine.mjs`，无 DOM/存储）**：1/60 步长、状态唯一权威 `game.match`。玩家轻拳三连（第三下击飞）、重拳击飞、跳踢、背摔、必杀 AoE（扣自身 10 HP）、道具投掷；攻击分 windup/active/recover 三阶段并用 hitIds 去重，配 hitstop、击飞抛物线、连击加成与倒下/复活计时。
+- **敌人生态与波次推进**：6 类小怪（拳手/学长/跑者/投手/卫兵/滑头）+ 4 名首领（体育老师/篮球队长/小卖部老板/教导主任），grunt/ranger/boss 三套 AI 与投射物、护甲、召唤、震地、跳跃突进等模式；每关 3 波 3/4/5 人后压轴首领，Depth 分离让同屏群架不叠成一坨。
+- **续关与评级**：3 次续关机会、结算面板展示击飞/用时/剩余体力/得分与星级（表现分 = 用时 55% + 体力 45%，≥80 三星、≥55 二星），进度与最佳纪录写入 `doin.brawler.v1` 并做严格归一化兜底。
+- **纯 DOM + CSS 3D 舞台**：人物由 head/hair/torso/arm/leg/shoe/fist 分层拼装，Canvas 只画尘土与星星粒子；四章天空/地面/道具（篮筐、沙坑、长椅、摊位、垃圾桶、水箱、空调）随章节切换，相机抖动与视差跟随。
+- **双语与手感**：中英词典原地热切换（不重置对局），语言偏好读写全站 `doin.lang`；WebAudio 程序化合成 14 种打击/落地/必杀/结算音效；触屏虚拟摇杆 + 6 键操作台常驻安全区之上。
+
+### 验收
+- 单测 **60/60** 通过（controller 8、engine 14、i18n 8、levels 9、markup 13、score 5、storage 3，含 2400 步随机游走不变式与同种子 900 帧一致性）。
+- 真机 CDP 冒烟 **16/16** 通过（开局 3 敌、键盘横移、重拳 KO 同步黑板、选关 12 卡、语言热切换不重置、暂停冻结、390×844 安全区与摇杆、点击出拳、console 零异常）。
+- `node scripts/check-game.mjs brawler` **21 pass / 0 fail(T1) / 0 warn(T2)** 全绿通过。
+- `npm run test:brawler` 与 `npm run build` 通过，预渲染 98 款游戏卡片与 `sitemap.xml`。
+- 封面 `assets/covers/brawler.webp` 640×640 软胶 3D 拳头 + 篮球 + 星单一主体，零文字。
+- PRD 归档至 `docs/plans/已开发/brawler-prd.md`，`package.json` 注册 `test:brawler` 与 `smoke:brawler`。
+
 ### 新游戏上架：迷你大富翁 · 掷骰夺城 / Mini Richman · Dice City Duel (`richman`)（2026-11-15）
 
 按 `docs/plans/已开发/richman-prd.md` 在 `games/richman/` 上线第 98 款游戏。视窗为**桌面微缩城市沙盘 + 环形 24 格大富翁棋盘**：中央城市小广场、微缩街区建筑（CSS 3D 抬升盖屋）、3D 骰子翻滚、实时资产仪表盘与路障/道具卡槽——一打开直接就绪第 1 局开玩，新手 AI 对战即开即玩。
@@ -1446,3 +1484,22 @@ CDP 真机冒烟 **105 pass / 0 fail**（源码路径 + `SMOKE_DIST=1`）；`npm
 - `npm run build` 通过并产出 `dist/thief/`；CDP 真机（1280×900 / 390×844）确认 Canvas 真绘制、拖拽绕柱、结算弹窗、5 卷 20 格选关、EN 原地切换不重置对局，控制台零异常；顺带修掉三处只有真浏览器才暴露的问题（`filter.Q` 只读赋值、`#pause-layer` 的 `display:grid` 压掉 `[hidden]`、移动端机柜顶在屏幕顶端）。
 - 封面 `assets/covers/thief.webp` 640×640 WebP q90：紫罗兰→品红亮渐变 + 蒙面软胶小神偷 + 白大理石柱 + 金钻，色相 310°（避开蓝紫/粉紫已占用带），零文字、水印已按固定 bbox inpaint 清除。
 - PRD 已归档至 `docs/plans/已开发/thief-prd.md`（归档库 77 份）；`games.json` 92 款；`package.json` 注册 `test:thief`。
+
+## 2026-11-15（日）· idiom：成语纵横榜（线装典故书交叉填字）
+
+按 `docs/plans/已开发/idiom-prd.md` 在 `games/idiom/` 上线第 99 款游戏。视窗是一册摊开的**线装典故书**：旧木桌、CSS 3D 书脊与页缘弧度、宣纸米色书页、朱砂编号与木色字库书签；榜单 / 图鉴 / 玩法 / 典故卡 / 结算五个浮层都做成夹在书中的纸页，Canvas 仅负责金粉粒子。
+
+### 玩法与工程要点
+- **零打字门槛的交叉填字**：`engine.mjs` 严格 DOM-free，点格选中词条、交叉格再点切换横竖、点字库落字；错字轻晃可擦、正确字锁定、提示字锁定、终局输入 no-op，事件统一为 `fill / wrong / erase / word / hint / cleared`。
+- **八榜八十关确定性生成**：`puzzles.mjs` 用 `mulberry32` 种子贪心选词（按共享字加权），落词时严格校验「禁止平行相邻、端头留空」，允许独立小岛；每关 36 次尝试取交叉最多且最紧凑的布局，并按其交叉数预填 2 / 1 / 0 格。中文 8 榜 ×16 条成语、英文 8 榜 ×16 个独立单词，中英各 80 关全部生成成功且结构自检通过。
+- **典故卡与星级**：填对一条成语即解锁一张卡（出处 / 故事 / 例句），按榜归档；英文卡改为释义 + 词源。每关 3 次提示，0 提示三星、1 次二星、2 次及以上一星，进度与图鉴按语言分别存档于 `doin.idiom.v1`。
+- **双语独立题库 + 原地热切换**：英文模式整套切换为 Word Crossword 题库，界面零汉字；`doin.lang` 记忆全站语言，切换时不刷新页面、不重置局面，且每种语言各保留自己的会话与进度，切回中文原局面原样恢复。
+- **书卷音色**：8 种 WebAudio 程序化合成——噪声 + BiquadFilter 做毛笔落纸、翻页与木鱼，FM 编钟做归位提示，三角波拨弦做古琴收束；零外部音频文件。
+- **即开即玩与移动端**：载入直接进入上次榜单关卡，无前置遮罩；榜单按钮常驻顶栏，轻量呼出八榜八十关。移动端书页单列排布，网格按屏宽收缩，字库与擦除键始终留在视口内，底部预留全新安全区。
+
+### 验收
+- 单测 **55/55**（puzzles 6、engine 12 含 1200 步随机游走、controller 8、storage 7、score 3、i18n 8、markup 11）。
+- `node scripts/check-game.mjs idiom` **21 pass / 0 fail(T1) / 0 warn(T2)**。
+- `npm run build` 通过并产出 `dist/idiom/`；CDP 真机冒烟 **26/26**（1280×900 / 390×844），覆盖开局、点格、填字、错字抖动、擦除、提示、完词、EN 原地切换与局面恢复、八榜八十关、图鉴八页十六卡、典故卡、计时冻结、结算与下一关、移动端无横向溢出且字库在视口内，控制台零异常。
+- 封面 `assets/covers/idiom.webp` 640×640 WebP q90：软胶 3D 线装书 + 毛笔 + 金色星芒，右下生成水印已 inpaint 清除，零文字。
+- PRD 已归档至 `docs/plans/已开发/idiom-prd.md`（归档库 84 份）；`games.json` 99 款；`package.json` 注册 `test:idiom` 与 `smoke:idiom`。

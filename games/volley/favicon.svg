@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#2a2418"/>
+      <stop offset="1" stop-color="#12100a"/>
+    </linearGradient>
+    <linearGradient id="hill" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#8fae5f"/>
+      <stop offset="1" stop-color="#55703a"/>
+    </linearGradient>
+    <linearGradient id="fort" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ff9d8a"/>
+      <stop offset="1" stop-color="#c94a34"/>
+    </linearGradient>
+    <linearGradient id="bolt" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#fff3d6"/>
+      <stop offset="1" stop-color="#e8b34c"/>
+    </linearGradient>
+  </defs>
+  <rect x="2" y="2" width="60" height="60" rx="14" fill="url(#bg)" stroke="#4a4130" stroke-width="1.5"/>
+  <!-- central hill -->
+  <path d="M24 50 Q32 26 40 50 Z" fill="url(#hill)"/>
+  <!-- enemy block fort -->
+  <g fill="url(#fort)">
+    <rect x="44" y="34" width="9" height="8" rx="1.5"/>
+    <rect x="44" y="26" width="9" height="8" rx="1.5" opacity=".92"/>
+    <rect x="52" y="34" width="9" height="8" rx="1.5" opacity=".92"/>
+  </g>
+  <!-- flag on the fort -->
+  <path d="M56 26 v-8" stroke="#ffe6a6" stroke-width="2" stroke-linecap="round"/>
+  <path d="M56 18 l7 2.5 -7 2.5 Z" fill="#ff5d5d"/>
+  <!-- flying shell arc -->
+  <path d="M10 46 Q20 18 42 16" fill="none" stroke="#fff3d6" stroke-opacity=".4" stroke-width="1.6" stroke-dasharray="2.5 3.5" stroke-linecap="round"/>
+  <circle cx="41" cy="16.5" r="3.4" fill="url(#bolt)"/>
+  <!-- launcher -->
+  <rect x="6" y="42" width="10" height="8" rx="2" fill="#6b5a3e"/>
+  <rect x="8" y="37" width="6" height="6" rx="1.5" fill="#8a7550" transform="rotate(-38 11 40)"/>
+</svg>

@@ -1,6 +1,46 @@
 {
   "games": [
     {
+      "title": "成语纵横榜 · 典故图鉴",
+      "slug": "idiom",
+      "desc": "在摊开的线装典故书里补全纵横成语：点字库零打字门槛，填对即解锁典故卡，八榜八十关、三档提示与星级评断。英文模式整套切换为 Word Crossword，中英各八十关与独立图鉴，零广告即开即玩。",
+      "icon": "📜",
+      "cover": "/assets/covers/idiom.webp",
+      "tags": [
+        "益智",
+        "填字",
+        "成语",
+        "双语",
+        "国风",
+        "学习"
+      ],
+      "url": "/idiom/",
+      "en": {
+        "title": "Idiom Cross · Allusion Atlas",
+        "desc": "Fill interlocking idioms in an open thread-bound book: tap tiles instead of typing, unlock an allusion card with every solved entry across 8 boards and 80 levels. English mode switches to a full Word Crossword with its own 80 levels and atlas. Instant ad-free play."
+      }
+    },
+    {
+      "title": "操场大乱斗 · 放学别走",
+      "slug": "brawler",
+      "desc": "放学后的操场横版清版动作！轻拳三连、重拳击飞、跳踢与背摔把一波波对手打飞出屏幕，篮球书包扫把随手抄起就扔。12关四章、4个首领、同屏双人与三分钟街机模式，零广告即开即玩。",
+      "icon": "🥊",
+      "cover": "/assets/covers/brawler.webp",
+      "tags": [
+        "动作",
+        "格斗",
+        "横版",
+        "街机",
+        "双人",
+        "校园"
+      ],
+      "url": "/brawler/",
+      "en": {
+        "title": "Schoolyard Brawl · After School",
+        "desc": "A side-scrolling schoolyard beat 'em up! Chain light punches, launch rivals with heavy hits, jump kicks and suplexes, and hurl basketballs, backpacks and brooms. 12 stages across 4 chapters, 4 bosses, local 2P and a 3-minute arcade mode. Instant ad-free play."
+      }
+    },
+    {
       "title": "迷你大富翁 · 掷骰夺城",
       "slug": "richman",
       "desc": "在桌面微缩城市沙盘里掷骰夺城！环形24格棋盘、买地盖屋收租、路障与遥控骰子道具博弈、同屏双人与AI阶梯挑战。5~8分钟一局，资产破产裁决，零广告即开即玩。",
@@ -1720,6 +1760,28 @@
       "en": {
         "title": "Detective Deduction",
         "desc": "Open a manila case file, read the testimonies, test the evidence and stamp your verdict: each case has exactly one killer, weapon and keystone clue that holds together, and a wrong call is bounced on the spot. Twelve cases across three volumes, all provably solvable, stars rated on time and errors. Instant ad-free play."
+      }
+    },
+    {
+      "title": "隔山打牛",
+      "slug": "volley",
+      "desc": "双人抛物轰炸·积木堡垒攻防：调仰角、看风旗、蓄力放炮，隔着一座山轰塌对面的积木堡垒。六种脾性迥异的炮弹——石弹直击、爆裂震荡、分裂覆盖、粘弹延时、钻地穿透、气球乘风；十回合未分胜负则按剩余积木判胜。三种山体与三档 AI 难度，同屏双人或单人挑战。",
+      "icon": "🏹",
+      "cover": "/assets/covers/volley.webp",
+      "tags": [
+        "对战",
+        "物理",
+        "双人",
+        "街机",
+        "策略"
+      ],
+      "url": "/volley/",
+      "exclude": [
+        "tests"
+      ],
+      "en": {
+        "title": "Volley Bombard",
+        "desc": "Two-player parabolic bombardment: set the angle, read the hilltop wind flag, charge and fire over the ridge to topple the rival block fortress. Six shells with distinct tempers - stone, blast, split, sticky, drill and wind-riding balloon. Unresolved after ten rounds, the most standing blocks wins. Three terrains, three AI tiers, same-screen or solo."
       }
     }
   ]
