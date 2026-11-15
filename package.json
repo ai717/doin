@@ -106,7 +106,7 @@
     "test:tug": "node --test games/tug/tests/*.test.mjs",
     "test:ultimate": "node --test games/ultimate/tests/ai.test.mjs games/ultimate/tests/engine.test.mjs games/ultimate/tests/game.test.mjs games/ultimate/tests/i18n.test.mjs games/ultimate/tests/markup.test.mjs games/ultimate/tests/puzzles.test.mjs games/ultimate/tests/score.test.mjs games/ultimate/tests/storage.test.mjs",
     "test:uncoil": "node --test games/uncoil/tests/engine.test.mjs games/uncoil/tests/solvable.test.mjs games/uncoil/tests/score.test.mjs games/uncoil/tests/storage.test.mjs games/uncoil/tests/game.test.mjs games/uncoil/tests/i18n.test.mjs games/uncoil/tests/markup.test.mjs",
-    "test:volley": "node --test games/volley/tests/ai.test.mjs games/volley/tests/engine.test.mjs games/volley/tests/game.test.mjs games/volley/tests/i18n.test.mjs games/volley/tests/markup.test.mjs games/volley/tests/storage.test.mjs",
+    "test:volley": "node --test games/volley/tests/ai.test.mjs games/volley/tests/engine.test.mjs games/volley/tests/game.test.mjs games/volley/tests/i18n.test.mjs games/volley/tests/markup.test.mjs games/volley/tests/storage.test.mjs games/volley/tests/smoke.mjs",
     "test:water-sort": "node --test games/water-sort/tests/engine.test.mjs games/water-sort/tests/storage.test.mjs games/water-sort/tests/i18n.test.mjs games/water-sort/tests/markup.test.mjs",
     "test:watermelon-2048": "node --test games/watermelon-2048/tests/engine.test.mjs games/watermelon-2048/tests/storage.test.mjs games/watermelon-2048/tests/i18n.test.mjs games/watermelon-2048/tests/markup.test.mjs",
     "test:winmine": "node --test games/winmine/tests/engine.test.mjs games/winmine/tests/storage.test.mjs games/winmine/tests/i18n.test.mjs games/winmine/tests/markup.test.mjs",

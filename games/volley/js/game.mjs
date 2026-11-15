@@ -125,7 +125,9 @@ export function createGame({ seed = (Math.random() * 0xffffffff) >>> 0, mode = "
     const dt = Math.min(dtMs, 250) / 1000;
     tickAi(dtMs);
     if (state.phase === "flight") {
-      const events = E.stepSim(state, dt);
+      // engine 的 matchOver 缺 cause / blocksStanding，统一由 afterShot 广播完整版，
+      // 否则 UI 会收到两次终局事件（结算统计被重复累计）。
+      const events = E.stepSim(state, dt).filter((e) => e.type !== "matchOver");
       pushEvents(events);
       if (state.phase !== "flight") {
         // shot fully resolved this tick

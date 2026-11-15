@@ -279,3 +279,17 @@ test("随机游走 1200 步：任意意图序列不抛错、状态合法", () =>
   }
   assert.ok(shots > 60, "1200 步内应完成多轮飞行");
 });
+
+test("开局可玩性：默认瞄准在三种地形无风时都能命中对面阵地", () => {
+  // 首发参数若打不到对面，玩家第一次开炮只会看到炮弹落在自己脚下，
+  // 体感上等同于「游戏没反应」。默认 45°/90 力必须在所有地形都有落点。
+  for (const terrain of TERRAIN_IDS) {
+    const s = mk({ seed: 1, terrain });
+    assert.equal(s.players[0].angle, 45, "默认角度 45°");
+    assert.equal(s.players[0].power, 90, "默认力度 90");
+    s.wind = 0; // 排除风的影响，只看瞄准默认值
+    const before = intactCount(s, 1);
+    runShot(s);
+    assert.ok(intactCount(s, 1) < before, `${terrain} 地形默认瞄准应打掉对面积木`);
+  }
+});

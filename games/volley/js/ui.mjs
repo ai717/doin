@@ -16,6 +16,7 @@ export function createUi({ game, onIntent } = {}) {
   let canvas = null;
   let ctx = null;
   let blockEls = new Map(); // id -> element
+  let lastBlockSig = "";
   let shellEls = new Map(); // id -> element
   let bannerTimer = null;
   let toastTimer = null;
@@ -141,22 +142,26 @@ export function createUi({ game, onIntent } = {}) {
 
   function renderMatch(view) {
     if (!view) return;
-    // blocks
+    // blocks：签名不变就不重建 DOM，避免拖动瞄准时每帧重建 30 个节点
     const raw = game.raw;
-    el.blocksLayer.innerHTML = "";
-    blockEls.clear();
-    raw.blocks.forEach((b) => {
-      if (b.hp <= 0) return;
-      const d = document.createElement("div");
-      d.className = `block ${b.side === 0 ? "west" : "east"}`;
-      d.style.left = pctX(b.x);
-      d.style.bottom = pctY(b.y + E.BLOCK_H);
-      d.style.width = pctW(E.BLOCK_W);
-      d.style.height = pctH(E.BLOCK_H);
-      if (b.hp < E.BLOCK_HP) d.classList.add(b.hp <= 8 ? "hurt2" : "hurt1");
-      el.blocksLayer.appendChild(d);
-      blockEls.set(b.id, d);
-    });
+    const sig = raw.blocks.map((b) => `${b.id}:${b.hp}:${b.x}:${b.y}`).join("|");
+    if (sig !== lastBlockSig) {
+      lastBlockSig = sig;
+      el.blocksLayer.innerHTML = "";
+      blockEls.clear();
+      raw.blocks.forEach((b) => {
+        if (b.hp <= 0) return;
+        const d = document.createElement("div");
+        d.className = `block ${b.side === 0 ? "west" : "east"}`;
+        d.style.left = pctX(b.x);
+        d.style.bottom = pctY(b.y + E.BLOCK_H);
+        d.style.width = pctW(E.BLOCK_W);
+        d.style.height = pctH(E.BLOCK_H);
+        if (b.hp < E.BLOCK_HP) d.classList.add(b.hp <= 8 ? "hurt2" : "hurt1");
+        el.blocksLayer.appendChild(d);
+        blockEls.set(b.id, d);
+      });
+    }
     // flags
     raw.flags.forEach((f) => renderFlag(f));
     // stats
@@ -193,7 +198,7 @@ export function createUi({ game, onIntent } = {}) {
     cloth.style.width = pctW(24);
     pole.appendChild(cloth);
     el.sky.appendChild(pole);
-2  }
+  }
 
   function renderRound(round) {
     el.chipRound.textContent = t("roundLabel", lang, { n: Math.min(round, E.MAX_ROUNDS) });
@@ -234,6 +239,15 @@ export function createUi({ game, onIntent } = {}) {
   function renderConsoles(view) {
     const raw = game.raw;
     view.players.forEach((p, i) => {
+      // AI 模式下西军归 AI 操控，玩家侧控制台整体禁用，避免"点了没反应"
+      const locked = view.mode === "ai" && i === 0;
+      const shell = el.consoles[i];
+      if (shell) {
+        shell.classList.toggle("is-locked", locked);
+        [...shell.querySelectorAll("button")].forEach((b) => {
+          b.disabled = locked;
+        });
+      }
       el.angles[i].textContent = `${Math.round(p.angle)}°`;
       el.powers[i].textContent = Math.round(p.power);
       el.powerFills[i].style.width = `${Math.round(p.power)}%`;
@@ -243,7 +257,7 @@ export function createUi({ game, onIntent } = {}) {
         chip.setAttribute("aria-pressed", mine ? "true" : "false");
         chip.hidden = !raw.weapons.includes(chip.dataset.weapon);
       });
-      el.fireBtns[i].disabled = view.phase !== "aim" || view.turn !== i;
+      el.fireBtns[i].disabled = locked || view.phase !== "aim" || view.turn !== i;
     });
   }
 
@@ -373,10 +387,12 @@ export function createUi({ game, onIntent } = {}) {
           showBanner(t("bannerTurn", lang, { name: playerName(ev.side) }));
           Audio.play("turn");
           break;
-        case "matchOver":
+        case "matchOver": {
+          const humanWon = mode.mode === "ai" ? ev.winner === 1 : ev.winner !== "draw";
           showResult(ev);
-          Audio.play(ev.winner === 0 ? "win" : ev.winner === 1 && mode.mode === "2p" ? "win" : "lose");
+          Audio.play(humanWon ? "win" : "lose");
           break;
+        }
         default:
           break;
       }
@@ -394,7 +410,8 @@ export function createUi({ game, onIntent } = {}) {
   }
 
   function playerName(side) {
-    if (mode.mode === "ai") return side === 0 ? t("you", lang) : t("aiLabel", lang);
+    // side 0 是西军：AI 模式下由 AI 操控
+    if (mode.mode === "ai") return side === 0 ? t("aiLabel", lang) : t("you", lang);
     return t(side === 0 ? "player1" : "player2", lang);
   }
 
@@ -420,7 +437,7 @@ export function createUi({ game, onIntent } = {}) {
   function showResult(ev) {
     el.resultEyebrow.textContent = ev.cause === "blocks" ? t("resultByBlocks", lang) : t("resultFlagFall", lang);
     if (ev.winner === "draw") el.resultTitle.textContent = t("resultDraw", lang);
-    else if (mode.mode === "ai") el.resultTitle.textContent = t(ev.winner === 0 ? "resultWinYou" : "resultWinAi", lang);
+    else if (mode.mode === "ai") el.resultTitle.textContent = t(ev.winner === 1 ? "resultWinYou" : "resultWinAi", lang);
     else el.resultTitle.textContent = t(ev.winner === 0 ? "resultWinP1" : "resultWinP2", lang);
     const [a, b] = ev.blocksStanding ?? [0, 0];
     el.resultDetail.textContent = t("resultBlocks", lang, { a, b });
@@ -485,8 +502,8 @@ export function createUi({ game, onIntent } = {}) {
 
   function setTags(view) {
     if (!view) return;
-    el.tags[0].textContent = mode.mode === "ai" ? t("you", lang) : "";
-    el.tags[1].textContent = mode.mode === "ai" ? t("aiLabel", lang) : "";
+    el.tags[0].textContent = mode.mode === "ai" ? t("aiLabel", lang) : "";
+    el.tags[1].textContent = mode.mode === "ai" ? t("you", lang) : "";
   }
 
   function setMode(m) {

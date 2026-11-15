@@ -415,6 +415,9 @@ body {
 .console-side.active { opacity: 1; }
 .console-side.active.west { box-shadow: 0 0 0 1px rgba(226, 84, 62, 0.35), var(--shadow-1), 0 0 26px rgba(226, 84, 62, 0.12); }
 .console-side.active.east { box-shadow: 0 0 0 1px rgba(77, 157, 214, 0.35), var(--shadow-1), 0 0 26px rgba(77, 157, 214, 0.12); }
+/* AI 模式下西军由 AI 接管，玩家不可操作 */
+.console-side.is-locked { opacity: 0.5; }
+.console-side.is-locked button { cursor: default; }
 
 .turn-dot {
   width: 12px;

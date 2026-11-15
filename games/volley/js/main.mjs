@@ -14,9 +14,21 @@ const RECOMMENDED = [
   { slug: "tilestack", icon: "🧱" },
 ];
 
+const $ = (sel) => document.querySelector(sel);
+
 let save = loadSave();
-const ui = createUi({ game: null, onIntent: handleIntent });
 let game = null;
+// ui 在 createUi 时就闭包捕获了这个对象，而真正的 controller 要到 boot() 才创建，
+// 所以这里用惰性转发，避免 ui 拿到 null。
+const gameRef = {
+  get raw() {
+    return game.raw();
+  },
+  view() {
+    return game.view();
+  },
+};
+const ui = createUi({ game: gameRef, onIntent: handleIntent });
 let rafId = null;
 let lastTime = null;
 let closed = false;
@@ -106,11 +118,27 @@ function handleIntent(type, payload) {
   }
 }
 
+// Events that change what the sand table / HUD must show. The render loop only
+// repaints shells and particles, so these must trigger a full match re-render.
+const DIRTY_EVENTS = new Set([
+  "turnStart",
+  "windChange",
+  "explode",
+  "blockDamage",
+  "blockDestroy",
+  "collapse",
+  "flagDown",
+  "matchOver",
+]);
+
 function handleEngineEvents(events) {
   ui.handleEvents(events);
+  let dirty = false;
   for (const ev of events) {
     if (ev.type === "matchOver") onMatchOver(ev);
+    if (DIRTY_EVENTS.has(ev.type)) dirty = true;
   }
+  if (dirty) ui.renderAll();
 }
 
 // ---------- pause ----------
@@ -185,7 +213,9 @@ function flipLang() {
 function onMatchOver(ev) {
   const lang = getLang();
   const hitRate = bestHitRate();
-  recordMatch(ev.winner, hitRate, bestSingle());
+  // storage 的胜场口径是 1-based（1=P1 / 2=P2），engine 的 side 是 0-based
+  const statSide = ev.winner === "draw" ? 0 : ev.winner + 1;
+  recordMatch(statSide, hitRate, bestSingle());
   renderStats();
   setTimeout(() => {
     buildRecommendations();
@@ -194,13 +224,18 @@ function onMatchOver(ev) {
   }, 900);
 }
 
+// 玩家所在方：AI 模式下西军归 AI，玩家在东军
+function humanSide() {
+  return game.meta.mode === "ai" ? 1 : 0;
+}
+
 function bestHitRate() {
-  const p = game.raw().players[0];
+  const p = game.raw().players[humanSide()];
   return p.shots ? Math.round((p.hits / p.shots) * 100) : 0;
 }
 
 function bestSingle() {
-  return Math.max(game.raw().players[0].bestDamage, game.raw().players[1].bestDamage);
+  return game.raw().players[humanSide()].bestDamage;
 }
 
 function renderStats() {
@@ -385,5 +420,20 @@ function onKeydown(e) {
     else if (key === "ArrowDown") handleIntent("power", { side: 1, delta: -4 });
   }
 }
+
+// Debug handle (platform contract): window.__volley
+window.__volley = {
+  get game() {
+    return game;
+  },
+  get ui() {
+    return ui;
+  },
+  get save() {
+    return save;
+  },
+  intent: handleIntent,
+  restart: restartMatch,
+};
 
 boot();

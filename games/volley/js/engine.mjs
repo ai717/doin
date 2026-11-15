@@ -151,8 +151,9 @@ export function createMatch(options = {}) {
     shotSeq: 0,
     players: [0, 1].map((side) => ({
       side,
+      // 45°/90 是三种地形都落在对面阵地内的窗口（首发即可命中，玩家不必先摸参数）
       angle: 45,
-      power: 60,
+      power: 90,
       weapon: weapons[0],
       shots: 0,
       hits: 0,
@@ -469,7 +470,7 @@ function endShot(state) {
     pushEvent(state, { type: "windChange", wind: state.wind, round: state.round });
   }
   state.phase = "aim";
-  pushEvent(state, { type: "turnStart", player: state.turn, round: state.round, wind: state.wind });
+  pushEvent(state, { type: "turnStart", side: state.turn, round: state.round, wind: state.wind });
 }
 
 function judgeByBlocks(state) {
