@@ -17,6 +17,22 @@ DOIN（`doin.win`）是静态集合型独立网页小游戏门户。
 
 ## 2 · 最近里程碑与核心治理记录
 
+### 3D 机台与图形修复：巧解鲁班锁 (`luban`) 空间实体几何与闭合实木棱柱重构（2026-11-16）
+
+针对用户截图反馈「luban画面存在严重问题」（空心管状穿帮、端盖缺失、立面长条散落飘浮在3D虚空中、面贴片坐标错位断裂）完成全链路 CSS 3D 棱柱立体几何与材质高精度重构：
+1. **根因定位与几何数学修复**：
+   - 彻底修复 `ui.mjs` 中对 `blockWrap` 设定外围宽高与 `.prism-face` 默认 `top:0; left:0; width:100%; height:100%` 造成的旋转轴心偏移缺陷。旧代码在改变端盖宽高为 `d` 时，导致其变换原点偏移 $(140-36)/2 = 52\text{px}$，使得端盖脱节漂移至体外形成空心漏风管，垂直轴木条四面分散呈散落长条；
+   - 将 `blockWrap` 约束为纯空间 3D 原点锚点（`width: 0; height: 0; transform-style: preserve-3d`），并注入 CSS 变量 `--x, --y, --z`；
+   - 依据 X/Y/Z 轴三维正交矩阵（$w, h, d$），精确推演 6 个面闭合变换方程，每个面以自身几何中心对齐 $(0,0)$ 并向外平移对应半轴距离（Front/Back $\pm Z$, Left/Right $\pm X$, Top/Bottom $\pm Y$），经 4x4 矩阵仿真严格校验 8 个角点 0 误差完全闭合，彻底消除漏缝、空心与散落贴片。
+2. **材质立体微浮雕与全角度黄铜铭文印章**：
+   - 为 `.prism-face` 启用 `backface-visibility: hidden` 与 `box-shadow: inset 1px 1px 2px rgba(255,255,255,0.22), inset -1px -1px 3px rgba(0,0,0,0.45)` 实体木材斜面微倒角；
+   - 重构 `.block-label` 为精致中式古典嵌铜印章徽记（Brass Cartouche），在所有可见面全向镶嵌，支持玩家在 0°/90°/180°/270° 视角自由旋转机台时始终清晰识读木条代号；
+   - 修复受阻震颤 `@keyframes wiggleShake` 中 `--x, --y, --z` 缺省导致零件瞬移至全局原点跳帧的 Bug。
+3. **门禁与测试验证**：
+   - `npm run test:luban` 20/20 全部通过；
+   - `node scripts/check-game.mjs luban` 21 pass / 0 fail / 0 warn；
+   - 全局 `npm run test:home` 及 `npm run build` 预渲染构建无误。
+
 ### 游戏体验重构：迷你大富翁 (`richman`) 游戏节奏感与事件可视化全量升级（2026-11-16）
 
 针对用户反馈「过程不明显，速度太快，没有游戏的节奏感」进行全链路棋盘节奏、行进步伐与戏剧性事件可视化重构：

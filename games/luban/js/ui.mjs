@@ -105,6 +105,9 @@ export class LubanUI {
       // 3D positioning
       const { x, y, z } = block.pos;
       blockWrap.style.transform = `translate3d(${x}px, ${y}px, ${z}px)`;
+      blockWrap.style.setProperty('--x', `${x}px`);
+      blockWrap.style.setProperty('--y', `${y}px`);
+      blockWrap.style.setProperty('--z', `${z}px`);
 
       // Build 3D box faces based on axis
       const stain = WOOD_STAINS[block.stain] || WOOD_STAINS.cedar;
@@ -116,21 +119,33 @@ export class LubanUI {
       const h = isY ? block.length : block.thickness;
       const d = isZ ? block.length : block.thickness;
 
-      blockWrap.style.width = `${w}px`;
-      blockWrap.style.height = `${h}px`;
-      blockWrap.style.marginLeft = `${-w / 2}px`;
-      blockWrap.style.marginTop = `${-h / 2}px`;
+      // 6 airtight, mathematically closed faces of the solid wooden cuboid:
+      // Front (+Z): size w x h, centered at [0, 0, d/2]
+      // Back (-Z): size w x h, centered at [0, 0, -d/2]
+      // Right (+X): size d x h, centered at [w/2, 0, 0]
+      // Left (-X): size d x h, centered at [-w/2, 0, 0]
+      // Top (-Y, screen up): size w x d, centered at [0, -h/2, 0]
+      // Bottom (+Y, screen down): size w x d, centered at [0, h/2, 0]
+      const labelHtml = `<span class="block-label">${block.label}</span>`;
 
-      // 6 faces of the wooden prism
       blockWrap.innerHTML = `
-        <div class="prism-face face-top" style="background: ${stain.colorTop}; transform: translateZ(${d / 2}px);">
-          <span class="block-label">${block.label}</span>
+        <div class="prism-face face-front" style="width: ${w}px; height: ${h}px; left: ${-w / 2}px; top: ${-h / 2}px; transform: translateZ(${d / 2}px); background: ${stain.colorLeft};">
+          ${labelHtml}
         </div>
-        <div class="prism-face face-bottom" style="background: ${stain.colorRight}; transform: translateZ(${-d / 2}px) rotateX(180deg);"></div>
-        <div class="prism-face face-front" style="background: ${stain.colorLeft}; height: ${d}px; transform: rotateX(-90deg) translateZ(${h / 2}px);"></div>
-        <div class="prism-face face-back" style="background: ${stain.colorRight}; height: ${d}px; transform: rotateX(90deg) translateZ(${h / 2}px);"></div>
-        <div class="prism-face face-left" style="background: ${stain.colorLeft}; width: ${d}px; transform: rotateY(-90deg) translateZ(${w / 2}px);"></div>
-        <div class="prism-face face-right" style="background: ${stain.colorRight}; width: ${d}px; transform: rotateY(90deg) translateZ(${w / 2}px);"></div>
+        <div class="prism-face face-back" style="width: ${w}px; height: ${h}px; left: ${-w / 2}px; top: ${-h / 2}px; transform: rotateY(180deg) translateZ(${d / 2}px); background: ${stain.colorRight};">
+          ${labelHtml}
+        </div>
+        <div class="prism-face face-right" style="width: ${d}px; height: ${h}px; left: ${-d / 2}px; top: ${-h / 2}px; transform: rotateY(90deg) translateZ(${w / 2}px); background: ${stain.colorRight};">
+          ${labelHtml}
+        </div>
+        <div class="prism-face face-left" style="width: ${d}px; height: ${h}px; left: ${-d / 2}px; top: ${-h / 2}px; transform: rotateY(-90deg) translateZ(${w / 2}px); background: ${stain.colorLeft};">
+          ${labelHtml}
+        </div>
+        <div class="prism-face face-top" style="width: ${w}px; height: ${d}px; left: ${-w / 2}px; top: ${-d / 2}px; transform: rotateX(90deg) translateZ(${h / 2}px); background: ${stain.colorTop};">
+          ${labelHtml}
+        </div>
+        <div class="prism-face face-bottom" style="width: ${w}px; height: ${d}px; left: ${-w / 2}px; top: ${-d / 2}px; transform: rotateX(-90deg) translateZ(${h / 2}px); background: ${stain.colorRight};">
+        </div>
       `;
 
       blockWrap.addEventListener('click', (e) => {
