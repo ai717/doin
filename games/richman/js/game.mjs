@@ -6,11 +6,11 @@ import { mulberry32, applyAction, createMatch, currentPlayer, housesOf, netWorth
 import { aiDecide } from "./ai.mjs";
 
 const THINK_BASE_MS = 620;
-const THINK_JITTER_MS = 320;
+const THINK_JITTER_MS = 240;
 const HOP_MS = 130;
 const HOP_SETTLE_MS = 300;
 const RESOLVE_DELAY_MS = 480;
-const END_TURN_DELAY_MS = 560;
+const END_TURN_DELAY_MS = 620;
 
 export function buildPlayers(mode, aiLevel) {
   if (mode === "2p") {

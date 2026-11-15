@@ -175,6 +175,17 @@ body {
   box-shadow: var(--emboss), 0 0 18px color-mix(in srgb, var(--pc) 25%, transparent);
 }
 
+.hud-card.is-thinking {
+  border-color: var(--pc, #ffd978);
+  box-shadow: var(--emboss), 0 0 20px color-mix(in srgb, var(--pc) 45%, transparent);
+  animation: thinkingBreathe 1.2s ease-in-out infinite alternate;
+}
+
+@keyframes thinkingBreathe {
+  0% { transform: translateY(0); filter: brightness(1); }
+  100% { transform: translateY(-2px); filter: brightness(1.15); }
+}
+
 .hud-card.out {
   opacity: 0.45;
   filter: grayscale(0.7);
@@ -468,6 +479,25 @@ body {
   100% { transform: scale(1); }
 }
 
+.tile.stepping {
+  box-shadow: inset 0 0 16px var(--step-color, #ffb454), 0 0 16px var(--step-color, #ffb454) !important;
+  transform: translateZ(5px) scale(1.05);
+  z-index: 5;
+  transition: transform 0.1s ease, box-shadow 0.1s ease;
+}
+
+.tile.landed {
+  animation: landedPulse 0.9s cubic-bezier(0.3, 1.4, 0.4, 1);
+  z-index: 5;
+}
+
+@keyframes landedPulse {
+  0% { transform: scale(1); box-shadow: inset 0 0 0 transparent; }
+  30% { transform: scale(1.07) translateZ(8px); box-shadow: inset 0 0 20px #ffd978, 0 0 22px rgba(255, 217, 120, 0.7); }
+  70% { transform: scale(1.02) translateZ(3px); box-shadow: inset 0 0 14px #ffd978, 0 0 14px rgba(255, 217, 120, 0.4); }
+  100% { transform: scale(1); box-shadow: none; }
+}
+
 /* 中央公园广场 */
 
 #center-park {
@@ -476,7 +506,7 @@ body {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 10px;
+  gap: 8px;
   padding: 3%;
   border-radius: 12px;
   background:
@@ -485,6 +515,87 @@ body {
     linear-gradient(180deg, rgba(16, 32, 24, 0.6), rgba(10, 22, 16, 0.72));
   border: 1px solid rgba(111, 191, 142, 0.18);
   box-shadow: inset 0 2px 14px rgba(0, 0, 0, 0.4);
+}
+
+/* 出目与行动宣告气泡 */
+#callout-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 26px;
+  padding: 3px 14px;
+  border-radius: 999px;
+  font-size: 0.74rem;
+  font-weight: 700;
+  color: #ffd978;
+  background: rgba(8, 18, 14, 0.88);
+  border: 1px solid rgba(255, 217, 120, 0.35);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.15);
+  transition: transform 0.25s cubic-bezier(0.3, 1.4, 0.4, 1), opacity 0.2s ease, border-color 0.2s ease;
+  white-space: nowrap;
+  max-width: 90%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+#callout-pill.pop {
+  animation: calloutPop 0.32s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes calloutPop {
+  0% { transform: scale(0.85); opacity: 0.5; }
+  50% { transform: scale(1.08); }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+/* 核心事件舞台聚焦横幅 */
+#event-banner {
+  width: min(92%, 310px);
+  min-height: 28px;
+  padding: 5px 12px;
+  border-radius: 8px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-align: center;
+  color: #fff;
+  background: rgba(14, 26, 20, 0.94);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  opacity: 0;
+  transform: translateY(6px) scale(0.95);
+  transition: opacity 0.26s ease, transform 0.26s cubic-bezier(0.3, 1.4, 0.4, 1);
+  pointer-events: none;
+}
+
+#event-banner.show {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+
+#event-banner.tone-gain {
+  border-color: rgba(124, 230, 182, 0.65);
+  background: linear-gradient(135deg, rgba(16, 44, 28, 0.96), rgba(8, 28, 18, 0.96));
+  color: #7ce6b6;
+  box-shadow: 0 4px 18px rgba(124, 230, 182, 0.25);
+}
+
+#event-banner.tone-pay {
+  border-color: rgba(242, 108, 108, 0.65);
+  background: linear-gradient(135deg, rgba(56, 18, 20, 0.96), rgba(36, 10, 12, 0.96));
+  color: #ff8c8c;
+  box-shadow: 0 4px 18px rgba(242, 108, 108, 0.25);
+}
+
+#event-banner.tone-special {
+  border-color: rgba(255, 217, 120, 0.65);
+  background: linear-gradient(135deg, rgba(48, 38, 14, 0.96), rgba(28, 22, 8, 0.96));
+  color: #ffd978;
+  box-shadow: 0 4px 18px rgba(255, 217, 120, 0.25);
 }
 
 #round-label {
@@ -599,12 +710,33 @@ body {
   left: 0;
   width: 28px;
   height: 28px;
-  transition: transform 0.22s cubic-bezier(0.35, 1.3, 0.45, 1);
-  filter: drop-shadow(0 4px 4px rgba(0, 0, 0, 0.5));
+  transition: transform 0.2s cubic-bezier(0.25, 1, 0.5, 1);
+  filter: drop-shadow(0 4px 5px rgba(0, 0, 0, 0.55));
 }
 
 .token.no-anim {
   transition: none;
+}
+
+.token.is-hopping .token-body {
+  animation: tokenJumpHop 0.2s cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+.token.is-hopping .token-rim {
+  animation: tokenShadowHop 0.2s cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+@keyframes tokenJumpHop {
+  0% { transform: translateY(0) scale(1, 1); }
+  38% { transform: translateY(-16px) scale(1.12, 0.9); }
+  75% { transform: translateY(-2px) scale(0.95, 1.05); }
+  100% { transform: translateY(0) scale(1, 1); }
+}
+
+@keyframes tokenShadowHop {
+  0% { transform: translateX(-50%) scale(1); opacity: 0.5; }
+  38% { transform: translateX(-50%) scale(0.62); opacity: 0.2; }
+  100% { transform: translateX(-50%) scale(1); opacity: 0.5; }
 }
 
 .token-body {
@@ -636,11 +768,65 @@ body {
   transition: opacity 0.4s ease, transform 0.4s ease;
 }
 
-#fx {
+/* 浮动飘字层 */
+#floater-layer {
   position: absolute;
   inset: 0;
   pointer-events: none;
   z-index: 8;
+  overflow: visible;
+}
+
+.board-floater {
+  position: absolute;
+  font-family: inherit;
+  font-size: 0.84rem;
+  font-weight: 800;
+  padding: 3px 9px;
+  border-radius: 6px;
+  white-space: nowrap;
+  pointer-events: none;
+  animation: floatUpFade 1.3s cubic-bezier(0.2, 0.8, 0.3, 1) forwards;
+  filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.55));
+}
+
+.board-floater.gain {
+  color: #7ce6b6;
+  background: rgba(12, 38, 24, 0.92);
+  border: 1px solid rgba(124, 230, 182, 0.6);
+}
+
+.board-floater.pay {
+  color: #ff8282;
+  background: rgba(46, 14, 16, 0.92);
+  border: 1px solid rgba(255, 120, 120, 0.6);
+}
+
+.board-floater.warning {
+  color: #ffd978;
+  background: rgba(44, 34, 10, 0.92);
+  border: 1px solid rgba(255, 217, 120, 0.6);
+}
+
+.board-floater.info {
+  color: #59c8f2;
+  background: rgba(14, 34, 48, 0.92);
+  border: 1px solid rgba(89, 200, 242, 0.6);
+}
+
+@keyframes floatUpFade {
+  0% { opacity: 0; transform: translate(-50%, 6px) scale(0.65); }
+  16% { opacity: 1; transform: translate(-50%, -8px) scale(1.15); }
+  32% { opacity: 1; transform: translate(-50%, -16px) scale(1); }
+  72% { opacity: 1; transform: translate(-50%, -28px) scale(0.98); }
+  100% { opacity: 0; transform: translate(-50%, -42px) scale(0.9); }
+}
+
+#fx {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 9;
 }
 
 /* ---------------- 下沉式操作托盘 ---------------- */

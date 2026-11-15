@@ -97,6 +97,7 @@ export function createUI({ game, actions, locale: initialLocale }) {
   let hopQueue = 0;
   let currentDice = null;
   let diceTimer = null;
+  let bannerTimer = null;
   let overlayMode = null; // "block" | "swap-mine" | "swap-theirs" | "dice" | null
   let pickerContext = null;
   let resultOpen = false;
@@ -463,6 +464,7 @@ export function createUI({ game, actions, locale: initialLocale }) {
         status.appendChild(badge);
       }
       card.classList.toggle("active", state.turn === state.players.indexOf(player) && !state.over);
+      card.classList.toggle("is-thinking", state.turn === state.players.indexOf(player) && Boolean(player.ai) && !state.over);
       card.classList.toggle("out", !player.alive);
     }
   }
@@ -1055,6 +1057,86 @@ export function createUI({ game, actions, locale: initialLocale }) {
     }, 1900);
   }
 
+  function showCallout(text, playerId = null) {
+    const pill = $("callout-pill");
+    if (!pill) return;
+    pill.textContent = text;
+    if (playerId && PLAYER_COLORS[playerId]) {
+      pill.style.borderColor = PLAYER_COLORS[playerId];
+    } else {
+      pill.style.borderColor = "";
+    }
+    pill.classList.remove("pop");
+    void pill.offsetWidth;
+    pill.classList.add("pop");
+  }
+
+  function showEventBanner(text, tone = "special") {
+    const banner = $("event-banner");
+    if (!banner) return;
+    banner.textContent = text;
+    banner.className = `event-banner show tone-${tone}`;
+    if (bannerTimer) clearTimeout(bannerTimer);
+    bannerTimer = setTimeout(() => {
+      banner.classList.remove("show");
+    }, 2400);
+  }
+
+  function spawnFloater(text, tone = "gain", tileOrPlayerId = null) {
+    const layer = $("floater-layer");
+    if (!layer) return;
+    let pos = null;
+    if (typeof tileOrPlayerId === "number") {
+      pos = tileCenter(tileOrPlayerId);
+    } else if (typeof tileOrPlayerId === "string") {
+      pos = hudCenter(tileOrPlayerId);
+    }
+    if (!pos) {
+      const felt = $("table-felt");
+      pos = felt ? { x: felt.clientWidth / 2, y: felt.clientHeight * 0.4 } : { x: 200, y: 200 };
+    }
+    const floater = document.createElement("div");
+    floater.className = `board-floater ${tone}`;
+    floater.textContent = text;
+    floater.style.left = `${pos.x}px`;
+    floater.style.top = `${pos.y}px`;
+    layer.appendChild(floater);
+    setTimeout(() => floater.remove(), 1350);
+  }
+
+  function updateTurnCallout() {
+    const state = game.state;
+    if (!state || state.over) return;
+    const player = state.players[state.turn];
+    if (!player) return;
+    if (state.phase === "pre") {
+      if (player.human) {
+        showCallout(t("callout_turn_you"), player.id);
+      } else if (player.ai) {
+        showCallout(t("callout_turn_ai", { name: nameOf(player) }), player.id);
+      } else if (state.mode === "2p") {
+        showCallout(t("callout_turn_p2", { name: nameOf(player) }), player.id);
+      }
+    } else if (state.phase === "act") {
+      const tile = player.pos;
+      const info = tileInfo(tile);
+      tileEls.get(tile)?.classList.add("landed");
+      setTimeout(() => tileEls.get(tile)?.classList.remove("landed"), 900);
+      if (info.type === "prop") {
+        const land = state.lands[tile];
+        if (!land.owner) {
+          showCallout(t("callout_landed_prop_empty", { tile: tileDisplay(tile) }), player.id);
+        } else if (land.owner !== player.id) {
+          showCallout(t("callout_landed_prop_rent", { owner: playerNameById(land.owner), tile: tileDisplay(tile), n: rentFor(state, tile) }), player.id);
+        } else {
+          showCallout(t("callout_landed_prop_own", { tile: tileDisplay(tile) }), player.id);
+        }
+      } else {
+        showCallout(t("callout_landed_special", { tile: tileDisplay(tile) }), player.id);
+      }
+    }
+  }
+
   // ------------------------------------------------------------ 事件路由
 
   function onGameEvent(event) {
@@ -1063,11 +1145,25 @@ export function createUI({ game, actions, locale: initialLocale }) {
       case "dice":
         hopQueue = event.value;
         rollDiceVisual(event.value);
+        showCallout(t("callout_roll_result", { name: playerNameById(event.player), n: event.value }), event.player);
         break;
-      case "hop":
+      case "hop": {
         hopQueue = Math.max(0, hopQueue - 1);
         placeToken(event.player, event.tile);
+        const token = tokenEls.get(event.player);
+        if (token) {
+          token.classList.remove("is-hopping");
+          void token.offsetWidth;
+          token.classList.add("is-hopping");
+        }
+        const tileNode = tileEls.get(event.tile);
+        if (tileNode) {
+          tileNode.style.setProperty("--step-color", PLAYER_COLORS[event.player] ?? "#ffd978");
+          tileNode.classList.add("stepping");
+          setTimeout(() => tileNode.classList.remove("stepping"), 240);
+        }
         break;
+      }
       case "teleport":
         hopQueue = 0;
         placeToken(event.player, event.tile, true);
@@ -1076,17 +1172,70 @@ export function createUI({ game, actions, locale: initialLocale }) {
         hopQueue = event.tiles;
         break;
       case "gain":
-        if (event.reason === "salary") spawnCoins(null, event.who, event.amount);
+        if (event.reason === "salary") {
+          spawnCoins(null, event.who, event.amount);
+          spawnFloater(t("floater_gain", { n: event.amount }), "gain", event.who);
+          showEventBanner(t("banner_start", { name: playerNameById(event.who), n: event.amount }), "gain");
+        } else if (event.reason === "start") {
+          spawnCoins(null, event.who, event.amount);
+          spawnFloater(t("floater_gain", { n: event.amount }), "gain", event.who);
+          showEventBanner(t("banner_start_bonus", { name: playerNameById(event.who), n: event.amount }), "gain");
+        } else if (event.reason === "bank") {
+          spawnCoins(null, event.who, event.amount);
+          spawnFloater(t("floater_gain", { n: event.amount }), "gain", event.who);
+          showEventBanner(t("banner_bank", { name: playerNameById(event.who), n: event.amount }), "gain");
+        } else if (event.reason === "event") {
+          spawnCoins(null, event.who, event.amount);
+          spawnFloater(t("floater_gain", { n: event.amount }), "gain", event.who);
+        }
         break;
       case "pay":
-        if (event.to) spawnCoins(currentTileOf(event.from), event.to, event.amount);
+        if (event.to) {
+          spawnCoins(currentTileOf(event.from), event.to, event.amount);
+        } else {
+          spawnFloater(t("floater_pay", { n: event.amount }), "pay", event.from);
+        }
         break;
       case "rent":
         spawnCoins(event.tile, event.to, event.amount);
+        spawnFloater(t("floater_gain", { n: event.amount }), "gain", event.to);
+        spawnFloater(t("floater_pay", { n: event.amount }), "pay", event.from);
+        showEventBanner(t("banner_rent", { from: playerNameById(event.from), to: playerNameById(event.to), n: event.amount }), "pay");
         break;
       case "stamp":
         tileEls.get(event.tile)?.classList.add("stamped");
+        spawnFloater(t("floater_buy"), "gain", event.tile);
+        showEventBanner(t("banner_buy", { name: playerNameById(event.owner), tile: tileDisplay(event.tile), n: priceOf(event.tile) }), "gain");
         setTimeout(() => tileEls.get(event.tile)?.classList.remove("stamped"), 700);
+        break;
+      case "build":
+        tileEls.get(event.tile)?.classList.add("stamped");
+        spawnFloater(t("floater_upgrade"), "gain", event.tile);
+        showEventBanner(t("banner_upgrade", { name: playerNameById(game.state?.lands[event.tile]?.owner), tile: tileDisplay(event.tile), lv: event.level }), "gain");
+        setTimeout(() => tileEls.get(event.tile)?.classList.remove("stamped"), 700);
+        break;
+      case "blockHit":
+        spawnFloater(t("floater_block_hit"), "warning", event.tile);
+        showEventBanner(t("banner_block_hit", { name: playerNameById(event.player), tile: tileDisplay(event.tile) }), "special");
+        break;
+      case "trap":
+        spawnFloater(t("floater_block_hit"), "warning", event.tile);
+        showEventBanner(t("banner_trap", { name: playerNameById(game.state?.players[game.state.turn]?.id) }), "special");
+        break;
+      case "cardUsed":
+        if (event.card === "card_rentfree") {
+          showEventBanner(t("banner_rentfree", { name: playerNameById(event.player) }), "gain");
+        }
+        break;
+      case "bankrupt":
+        showEventBanner(t("banner_bankrupt", { name: playerNameById(event.who) }), "pay");
+        break;
+      case "event":
+        if (event.kind === "chance") {
+          showEventBanner(t("banner_chance", { name: playerNameById(game.state?.players[game.state.turn]?.id) }), "special");
+        } else if (event.kind === "fate") {
+          showEventBanner(t("banner_fate", { name: playerNameById(game.state?.players[game.state.turn]?.id) }), "special");
+        }
         break;
       case "over":
         if (state?.winner && state.players.find((entry) => entry.id === state.winner)?.human) spawnConfetti();
@@ -1112,6 +1261,7 @@ export function createUI({ game, actions, locale: initialLocale }) {
     renderPark();
     renderDock();
     snapAllTokens();
+    updateTurnCallout();
     // 卡片选取弹层跟随引擎阶段
     syncPickerPhase();
   }
@@ -1201,6 +1351,7 @@ export function createUI({ game, actions, locale: initialLocale }) {
     renderPark();
     renderDock();
     renderHud();
+    updateTurnCallout();
     if (!$("mode-drawer")?.hidden) renderModeDrawer();
   }
 

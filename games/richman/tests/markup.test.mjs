@@ -67,7 +67,7 @@ test("every DOM id referenced from JS exists in index.html (no dangling $)", () 
 test("core interactive ids are present and unique", () => {
   const required = [
     "back-home", "app-title", "brand-tag", "btn-mode", "btn-pause", "btn-sound", "btn-lang", "btn-help",
-    "hud", "table-felt", "board", "center-park", "die", "round-label", "log-ticker", "token-layer", "fx",
+    "hud", "table-felt", "board", "center-park", "callout-pill", "die", "event-banner", "round-label", "log-ticker", "token-layer", "floater-layer", "fx",
     "dock", "hand-cards", "action-zone",
     "mode-drawer", "mode-close", "mode-list", "ai-levels", "record-line", "start-match", "mode-hint",
     "help", "help-close",
