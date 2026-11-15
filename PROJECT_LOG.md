@@ -1503,3 +1503,14 @@ CDP 真机冒烟 **105 pass / 0 fail**（源码路径 + `SMOKE_DIST=1`）；`npm
 - `npm run build` 通过并产出 `dist/idiom/`；CDP 真机冒烟 **26/26**（1280×900 / 390×844），覆盖开局、点格、填字、错字抖动、擦除、提示、完词、EN 原地切换与局面恢复、八榜八十关、图鉴八页十六卡、典故卡、计时冻结、结算与下一关、移动端无横向溢出且字库在视口内，控制台零异常。
 - 封面 `assets/covers/idiom.webp` 640×640 WebP q90：软胶 3D 线装书 + 毛笔 + 金色星芒，右下生成水印已 inpaint 清除，零文字。
 - PRD 已归档至 `docs/plans/已开发/idiom-prd.md`（归档库 84 份）；`games.json` 99 款；`package.json` 注册 `test:idiom` 与 `smoke:idiom`。
+
+## 2026-11-15（日）· idiom 补证：全词库唯一解枚举 + 真控制器回放
+
+不动现版运行时与 UI，只在 `tests/` 补验证层，补齐 AGENTS.md 的算法可解性铁律。
+
+- `tests/solver.mjs`：独立纯函数求解器，镜像现版规则（locked 预填、rack 为可复用字集而非消耗品、词条必须来自词库、交叉格一致）；`countCluedSolutions` 的候选域＝全词库中所有符合该条提示的词，`countSolutions` 为忽略提示的严格诊断口径。
+- `tests/uniqueness.test.mjs`：中英各 128 条词库质量、**160/160 关**可解性不变量（答案在词库 / 交叉一致 / 无孤立格 / 非预填字必在字库 / 每条 clue 在全库唯一指向答案）、全笛卡尔积枚举 `count === 1`、同种子重生成逐格一致。
+- `tests/random-walk.test.mjs`：1200 步混合合法与非法输入不抛错且不变量守恒（提示预算、星级、计时、locked 不变、终局 no-op）；**160/160 关**在真控制器里按答案逐格合法落字通关且零提示三星；错字可擦可改。
+- 诊断结论：忽略全部提示的严格枚举只有 zh 3/80、en 8/80 唯一。交叉填字是提示驱动玩法、提示属于题面，故交付断言采用「提示约束下的全库枚举」；曾试过靠增加预填格强行满足无提示唯一，31 关在 50% 上限内仍多解且平均多锁 5.7 格，已否掉。
+- `package.json` 的 `test:idiom` 显式列表追加两份新测试：**64/64 全绿**；`check-game.mjs idiom` 21 pass / 0 fail / 0 warn；`npm run build` 通过且 `tests/` 不进 `dist/idiom/`。
+- `scripts/idiom-offline/` 保留另一条 4 榜 × 5 关离线生成路线的自包含工具（双语词库源 + CSP 生成器 + 40 关静态数据、中文全 `\u` 转义），与现版运行时完全隔离、不参与构建。

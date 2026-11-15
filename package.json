@@ -52,7 +52,7 @@
     "test:hexfit": "node --test games/hexfit/tests/*.test.mjs",
     "test:home": "node --test tests/home-i18n.test.mjs",
     "test:ice-slide": "node --test games/ice-slide/tests/engine.test.mjs games/ice-slide/tests/solver.test.mjs games/ice-slide/tests/levels.test.mjs games/ice-slide/tests/score.test.mjs games/ice-slide/tests/storage.test.mjs games/ice-slide/tests/i18n.test.mjs games/ice-slide/tests/audio.test.mjs games/ice-slide/tests/game.test.mjs games/ice-slide/tests/markup.test.mjs",
-    "test:idiom": "node --test games/idiom/tests/controller.test.mjs games/idiom/tests/engine.test.mjs games/idiom/tests/i18n.test.mjs games/idiom/tests/markup.test.mjs games/idiom/tests/puzzles.test.mjs games/idiom/tests/score.test.mjs games/idiom/tests/storage.test.mjs",
+    "test:idiom": "node --test games/idiom/tests/controller.test.mjs games/idiom/tests/engine.test.mjs games/idiom/tests/i18n.test.mjs games/idiom/tests/markup.test.mjs games/idiom/tests/puzzles.test.mjs games/idiom/tests/score.test.mjs games/idiom/tests/storage.test.mjs games/idiom/tests/uniqueness.test.mjs games/idiom/tests/random-walk.test.mjs",
     "test:immortal": "node --test games/immortal/tests/*.test.mjs",
     "test:invaders": "node --test games/invaders/tests/engine.test.mjs games/invaders/tests/score.test.mjs games/invaders/tests/storage.test.mjs games/invaders/tests/i18n.test.mjs games/invaders/tests/markup.test.mjs games/invaders/tests/game.test.mjs",
     "test:jenga": "node --test games/jenga/tests/engine.test.mjs games/jenga/tests/score.test.mjs games/jenga/tests/levels.test.mjs games/jenga/tests/storage.test.mjs games/jenga/tests/game.test.mjs games/jenga/tests/render.test.mjs games/jenga/tests/i18n.test.mjs games/jenga/tests/markup.test.mjs games/jenga/tests/smoke.mjs",

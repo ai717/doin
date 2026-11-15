@@ -1,0 +1,356 @@
+// 中英双语表 + 全站共享语言偏好 doin.lang。语言切换只做原地热更新，绝不重置对局。
+
+export const LOCALES = Object.freeze(["zh", "en"]);
+export const LANG_KEY = "doin.lang";
+export const DEFAULT_LOCALE = "zh";
+
+const STRINGS = {
+  zh: {
+    docTitle: "操场大乱斗 · DOIN 在线小游戏",
+    metaDesc: "放学后的操场横版清版动作：轻拳三连、重拳击飞、跳踢与背摔，把一波波对手打飞出屏幕。12 关四章、同屏双人与三分钟街机模式，零广告即开即玩。",
+    appTitle: "操场大乱斗",
+    appSub: "放学别走",
+    portal: "返回门户",
+    levels: "选关",
+    pause: "暂停",
+    resume: "继续",
+    restart: "重开",
+    soundOn: "音效开",
+    soundOff: "音效关",
+    langLabel: "切换到英文",
+    langShort: "EN",
+    help: "玩法说明",
+    close: "关闭",
+    modeStory: "章节",
+    modeCoop: "双人",
+    modeArcade: "街机",
+    modeStoryHint: "单人闯关",
+    modeCoopHint: "同屏双打",
+    modeArcadeHint: "三分钟连打",
+    hpLabel: "体力",
+    koLabel: "击飞",
+    waveLabel: "波次",
+    timeLabel: "用时",
+    bossLabel: "首领",
+    p1: "P1",
+    p2: "P2",
+    waveCounter: "第 {0} / {1} 波",
+    waveBanner: "第 {0} 波！",
+    bossBanner: "{0} 登场！",
+    bossDownBanner: "{0} 被打飞了！",
+    clearBanner: "放学路清空！",
+    failBanner: "被打趴了……",
+    starBanner: "满天星！击飞 10 连！",
+    continueBanner: "还能再打一次！",
+    comboBanner: "{0} 连击",
+    levelsTitle: "放学路选关",
+    levelsDesc: "12 关四章，随点随进；击飞数与评级会记录在本机。",
+    chapterStars: "本章 {0} / {1} 星",
+    starsTotal: "已得 {0} / {1} 星",
+    levelStars: "{0} 星",
+    levelCleared: "已通过",
+    levelBestKo: "最佳击飞 {0}",
+    arcadeCard: "街机模式 · 3 分钟",
+    arcadeBest: "最佳击飞 {0}",
+    chTrack: "第一章 · 操场跑道",
+    chCourt: "第二章 · 篮球场",
+    chAlley: "第三章 · 小卖部后巷",
+    chRoof: "第四章 · 教学楼天台",
+    lvl01: "跑道热身",
+    lvl02: "起跑线",
+    lvl03: "沙坑决斗",
+    lvl04: "篮板之下",
+    lvl05: "三分线",
+    lvl06: "半场决战",
+    lvl07: "汽水箱后",
+    lvl08: "后巷窄道",
+    lvl09: "小卖部门口",
+    lvl10: "楼梯间",
+    lvl11: "天台铁门",
+    lvl12: "夕阳决战",
+    foeScrapper: "小豆丁",
+    foeSenior: "高年级小霸王",
+    foeRunner: "跑腿的",
+    foeRanger: "投球手",
+    foeGuard: "大块头",
+    foeTrickster: "扫把兵",
+    foeBullyLeader: "霸王头目",
+    foeGuardLeader: "看场子的",
+    foeTricksterLeader: "扫把队长",
+    foeRunnerLeader: "快腿队长",
+    bossPE: "体育委员",
+    bossCaptain: "篮球队长",
+    bossShopkeeper: "小卖部老板",
+    bossSenior: "天台学长",
+    itemBasketball: "篮球",
+    itemSchoolbag: "书包",
+    itemBroom: "扫把",
+    itemMilk: "牛奶",
+    itemSoda: "汽水",
+    itemHeal: "回了 {0} 点体力",
+    itemPick: "抄起{0}",
+    itemThrow: "扔出去！",
+    resultClearTitle: "放学路清空",
+    resultFailTitle: "今天先到这儿",
+    resultArcadeTitle: "三分钟到点",
+    resultKo: "击飞",
+    resultTime: "用时",
+    resultHp: "剩余体力",
+    resultScore: "得分",
+    resultStars: "评级",
+    resultContinue: "续关次数",
+    resultBoss: "击飞首领",
+    resultPerPlayer: "P1 {0} / P2 {1}",
+    resultBest: "历史最佳",
+    resultNewBest: "新纪录！",
+    resultArcadeTime: "剩余时间",
+    resultNext: "下一关",
+    resultRetry: "重打本关",
+    resultLevels: "选关",
+    resultShare: "截图留住这一刻",
+    pauseTitle: "已暂停",
+    pauseDesc: "黑板上的粉笔还没擦，随时回来接着打。",
+    pauseResume: "继续游戏",
+    pauseRestart: "重新开始",
+    pauseLevels: "返回选关",
+    continueTitle: "还能续关",
+    continueDesc: "本关还剩 {0} 次续关机会，满血重打当前波次。",
+    continueBtn: "续关再打",
+    continueGiveUp: "算了，回选关",
+    helpTitle: "放学别走 · 玩法",
+    help1: "WASD / 方向键移动，靠近对手出拳；双人模式 P1 用 WASD + F G H，P2 用方向键 + 数字键 1 2 3。",
+    help2: "J 轻拳可三连，第三下把对手打飞；K 重拳击飞更远，靠近硬直或残血对手按 K 直接背摔。",
+    help3: "空格跳起，空中按 J 或 K 打出跳踢；U 蓄力必杀，消耗 10 点体力清空身边小怪，蓄力时再按 U 可取消。",
+    help4: "L 捡起地上的篮球、书包或扫把，再按 L 扔出去；牛奶与汽水捡到即回体力。",
+    help5: "把整波对手清空才会来下一波，打倒每关的压轴对手即过关；体力见底可续关，满血重打当前波次。",
+    help6: "P 或 Esc 暂停，切标签页会自动暂停；顶栏「选关」随时打开 12 关章节列表。",
+    help7: "评级看用时与剩余体力；击飞数会单独记录，一关击飞满 10 次有满天星彩蛋。",
+    helpClose: "知道了",
+    controlsMove: "移动",
+    controlsLight: "轻拳",
+    controlsHeavy: "重拳",
+    controlsJump: "跳",
+    controlsUse: "捡 / 扔",
+    controlsSpecial: "必杀",
+    controlsPause: "暂停",
+    keyHintP1: "WASD 移动 · J 轻拳 · K 重拳 · 空格跳 · L 捡扔 · U 必杀 · P 暂停",
+    keyHintCoop: "P1：WASD + F 轻拳 G 重拳 H 跳；P2：方向键 + 1 轻拳 2 重拳 3 跳",
+    keyHintMobile: "左侧摇杆移动，右侧按钮出拳",
+    soundToggle: "音效",
+    langToggle: "切换语言",
+    backHome: "返回门户",
+    chapterLabel: "第 {0} 章",
+    levelLabel: "第 {0} 关",
+    arcadeLabel: "街机模式",
+    bossTitle: "首领战",
+    koUnit: "次",
+    ariaModes: "选择玩法模式",
+    ariaBoard: "粉笔记分黑板",
+    ariaStage: "放学后的操场清版动作舞台",
+    ariaStick: "虚拟摇杆",
+  },
+  en: {
+    docTitle: "Schoolyard Brawl · DOIN Online Games",
+    metaDesc: "A side-scrolling schoolyard beat 'em up: three-hit light combos, launch-heavy punches, jump kicks and suplexes. Send waves of rivals flying off screen across 12 stages, local 2P and a three-minute arcade mode.",
+    appTitle: "Schoolyard Brawl",
+    appSub: "After School, No Running",
+    portal: "Portal",
+    levels: "Levels",
+    pause: "Pause",
+    resume: "Resume",
+    restart: "Restart",
+    soundOn: "Sound on",
+    soundOff: "Sound off",
+    langLabel: "Switch to Chinese",
+    langShort: "中文",
+    help: "How to play",
+    close: "Close",
+    modeStory: "Story",
+    modeCoop: "2P",
+    modeArcade: "Arcade",
+    modeStoryHint: "Solo run",
+    modeCoopHint: "Couch co-op",
+    modeArcadeHint: "3-minute brawl",
+    hpLabel: "Health",
+    koLabel: "Launched",
+    waveLabel: "Wave",
+    timeLabel: "Time",
+    bossLabel: "Boss",
+    p1: "P1",
+    p2: "P2",
+    waveCounter: "Wave {0} / {1}",
+    waveBanner: "Wave {0}!",
+    bossBanner: "{0} steps in!",
+    bossDownBanner: "{0} is launched!",
+    clearBanner: "Schoolyard cleared!",
+    failBanner: "Knocked out...",
+    starBanner: "Starry sky! 10 launches!",
+    continueBanner: "One more round!",
+    comboBanner: "{0} hit combo",
+    levelsTitle: "After-School Levels",
+    levelsDesc: "12 stages across four chapters. Tap any stage to jump in; launches and ratings are saved on this device.",
+    chapterStars: "{0} / {1} stars this chapter",
+    starsTotal: "{0} / {1} stars",
+    levelStars: "{0} stars",
+    levelCleared: "Cleared",
+    levelBestKo: "Best launches {0}",
+    arcadeCard: "Arcade · 3 minutes",
+    arcadeBest: "Best launches {0}",
+    chTrack: "Chapter 1 · School Track",
+    chCourt: "Chapter 2 · Basketball Court",
+    chAlley: "Chapter 3 · Tuck Shop Alley",
+    chRoof: "Chapter 4 · Rooftop",
+    lvl01: "Track Warm-up",
+    lvl02: "Starting Line",
+    lvl03: "Sandpit Duel",
+    lvl04: "Under the Rim",
+    lvl05: "Three-Point Line",
+    lvl06: "Half-Court Showdown",
+    lvl07: "Behind the Crates",
+    lvl08: "Narrow Alley",
+    lvl09: "Shop Front",
+    lvl10: "Stairwell",
+    lvl11: "Rooftop Gate",
+    lvl12: "Sunset Showdown",
+    foeScrapper: "Scrapper",
+    foeSenior: "Schoolyard Bully",
+    foeRunner: "Errand Runner",
+    foeRanger: "Ball Tosser",
+    foeGuard: "Big Guy",
+    foeTrickster: "Broom Kid",
+    foeBullyLeader: "Bully Captain",
+    foeGuardLeader: "Alley Enforcer",
+    foeTricksterLeader: "Broom Captain",
+    foeRunnerLeader: "Speed Captain",
+    bossPE: "Gym Monitor",
+    bossCaptain: "Team Captain",
+    bossShopkeeper: "Shopkeeper",
+    bossSenior: "Rooftop Senior",
+    itemBasketball: "Basketball",
+    itemSchoolbag: "Backpack",
+    itemBroom: "Broom",
+    itemMilk: "Milk",
+    itemSoda: "Soda",
+    itemHeal: "Recovered {0} health",
+    itemPick: "Grabbed the {0}",
+    itemThrow: "Take that!",
+    resultClearTitle: "Schoolyard cleared",
+    resultFailTitle: "That is enough for today",
+    resultArcadeTitle: "Time is up",
+    resultKo: "Launches",
+    resultTime: "Time",
+    resultHp: "Health left",
+    resultScore: "Score",
+    resultStars: "Rating",
+    resultContinue: "Continues",
+    resultBoss: "Boss down",
+    resultPerPlayer: "P1 {0} / P2 {1}",
+    resultBest: "Personal best",
+    resultNewBest: "New record!",
+    resultArcadeTime: "Time left",
+    resultNext: "Next stage",
+    resultRetry: "Retry stage",
+    resultLevels: "Levels",
+    resultShare: "Screenshot this moment",
+    pauseTitle: "Paused",
+    pauseDesc: "The chalk is still on the board. Jump back in whenever you are ready.",
+    pauseResume: "Resume game",
+    pauseRestart: "Restart",
+    pauseLevels: "Back to levels",
+    continueTitle: "One more try",
+    continueDesc: "{0} continue left in this stage. Full health, current wave restarts.",
+    continueBtn: "Continue",
+    continueGiveUp: "Give up, back to levels",
+    helpTitle: "After School · How to play",
+    help1: "Move with WASD or arrow keys and close in to punch. In 2P, P1 uses WASD + F G H and P2 uses arrows + 1 2 3.",
+    help2: "J light punch chains three times, the third launch sends a rival flying; K heavy punch launches farther, and K near a stunned or low-health rival performs a suplex.",
+    help3: "Space jumps; press J or K in the air for a jump kick. U charges a special that costs 10 health and clears nearby grunts; press U again to cancel the charge.",
+    help4: "L picks up a basketball, backpack or broom and presses again to throw it. Milk and soda heal on pickup.",
+    help5: "Clear every rival in a wave to bring the next one. Beat the headliner to clear the stage; when health runs out you may continue and retry the current wave at full health.",
+    help6: "P or Esc pauses, and switching tabs pauses automatically. The Levels button in the top bar opens all 12 stages at any time.",
+    help7: "Ratings use clear time and health left. Launch count is tracked separately: 10 launches in one stage triggers a starry-sky bonus.",
+    helpClose: "Got it",
+    controlsMove: "Move",
+    controlsLight: "Light",
+    controlsHeavy: "Heavy",
+    controlsJump: "Jump",
+    controlsUse: "Grab / Throw",
+    controlsSpecial: "Special",
+    controlsPause: "Pause",
+    keyHintP1: "WASD move · J light · K heavy · Space jump · L grab or throw · U special · P pause",
+    keyHintCoop: "P1: WASD + F light G heavy H jump; P2: arrows + 1 light 2 heavy 3 jump",
+    keyHintMobile: "Left stick to move, right buttons to punch",
+    soundToggle: "Sound",
+    langToggle: "Switch language",
+    backHome: "Back to portal",
+    chapterLabel: "Chapter {0}",
+    levelLabel: "Stage {0}",
+    arcadeLabel: "Arcade",
+    bossTitle: "Boss fight",
+    koUnit: "times",
+    ariaModes: "Choose game mode",
+    ariaBoard: "Chalk scoreboard",
+    ariaStage: "After-school schoolyard beat 'em up stage",
+    ariaStick: "Virtual joystick",
+  },
+};
+
+export function isLocale(value) {
+  return value === "zh" || value === "en";
+}
+
+export function strings(locale) {
+  return STRINGS[isLocale(locale) ? locale : DEFAULT_LOCALE];
+}
+
+export function detectLocale() {
+  try {
+    const list = Array.isArray(globalThis.navigator?.languages) && globalThis.navigator.languages.length
+      ? globalThis.navigator.languages
+      : [globalThis.navigator?.language];
+    const hasChinese = list.some((tag) => typeof tag === "string" && tag.toLowerCase().startsWith("zh"));
+    return hasChinese ? "zh" : "en";
+  } catch (error) {
+    return "en";
+  }
+}
+
+export function htmlLang(locale) {
+  return locale === "zh" ? "zh-CN" : "en";
+}
+
+export function loadLocale() {
+  try {
+    const saved = globalThis.localStorage?.getItem(LANG_KEY);
+    if (isLocale(saved)) return saved;
+  } catch (error) {
+    // 隐私模式静默降级
+  }
+  return detectLocale();
+}
+
+export function saveLocale(locale) {
+  if (!isLocale(locale)) return false;
+  try {
+    globalThis.localStorage?.setItem(LANG_KEY, locale);
+    return true;
+  } catch (error) {
+    return false;
+  }
+}
+
+export function format(template, ...args) {
+  if (typeof template !== "string") return "";
+  return template.replace(/\{(\d+)\}/g, (match, index) => {
+    const value = args[Number(index)];
+    return value === undefined || value === null ? match : String(value);
+  });
+}
+
+export function t(locale, key, ...args) {
+  const table = strings(locale);
+  const template = table[key] ?? strings(DEFAULT_LOCALE)[key] ?? key;
+  return format(template, ...args);
+}
+
+export { STRINGS };
