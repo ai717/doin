@@ -1,6 +1,26 @@
 {
   "games": [
     {
+      "title": "巧解鲁班锁 · 榫卯拆解",
+      "slug": "luban",
+      "desc": "在木匠案头推敲千年榫卯！纯静态3D等轴测古法鲁班锁拆解益智游戏，36道精巧锁型，四向旋转视角、寻找自由生门抽出木块。100%数学可解，配有真实木纹质感与木屑特效，零广告即开即玩。",
+      "icon": "🪵",
+      "cover": "/assets/covers/luban.webp",
+      "tags": [
+        "益智",
+        "解谜",
+        "3D",
+        "空间",
+        "传统",
+        "鲁班锁"
+      ],
+      "url": "/luban/",
+      "en": {
+        "title": "Luban Lock · Mortise Puzzle",
+        "desc": "Master the ancient Chinese mortise-and-tenon puzzle on a carpenter's workbench! 36 interlocking 3D isometric locks with 4-way camera rotation. Find free key blocks to slide out joints with tactile wood audio and sawdust particles. Instant ad-free play."
+      }
+    },
+    {
       "title": "魔方工坊",
       "slug": "cube",
       "desc": "在暗调极客工坊里丝滑转动真三维魔方：2×2 口袋速拧、3×3 每日同题与 19 关魔方学院残局。拖动贴片磁吸转层、WCA 计时、一步提示，零广告即开即玩。",

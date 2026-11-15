@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title data-i18n="gameTitle">巧解鲁班锁 · 榫卯拆解</title>
+  <meta name="description" content="木匠案头，千年榫卯。纯静态3D等轴测古法鲁班锁拆解益智游戏，36道精巧锁型，纯手工推敲次序解脱生门。">
+  <link rel="icon" type="image/svg+xml" href="favicon.svg?v=dev">
+  <link rel="stylesheet" href="css/style.css?v=dev">
+</head>
+<body>
+  <noscript>
+    <div style="padding: 24px; text-align: center; color: #f0e6d6; background: #2a1f18; font-family: sans-serif;">
+      请启用 JavaScript 以进入鲁班锁工坊。/ Please enable JavaScript to play Luban Lock.
+    </div>
+  </noscript>
+
+  <div id="app">
+    <!-- Top Bar -->
+    <header id="top-bar">
+      <div class="brand-zone">
+        <a href="/" id="back-home" title="返回首页" data-i18n="backHome">首页</a>
+        <div class="game-heading">
+          <h1 id="game-title" data-i18n="gameTitle">巧解鲁班锁 · 榫卯拆解</h1>
+          <span class="subhead" data-i18n="gameSubtitle">木匠案头 · 千年榫卯</span>
+        </div>
+      </div>
+
+      <nav class="action-nav">
+        <button id="btn-levels" class="btn-wood" data-i18n="levelsBtn">锁谱</button>
+        <button id="btn-rotate" class="btn-wood" title="快捷键 R" data-i18n="rotateBtn">转视角</button>
+        <button id="btn-hint" class="btn-wood" title="快捷键 H" data-i18n="hintBtn">提示</button>
+        <button id="btn-undo" class="btn-wood" title="快捷键 U / Ctrl+Z" data-i18n="undoBtn">悔棋</button>
+        <button id="btn-restart" class="btn-wood" data-i18n="restartBtn">复原</button>
+        <button id="btn-sound" class="btn-wood">音效: 开</button>
+        <button id="btn-lang" class="btn-wood">English</button>
+        <button id="btn-rules" class="btn-wood" data-i18n="howToPlay">法则</button>
+      </nav>
+    </header>
+
+    <!-- Main Workspace -->
+    <main id="workbench">
+      <!-- HUD Bar -->
+      <section id="hud-bar">
+        <div class="hud-item hud-level">
+          <span id="hud-level-title">锁型 1 · 双龙互抱</span>
+        </div>
+        <div class="hud-metrics">
+          <div class="metric-chip">
+            <span class="chip-label" data-i18n="remainingBlocksLabel">待拆木块</span>
+            <span id="hud-remaining-count" class="chip-value">6</span>
+          </div>
+          <div class="metric-chip">
+            <span class="chip-label" data-i18n="stepsLabel">抽拉步数</span>
+            <span id="hud-steps" class="chip-value">0</span>
+          </div>
+          <div class="metric-chip">
+            <span class="chip-label" data-i18n="optimalSteps">最优基线</span>
+            <span id="hud-optimal" class="chip-value">6</span>
+          </div>
+          <div class="metric-chip">
+            <span class="chip-label" data-i18n="rotateBtn">转视角</span>
+            <span id="hud-angle-indicator" class="chip-value">0°</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- 3D Isometric Workbench Stage -->
+      <section id="stage-container">
+        <!-- Floating Sawdust Particles Canvas -->
+        <canvas id="sawdust-canvas"></canvas>
+
+        <div id="lock-stage-3d">
+          <div id="lock-assembly"></div>
+        </div>
+      </section>
+
+      <!-- Bottom Drawer Tray for Extracted Mortise Blocks -->
+      <footer id="tray-container">
+        <div class="tray-header">
+          <span class="tray-title" data-i18n="extractedBlocksLabel">已出托盘</span>
+          <span class="tray-hint" data-i18n="ruleKey">金丝楠木块为核心“锁钥”，往往是解脱整座锁体的首要生门！</span>
+        </div>
+        <div id="tray-blocks"></div>
+      </footer>
+    </main>
+
+    <!-- Modal: Level Selection -->
+    <div id="modal-levels" class="modal-overlay">
+      <div class="modal-box modal-large">
+        <div class="modal-head">
+          <h2 data-i18n="levelSelectTitle">千载鲁班锁谱</h2>
+          <button class="modal-close-btn" data-i18n="closeBtn">关闭</button>
+        </div>
+        <div id="levels-grid" class="modal-body scrollable-body"></div>
+      </div>
+    </div>
+
+    <!-- Modal: Rules & Mortise Lore -->
+    <div id="modal-rules" class="modal-overlay">
+      <div class="modal-box">
+        <div class="modal-head">
+          <h2 data-i18n="rulesTitle">榫卯拆解法则</h2>
+          <button class="modal-close-btn" data-i18n="closeBtn">关闭</button>
+        </div>
+        <div class="modal-body rules-content">
+          <p data-i18n="rule1">1. 观察三维等轴测木锁，寻找当前未被任何榫槽阻挡的自由木块。</p>
+          <p data-i18n="rule2">2. 点击木块将其沿长轴顺滑抽出，解脱后将飞入侧边木工托盘。</p>
+          <p data-i18n="rule3">3. 若木块被卡住，将轻晃并标出阻挡它的木块；按 R 键旋转等轴测视角。</p>
+          <div class="rule-highlight" data-i18n="ruleKey">金丝楠木块为核心“锁钥”，往往是解脱整座锁体的首要生门！</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal: Settlement Victory -->
+    <div id="modal-settlement" class="modal-overlay">
+      <div class="modal-box modal-settlement-box">
+        <div class="settlement-banner">
+          <h2 data-i18n="winTitle">巧夺天工 · 锁体尽解！</h2>
+          <p class="settlement-sub" data-i18n="winDesc">整具榫卯结构已按玄妙次序悉数拆散。</p>
+        </div>
+        <div id="settlement-rating" class="settlement-rating-zone"></div>
+        <div id="settlement-steps" class="settlement-steps-text"></div>
+        <blockquote id="settlement-trivia" class="settlement-trivia-quote"></blockquote>
+        <div class="settlement-actions">
+          <button id="btn-replay-level" class="btn-wood secondary" data-i18n="replayLevel">重玩此锁</button>
+          <button id="btn-next-level" class="btn-wood primary" data-i18n="nextLevel">下一锁</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="js/main.mjs?v=dev"></script>
+</body>
+</html>
