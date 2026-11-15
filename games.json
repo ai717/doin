@@ -1,6 +1,26 @@
 {
   "games": [
     {
+      "title": "迷你大富翁 · 掷骰夺城",
+      "slug": "richman",
+      "desc": "在桌面微缩城市沙盘里掷骰夺城！环形24格棋盘、买地盖屋收租、路障与遥控骰子道具博弈、同屏双人与AI阶梯挑战。5~8分钟一局，资产破产裁决，零广告即开即玩。",
+      "icon": "🎲",
+      "cover": "/assets/covers/richman.webp",
+      "tags": [
+        "棋盘",
+        "大富翁",
+        "策略",
+        "益智",
+        "双人",
+        "对弈"
+      ],
+      "url": "/richman/",
+      "en": {
+        "title": "Mini Richman · Dice City Duel",
+        "desc": "Roll dice and conquer a tabletop miniature city! 24-tile circular board, property trading, house upgrades, tactical traps and remote dice cards. Local 2P and tiered AI duels in 5-8 min matches. Instant ad-free play."
+      }
+    },
+    {
       "title": "巧解鲁班锁 · 榫卯拆解",
       "slug": "luban",
       "desc": "在木匠案头推敲千年榫卯！纯静态3D等轴测古法鲁班锁拆解益智游戏，36道精巧锁型，四向旋转视角、寻找自由生门抽出木块。100%数学可解，配有真实木纹质感与木屑特效，零广告即开即玩。",
