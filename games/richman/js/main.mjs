@@ -133,7 +133,7 @@ function playEventAudio(event) {
   switch (event.type) {
     case "dice":
       play(audio.diceRoll);
-      setTimeout(() => play(audio.diceSettle), 560);
+      setTimeout(() => play(audio.diceSettle), 1080);
       break;
     case "hop":
       play(audio.hop);

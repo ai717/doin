@@ -59,7 +59,7 @@ test("human roll dispatches and schedules the walk; arrive auto-fires", () => {
   assert.equal(game.state.phase, "moving");
   assert.ok(game.state.move.path.length === 3);
   // 时间推进：行进 + 停留后自动 arrive（若触发连锁移动则走完双段）
-  for (let i = 0; i < 35; i += 1) game.tick(120);
+  for (let i = 0; i < 39; i += 1) game.tick(120);
   assert.equal(game.state.phase, "act");
 });
 

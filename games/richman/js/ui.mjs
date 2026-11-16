@@ -19,6 +19,7 @@ import {
   tileInfo,
 } from "./engine.mjs";
 import { htmlLang, translate } from "./i18n.mjs";
+import { createDice3D } from "./dice3d.mjs";
 
 const TILE_GRID = (() => {
   const map = [];
@@ -65,12 +66,12 @@ const PIP_LAYOUT = {
 };
 
 const DICE_TRANSFORM = {
-  1: [0, 0],
-  2: [0, -90],
-  3: [-90, 0],
-  4: [90, 0],
-  5: [0, 90],
-  6: [0, 180],
+  1: [-18, 22, 0],
+  2: [-18, -68, 0],
+  3: [-18, -68, -90],
+  4: [-18, -68, 90],
+  5: [-18, 112, 0],
+  6: [-18, 202, 0],
 };
 
 const PLAYER_COLORS = { p1: "#ffb454", p2: "#59c8f2", p3: "#7ce6b6" };
@@ -159,27 +160,22 @@ export function createUI({ game, actions, locale: initialLocale }) {
     }
   }
 
+  let dice3D = null;
+
   function buildDice() {
-    const die = $("die");
-    die.innerHTML = "";
-    const faces = [
-      [1, "front"],
-      [2, "right"],
-      [3, "top"],
-      [4, "bottom"],
-      [5, "left"],
-      [6, "back"],
-    ];
-    for (const [value, className] of faces) {
-      const face = document.createElement("div");
-      face.className = `die-face df-${className}`;
-      const pips = PIP_LAYOUT[value] ?? [];
-      for (let cell = 0; cell < 9; cell += 1) {
-        const dot = document.createElement("span");
-        if (pips.includes(cell)) dot.className = "pip on";
-        face.appendChild(dot);
-      }
-      die.appendChild(face);
+    const canvas = $("die-canvas");
+    if (!canvas) return;
+    dice3D = createDice3D(canvas);
+    const wrap = $("die-wrap");
+    if (wrap && !wrap.dataset.bound) {
+      wrap.dataset.bound = "true";
+      wrap.addEventListener("click", () => {
+        const state = game.state;
+        const player = state?.players[state?.turn];
+        if (state?.phase === "pre" && player?.human && !game.paused) {
+          actions.roll();
+        }
+      });
     }
   }
 
@@ -566,29 +562,28 @@ export function createUI({ game, actions, locale: initialLocale }) {
   // ------------------------------------------------------------ 骰子
 
   function showDice(value, rolling = false) {
-    const die = $("die");
-    if (!die) return;
     currentDice = value;
-    die.classList.toggle("rolling", rolling);
     if (diceTimer) {
       clearTimeout(diceTimer);
       diceTimer = null;
     }
-    if (rolling) return;
-    const [rx, ry] = DICE_TRANSFORM[value] ?? [0, 0];
-    die.style.setProperty("--rx", `${rx}deg`);
-    die.style.setProperty("--ry", `${ry}deg`);
+    if (!rolling && dice3D) {
+      dice3D.show(value);
+    }
   }
 
   function rollDiceVisual(value) {
-    const die = $("die");
-    if (!die) return;
-    const [rx, ry] = DICE_TRANSFORM[value] ?? [0, 0];
-    die.style.setProperty("--rx", `${rx}deg`);
-    die.style.setProperty("--ry", `${ry}deg`);
-    void die.offsetWidth;
-    showDice(value, true);
-    diceTimer = setTimeout(() => showDice(value, false), 650);
+    currentDice = value;
+    if (diceTimer) {
+      clearTimeout(diceTimer);
+      diceTimer = null;
+    }
+    if (dice3D) {
+      dice3D.rollTo(value, () => {
+        showDice(value, false);
+      });
+    }
+    diceTimer = setTimeout(() => showDice(value, false), 1100);
   }
 
   // ------------------------------------------------------------ 日志与回合
@@ -648,6 +643,14 @@ export function createUI({ game, actions, locale: initialLocale }) {
     const player = state.players[state.turn];
     const pausedNow = game.paused;
     renderHand(handBox, player, state);
+
+    const canRoll = !pausedNow && state.phase === "pre" && player?.human;
+    $("die-wrap")?.classList.toggle("can-roll", Boolean(canRoll));
+    if (canRoll) {
+      dice3D?.startIdle();
+    } else {
+      dice3D?.stopIdle();
+    }
 
     if (pausedNow) {
       zone.appendChild(elButton(t("dockPaused"), "ghost"));
@@ -1411,6 +1414,7 @@ export function createUI({ game, actions, locale: initialLocale }) {
 
   buildBoard();
   buildDice();
+  showDice(1, false);
   bindInternals();
   ensureCanvas();
   setLocale(locale);
