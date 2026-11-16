@@ -55,6 +55,7 @@ export class TileStackUI {
     this.particles = [];
     this.hintedTileIds = new Set();
     this.activeTheme = 'porcelain';
+    this.currentRenderedLevel = null;
 
     this.initCanvasResize();
   }
@@ -81,84 +82,162 @@ export class TileStackUI {
   }
 
   /**
-   * Render the 3D tiered tile tower.
+   * Helper to build a single 3D tile element.
+   */
+  createTileElement(tile, gameState, boardTiles, onTileClick) {
+    const isBlocked = isTileBlocked(tile, boardTiles);
+    const isKeyLocked = tile.special === 'lock' && gameState.unlockedKeys <= 0;
+    const isFree = !isBlocked && !isKeyLocked;
+    const isHinted = this.hintedTileIds.has(tile.id);
+
+    const tileEl = document.createElement('div');
+    tileEl.id = `tower-tile-${tile.id}`;
+    tileEl.dataset.id = tile.id;
+    tileEl.className = `tile ${isFree ? 'tile-free' : 'tile-blocked'}`;
+    if (tile.special) tileEl.classList.add(`special-${tile.special}`);
+    if (isHinted) tileEl.classList.add('tile-hinted');
+
+    // 3D positioning with depth tracking
+    const depthZ = tile.layer * GAME_CONSTANTS.LAYER_DEPTH_Z;
+    tileEl.style.left = `calc(50% + ${tile.x}px)`;
+    tileEl.style.top = `calc(50% + ${tile.y}px)`;
+    tileEl.style.zIndex = `${tile.layer * 20 + Math.floor(tile.y / 5) + 100}`;
+    tileEl.style.setProperty('--depth', `${depthZ}px`);
+    tileEl.style.transform = `translate3d(-50%, -50%, ${depthZ}px)`;
+
+    // Tile face content
+    const def = TILE_DEFINITIONS[tile.type] || { icon: '🪨', nameZh: '', nameEn: '', color: '#1a5ba0' };
+    const lang = getLanguage();
+    const label = lang === 'zh' ? def.nameZh : def.nameEn;
+
+    let badgeHtml = '';
+    if (tile.special === 'frozen') {
+      badgeHtml = `<span class="tile-badge badge-frozen">❄️${tile.frozenHits > 1 ? '×2' : ''}</span>`;
+    } else if (tile.special === 'key') {
+      badgeHtml = `<span class="tile-badge badge-key">🗝️</span>`;
+    } else if (tile.special === 'lock') {
+      badgeHtml = `<span class="tile-badge badge-lock">🔒</span>`;
+    } else if (tile.special === 'wild') {
+      badgeHtml = `<span class="tile-badge badge-wild">🌈</span>`;
+    }
+
+    tileEl.innerHTML = `
+      <div class="tile-card">
+        <div class="tile-glaze"></div>
+        ${badgeHtml}
+        <div class="tile-icon">${def.icon}</div>
+        <div class="tile-label">${label}</div>
+      </div>
+    `;
+
+    tileEl.addEventListener('click', (e) => {
+      e.stopPropagation();
+      if (tileEl.classList.contains('tile-free') && !tileEl._isPicking) {
+        onTileClick(tile.id, tileEl);
+      }
+    });
+
+    return tileEl;
+  }
+
+  /**
+   * Render the 3D tiered tile tower incrementally (zero DOM recreation = zero flicker!).
    */
   renderTower(gameState, onTileClick) {
     if (!this.dom.tower) return;
     const boardTiles = gameState.boardTiles;
-    this.dom.tower.innerHTML = '';
+    const currentChildren = this.dom.tower.querySelectorAll('.tile');
 
-    // Calculate maximum layer for tier calculation
+    const isNewLevel = (this.currentRenderedLevel !== gameState.levelId) ||
+                       (currentChildren.length === 0 && boardTiles.length > 0);
+
+    if (isNewLevel) {
+      this.dom.tower.innerHTML = '';
+      this.currentRenderedLevel = gameState.levelId;
+
+      boardTiles.forEach(tile => {
+        const tileEl = this.createTileElement(tile, gameState, boardTiles, onTileClick);
+        this.dom.tower.appendChild(tileEl);
+      });
+    } else {
+      // Incremental DOM update: keep existing nodes, update state in place
+      const remainingIds = new Set(boardTiles.map(t => t.id));
+
+      // 1. Remove picked tiles
+      currentChildren.forEach(el => {
+        const id = el.dataset.id;
+        if (!remainingIds.has(id)) {
+          el.remove();
+        }
+      });
+
+      // 2. Map surviving tile DOM elements
+      const existingMap = new Map();
+      this.dom.tower.querySelectorAll('.tile').forEach(el => existingMap.set(el.dataset.id, el));
+
+      // 3. Update status in place or restore Undone tiles
+      boardTiles.forEach(tile => {
+        let tileEl = existingMap.get(tile.id);
+        if (!tileEl) {
+          tileEl = this.createTileElement(tile, gameState, boardTiles, onTileClick);
+          this.dom.tower.appendChild(tileEl);
+        } else {
+          const isBlocked = isTileBlocked(tile, boardTiles);
+          const isKeyLocked = tile.special === 'lock' && gameState.unlockedKeys <= 0;
+          const isFree = !isBlocked && !isKeyLocked;
+          const isHinted = this.hintedTileIds.has(tile.id);
+
+          tileEl.classList.toggle('tile-free', isFree);
+          tileEl.classList.toggle('tile-blocked', !isFree);
+          tileEl.classList.toggle('tile-hinted', isHinted);
+
+          if (tile.special === 'frozen') {
+            const badge = tileEl.querySelector('.badge-frozen');
+            if (badge) {
+              badge.textContent = `❄️${tile.frozenHits > 1 ? '×2' : ''}`;
+            }
+          }
+        }
+      });
+    }
+
+    // Update layer gauge
     let maxLayer = 0;
     boardTiles.forEach(t => {
       if (t.layer > maxLayer) maxLayer = t.layer;
     });
-
-    boardTiles.forEach(tile => {
-      const isBlocked = isTileBlocked(tile, boardTiles);
-      const isKeyLocked = tile.special === 'lock' && gameState.unlockedKeys <= 0;
-      const isFree = !isBlocked && !isKeyLocked;
-      const isHinted = this.hintedTileIds.has(tile.id);
-
-      const tileEl = document.createElement('div');
-      tileEl.className = `tile ${isFree ? 'tile-free' : 'tile-blocked'}`;
-      if (tile.special) tileEl.classList.add(`special-${tile.special}`);
-      if (isHinted) tileEl.classList.add('tile-hinted');
-
-      // 3D positioning
-      const depthZ = tile.layer * GAME_CONSTANTS.LAYER_DEPTH_Z;
-      tileEl.style.left = `calc(50% + ${tile.x}px)`;
-      tileEl.style.top = `calc(50% + ${tile.y}px)`;
-      tileEl.style.zIndex = `${tile.layer * 20 + Math.floor(tile.y / 5) + 100}`;
-      tileEl.style.transform = `translate3d(-50%, -50%, ${depthZ}px)`;
-
-      // Tile face content
-      const def = TILE_DEFINITIONS[tile.type] || { icon: '🪨', nameZh: '', nameEn: '', color: '#1a5ba0' };
-      const lang = getLanguage();
-      const label = lang === 'zh' ? def.nameZh : def.nameEn;
-
-      let badgeHtml = '';
-      if (tile.special === 'frozen') {
-        badgeHtml = `<span class="tile-badge badge-frozen">❄️${tile.frozenHits > 1 ? '×2' : ''}</span>`;
-      } else if (tile.special === 'key') {
-        badgeHtml = `<span class="tile-badge badge-key">🗝️</span>`;
-      } else if (tile.special === 'lock') {
-        badgeHtml = `<span class="tile-badge badge-lock">🔒</span>`;
-      } else if (tile.special === 'wild') {
-        badgeHtml = `<span class="tile-badge badge-wild">🌈</span>`;
-      }
-
-      tileEl.innerHTML = `
-        <div class="tile-card">
-          <div class="tile-glaze"></div>
-          ${badgeHtml}
-          <div class="tile-icon">${def.icon}</div>
-          <div class="tile-label">${label}</div>
-        </div>
-      `;
-
-      if (isFree) {
-        tileEl.addEventListener('click', (e) => {
-          e.stopPropagation();
-          onTileClick(tile.id, tileEl);
-        });
-      }
-
-      this.dom.tower.appendChild(tileEl);
-    });
-
-    // Update layer gauge
     if (this.dom.hudLayersLeft) {
       this.dom.hudLayersLeft.textContent = `${boardTiles.length > 0 ? maxLayer + 1 : 0}`;
     }
   }
 
   /**
-   * Render the 7-slot wooden tray.
+   * Helper to create a single tray tile element.
+   */
+  createTrayTileElement(tile) {
+    const def = TILE_DEFINITIONS[tile.type] || { icon: '🪨', nameZh: '', nameEn: '' };
+    const lang = getLanguage();
+    const label = lang === 'zh' ? def.nameZh : def.nameEn;
+
+    const tileEl = document.createElement('div');
+    tileEl.className = `tile tray-tile ${tile.special ? `special-${tile.special}` : ''}`;
+    tileEl.dataset.id = tile.id;
+    tileEl.dataset.type = tile.type;
+    tileEl.innerHTML = `
+      <div class="tile-card">
+        <div class="tile-glaze"></div>
+        <div class="tile-icon">${def.icon}</div>
+        <div class="tile-label">${label}</div>
+      </div>
+    `;
+    return tileEl;
+  }
+
+  /**
+   * Render the 7-slot wooden tray smoothly with stable slot receptacles.
    */
   renderTray(gameState) {
     if (!this.dom.tray) return;
-    this.dom.tray.innerHTML = '';
     const tray = gameState.tray;
 
     // Check warning state (6 tiles = 1 slot left)
@@ -171,31 +250,96 @@ export class TileStackUI {
       }
     }
 
-    // Render 7 slots
-    for (let i = 0; i < GAME_CONSTANTS.TRAY_CAPACITY; i++) {
-      const slotEl = document.createElement('div');
-      slotEl.className = 'tray-slot';
-
-      const tile = tray[i];
-      if (tile) {
-        const def = TILE_DEFINITIONS[tile.type] || { icon: '🪨', nameZh: '', nameEn: '' };
-        const lang = getLanguage();
-        const label = lang === 'zh' ? def.nameZh : def.nameEn;
-
-        const tileEl = document.createElement('div');
-        tileEl.className = `tile tray-tile ${tile.special ? `special-${tile.special}` : ''}`;
-        tileEl.innerHTML = `
-          <div class="tile-card">
-            <div class="tile-glaze"></div>
-            <div class="tile-icon">${def.icon}</div>
-            <div class="tile-label">${label}</div>
-          </div>
-        `;
-        slotEl.appendChild(tileEl);
+    // Ensure 7 slot receptacles exist once (never torn down)
+    if (this.dom.tray.children.length !== GAME_CONSTANTS.TRAY_CAPACITY) {
+      this.dom.tray.innerHTML = '';
+      for (let i = 0; i < GAME_CONSTANTS.TRAY_CAPACITY; i++) {
+        const slotEl = document.createElement('div');
+        slotEl.className = 'tray-slot';
+        slotEl.dataset.index = i;
+        this.dom.tray.appendChild(slotEl);
       }
-
-      this.dom.tray.appendChild(slotEl);
     }
+
+    const slots = this.dom.tray.children;
+    for (let i = 0; i < GAME_CONSTANTS.TRAY_CAPACITY; i++) {
+      const slotEl = slots[i];
+      const tile = tray[i];
+      const currentTileEl = slotEl.querySelector('.tray-tile');
+
+      if (!tile) {
+        if (currentTileEl) {
+          currentTileEl.remove();
+        }
+      } else {
+        if (currentTileEl && currentTileEl.dataset.id === tile.id) {
+          // Stable in slot, preserve!
+        } else {
+          if (currentTileEl) currentTileEl.remove();
+          const tileEl = this.createTrayTileElement(tile);
+          tileEl.classList.add('tray-tile-landing');
+          slotEl.appendChild(tileEl);
+        }
+      }
+    }
+  }
+
+  /**
+   * Spawn a smooth GPU-accelerated flying tile from tower position into tray slot.
+   */
+  spawnFlyingTile(tile, startRect, targetRect, onArrive) {
+    if (!startRect || !targetRect) {
+      if (onArrive) onArrive();
+      return;
+    }
+
+    const def = TILE_DEFINITIONS[tile.type] || { icon: '🪨', nameZh: '', nameEn: '' };
+    const lang = getLanguage();
+    const label = lang === 'zh' ? def.nameZh : def.nameEn;
+
+    const flyEl = document.createElement('div');
+    flyEl.className = 'tile-flying-clone';
+    flyEl.style.left = `${startRect.left}px`;
+    flyEl.style.top = `${startRect.top}px`;
+    flyEl.style.width = `${startRect.width}px`;
+    flyEl.style.height = `${startRect.height}px`;
+
+    let badgeHtml = '';
+    if (tile.special === 'frozen') {
+      badgeHtml = `<span class="tile-badge badge-frozen">❄️</span>`;
+    } else if (tile.special === 'key') {
+      badgeHtml = `<span class="tile-badge badge-key">🗝️</span>`;
+    } else if (tile.special === 'lock') {
+      badgeHtml = `<span class="tile-badge badge-lock">🔒</span>`;
+    } else if (tile.special === 'wild') {
+      badgeHtml = `<span class="tile-badge badge-wild">🌈</span>`;
+    }
+
+    flyEl.innerHTML = `
+      <div class="tile-card">
+        <div class="tile-glaze"></div>
+        ${badgeHtml}
+        <div class="tile-icon">${def.icon}</div>
+        <div class="tile-label">${label}</div>
+      </div>
+    `;
+
+    document.body.appendChild(flyEl);
+
+    const dx = targetRect.left - startRect.left;
+    const dy = targetRect.top - startRect.top;
+    const scaleX = targetRect.width / startRect.width;
+    const scaleY = targetRect.height / startRect.height;
+
+    // Trigger reflow for smooth transition start
+    void flyEl.offsetWidth;
+
+    flyEl.style.transform = `translate3d(${dx}px, ${dy}px, 0) scale(${scaleX}, ${scaleY})`;
+
+    setTimeout(() => {
+      flyEl.remove();
+      if (onArrive) onArrive();
+    }, 220);
   }
 
   /**
@@ -418,6 +562,7 @@ export class TileStackUI {
    * In-place live i18n text update without reloading or resetting game state!
    */
   updateTexts() {
+    this.currentRenderedLevel = null;
     const elements = document.querySelectorAll('[data-i18n]');
     elements.forEach(el => {
       const key = el.getAttribute('data-i18n');

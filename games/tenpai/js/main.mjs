@@ -54,8 +54,11 @@ function init() {
         ui.dom.btnClear.disabled = state.status !== 'answering' || state.userPicks.length === 0;
       }
     },
-    onSoundEffect: (name, arg) => {
-      switch (name) {
+    // 每帧只更新计时数字：牌面 DOM 的重建只发生在真实状态变化时
+    onTick: (remainingSec) => {
+      ui.renderTimer(remainingSec);
+    },
+    onSoundEffect: (name, arg) => {      switch (name) {
         case 'tile_clack': playTileClack(); break;
         case 'tile_select': playTileSelect(); break;
         case 'target_set': playTargetSet(); break;
@@ -245,21 +248,33 @@ function init() {
     }
   });
 
-  // Visibility change & Blur: Auto-Pause
+  // Visibility change & Blur: Auto-Pause（只在作答中才弹暂停层，否则会盖住结算面板）
   document.addEventListener('visibilitychange', () => {
-    if (document.hidden) {
+    if (document.hidden && game.status === 'answering') {
       game.pause();
       ui.showPauseModal();
     }
   });
   window.addEventListener('blur', () => {
-    game.pause();
-    ui.showPauseModal();
+    if (game.status === 'answering') {
+      game.pause();
+      ui.showPauseModal();
+    }
   });
 
   // Initial texts
   ui.updateTexts();
   updateSoundBtn();
+
+  // Debug handle (platform contract): window.__tenpai
+  window.__tenpai = {
+    get game() {
+      return game;
+    },
+    get ui() {
+      return ui;
+    },
+  };
 
   // Instant Play: start level immediately
   game.loadLevel(saveData.currentLevel || 1);

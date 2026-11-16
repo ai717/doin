@@ -97,7 +97,7 @@
     "test:space-defender": "node --test games/space-defender/tests/*.test.mjs",
     "test:spider": "node --test games/spider/tests/*.test.mjs",
     "test:tank": "node --test games/tank/tests/engine.test.mjs games/tank/tests/levels.test.mjs games/tank/tests/storage.test.mjs games/tank/tests/game.test.mjs games/tank/tests/i18n.test.mjs games/tank/tests/markup.test.mjs",
-    "test:tenpai": "node --test games/tenpai/tests/*.test.mjs",
+    "test:tenpai": "node --test games/tenpai/tests/*.test.mjs games/tenpai/tests/smoke.mjs",
     "test:tetris-neo": "node --test games/tetris-neo/tests/engine.test.mjs games/tetris-neo/tests/storage.test.mjs games/tetris-neo/tests/i18n.test.mjs games/tetris-neo/tests/markup.test.mjs",
     "test:thief": "node --test games/thief/tests/engine.test.mjs games/thief/tests/levels.test.mjs games/thief/tests/score.test.mjs games/thief/tests/game.test.mjs games/thief/tests/audio.test.mjs games/thief/tests/storage.test.mjs games/thief/tests/i18n.test.mjs games/thief/tests/markup.test.mjs games/thief/tests/smoke.test.mjs",
     "test:tic-tac-toe": "node --test games/tic-tac-toe/tests/engine.test.mjs games/tic-tac-toe/tests/ai.test.mjs games/tic-tac-toe/tests/score.test.mjs games/tic-tac-toe/tests/storage.test.mjs games/tic-tac-toe/tests/game.test.mjs games/tic-tac-toe/tests/audio.test.mjs games/tic-tac-toe/tests/markup.test.mjs games/tic-tac-toe/tests/i18n.test.mjs",

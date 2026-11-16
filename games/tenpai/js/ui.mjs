@@ -129,7 +129,7 @@ export class TenpaiUI {
       const tilesContainer = document.createElement('div');
       tilesContainer.className = 'picker-tiles-row';
 
-      const tileIds = Object.keys(TILES).filter(k => TILES[k].suit === g.key);
+      const tileIds = Object.keys(TILES).filter(k => TILES[k].suit === key);
       tileIds.forEach(id => {
         const isSelected = this.selectedTiles.has(id);
         const isTarget = this.targetTile === id;
@@ -160,6 +160,15 @@ export class TenpaiUI {
   }
 
   /**
+   * Timer-only update (called every frame; must NOT rebuild the tile DOM).
+   */
+  renderTimer(remainingSec) {
+    if (!this.dom.hudTimer) return;
+    this.dom.hudTimer.textContent = `${Math.ceil(remainingSec)}s`;
+    this.dom.hudTimer.classList.toggle('timer-urgent', remainingSec <= 5);
+  }
+
+  /**
    * Update HUD metrics.
    */
   renderHUD(levelConfig, currentScore, streak, remainingSec, totalScore) {
@@ -180,12 +189,7 @@ export class TenpaiUI {
       this.dom.hudDanBadge.style.background = dan.badgeColor;
     }
     if (this.dom.hudTimer) {
-      this.dom.hudTimer.textContent = `${Math.ceil(remainingSec)}s`;
-      if (remainingSec <= 5) {
-        this.dom.hudTimer.classList.add('timer-urgent');
-      } else {
-        this.dom.hudTimer.classList.remove('timer-urgent');
-      }
+      this.renderTimer(remainingSec);
     }
   }
 

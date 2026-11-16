@@ -26,18 +26,46 @@ function init() {
 
   const ui = new TileStackUI();
 
+  // Shared tile picking handler with smooth GPU-accelerated flight animation
+  const handleTilePick = (tileId, tileEl) => {
+    const state = game.getState();
+    if (!state) return;
+    const tile = state.boardTiles.find(t => t.id === tileId);
+    if (!tile) return;
+
+    // If frozen tile with hits remaining, shatter ice without flying
+    if (tile.special === 'frozen' && tile.frozenHits > 1) {
+      game.handleTileClick(tileId);
+      return;
+    }
+
+    tileEl._isPicking = true;
+    tileEl.style.pointerEvents = 'none';
+
+    // Measure start and target positions for smooth flight
+    const startRect = tileEl.getBoundingClientRect();
+    const traySlots = ui.dom.tray ? ui.dom.tray.children : [];
+    const targetIndex = Math.min(state.tray.length, Math.max(0, traySlots.length - 1));
+    const targetSlot = traySlots[targetIndex];
+    const targetRect = targetSlot ? targetSlot.getBoundingClientRect() : null;
+
+    if (startRect && targetRect) {
+      tileEl.style.opacity = '0';
+      ui.spawnFlyingTile(tile, startRect, targetRect);
+    }
+
+    game.handleTileClick(tileId, {
+      x: startRect.left + startRect.width / 2,
+      y: startRect.top + startRect.height / 2
+    });
+  };
+
   // Create game coordinator
   const game = new TileStackGame({
     initialLevel: saveData.currentLevel || 1,
     onStateChange: (state, config) => {
       ui.setTheme(config.chapterTheme);
-      ui.renderTower(state, (tileId, tileEl) => {
-        const rect = tileEl.getBoundingClientRect();
-        game.handleTileClick(tileId, {
-          x: rect.left + rect.width / 2,
-          y: rect.top + rect.height / 2
-        });
-      });
+      ui.renderTower(state, handleTilePick);
       ui.renderTray(state);
       ui.renderHUD(state, config);
     },
@@ -112,13 +140,7 @@ function init() {
       const config = game.getLevelConfig();
       if (state && config) {
         ui.renderHUD(state, config);
-        ui.renderTower(state, (tileId, tileEl) => {
-          const rect = tileEl.getBoundingClientRect();
-          game.handleTileClick(tileId, {
-            x: rect.left + rect.width / 2,
-            y: rect.top + rect.height / 2
-          });
-        });
+        ui.renderTower(state, handleTilePick);
         ui.renderTray(state);
       }
     });

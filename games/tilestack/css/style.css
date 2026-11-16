@@ -236,7 +236,8 @@ html, body {
   cursor: pointer;
   transform-origin: center center;
   transform-style: preserve-3d;
-  transition: transform 0.16s cubic-bezier(0.2, 0.9, 0.3, 1), filter 0.16s ease, opacity 0.2s ease;
+  transition: transform 0.18s cubic-bezier(0.2, 0.8, 0.25, 1), filter 0.18s ease, opacity 0.18s ease, box-shadow 0.18s ease;
+  will-change: transform;
 }
 
 .tile-card {
@@ -315,13 +316,21 @@ html, body {
 
 /* Free vs Blocked Tiles */
 .tile-free:hover {
-  transform: translate3d(-50%, -50%, calc(var(--depth, 0px) + 8px)) scale(1.05) !important;
-  box-shadow: 0 0 14px rgba(56, 189, 248, 0.5);
+  transform: translate3d(-50%, -50%, calc(var(--depth, 0px) + 8px)) scale(1.035);
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.45), 0 0 14px rgba(56, 189, 248, 0.55);
+  filter: brightness(1.1);
+  z-index: 9999 !important;
+}
+
+.tile-free:active {
+  transform: translate3d(-50%, -50%, calc(var(--depth, 0px) + 2px)) scale(0.97);
+  transition-duration: 0.05s;
 }
 
 .tile-blocked {
-  filter: brightness(0.68) saturate(0.8);
+  filter: brightness(0.65) saturate(0.75);
   cursor: not-allowed;
+  pointer-events: auto;
 }
 
 .tile-blocked .tile-card {
@@ -418,6 +427,7 @@ html, body {
   display: flex;
   align-items: center;
   justify-content: center;
+  transition: border-color 0.2s ease, background 0.2s ease;
 }
 
 /* Tray warning when 6 tiles filled */
@@ -442,6 +452,52 @@ html, body {
   width: 100%;
   height: 100%;
   cursor: default;
+  transition: transform 0.18s cubic-bezier(0.2, 0.85, 0.25, 1), opacity 0.18s ease;
+}
+
+/* Smooth Flying Tile from Tower to Tray */
+.tile-flying-clone {
+  position: fixed;
+  z-index: 99999;
+  pointer-events: none;
+  border-radius: 8px;
+  transform-origin: center center;
+  transition: transform 0.22s cubic-bezier(0.22, 0.85, 0.3, 1), opacity 0.22s ease;
+  will-change: transform;
+  box-shadow: 0 14px 30px rgba(0, 0, 0, 0.55), 0 0 18px rgba(56, 189, 248, 0.6);
+}
+
+/* Landing Bounce Animation */
+.tray-tile.tray-tile-landing {
+  animation: trayLandBounce 0.22s cubic-bezier(0.18, 0.9, 0.3, 1.25);
+}
+
+@keyframes trayLandBounce {
+  0% { transform: scale(0.7) translateY(-6px); opacity: 0.5; }
+  65% { transform: scale(1.06) translateY(2px); opacity: 1; }
+  100% { transform: scale(1) translateY(0); opacity: 1; }
+}
+
+/* Match-3 Flash & Pop Animation */
+.tray-tile.tray-tile-matching {
+  animation: matchFlashPop 0.26s cubic-bezier(0.2, 0.85, 0.3, 1) forwards;
+  z-index: 20;
+}
+
+@keyframes matchFlashPop {
+  0% {
+    transform: scale(1);
+    filter: brightness(1);
+  }
+  40% {
+    transform: scale(1.15);
+    filter: brightness(1.7) drop-shadow(0 0 14px #fde047);
+  }
+  100% {
+    transform: scale(0.1) rotate(8deg);
+    opacity: 0;
+    filter: brightness(2) drop-shadow(0 0 24px #facc15);
+  }
 }
 
 /* Modals & Dialogs */

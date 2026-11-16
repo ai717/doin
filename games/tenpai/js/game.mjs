@@ -27,6 +27,7 @@ export class TenpaiGame {
 
     // Callbacks
     this.onStateChange = options.onStateChange || (() => {});
+    this.onTick = options.onTick || (() => {});
     this.onSoundEffect = options.onSoundEffect || (() => {});
     this.onComplete = options.onComplete || (() => {});
   }
@@ -157,9 +158,12 @@ export class TenpaiGame {
     if (this.remainingSec <= 0) {
       // Time is up -> automatic submission!
       this.submit();
+      return;
     }
 
-    this.onStateChange();
+    // 每帧只走轻量计时回调。onStateChange 会重建 13 张手牌 + 34 张候选牌的 DOM，
+    // 挂在 rAF 上等于每帧换掉整棵子树——点击落在被替换的节点上会被吞掉，表现为「点不动」。
+    this.onTick(this.remainingSec);
   }
 
   getState() {
