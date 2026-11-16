@@ -46,6 +46,7 @@ const STRINGS = {
       { name: "小游戏大全", url: "https://doin.win/" },
       { name: "AI资源导航", url: "https://itis.chat/" },
       { name: "薅羊毛日报", url: "https://hao.itis.chat/" },
+      { name: "GrokBot实战案例", url: "https://grokbot.itis.chat/" },
     ],
   },
   en: {
@@ -86,6 +87,7 @@ const STRINGS = {
       { name: "Free Mini Games", url: "https://doin.win/" },
       { name: "AI Navigation", url: "https://itis.chat/" },
       { name: "Deals Daily", url: "https://hao.itis.chat/" },
+      { name: "GrokBot Case", url: "https://grokbot.itis.chat/" },
     ],
   },
 };
