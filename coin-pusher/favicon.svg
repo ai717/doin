@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Coin Pusher">
+  <defs>
+    <linearGradient id="cab" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#3a4568"/>
+      <stop offset="1" stop-color="#141a29"/>
+    </linearGradient>
+    <linearGradient id="steel" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#d7e2f8"/>
+      <stop offset="1" stop-color="#7d8cab"/>
+    </linearGradient>
+    <radialGradient id="gold" cx="0.34" cy="0.3" r="0.8">
+      <stop offset="0" stop-color="#ffeeb0"/>
+      <stop offset="0.55" stop-color="#e8b13c"/>
+      <stop offset="1" stop-color="#8f5c08"/>
+    </radialGradient>
+  </defs>
+  <rect x="2" y="2" width="60" height="60" rx="14" fill="url(#cab)"/>
+  <rect x="6" y="6" width="52" height="18" rx="8" fill="#1d2540"/>
+  <rect x="10" y="11" width="44" height="4" rx="2" fill="#ff5f9e" opacity="0.9"/>
+  <rect x="10" y="17" width="30" height="3" rx="1.5" fill="#42e2ff" opacity="0.75"/>
+  <rect x="8" y="30" width="48" height="9" rx="3" fill="url(#steel)"/>
+  <rect x="8" y="37.5" width="48" height="1.6" fill="#f2f6ff" opacity="0.8"/>
+  <circle cx="24" cy="48" r="9" fill="url(#gold)" stroke="#7c4f06" stroke-width="1.6"/>
+  <circle cx="24" cy="48" r="6" fill="none" stroke="#ffe9a8" stroke-width="1.1" opacity="0.8"/>
+  <circle cx="43" cy="50" r="6" fill="url(#gold)" stroke="#7c4f06" stroke-width="1.4"/>
+  <path d="M12 56h40" stroke="#f6c33c" stroke-width="2.4" stroke-linecap="round" opacity="0.85"/>
+</svg>

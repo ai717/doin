@@ -1,0 +1,1223 @@
+/* 莓园打地鼠 — 木质机台 + 暖阳莓园舞台 */
+
+:root {
+  --sun-1: #ffe9a8;
+  --sun-2: #ffc79a;
+  --sun-3: #f7a3b6;
+  --grass-1: #a4d878;
+  --grass-2: #6fae52;
+  --grass-3: #4f8a3c;
+  --wood-1: #b98157;
+  --wood-2: #8a5533;
+  --wood-3: #5d3620;
+  --soil-1: #9b6543;
+  --soil-2: #4a2c1b;
+  --berry: #e8456b;
+  --berry-deep: #b32b4f;
+  --gold: #f6c34a;
+  --ink: #3a2418;
+  --ink-soft: #6b4a34;
+  --cream: #fff6e7;
+  --cols: 4;
+  --rows: 3;
+  --safe-bottom: 16px;
+  /* 冒头时长：必须与 engine.mjs 的 RISE_MS 一致（layout.test.mjs 校验）。
+     缩回时长不在这里固定 —— 每只鼠的 duckMs 由引擎随机抽取，
+     运行时经内联 style 写到元素上（见下 .mole 的 --duck-ms 兜底）。 */
+  --rise-ms: 220ms;
+  /* 被揍的完整动作时长：必须与 engine.WHACKED_MS 一致（layout.test.mjs 校验）。
+     命中后地鼠会留在场上这么久才沉下去 —— 少于这个值，"被砸扁+晕"根本演不完。 */
+  --squash-ms: 380ms;
+  /* 被铁盔弹开的原地晃动时长：必须与 engine.BLOCKED_MS 一致（layout.test.mjs 校验）。
+     这套是"非致命"反馈，鼠不会退场 —— 别跟上面的 --squash-ms 混用。 */
+  --block-ms: 200ms;
+  --duck-ms: 150ms; /* 兜底值：engine.DUCK_MS，正常游玩时会被每只鼠的随机值覆盖 */
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  padding: 0;
+  min-height: 100%;
+  font-family: "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", system-ui, sans-serif;
+  color: var(--ink);
+  overscroll-behavior: none;
+}
+
+body {
+  background:
+    radial-gradient(1200px 700px at 50% -10%, var(--sun-1) 0%, var(--sun-2) 42%, var(--sun-3) 100%),
+    linear-gradient(180deg, #ffe4bd 0%, #ffd0b4 60%, #f6a9bb 100%);
+  background-attachment: fixed;
+  min-height: 100vh;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.noscript-banner {
+  padding: 14px 18px;
+  background: var(--cream);
+  border-bottom: 3px solid var(--wood-3);
+  text-align: center;
+  font-weight: 700;
+}
+
+#game-app {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: clamp(10px, 1.6vw, 18px);
+  padding: clamp(10px, 1.6vw, 20px) clamp(12px, 2vw, 28px) calc(16px + var(--safe-bottom));
+  max-width: 1240px;
+  margin: 0 auto;
+  min-height: 100vh;
+}
+
+/* ---------- 木梁顶栏 ---------- */
+.cabinet-topbar {
+  width: 100%;
+  max-width: 1160px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 14px;
+  border-radius: 16px;
+  background:
+    repeating-linear-gradient(90deg, rgba(255, 255, 255, .06) 0 3px, rgba(0, 0, 0, .05) 3px 7px),
+    linear-gradient(180deg, var(--wood-1), var(--wood-2) 62%, var(--wood-3));
+  border: 3px solid var(--wood-3);
+  box-shadow: 0 6px 0 rgba(60, 32, 16, .35), inset 0 2px 0 rgba(255, 236, 205, .35);
+}
+
+.cab-title {
+  flex: 1;
+  margin: 0;
+  text-align: center;
+  font-size: clamp(16px, 2.1vw, 22px);
+  font-weight: 800;
+  letter-spacing: 2px;
+  color: var(--cream);
+  text-shadow: 0 2px 0 rgba(70, 38, 18, .6);
+}
+
+.cab-tools { display: flex; gap: 8px; }
+
+.cab-btn {
+  min-width: 40px;
+  height: 36px;
+  padding: 0 10px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 15px;
+  font-weight: 800;
+  color: var(--wood-3);
+  text-decoration: none;
+  background: linear-gradient(180deg, #fff4de, #e9cba4);
+  border: 2px solid var(--wood-3);
+  border-radius: 10px;
+  cursor: pointer;
+  box-shadow: 0 3px 0 var(--wood-3), inset 0 1px 0 rgba(255, 255, 255, .8);
+  transition: transform .12s ease, box-shadow .12s ease;
+}
+
+.cab-btn:hover { transform: translateY(-2px); box-shadow: 0 5px 0 var(--wood-3); }
+.cab-btn:active { transform: translateY(2px); box-shadow: 0 1px 0 var(--wood-3); }
+
+/* ---------- 机身主体 ---------- */
+.cabinet-body {
+  width: 100%;
+  max-width: 1160px;
+  display: grid;
+  grid-template-columns: minmax(150px, 190px) minmax(0, 1fr) minmax(150px, 190px);
+  gap: clamp(8px, 1.4vw, 18px);
+  align-items: stretch;
+}
+
+/* 侧翼木牌 */
+.side-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 14px 12px;
+  border-radius: 18px;
+  background:
+    repeating-linear-gradient(92deg, rgba(255, 255, 255, .05) 0 4px, rgba(0, 0, 0, .04) 4px 9px),
+    linear-gradient(180deg, var(--wood-1), var(--wood-2) 70%, var(--wood-3));
+  border: 3px solid var(--wood-3);
+  box-shadow: 0 8px 0 rgba(60, 32, 16, .3), inset 0 2px 0 rgba(255, 240, 210, .3);
+}
+
+.panel-block {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 9px 10px;
+  border-radius: 12px;
+  background: linear-gradient(180deg, rgba(255, 246, 231, .95), rgba(240, 219, 189, .92));
+  border: 2px solid rgba(93, 54, 32, .55);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .9);
+}
+
+.panel-block::before,
+.panel-block::after {
+  content: "";
+  position: absolute;
+  top: 6px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #ffe9bd, #8a5a33);
+}
+.panel-block::before { left: 6px; }
+.panel-block::after { right: 6px; }
+
+.panel-label {
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  color: var(--ink-soft);
+  text-transform: uppercase;
+}
+
+.panel-value {
+  font-size: clamp(20px, 2.4vw, 28px);
+  font-weight: 900;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.1;
+  color: var(--ink);
+}
+
+.panel-sub {
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--berry-deep);
+}
+
+.panel-hint {
+  margin: 2px 0 0;
+  font-size: 11px;
+  line-height: 1.35;
+  color: var(--ink-soft);
+}
+
+.score-num { color: #2f7a2f; }
+.combo-num { color: var(--berry-deep); }
+.time-num { color: #a8541b; }
+
+.panel-value.bump { animation: bump .26s cubic-bezier(.3, 1.6, .5, 1); }
+
+@keyframes bump {
+  0% { transform: scale(1); }
+  40% { transform: scale(1.28); }
+  100% { transform: scale(1); }
+}
+
+/* 难度木牌 tab */
+.diff-tabs { display: flex; flex-direction: column; gap: 6px; }
+
+.diff-tab {
+  padding: 8px 10px;
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--wood-3);
+  background: linear-gradient(180deg, #f7e3c4, #dcb98c);
+  border: 2px solid var(--wood-3);
+  border-radius: 10px;
+  cursor: pointer;
+  box-shadow: 0 3px 0 var(--wood-3);
+  transition: transform .12s ease, box-shadow .12s ease, background .18s ease;
+}
+
+.diff-tab:hover { transform: translateY(-2px); box-shadow: 0 5px 0 var(--wood-3); }
+.diff-tab:active { transform: translateY(2px); box-shadow: 0 1px 0 var(--wood-3); }
+
+.diff-tab.is-active {
+  color: var(--cream);
+  background: linear-gradient(180deg, #6fae52, #4f8a3c);
+  text-shadow: 0 1px 0 rgba(0, 0, 0, .35);
+}
+
+/* 沙漏 */
+.hourglass {
+  position: relative;
+  width: 100%;
+  height: 26px;
+  border-radius: 6px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, .9), rgba(226, 202, 168, .9));
+  border: 2px solid rgba(93, 54, 32, .5);
+  overflow: hidden;
+}
+
+.hourglass-sand {
+  position: absolute;
+  inset: 0;
+  transform-origin: left center;
+  background: linear-gradient(90deg, var(--gold), #e08a2e);
+  transition: transform .2s linear;
+}
+
+/* ---------- 中央舞台：草地土台 ---------- */
+.stage-core { display: flex; justify-content: center; min-width: 0; }
+
+.garden {
+  position: relative;
+  width: 100%;
+  max-width: 720px;
+  padding: clamp(12px, 2vw, 22px);
+  border-radius: 26px;
+  background:
+    radial-gradient(120% 90% at 50% 8%, #c7e89b 0%, var(--grass-1) 34%, var(--grass-2) 74%, var(--grass-3) 100%);
+  border: 6px solid var(--wood-2);
+  box-shadow:
+    0 12px 0 rgba(60, 32, 16, .28),
+    inset 0 6px 18px rgba(20, 60, 10, .28),
+    inset 0 -10px 24px rgba(20, 50, 10, .22);
+  overflow: hidden;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.garden-sky {
+  position: absolute;
+  inset: -30% -20% auto -20%;
+  height: 70%;
+  background: radial-gradient(60% 60% at 50% 30%, rgba(255, 244, 200, .75), rgba(255, 216, 160, .28) 55%, transparent 75%);
+  filter: blur(2px);
+  pointer-events: none;
+  animation: drift 14s ease-in-out infinite alternate;
+}
+
+@keyframes drift {
+  from { transform: translate3d(-2%, 0, 0); }
+  to { transform: translate3d(2%, 1%, 0); }
+}
+
+.garden-vines {
+  position: absolute;
+  top: 6px;
+  left: 0;
+  right: 0;
+  display: flex;
+  justify-content: space-around;
+  pointer-events: none;
+}
+
+.vine {
+  width: 14px;
+  height: 14px;
+  border-radius: 50% 50% 46% 46%;
+  background: radial-gradient(circle at 34% 28%, #ff8fa6, var(--berry) 60%, var(--berry-deep));
+  box-shadow: 0 3px 6px rgba(120, 20, 45, .35), inset 0 -2px 3px rgba(0, 0, 0, .2);
+  opacity: .92;
+}
+
+/* 洞位阵列 */
+.holes-grid {
+  position: relative;
+  z-index: 2;
+  display: grid;
+  grid-template-columns: repeat(var(--cols), minmax(0, 1fr));
+  gap: clamp(8px, 1.4vw, 16px);
+}
+
+.hole {
+  position: relative;
+  aspect-ratio: 1 / 0.94;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* 坑洞：地面上永远可见的深色椭圆洞口 */
+.hole-pit {
+  position: absolute;
+  left: 3%;
+  right: 3%;
+  top: 46%;
+  bottom: 0;
+  z-index: 1;
+  border-radius: 50%;
+  background: radial-gradient(closest-side, #2a1a12 0%, #351f12 58%, #563619 84%, #8a5c39 100%);
+  box-shadow:
+    inset 0 10px 16px rgba(0, 0, 0, .62),
+    0 3px 6px rgba(28, 16, 6, .3);
+}
+
+/* 地鼠的活动区：底边压在"地平线"上（坑口椭圆的垂直中心），向上生长。
+   裁剪发生在这里 —— 隐藏态整只沉到地平线以下，等于钻回土里。
+
+   注意 height/bottom 必须保证裁剪盒的**上沿不低于洞位顶边**：
+   bottom 27% + height 78% = 上沿到洞位高的 73%（= 洞位顶端），刚好贴合。
+   若 height 再大，上沿越出洞位就会把地鼠的头削平。 */
+.mole-clip {
+  position: absolute;
+  left: 3%;
+  right: 3%;
+  bottom: 27%;
+  height: 73%;
+  z-index: 2;
+  overflow: hidden;
+}
+
+/* 地鼠：软胶质感，站立姿态（身长 ≈ 鼠宽 ×1.34）。
+   隐藏态整只沉到地平线以下 —— 洞里只剩黑坑，这是经典打地鼠的样子。 */
+.mole {
+  /* 皮毛配色：鼠种只改这三个变量，躯干/耳朵/爪子/肚皮一起跟着变 */
+  --fur-1: #dcaa7a;
+  --fur-2: #b0784c;
+  --fur-3: #7d5030;
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  width: 66%;
+  height: 100%;
+  transform: translate(-50%, 100%);
+  /* 缩回时长由每只鼠的 duckMs 决定：ui.mjs 把随机值写成内联 --duck-ms。
+     ease-in 让"被砸/缩回"有个由慢到快的加速感，比线性更像缩进洞里。 */
+  transition: transform var(--duck-ms) cubic-bezier(.45, .05, .55, .95);
+  pointer-events: none;
+  will-change: transform;
+}
+
+/* 冒头：一段肉眼可辨的"钻出来"（时长与 engine 的 RISE_MS 一致）。
+   注意必须用 animation 而不是 transition —— 这里同时跑挤压拉伸，
+   而且 bob 动画若在 rise 阶段就启动会直接覆盖 transform，导致瞬移。
+
+   缓动千万不要再用 cubic-bezier(.3,1,.5,1) 这种"前腔被抽空"的曲线：
+   它让 55% 的位移挤在头 20% 的时间里（220ms 动画里只有 44ms），
+   剩下 176ms 几乎不动 —— 观感就是"啪一下弹出来，然后僵在原地"。
+   改用 cubic-bezier(.3,.35,.4,.85)：实测 t=25%→37%、t=50%→71%、t=75%→91%，
+   前中段接近线性、末段才收束，位移均匀铺满整段时长。
+   位移节奏主要由 keyframes 的百分比控制，缓动只做轻微修饰。 */
+.hole[data-phase="rise"] .mole {
+  animation: mole-rise var(--rise-ms) cubic-bezier(.3, .35, .4, .85) both;
+}
+
+/* 三段式钻出：① 鼻尖先顶破地面 → ② 头肩缓慢挤上来（最慢的一段）→ ③ 收尾微过冲。
+   关键是把"头部越出地平线"这个瞬间放在 55% 附近，而不是 45% 前就冲过去，
+   这样玩家能看清"先露头、再出身子"的两拍。 */
+@keyframes mole-rise {
+  0%   { transform: translate(-50%, 100%) scale(.78, .90); }
+  12%  { transform: translate(-50%, 88%)  scale(.84, .92); }
+  32%  { transform: translate(-50%, 62%)  scale(.94, .96); }
+  55%  { transform: translate(-50%, 24%)  scale(1.06, .93); }
+  78%  { transform: translate(-50%, -6%)  scale(.97, 1.06); }
+  90%  { transform: translate(-50%, 3%)   scale(1.02, .98); }
+  100% { transform: translate(-50%, 0)    scale(1, 1); }
+}
+
+/* 露头就位后转为呼吸晃动 */
+.hole[data-phase="up"] .mole {
+  transform: translate(-50%, 0);
+  animation: mole-bob 1.1s ease-in-out infinite;
+}
+
+@keyframes mole-bob {
+  0%, 100% { transform: translate(-50%, 0) scaleY(1); }
+  50% { transform: translate(-50%, 3%) scaleY(.97); }
+}
+
+.hole[data-phase="duck"] .mole { transform: translate(-50%, 100%); animation: none; }
+
+/* ★ 被揍：这一套是"打到它了"的全部说服力。
+   曾经 `.hole.is-hit .mole` 只挂一个 .26s 的 squash，而 markHit 加的类名会在
+   地鼠从引擎里消失时被 syncHoles 顺手摘掉 —— 动画播到 1/5 就被掐断，
+   玩家看到的是"锤子落下、地鼠凭空没了"。两处都已修（见 ui.mjs 的注释）。
+
+   现在的四拍：① 一砸到底压成饼 → ② 弹起一点点（回弹）
+              → ③ 晃着不被 KEEP 住 → ④ 软塌塌沉下去。
+   时长必须与 engine.WHACKED_MS 一致（layout.test.mjs 校验）。 */
+.hole.is-hit .mole {
+  animation: mole-whack var(--squash-ms) cubic-bezier(.22, .68, .3, 1) forwards;
+}
+
+@keyframes mole-whack {
+  0%   { transform: translate(-50%, 0)    scale(1, 1)        rotate(0deg); }
+  16%  { transform: translate(-50%, 22%)  scale(1.46, .34)   rotate(-4deg); }
+  32%  { transform: translate(-50%, 2%)   scale(.86, 1.24)   rotate(5deg); }
+  48%  { transform: translate(-50%, 16%)  scale(1.24, .62)   rotate(-3deg); }
+  66%  { transform: translate(-50%, 8%)   scale(.94, 1.06)   rotate(2deg); }
+  100% { transform: translate(-50%, 100%) scale(1, 1)        rotate(6deg); }
+}
+
+/* ★ 被铁盔弹开（非致命）：这只鼠**不会退场**，所以绝对不能复用上面的挨打动画。
+   mole-whack 的末帧是"沉到地平线以下"，用在活着的地鼠身上会让它先消失、
+   动画结束后又弹回洞口 —— 看着像卡帧、像穿模。
+   被弹开只该在原地晃一下，末帧必须回到站立姿势（因此**不能加 forwards**）。
+   时长与 engine.BLOCKED_MS 一致（layout.test.mjs 校验）。 */
+.hole.is-blocked .mole {
+  animation: mole-blocked var(--block-ms) cubic-bezier(.3, .8, .35, 1);
+}
+
+@keyframes mole-blocked {
+  0%   { transform: translate(-50%, 0)    scale(1, 1)       rotate(0deg); }
+  22%  { transform: translate(-50%, 9%)   scale(1.18, .86)  rotate(-7deg); }
+  52%  { transform: translate(-50%, -3%)  scale(.93, 1.08)  rotate(5deg); }
+  78%  { transform: translate(-50%, 2%)   scale(1.05, .97)  rotate(-2deg); }
+  100% { transform: translate(-50%, 0)    scale(1, 1)       rotate(0deg); }
+}
+
+/* 头盔挨了一下要亮一下：告诉玩家"打到的是盔，不是肉" */
+.hole.is-blocked .mole-helmet { animation: helmet-clank var(--block-ms) ease-out; }
+
+@keyframes helmet-clank {
+  0%   { filter: brightness(3) saturate(.3); }
+  100% { filter: brightness(1) saturate(1); }
+}
+
+/* 眩晕表现之一：眼睛闭成一条横线。
+   注意眼睛是 .mole-face 的两个伪元素（左右各一只），单个伪元素画不出交叉的 X
+   —— 硬凑只会被读成"眼睛歪了"。卡通里"挨打"最稳的画法本来就是闭眼 + 冒星星，
+   压扁成线比伪 X 更可读，也更省事。 */
+.hole.is-hit .mole-face::before,
+.hole.is-hit .mole-face::after {
+  border-radius: 999px;
+  box-shadow: none;
+  /* 压扁成横线：宽度略收、高度砍到 ~2px 量级，读出来就是紧闭的眼 */
+  height: 8%;
+  top: 28%;
+  transform: scale(1.18, .3);
+  background: #241409;
+}
+
+/* 眼睛里的高光点要跟着消失，否则会浮在闭眼线上 */
+.hole.is-hit .mole-eye-glint { opacity: 0; }
+
+/* 眩晕表现之二：头顶转圈的星星 */
+.mole-stars {
+  position: absolute;
+  left: 50%;
+  top: -6%;
+  width: 62%;
+  height: 26%;
+  transform: translateX(-50%);
+  pointer-events: none;
+  display: none;
+}
+.hole.is-hit .mole-stars { display: block; }
+
+.star {
+  position: absolute;
+  top: 30%;
+  width: 26%;
+  aspect-ratio: 1;
+  background: #ffe066;
+  /* 五角星：两个旋转的方块叠罗汉是常见的零资源画法，但边缘太硬；
+     这里直接用 clip-path 五角星，形状干净且零外部资源。 */
+  clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
+  filter: drop-shadow(0 0 3px rgba(255, 200, 60, .85));
+  opacity: 0;
+}
+.star:nth-child(1) { left: 0%;  animation: star-orbit var(--squash-ms) linear; }
+.star:nth-child(2) { left: 37%; animation: star-orbit var(--squash-ms) linear .06s; }
+.star:nth-child(3) { left: 74%; animation: star-orbit var(--squash-ms) linear .12s; }
+
+@keyframes star-orbit {
+  0%   { opacity: 0; transform: translateY(6px) scale(.4) rotate(0deg); }
+  18%  { opacity: 1; transform: translateY(0)   scale(1)  rotate(60deg); }
+  70%  { opacity: 1; transform: translateY(-4px) scale(1) rotate(200deg); }
+  100% { opacity: 0; transform: translateY(-10px) scale(.5) rotate(300deg); }
+}
+
+/* 被打瞬间整只鼠压一层暖白高光 —— 卡通动画里"挨打闪一下"的经典手法 */
+.hole.is-hit .mole-body { animation: hit-flash .12s steps(1) 2; }
+
+@keyframes hit-flash {
+  0%   { filter: brightness(2.6) saturate(.4); }
+  100% { filter: brightness(1) saturate(1); }
+}
+
+/* 躯干：梨形软胶，上窄下宽 */
+.mole-body {
+  position: absolute;
+  inset: 0;
+  border-radius: 46% 46% 42% 42% / 40% 40% 60% 60%;
+  background: radial-gradient(circle at 32% 22%, var(--fur-1) 0%, var(--fur-2) 48%, var(--fur-3) 100%);
+  box-shadow:
+    inset 0 -10px 16px rgba(60, 32, 12, .4),
+    inset 0 8px 14px rgba(255, 240, 212, .5),
+    0 6px 10px rgba(30, 18, 8, .3);
+}
+
+/* 肚皮：浅色椭圆，让身子有"正面感" */
+.mole-belly {
+  position: absolute;
+  left: 50%;
+  top: 52%;
+  width: 62%;
+  height: 42%;
+  transform: translateX(-50%);
+  border-radius: 50% 50% 46% 46%;
+  background: radial-gradient(ellipse at 50% 30%, rgba(255, 236, 205, .85), rgba(255, 224, 186, .35) 62%, transparent 78%);
+}
+
+/* 耳朵：头顶两侧的小圆，压在躯干上沿 */
+.mole-ear {
+  position: absolute;
+  top: -1%;
+  width: 27%;
+  height: 19%;
+  border-radius: 50%;
+  background: radial-gradient(circle at 40% 32%, var(--fur-1), var(--fur-3) 88%);
+  box-shadow: inset 0 -2px 3px rgba(50, 28, 12, .4);
+}
+.mole-ear--l { left: -4%; transform: rotate(-18deg); }
+.mole-ear--r { right: -4%; transform: rotate(18deg); }
+
+/* 前爪：攀在洞口边缘的两只小手 */
+.mole-paw {
+  position: absolute;
+  top: 58%;
+  width: 26%;
+  height: 15%;
+  border-radius: 50% 50% 44% 44%;
+  background: radial-gradient(circle at 45% 30%, var(--fur-1), var(--fur-2) 82%);
+  box-shadow: 0 2px 4px rgba(30, 18, 8, .35), inset 0 -2px 3px rgba(60, 32, 12, .35);
+}
+.mole-paw--l { left: -8%; transform: rotate(-12deg); }
+.mole-paw--r { right: -8%; transform: rotate(12deg); }
+
+/* 眼睛 */
+.mole-face { position: absolute; inset: 0; }
+
+.mole-face::before,
+.mole-face::after {
+  content: "";
+  position: absolute;
+  top: 24%;
+  width: 16%;
+  height: 15%;
+  border-radius: 50%;
+  background: radial-gradient(circle at 38% 30%, #4a3226 0%, #1d1209 60%, #0d0805 100%);
+  box-shadow:
+    inset 0 -1px 2px rgba(255, 255, 255, .3),
+    0 0 0 1px rgba(255, 240, 214, .25);
+}
+.mole-face::before { left: 24%; }
+.mole-face::after { right: 24%; }
+
+/* 高光：眼睛里的小白点，一下就有神了 */
+.mole-eye-glint {
+  position: absolute;
+  top: 27%;
+  width: 6%;
+  height: 5.5%;
+  border-radius: 50%;
+  background: #fff;
+  opacity: .9;
+}
+.mole-eye-glint--l { left: 27%; }
+.mole-eye-glint--r { right: 30%; }
+
+/* 吻部：粉鼻子 + 两颗门牙 */
+.mole-snout {
+  position: absolute;
+  left: 50%;
+  top: 40%;
+  width: 30%;
+  height: 20%;
+  transform: translateX(-50%);
+  border-radius: 50% 50% 46% 46%;
+  background: radial-gradient(circle at 50% 28%, #ffe3d0, #e8a98c 82%);
+  box-shadow: inset 0 -2px 4px rgba(120, 70, 40, .35);
+}
+
+.mole-snout::before {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 8%;
+  width: 40%;
+  height: 30%;
+  transform: translateX(-50%);
+  border-radius: 50%;
+  background: radial-gradient(circle at 42% 30%, #ff9db1, #d9566f);
+  box-shadow: inset 0 -1px 2px rgba(120, 20, 40, .4);
+}
+
+/* 两颗门牙 */
+.mole-snout::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 62%;
+  width: 44%;
+  height: 34%;
+  transform: translateX(-50%);
+  border-radius: 12% 12% 34% 34%;
+  background:
+    linear-gradient(90deg, #fffdf4 0 46%, rgba(0, 0, 0, .18) 46% 54%, #fffdf4 54% 100%);
+  box-shadow: 0 1px 2px rgba(80, 50, 30, .35);
+}
+
+/* 腮红 */
+.mole-blush {
+  position: absolute;
+  top: 38%;
+  width: 14%;
+  height: 8%;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255, 130, 150, .55), rgba(255, 130, 150, 0) 72%);
+}
+.mole-blush--l { left: 12%; }
+.mole-blush--r { right: 12%; }
+
+.mole-helmet,
+.mole-fuse { display: none; }
+
+/* 金鼠：只换毛色变量，耳朵/爪子/肚皮自动跟随 */
+.hole[data-species="gold"] .mole {
+  --fur-1: #ffe9a0;
+  --fur-2: #f2c14e;
+  --fur-3: #b8862a;
+}
+.hole[data-species="gold"] .mole-body {
+  box-shadow:
+    inset 0 -10px 14px rgba(120, 80, 10, .45),
+    inset 0 8px 12px rgba(255, 248, 210, .6),
+    0 0 18px rgba(246, 195, 74, .75);
+}
+.hole[data-species="gold"] .mole-belly {
+  background: radial-gradient(ellipse at 50% 30%, rgba(255, 252, 226, .9), rgba(255, 244, 190, .4) 62%, transparent 78%);
+}
+
+/* 铁盔鼠 */
+.hole[data-species="helmet"] .mole-helmet {
+  display: block;
+  position: absolute;
+  left: 6%;
+  right: 6%;
+  top: -8%;
+  height: 48%;
+  border-radius: 50% 50% 14% 14%;
+  background: linear-gradient(180deg, #dfe7ee 0%, #9aa7b4 52%, #6d7a86 100%);
+  box-shadow: inset 0 4px 6px rgba(255, 255, 255, .8), 0 3px 6px rgba(20, 30, 40, .35);
+}
+
+.hole[data-species="helmet"] .mole-helmet::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: -6%;
+  width: 12%;
+  height: 22%;
+  transform: translateX(-50%);
+  border-radius: 40%;
+  background: linear-gradient(180deg, #f4f8fb, #98a5b1);
+}
+
+.hole[data-species="helmet"][data-broken="1"] .mole-helmet { display: none; }
+
+/* 炸弹鼠 */
+.hole[data-species="bomb"] .mole {
+  --fur-1: #6b6470;
+  --fur-2: #3e3a42;
+  --fur-3: #22202a;
+}
+.hole[data-species="bomb"] .mole-body {
+  box-shadow:
+    inset 0 -10px 14px rgba(0, 0, 0, .5),
+    inset 0 8px 12px rgba(255, 255, 255, .18),
+    0 0 14px rgba(40, 30, 45, .6);
+}
+/* 炸弹鼠不要腮红，换成阴森感 */
+.hole[data-species="bomb"] .mole-blush { display: none; }
+.hole[data-species="bomb"] .mole-snout::before { background: radial-gradient(circle at 42% 30%, #ffb37a, #c2410c); }
+.hole[data-species="bomb"] .mole-snout::after {
+  background: linear-gradient(90deg, #f4f0e4 0 46%, rgba(0, 0, 0, .2) 46% 54%, #f4f0e4 54% 100%);
+}
+
+.hole[data-species="bomb"] .mole-fuse {
+  display: block;
+  position: absolute;
+  left: 52%;
+  top: -14%;
+  width: 8%;
+  height: 22%;
+  border-radius: 40%;
+  background: linear-gradient(180deg, #d9c39a, #8a7550);
+  transform: rotate(14deg);
+}
+
+.hole[data-species="bomb"] .mole-fuse::after {
+  content: "";
+  position: absolute;
+  left: -60%;
+  top: -46%;
+  width: 220%;
+  height: 90%;
+  border-radius: 50%;
+  background: radial-gradient(circle, #ffd76a 0%, #ff8a3d 55%, rgba(255, 90, 40, 0) 75%);
+  animation: fuse-flicker .5s ease-in-out infinite alternate;
+}
+
+@keyframes fuse-flicker {
+  from { transform: scale(.85); opacity: .85; }
+  to { transform: scale(1.15); opacity: 1; }
+}
+
+.hole[data-species="bomb"] .mole-face::before,
+.hole[data-species="bomb"] .mole-face::after {
+  background: #ffd166;
+  box-shadow: 0 0 6px rgba(255, 160, 60, .9);
+}
+
+/* 洞位键位提示（桌面可见、触屏隐藏） */
+.hole-key {
+  position: absolute;
+  right: 8%;
+  bottom: 4%;
+  z-index: 2;
+  font-size: 11px;
+  font-weight: 800;
+  color: rgba(255, 246, 231, .62);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, .5);
+  pointer-events: none;
+}
+
+@media (max-width: 768px) {
+  .hole-key { display: none; }
+}
+
+/* 命中碎片 */
+.chip {
+  position: absolute;
+  left: 50%;
+  top: 60%;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--chip-color, #ffd166);
+  pointer-events: none;
+  animation: chip-fly .5s ease-out forwards;
+}
+
+@keyframes chip-fly {
+  0% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+  100% { transform: translate(calc(-50% + var(--dx)), calc(-50% + var(--dy))) scale(.2); opacity: 0; }
+}
+
+/* 狂热光幕 */
+.frenzy-veil {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  pointer-events: none;
+  opacity: 0;
+  background:
+    radial-gradient(70% 70% at 50% 40%, rgba(255, 226, 130, .55), rgba(255, 140, 170, .28) 60%, transparent 80%);
+  transition: opacity .25s ease;
+}
+
+.garden.is-frenzy .frenzy-veil { opacity: 1; animation: frenzy-pulse 1s ease-in-out infinite alternate; }
+.garden.is-frenzy { box-shadow: 0 12px 0 rgba(60, 32, 16, .28), inset 0 0 60px rgba(255, 210, 120, .6); }
+
+@keyframes frenzy-pulse {
+  from { filter: brightness(.92); }
+  to { filter: brightness(1.18); }
+}
+
+.garden.is-frenzy .vine { animation: vine-drop 1.2s ease-in infinite; }
+
+@keyframes vine-drop {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(8px); }
+}
+
+/* 落点冲击波：砸中的那一下从洞位中心炸开一圈短促的亮环。
+   与 .is-hit 同位（同一帧加上），时长刻意短于 .26s 的命中挤压 ——
+   冲击波先收、地鼠后陷，两个节拍错开，打击感才有"先砸到、再反馈"的层次。 */
+.hole.is-impact::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 62%;
+  width: 18px;
+  height: 18px;
+  margin: -9px 0 0 -9px;
+  border-radius: 50%;
+  z-index: 3;
+  pointer-events: none;
+  border: 3px solid rgba(255, 241, 190, .92);
+  box-shadow: 0 0 12px rgba(255, 205, 90, .75), inset 0 0 8px rgba(255, 235, 170, .6);
+  animation: impact-ring var(--impact-ms, 220ms) cubic-bezier(.15, .7, .3, 1) forwards;
+}
+
+@keyframes impact-ring {
+  0%   { transform: scale(.28); opacity: 1; border-width: 5px; }
+  55%  { opacity: .72; }
+  100% { transform: scale(2.5); opacity: 0; border-width: 1px; }
+}
+
+/* 屏幕微震：落在 .garden 上（不是 body），避免整页抖动与滚动条闪动。
+   .hole 无 overflow 裁剪，所以由洞位内部触发的震动不会被切边。 */
+.garden.is-shake { animation: garden-shake var(--shake-ms, 170ms) cubic-bezier(.2, .6, .3, 1); }
+
+@keyframes garden-shake {
+  0%   { transform: translate3d(0, 0, 0); }
+  18%  { transform: translate3d(-4px, 3px, 0); }
+  38%  { transform: translate3d(4px, -2px, 0); }
+  60%  { transform: translate3d(-3px, 1px, 0); }
+  80%  { transform: translate3d(2px, 0, 0); }
+  100% { transform: translate3d(0, 0, 0); }
+}
+
+/* 木槌：默认可见并接管光标。
+   曾经过度收紧成 `@media (hover:hover) and (pointer:fine)` 才显示 ——
+   触屏笔记本 / 混合输入设备上报的 primary pointer 不是 fine，木槌就整个消失了，
+   而 cursor:none 也没生效，结果"既没锤子也没光标"。改为默认显示，
+   仅对真正的触屏设备（pointer:coarse）隐藏；混合设备由 main.mjs 在识别到
+   触摸时加 .is-touch 兜底。
+
+   定位策略（关键，改坏会直接导致"看不到锤子"）：
+   木槌是 `position: fixed` + 视口坐标，由 moveHammer 在 pointermove 里写内联
+   left/top。绝不要退回 absolute + garden 内坐标 —— garden 有 overflow:hidden，
+   贴边命中时越出鼠标热点的槌体会被裁掉一截。 */
+.hammer {
+  --swing-ms: 240ms;          /* 一整套挥击时长；见 @keyframes swing */
+
+  /* 位置由 ui.mjs 的 moveHammer 写成内联 fixed + 视口坐标（见该处注释）。
+     这里的 fixed 与 50%/50% 只是"JS 尚未跑起来、或浏览器不支持 pointer 事件"时的
+     兜底 —— 曾经没有初始位置，木槌以静态流落在洞位阵列之后、远超花园高度，
+     被 .garden 的 overflow:hidden 整只裁掉，表现就是"鼠标完全没有锤子"。 */
+  position: fixed;
+  left: 50%;
+  top: 50%;
+  z-index: 5;
+  width: 74px;
+  height: 74px;
+  /* 负边距把"落槌点"对到锤头中心，而不是整个 74×74 盒子的左上角 */
+  margin: -22px 0 0 -31px;
+  pointer-events: none;
+  opacity: 0;                 /* 真正浮出的时机见文件下方的 .hammer.is-armed */
+  transition: opacity .15s ease;
+
+  /* 旋转基点 = 握柄右下角（手心位置）。默认 50% 50% 会让整只绕自己中心打转，
+     看起来像"贴图在旋",而不是"手在抡"。绕握柄端转才能划出真实的圆弧。 */
+  transform-origin: 62px 66px;
+  /* 静止握持角：略微后仰，让锤头翘向光标外侧，不遮住落槌点。
+     ★ 这个角度必须与 @keyframes swing 的首帧/末帧一致，
+       否则按下或松开的瞬间锤子会姿态跳变。 */
+  transform: rotate(-14deg);
+}
+
+.hammer-head {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 62px;
+  height: 40px;
+  border-radius: 12px;
+  background: linear-gradient(180deg, #d8a06a, #a4693d 60%, #7a4526);
+  border: 3px solid #5d3620;
+  box-shadow: inset 0 3px 0 rgba(255, 240, 210, .55);
+}
+
+.hammer-grip {
+  position: absolute;
+  left: 46px;
+  top: 26px;
+  width: 16px;
+  height: 46px;
+  border-radius: 8px;
+  background: linear-gradient(180deg, #c8945f, #8a5533);
+  border: 3px solid #5d3620;
+  /* 握柄相对锤头下垂 24deg，与外壳的静止角叠加后接近自然握持 */
+  transform: rotate(24deg);
+}
+
+/* 挥锤：四拍蓄力-砸下-回弹-归位。
+   曾经"砸下去几乎没有动画感"，两个硬伤：
+   1. 只有 .18s，且 0% 直接就是 rotate(-38deg) 的抬起态 —— **没有蓄力过程**，
+      玩家看到的是"锤子已经在上面了"，砸落那一下反而被压缩到不足 40ms；
+   2. 末帧 -30deg 与首帧 -38deg 不一致，挥完会有一次姿态跳变。
+   现在拆成可读的四拍（时长见 --swing-ms），且首末帧都锁在静止握持角：
+     0%   静止握持（= 未挥锤时的姿态，起手不闪跳）
+     16%  蓄力抬起（向后拉开，玩家看清"要砸了"）
+     50%  全力砸落 + 过冲（这一拍是打击感的来源）
+     74%  反冲回弹
+     100% 归位（回到静止角，不与下一槌脱节）
+
+   ★ 动画直接挂在 .hammer 本体上，不要再套一层 .hammer-rig：
+     ① margin 不参与 transform，纯 rotate 与负 margin 不冲突，
+        只有**百分比 translate** 才会叠加 —— 那才是踩过的坑；
+     ② 挂本体不依赖后代选择器，选择器更短、更少意外。 */
+.hammer.is-swing {
+  animation: swing var(--swing-ms) cubic-bezier(.25, .5, .35, 1) both;
+}
+
+/* 各帧只写 rotate，绝不写 translate —— 详见上面的说明。 */
+@keyframes swing {
+  0%   { transform: rotate(-14deg); }
+  16%  { transform: rotate(-52deg); }
+  50%  { transform: rotate(16deg); }
+  74%  { transform: rotate(-26deg); }
+  100% { transform: rotate(-14deg); }
+}
+
+/* 挥击拖影：用伪元素复制一份锤头，在砸落方向留一道模糊残影。
+   只在下砸窗口内出现（40%~62% ≈ 砸落那一拍），蓄力与回弹时不可见。
+   用伪元素而非独立 DOM 节点：零额外元素、零 JS 维护，也不参与命中判定。 */
+.hammer.is-swing::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 62px;
+  height: 40px;
+  border-radius: 12px;
+  background: linear-gradient(180deg, rgba(255, 242, 214, .55), rgba(214, 154, 96, .28));
+  filter: blur(5px);
+  opacity: 0;
+  z-index: -1;
+  animation: swing-trail var(--swing-ms) linear both;
+}
+
+@keyframes swing-trail {
+  0%, 36% { opacity: 0; transform: rotate(-40deg) translate(-6px, -10px) scale(.9); }
+  50%     { opacity: .95; transform: rotate(4deg) translate(4px, 6px) scale(1.04); }
+  64%     { opacity: 0; transform: rotate(16deg) translate(10px, 10px) scale(1.1); }
+  100%    { opacity: 0; }
+}
+
+/* 默认（指针设备）：木槌接管光标。
+   cursor:none 只加在 .garden 上 —— 木槌自己是 fixed 定位、已不在 garden 的
+   渲染流里，别指望靠父级继承来隐藏它带来的光标问题。 */
+.garden { cursor: none; }
+
+/* 纯触屏设备：没有悬停概念，恢复普通光标并收走木槌 */
+@media (hover: none) and (pointer: coarse) {
+  .garden { cursor: pointer; }
+  .hammer { display: none; }
+}
+
+/* 混合输入设备兜底：运行时真看到触摸就切换（main.mjs 加类） */
+.garden.is-touch { cursor: pointer; }
+.garden.is-touch .hammer { display: none; }
+
+/* 木槌生命期：只在指针真正悬停在花园里时浮出（JS 加 .is-armed）。
+   意义有二：
+   1. 不玩游戏（鼠标停在舞台外）时，屏幕正中不会挂着一把莫名其妙的锤子；
+   2. 万一 moveHammer 一次都没跑到，木槌也只是"隐藏"而不是"摆在怪位置"，
+      排查方向立刻收窄到 pointer 事件要不要得到。 */
+.hammer.is-armed { opacity: 1; }
+
+/* toast */
+.toast {
+  position: absolute;
+  left: 50%;
+  top: 14%;
+  z-index: 6;
+  transform: translate(-50%, -8px);
+  padding: 8px 18px;
+  border-radius: 999px;
+  font-size: 15px;
+  font-weight: 900;
+  letter-spacing: 1px;
+  color: #4a1a2c;
+  background: linear-gradient(180deg, #fff2c9, #ffd98a);
+  border: 3px solid #b9814a;
+  box-shadow: 0 5px 0 rgba(90, 50, 20, .35);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .18s ease, transform .18s ease;
+}
+
+.toast.is-show { opacity: 1; transform: translate(-50%, 0); }
+.toast.is-warn { background: linear-gradient(180deg, #ffd7d7, #ff9aa6); color: #6a1220; }
+
+/* ---------- 弹层 ---------- */
+.modal-layer {
+  position: absolute;
+  inset: 0;
+  z-index: 8;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  background: rgba(46, 26, 14, .45);
+  backdrop-filter: blur(2px);
+}
+
+.modal-layer.hidden { display: none; }
+
+.modal-card {
+  width: min(360px, 100%);
+  padding: 20px 18px;
+  text-align: center;
+  border-radius: 22px;
+  background: linear-gradient(180deg, #fff7e6, #f2ddba);
+  border: 4px solid var(--wood-2);
+  box-shadow: 0 10px 0 rgba(60, 32, 16, .4), inset 0 2px 0 rgba(255, 255, 255, .9);
+}
+
+.rules-card { width: min(440px, 100%); text-align: left; }
+
+.modal-badge { font-size: 40px; line-height: 1; }
+
+.modal-card h2 {
+  margin: 8px 0 6px;
+  font-size: 21px;
+  font-weight: 900;
+  color: var(--ink);
+}
+
+.modal-text {
+  margin: 0 0 14px;
+  font-size: 14px;
+  line-height: 1.55;
+  color: var(--ink-soft);
+}
+
+.modal-btn-row { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+
+.rules-body { max-height: 46vh; overflow-y: auto; margin-bottom: 14px; }
+.rules-body h3 { margin: 12px 0 6px; font-size: 14px; color: var(--berry-deep); }
+.rules-body ul { margin: 0; padding-left: 18px; }
+.rules-body li { font-size: 13px; line-height: 1.65; color: var(--ink); }
+
+.score-summary { display: flex; flex-direction: column; gap: 6px; margin-bottom: 14px; }
+
+.summary-line {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding: 7px 12px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, .65);
+  border: 2px solid rgba(146, 96, 56, .3);
+  font-size: 14px;
+}
+
+.summary-line strong { font-size: 18px; font-variant-numeric: tabular-nums; }
+.text-highlight { color: #2f7a2f; }
+
+/* ---------- 底部操作台 ---------- */
+.cabinet-controls {
+  width: 100%;
+  max-width: 1160px;
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  padding: 12px;
+  border-radius: 18px;
+  background:
+    repeating-linear-gradient(90deg, rgba(255, 255, 255, .05) 0 4px, rgba(0, 0, 0, .04) 4px 9px),
+    linear-gradient(180deg, var(--wood-1), var(--wood-2) 70%, var(--wood-3));
+  border: 3px solid var(--wood-3);
+  box-shadow: 0 8px 0 rgba(60, 32, 16, .3), inset 0 2px 0 rgba(255, 240, 210, .3);
+}
+
+.arcade-btn {
+  min-width: 96px;
+  min-height: 46px;
+  padding: 10px 18px;
+  font-size: 15px;
+  font-weight: 900;
+  letter-spacing: 1px;
+  color: #46291a;
+  background: linear-gradient(180deg, #ffe9bd, #e8bd85);
+  border: 3px solid var(--wood-3);
+  border-radius: 14px;
+  cursor: pointer;
+  box-shadow: 0 5px 0 var(--wood-3), inset 0 2px 0 rgba(255, 255, 255, .85);
+  transition: transform .12s ease, box-shadow .12s ease;
+}
+
+.arcade-btn:hover { transform: translateY(-2px); box-shadow: 0 7px 0 var(--wood-3); }
+.arcade-btn:active { transform: translateY(2px); box-shadow: 0 2px 0 var(--wood-3); }
+.arcade-btn--wide { flex: 0 1 180px; }
+.arcade-btn--alt { background: linear-gradient(180deg, #d9ecbf, #a8cf85); }
+.arcade-btn--berry { color: #4a1024; background: linear-gradient(180deg, #ffc2d1, #ef7f9c); }
+
+/* ---------- 响应式 ---------- */
+@media (max-width: 900px) {
+  .cabinet-body {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+
+  .side-panel {
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 10px;
+  }
+
+  .panel-block { flex: 1 1 120px; }
+
+  .diff-tabs { flex-direction: row; flex: 1 1 100%; }
+  .diff-tab { flex: 1; }
+  .panel-hint { flex: 1 1 100%; }
+
+  .garden { max-width: 560px; }
+}
+
+@media (max-width: 768px) {
+  :root { --safe-bottom: 68px; }
+
+  #game-app { padding-left: 10px; padding-right: 10px; }
+  .garden { border-width: 5px; border-radius: 20px; }
+  .hole { aspect-ratio: 1 / 1; }
+  .arcade-btn { min-height: 48px; }
+  .cabinet-controls { flex-wrap: wrap; }
+  .arcade-btn--wide { flex: 1 1 40%; }
+}
+
+@media (max-width: 420px) {
+  .cab-title { font-size: 15px; letter-spacing: 1px; }
+  .panel-value { font-size: 20px; }
+  .modal-card { padding: 16px 14px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: .001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .001ms !important;
+  }
+  .garden-sky { animation: none; }
+  .mole { transition: none; }
+  /* 降级到瞬移，但仍保留"位置正确"（不回退到洞口外） */
+  .hole[data-phase="rise"] .mole { animation: none; transform: translate(-50%, 0); }
+  .hole[data-phase="up"] .mole { animation: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .garden { cursor: pointer; }
+  /* 这里绝不能 display:none 木槌！
+     系统关闭动画（Windows「显示动画」关闭 / 各种 reduced-motion 场景）会让
+     这条媒体查询命中 —— 木槌消失、而上面 .garden{cursor:pointer} 又把光标交还，
+     用户只会看到"没有锤子"，且完全不知道为什么。
+     动效降级的正确做法：保留木槌，只去掉挥击与震屏动画。
+     选择器要与动画实际挂载的元素一致 —— 动画挂在 .hammer 本体上，
+     这里就必须写 .hammer.is-swing（写别的元素关不掉）。 */
+  .hammer { transition: none; }
+  .hammer.is-swing { animation: none; }
+  /* 降级时把姿态钉在静止握持角，别停在挥击中间某一帧 */
+  .hammer { transform: rotate(-14deg); }
+  .hammer.is-swing::before { animation: none; opacity: 0; }
+  .hole.is-impact::after { animation: none; opacity: 0; }
+  .garden.is-shake { animation: none; }
+  /* 受击动画降级：不播"被砸扁"的逐帧过程，但要把"打中了"交代清楚 ——
+     直接沉下去 + 保留 X 眼与星星（它们是静态样式，不是动画），
+     否则降级时命中就变成"地鼠凭空消失"。 */
+  .hole.is-hit .mole { animation: none; transform: translate(-50%, 100%); }
+  .hole.is-hit .mole-stars { display: block; }
+  .hole.is-hit .star { opacity: 1; animation: none; }
+  /* 被弹开：不播晃动过程，但保留"站着"这个事实（动画被禁止后自然回到静止态） */
+  .hole.is-blocked .mole,
+  .hole.is-blocked .mole-helmet { animation: none; }
+}
+
+/* 非指针设备 / 木槌尚未接管光标前，别让木槌悬在屏幕正中挡视线 */
+@media (hover: none) and (pointer: coarse), (pointer: coarse) {
+  .hammer { display: none; }
+}

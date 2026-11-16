@@ -1,0 +1,721 @@
+/* ==========================================================================
+   梦游先生 (Sleepwalker) · 微缩透视剧场风格样式
+   深蓝夜空基底 · 黄铜木纹雕花包边 · 实体微浮雕质感 · 零外链无障碍降级
+   ========================================================================== */
+
+:root {
+  --bg-deep: #0a0e17;
+  --bg-navy: #131926;
+  --bg-frame: #1e2638;
+  --parchment-bg: rgba(26, 33, 48, 0.85);
+  --parchment-border: #2e3b54;
+
+  --gold-primary: #f5ba31;
+  --gold-glow: #ffeaa7;
+  --gold-dark: #b8860b;
+  --text-main: #f0f4fc;
+  --text-muted: #8c9cb8;
+  --danger-color: #ff5252;
+  --success-color: #2ecc71;
+
+  --stage-w: 840px;
+  --stage-h: 540px;
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+
+  --shadow-tactile: 0 4px 12px rgba(0, 0, 0, 0.4), 0 1px 2px rgba(255, 255, 255, 0.08) inset;
+  --shadow-diorama: 0 12px 36px rgba(0, 0, 0, 0.65), 0 0 0 2px #2f3b52, 0 0 0 4px #1b2333;
+}
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html, body {
+  width: 100%;
+  height: 100%;
+  overflow-x: hidden;
+  background-color: var(--bg-deep);
+  color: var(--text-main);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.app-container {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: radial-gradient(circle at 50% 20%, #172136 0%, #0a0e17 80%);
+}
+
+/* ==========================================================================
+   1. 顶部控制栏 (Top Bar)
+   ========================================================================== */
+.topbar-diorama {
+  height: 56px;
+  padding: 0 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(13, 17, 26, 0.9);
+  backdrop-filter: blur(8px);
+  z-index: 10;
+}
+
+.home-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  font-size: 13px;
+  color: var(--text-muted);
+  text-decoration: none;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: var(--radius-sm);
+  transition: all 0.15s ease;
+}
+
+.home-badge:hover {
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.brand-title {
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  color: var(--gold-primary);
+  text-align: center;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.6);
+}
+
+.brand-subtitle {
+  display: block;
+  font-size: 11px;
+  color: var(--text-muted);
+  text-align: center;
+}
+
+.topbar-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.icon-pill {
+  min-width: 34px;
+  height: 32px;
+  padding: 0 10px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-main);
+  background: #202b3d;
+  border: 1px solid #364661;
+  border-radius: 16px;
+  cursor: pointer;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+  transition: transform 0.08s ease, background 0.15s ease;
+}
+
+.icon-pill:active {
+  transform: translateY(2px);
+  background: #17202e;
+}
+
+/* ==========================================================================
+   2. 主舞台视窗与翼栏布局 (Diorama Theater Assembly)
+   ========================================================================== */
+.theater-assembly {
+  flex: 1;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 20px;
+  gap: 20px;
+  max-width: 1320px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+/* 左右翼栏 */
+.diorama-wing {
+  width: 200px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  flex-shrink: 0;
+}
+
+.wing-card {
+  padding: 14px;
+  background: var(--parchment-bg);
+  border: 1px solid var(--parchment-border);
+  border-radius: var(--radius-md);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.35);
+}
+
+.card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.wing-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+}
+
+.badge-gold {
+  padding: 2px 6px;
+  font-size: 11px;
+  font-weight: 700;
+  color: #1a1a1a;
+  background: var(--gold-primary);
+  border-radius: 4px;
+}
+
+.stage-info .level-name-display {
+  font-size: 15px;
+  font-weight: 700;
+  color: #ffffff;
+  margin-bottom: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.stage-info .stage-num-display {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+/* 心率监视器 */
+.heart-monitor {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+  margin-top: 4px;
+}
+
+.bpm-number {
+  font-size: 26px;
+  font-weight: 800;
+  color: var(--gold-glow);
+  font-variant-numeric: tabular-nums;
+}
+
+.bpm-unit {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.bpm-state-text {
+  font-size: 11px;
+  color: var(--success-color);
+  font-weight: 600;
+}
+
+.ecg-track {
+  width: 100%;
+  height: 4px;
+  background: #101624;
+  border-radius: 2px;
+  margin-top: 6px;
+  overflow: hidden;
+}
+
+.ecg-wave {
+  width: 40%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, var(--gold-primary), transparent);
+  animation: ecgPulse 1.2s infinite linear;
+}
+
+@keyframes ecgPulse {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(300%); }
+}
+
+/* 泡泡槽 */
+.badge-bubble {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--gold-primary);
+}
+
+.bubbles-slot {
+  display: flex;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.bubble-icon {
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.2);
+  font-size: 14px;
+  transition: all 0.2s ease;
+}
+
+.bubble-icon.active {
+  background: radial-gradient(circle, #fff176 0%, #fbc02d 100%);
+  border-color: #fff9c4;
+  color: #5d4037;
+  box-shadow: 0 0 10px rgba(255, 238, 88, 0.7);
+  transform: scale(1.1);
+}
+
+/* 快捷指南 */
+.shortcuts-list, .gadgets-status-list {
+  list-style: none;
+  font-size: 11px;
+  color: var(--text-muted);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.gadgets-status-list li {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 6px;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 4px;
+}
+
+.gadgets-status-list .status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--success-color);
+}
+
+.gadgets-status-list .status-dot.active {
+  background: var(--gold-primary);
+  box-shadow: 0 0 6px var(--gold-primary);
+}
+
+/* ==========================================================================
+   3. 中央剧场主舞台 (Diorama Stage Container)
+   ========================================================================== */
+.theater-stage-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex: 1;
+  max-width: var(--stage-w);
+}
+
+.stage-frame {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 14 / 9;
+  background: #000;
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-diorama);
+  overflow: hidden;
+}
+
+#stage {
+  display: block;
+  width: 100%;
+  height: 100%;
+  outline: none;
+  touch-action: none;
+  overscroll-behavior: none;
+  cursor: pointer;
+}
+
+.stage-toast {
+  position: absolute;
+  top: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 8px 18px;
+  background: rgba(13, 17, 26, 0.88);
+  border: 1px solid var(--gold-primary);
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--gold-glow);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.5);
+  pointer-events: none;
+  z-index: 10;
+}
+
+/* ==========================================================================
+   4. 实体微浮雕操控底座 (Console Pedestal)
+   ========================================================================== */
+.console-pedestal {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  width: 100%;
+  margin-top: 14px;
+  padding: 10px 16px;
+  background: rgba(22, 29, 43, 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-tactile);
+}
+
+.btn-pedestal {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 40px;
+  padding: 0 16px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-main);
+  background: linear-gradient(180deg, #2c384e 0%, #1e2738 100%);
+  border: 1px solid #435474;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.4), inset 0 1px 1px rgba(255, 255, 255, 0.15);
+  transition: transform 0.08s ease, background 0.15s ease, box-shadow 0.08s ease;
+  user-select: none;
+}
+
+.btn-pedestal:active {
+  transform: translateY(2px);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+}
+
+.btn-pedestal[aria-pressed="true"] {
+  background: linear-gradient(180deg, #b8860b 0%, #d4af37 100%);
+  border-color: #ffd700;
+  color: #1a1a1a;
+}
+
+.btn-rewind {
+  background: linear-gradient(180deg, #3a4d6b 0%, #25334a 100%);
+  border-color: #55729e;
+}
+
+.btn-gold-accent {
+  background: linear-gradient(180deg, #d4a017 0%, #a87905 100%);
+  border-color: #ffd700;
+  color: #1a1a1a;
+  font-weight: 700;
+}
+
+.btn-primary {
+  background: linear-gradient(180deg, #27ae60 0%, #1e8449 100%);
+  border-color: #2ecc71;
+  color: #ffffff;
+}
+
+/* ==========================================================================
+   5. 原生模态弹窗系统 (Native <dialog> Modal)
+   ========================================================================== */
+dialog:modal {
+  overscroll-behavior: contain;
+}
+
+dialog::backdrop {
+  overflow: hidden;
+  overscroll-behavior: contain;
+  background: rgba(6, 10, 18, 0.78);
+  backdrop-filter: blur(5px);
+}
+
+.diorama-modal[open] {
+  margin: auto;
+  padding: 0;
+  background: transparent;
+  border: none;
+  max-width: 480px;
+  width: 90%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+}
+
+.modal-wide[open] {
+  max-width: 680px;
+}
+
+.modal-box {
+  width: 100%;
+  background: #141c2b;
+  border: 1px solid #2e3d59;
+  border-radius: var(--radius-lg);
+  padding: 24px;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8), 0 0 0 1px rgba(255, 255, 255, 0.08);
+  color: var(--text-main);
+}
+
+.modal-header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.modal-title {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--gold-primary);
+  margin-bottom: 12px;
+}
+
+.modal-subtitle {
+  font-size: 13px;
+  color: var(--text-muted);
+  margin-bottom: 16px;
+}
+
+.modal-content {
+  font-size: 13px;
+  line-height: 1.6;
+  color: #d1d8e6;
+  max-height: 360px;
+  overflow-y: auto;
+  padding-right: 8px;
+}
+
+.modal-content h3 {
+  font-size: 14px;
+  color: #ffffff;
+  margin: 12px 0 4px;
+}
+
+.modal-content p {
+  margin-bottom: 10px;
+  color: var(--text-muted);
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+/* 结算弹窗特效 */
+.modal-win-box, .modal-fail-box {
+  text-align: center;
+}
+
+.win-crown {
+  font-size: 40px;
+  margin-bottom: 8px;
+  animation: crownBob 1s infinite alternate ease-in-out;
+}
+
+@keyframes crownBob {
+  0% { transform: translateY(0); }
+  100% { transform: translateY(-6px); }
+}
+
+.text-gold {
+  color: var(--gold-primary);
+}
+
+.text-danger {
+  color: var(--danger-color);
+}
+
+.fail-icon {
+  font-size: 44px;
+  margin-bottom: 8px;
+}
+
+.fail-tip {
+  font-size: 12px;
+  color: #94a3b8;
+  margin: 12px 0 16px;
+}
+
+.stars-breakdown {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 16px 0;
+  text-align: left;
+}
+
+.star-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  background: rgba(255, 255, 255, 0.04);
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+}
+
+.star-row .star-icon {
+  color: #4a5568;
+  font-size: 16px;
+}
+
+.star-row.achieved {
+  background: rgba(245, 186, 49, 0.1);
+  border: 1px solid rgba(245, 186, 49, 0.25);
+}
+
+.star-row.achieved .star-icon {
+  color: var(--gold-primary);
+  text-shadow: 0 0 6px var(--gold-primary);
+}
+
+.clear-stats {
+  font-size: 13px;
+  color: var(--text-muted);
+  margin-bottom: 12px;
+}
+
+.clear-stats strong {
+  color: #ffffff;
+  font-size: 16px;
+}
+
+/* 关卡选择网格 */
+.levels-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+  gap: 10px;
+  max-height: 400px;
+  overflow-y: auto;
+  padding: 6px;
+}
+
+.level-card-btn {
+  padding: 10px 8px;
+  background: #1c2638;
+  border: 1px solid #2d3d5a;
+  border-radius: var(--radius-sm);
+  color: var(--text-main);
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  transition: all 0.1s ease;
+}
+
+.level-card-btn:hover:not(:disabled) {
+  border-color: var(--gold-primary);
+  background: #25334a;
+}
+
+.level-card-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.level-card-btn.current {
+  border-color: var(--gold-primary);
+  box-shadow: 0 0 10px rgba(245, 186, 49, 0.35);
+}
+
+.level-card-num {
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.level-card-stars {
+  font-size: 11px;
+  color: var(--gold-primary);
+}
+
+.level-card-title {
+  font-size: 10px;
+  color: var(--text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 90px;
+}
+
+/* ==========================================================================
+   6. 移动端自适应与广告安全避让区 (<= 768px)
+   ========================================================================== */
+@media (max-width: 900px) {
+  .theater-assembly {
+    flex-direction: column;
+    align-items: center;
+    padding: 10px;
+    gap: 12px;
+  }
+
+  .diorama-wing {
+    width: 100%;
+    max-width: var(--stage-w);
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+
+  .wing-card {
+    flex: 1;
+    min-width: 140px;
+  }
+
+  .shortcuts-card {
+    display: none; /* 移动端隐藏键盘快捷键说明 */
+  }
+}
+
+@media (max-width: 768px) {
+  .app-container {
+    /* 底部安全避让区红线 */
+    padding-bottom: max(68px, calc(16px + env(safe-area-inset-bottom)));
+  }
+
+  .brand-subtitle {
+    display: none;
+  }
+
+  .topbar-diorama {
+    height: 48px;
+    padding: 0 12px;
+  }
+
+  .theater-assembly {
+    padding: 8px;
+  }
+
+  .console-pedestal {
+    gap: 8px;
+    padding: 8px;
+  }
+
+  .btn-pedestal {
+    min-height: 38px;
+    padding: 0 12px;
+    font-size: 12px;
+  }
+}
+
+/* ==========================================================================
+   7. 动效降级 (prefers-reduced-motion: reduce)
+   ========================================================================== */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

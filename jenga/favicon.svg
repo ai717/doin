@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Jenga Tower">
+  <defs>
+    <linearGradient id="room" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#6b4321"/>
+      <stop offset="1" stop-color="#1c1008"/>
+    </linearGradient>
+    <linearGradient id="woodTop" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#d8a468"/>
+      <stop offset="1" stop-color="#a9713a"/>
+    </linearGradient>
+    <linearGradient id="woodSide" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#96602f"/>
+      <stop offset="1" stop-color="#5f3a1a"/>
+    </linearGradient>
+    <linearGradient id="pad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#8a5a30"/>
+      <stop offset="1" stop-color="#3f2411"/>
+    </linearGradient>
+  </defs>
+  <rect x="2" y="2" width="60" height="60" rx="14" fill="url(#room)"/>
+  <ellipse cx="32" cy="52" rx="24" ry="7" fill="url(#pad)" stroke="#241306" stroke-width="1.4"/>
+  <g stroke="#3a2110" stroke-width="1.2">
+    <rect x="18" y="44" width="28" height="6" rx="2" fill="url(#woodSide)"/>
+    <rect x="16" y="38" width="32" height="6" rx="2" fill="url(#woodTop)"/>
+    <rect x="18" y="32" width="28" height="6" rx="2" fill="url(#woodSide)"/>
+    <rect x="16" y="26" width="32" height="6" rx="2" fill="url(#woodTop)"/>
+  </g>
+  <rect x="22" y="14" width="22" height="6" rx="2" fill="url(#woodSide)" stroke="#3a2110" stroke-width="1.2" transform="rotate(-11 33 17)"/>
+  <path d="M20 21c4-1.6 10-2.4 15-2" stroke="#ffd9a0" stroke-width="1.2" stroke-linecap="round" opacity="0.5"/>
+  <circle cx="46" cy="22" r="1.4" fill="#ffcb85" opacity="0.75"/>
+  <circle cx="14" cy="30" r="1" fill="#ffcb85" opacity="0.6"/>
+</svg>

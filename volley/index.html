@@ -1,0 +1,277 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-D67E3XTNSS"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-D67E3XTNSS');
+  </script>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title data-i18n="docTitle">隔山打牛 · Volley | DOIN</title>
+  <meta name="description" content="双人抛物轰炸 Volley：调仰角蓄力，看风旗修正弹道，隔山炮轰积木堡垒，轰塌旗帜者胜。本地双人或挑战三档 AI。" />
+  <link rel="icon" href="./favicon.svg?v=09be75298108" type="image/svg+xml" />
+  <link rel="stylesheet" href="./css/style.css?v=09be75298108" />
+</head>
+<body>
+  <div class="page" id="app">
+    <header class="marquee">
+      <a href="/" id="back-home" class="tool ghost" data-i18n="backHome">← 门户</a>
+      <div class="brand">
+        <span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i></span>
+        <div class="brand-text">
+          <h1 data-i18n="brand">隔山打牛</h1>
+          <p data-i18n="tagline">双人抛物轰炸 · 积木堡垒攻防</p>
+        </div>
+      </div>
+      <div class="toolbar" role="toolbar" aria-label="controls">
+        <button type="button" id="btn-mode" class="tool" data-i18n="mode" data-i18n-attr="aria-label:ariaMode">模式</button>
+        <button type="button" id="btn-pause" class="tool" data-i18n="pause" data-i18n-attr="aria-label:ariaPause">暂停</button>
+        <button type="button" id="btn-sound" class="tool icon" data-i18n-attr="aria-label:ariaSound" aria-label="音效开关">♪</button>
+        <button type="button" id="btn-lang" class="tool icon" data-i18n="langBtn" data-i18n-attr="aria-label:ariaLang">EN</button>
+        <button type="button" id="btn-help" class="tool" data-i18n="help" data-i18n-attr="aria-label:ariaHelp">玩法</button>
+      </div>
+    </header>
+
+    <section class="scorebridge" aria-live="polite">
+      <div class="team red">
+        <div class="team-id">
+          <span class="team-dot" aria-hidden="true"></span>
+          <b data-i18n="player1">西军</b>
+          <span id="tag-p1" class="tag"></span>
+        </div>
+        <div class="metrics">
+          <div class="metric"><span data-i18n="blocks">积木</span><strong id="p1-blocks">15</strong></div>
+          <div class="metric"><span data-i18n="shots">发数</span><strong id="p1-shots">0</strong></div>
+          <div class="metric"><span data-i18n="hitRate">命中</span><strong id="p1-hits">0%</strong></div>
+          <div class="metric"><span data-i18n="bestSingle">最高单发</span><strong id="p1-best">0</strong></div>
+        </div>
+      </div>
+
+      <div class="series">
+        <span id="chip-round" class="chip" data-i18n="roundLabel">第 1 回合</span>
+        <div class="wind-gauge">
+          <span class="wind-label" data-i18n="wind">风</span>
+          <span id="wind-track" class="wind-track"><i id="wind-flag-mark" aria-hidden="true"></i></span>
+          <strong id="wind-value">0</strong>
+        </div>
+        <div class="series-score">
+          <strong id="score-p1">0</strong>
+          <i aria-hidden="true">:</i>
+          <strong id="score-p2">0</strong>
+        </div>
+      </div>
+
+      <div class="team blue">
+        <div class="team-id">
+          <span class="team-dot" aria-hidden="true"></span>
+          <b data-i18n="player2">东军</b>
+          <span id="tag-p2" class="tag"></span>
+        </div>
+        <div class="metrics">
+          <div class="metric"><span data-i18n="blocks">积木</span><strong id="p2-blocks">15</strong></div>
+          <div class="metric"><span data-i18n="shots">发数</span><strong id="p2-shots">0</strong></div>
+          <div class="metric"><span data-i18n="hitRate">命中</span><strong id="p2-hits">0%</strong></div>
+          <div class="metric"><span data-i18n="bestSingle">最高单发</span><strong id="p2-best">0</strong></div>
+        </div>
+      </div>
+    </section>
+
+    <main class="arena" data-i18n-attr="aria-label:ariaArena">
+      <div class="tabletop" id="tabletop">
+        <div id="sky" class="sky" aria-hidden="true">
+          <div class="hill" id="hill"></div>
+          <div class="slope slope-l" id="slope-l"></div>
+          <div class="slope slope-r" id="slope-r"></div>
+          <div class="windflag" id="windflag"><i class="pole"></i><i class="cloth"></i></div>
+        </div>
+        <div id="stage" class="stage">
+          <div id="cannons-layer" class="cannons-layer">
+            <div id="cannon-0" class="cannon west">
+              <div class="cannon-base">
+                <div class="cannon-wheel"></div>
+              </div>
+              <div class="cannon-barrel" id="barrel-0">
+                <span class="barrel-muzzle"></span>
+              </div>
+            </div>
+            <div id="cannon-1" class="cannon east">
+              <div class="cannon-base">
+                <div class="cannon-wheel"></div>
+              </div>
+              <div class="cannon-barrel" id="barrel-1">
+                <span class="barrel-muzzle"></span>
+              </div>
+            </div>
+          </div>
+          <div id="blocks-layer" class="blocks-layer"></div>
+          <div id="shells-layer" class="shells-layer"></div>
+          <div id="floats-layer" class="floats-layer"></div>
+          <canvas id="fx-canvas" width="1000" height="460" aria-hidden="true"></canvas>
+          <div id="turn-guide" class="turn-guide" aria-live="polite"><span id="turn-guide-text"></span></div>
+        </div>
+        <div id="banner" class="banner" aria-live="assertive"><span id="banner-text"></span></div>
+      </div>
+
+      <div class="console" id="console">
+        <div class="console-side west" data-side="0">
+          <div class="turn-dot" id="turn-0" aria-hidden="true"></div>
+          <div class="console-main">
+            <div class="console-row">
+              <button type="button" id="btn-angle-dec-0" class="pad-key" data-i18n-attr="aria-label:angleDown">▾</button>
+              <div class="aim-dial">
+                <strong id="angle-0">45°</strong>
+                <span data-i18n="angle">仰角</span>
+              </div>
+              <button type="button" id="btn-angle-inc-0" class="pad-key" data-i18n-attr="aria-label:angleUp">▴</button>
+            </div>
+            <div class="console-row">
+              <button type="button" id="btn-power-dec-0" class="pad-key" data-i18n-attr="aria-label:powerDown">▾</button>
+              <div class="power-meter-box" id="power-box-0" title="可点击或滑动调节蓄力">
+                <div class="power-meter"><i id="power-fill-0"></i></div>
+                <strong id="power-0">90</strong>
+                <span class="power-label" data-i18n="power">蓄力</span>
+              </div>
+              <button type="button" id="btn-power-inc-0" class="pad-key" data-i18n-attr="aria-label:powerUp">▴</button>
+            </div>
+            <div class="weapon-row" id="weapons-0" role="radiogroup" data-i18n-attr="aria-label:ariaWeapons"></div>
+            <div class="weapon-desc-hint" id="weapon-desc-0"></div>
+            <button type="button" id="btn-fire-0" class="btn-fire" data-i18n="fire">开炮</button>
+          </div>
+        </div>
+        <div class="console-hint" id="console-hint">
+          <span class="hint" data-i18n="dragHint">拖拽沙盘或 ← → 调角 · 长按蓄力</span>
+          <span class="hint" data-i18n="keyHint">P / Esc 暂停</span>
+        </div>
+        <div class="console-side east" data-side="1">
+          <div class="turn-dot" id="turn-1" aria-hidden="true"></div>
+          <div class="console-main">
+            <div class="console-row">
+              <button type="button" id="btn-angle-dec-1" class="pad-key" data-i18n-attr="aria-label:angleDown">▾</button>
+              <div class="aim-dial">
+                <strong id="angle-1">45°</strong>
+                <span data-i18n="angle">仰角</span>
+              </div>
+              <button type="button" id="btn-angle-inc-1" class="pad-key" data-i18n-attr="aria-label:angleUp">▴</button>
+            </div>
+            <div class="console-row">
+              <button type="button" id="btn-power-dec-1" class="pad-key" data-i18n-attr="aria-label:powerDown">▾</button>
+              <div class="power-meter-box" id="power-box-1" title="可点击或滑动调节蓄力">
+                <div class="power-meter"><i id="power-fill-1"></i></div>
+                <strong id="power-1">90</strong>
+                <span class="power-label" data-i18n="power">蓄力</span>
+              </div>
+              <button type="button" id="btn-power-inc-1" class="pad-key" data-i18n-attr="aria-label:powerUp">▴</button>
+            </div>
+            <div class="weapon-row" id="weapons-1" role="radiogroup" data-i18n-attr="aria-label:ariaWeapons"></div>
+            <div class="weapon-desc-hint" id="weapon-desc-1"></div>
+            <button type="button" id="btn-fire-1" class="btn-fire" data-i18n="fire">开炮</button>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <footer class="legend">
+      <p data-i18n="legendGoal">轰塌对方堡垒令旗帜倒下即胜；十回合后按剩余积木判定。</p>
+      <p data-i18n="legendWind">山顶风旗随风力摆动，出手前留意风向修正弹道。</p>
+      <span class="hint" data-i18n="footerHint">P / Esc / Space 暂停 · 切后台自动冻结</span>
+    </footer>
+  </div>
+
+  <div class="overlay" id="ov-help" hidden>
+    <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="help-title">
+      <div class="sheet-head">
+        <h2 id="help-title" data-i18n="helpTitle">玩法说明</h2>
+        <button type="button" class="x" data-close data-i18n-attr="aria-label:ariaClose">×</button>
+      </div>
+      <div class="sheet-body">
+        <p data-i18n="helpGoal">两座积木堡垒隔山对峙：调仰角、蓄力、看风，用六种炮弹轰塌对面堡垒，旗帜倒地即刻获胜；十回合打完则按剩余积木判胜。</p>
+        <p data-i18n="helpWind">山顶风旗指示风向与风力（±5 档），炮弹飞行中会被风横向推动——远距离尤其要预留提前量。</p>
+        <p data-i18n="helpWeapons">石弹直击、爆裂范围轰、分裂三弹幕、粘弹落地延时引爆、钻地弹穿块深入、气球弹飘忽慢速。每回合可在武器架任意切换。</p>
+        <p data-i18n="helpTerrain">沙盘三种山体：矮丘、高峰、双峰。模式面板可随时切换并重开一局。</p>
+        <p class="muted" data-i18n="helpPause">P / Esc / Space 随时暂停；切标签页或窗口失焦自动冻结。</p>
+      </div>
+      <div class="sheet-foot">
+        <button type="button" class="primary" data-close data-i18n="helpClose">知道了</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="overlay" id="ov-pause" hidden>
+    <div class="sheet narrow" role="dialog" aria-modal="true" aria-labelledby="pause-title">
+      <div class="pause-glyph" aria-hidden="true">❚❚</div>
+      <h2 id="pause-title" data-i18n="pauseTitle">已暂停</h2>
+      <p class="muted" data-i18n="pauseHint">炮弹、风与 AI 全部冻结。</p>
+      <div class="sheet-foot column">
+        <button type="button" id="btn-resume" class="primary" data-i18n="resumeGame">继续游戏</button>
+        <button type="button" id="btn-restart" data-i18n="restartMatch">重开本局</button>
+        <button type="button" id="btn-pause-mode" data-i18n="pauseToMode">切换模式</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="overlay" id="ov-mode" hidden>
+    <div class="sheet wide" role="dialog" aria-modal="true" aria-labelledby="mode-title">
+      <div class="sheet-head">
+        <h2 id="mode-title" data-i18n="modeTitle">模式沙盘</h2>
+        <button type="button" class="x" data-close data-i18n-attr="aria-label:ariaClose">×</button>
+      </div>
+      <div class="mode-grid">
+        <div class="mode-group">
+          <h3 data-i18n="groupOpponent">对手</h3>
+          <div class="seg" id="seg-mode" role="radiogroup" data-i18n-attr="aria-label:ariaOpponent">
+            <button type="button" id="seg-mode-2p" class="tool" data-i18n="mode2p">同屏双人</button>
+            <button type="button" id="seg-mode-ai" class="tool" data-i18n="modeAi">单人对 AI</button>
+          </div>
+          <div class="seg" id="seg-ai" role="radiogroup" data-i18n-attr="aria-label:ariaAiLevel">
+            <button type="button" data-level="rookie" class="tool" data-i18n="aiRookie">新手</button>
+            <button type="button" data-level="veteran" class="tool" data-i18n="aiVeteran">进阶</button>
+            <button type="button" data-level="master" class="tool" data-i18n="aiMaster">大师</button>
+          </div>
+        </div>
+        <div class="mode-group">
+          <h3 data-i18n="groupTerrain">山体</h3>
+          <div class="seg" id="seg-terrain" role="radiogroup" data-i18n-attr="aria-label:ariaTerrain">
+            <button type="button" data-terrain="hill" class="tool" data-i18n="terrainHill">矮丘</button>
+            <button type="button" data-terrain="peak" class="tool" data-i18n="terrainPeak">高峰</button>
+            <button type="button" data-terrain="twin" class="tool" data-i18n="terrainTwin">双峰</button>
+          </div>
+        </div>
+      </div>
+      <div class="stats-row" id="stats-row">
+        <div class="stat"><span data-i18n="statMatches">总局</span><strong id="stat-matches">0</strong></div>
+        <div class="stat"><span data-i18n="statP1">西军胜</span><strong id="stat-p1">0</strong></div>
+        <div class="stat"><span data-i18n="statP2">东军胜</span><strong id="stat-p2">0</strong></div>
+        <div class="stat"><span data-i18n="statHit">最佳命中</span><strong id="stat-hit">0%</strong></div>
+        <div class="stat"><span data-i18n="statSingle">最佳单发</span><strong id="stat-single">0</strong></div>
+      </div>
+      <div class="sheet-foot">
+        <button type="button" id="btn-apply-mode" class="primary" data-i18n="applyRestart">应用并重开</button>
+        <button type="button" data-close data-i18n="btnClose">关闭</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="overlay" id="ov-result" hidden>
+    <div class="sheet narrow result" role="dialog" aria-modal="true" aria-labelledby="result-title">
+      <span id="result-eyebrow" class="eyebrow"></span>
+      <h2 id="result-title"></h2>
+      <p id="result-detail" class="muted"></p>
+      <div class="sheet-foot column">
+        <button type="button" id="btn-result-primary" class="primary"></button>
+        <button type="button" id="btn-result-secondary"></button>
+        <button type="button" id="btn-result-mode" data-i18n="btnToMode">切换模式</button>
+      </div>
+      <div class="recs" id="result-recs"></div>
+    </div>
+  </div>
+
+  <div id="toast" class="toast" hidden></div>
+
+  <noscript>双人抛物轰炸需要 JavaScript 才能运行。请开启浏览器脚本后刷新页面。</noscript>
+  <script type="module" src="./js/main.mjs?v=09be75298108"></script>
+</body>
+</html>

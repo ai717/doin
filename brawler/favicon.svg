@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <defs>
+    <linearGradient id="board" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#2b5243"/>
+      <stop offset="1" stop-color="#142b23"/>
+    </linearGradient>
+    <linearGradient id="fist" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ffe0bd"/>
+      <stop offset="1" stop-color="#f0b184"/>
+    </linearGradient>
+  </defs>
+  <rect width="64" height="64" rx="14" fill="url(#board)"/>
+  <rect x="4" y="4" width="56" height="56" rx="11" fill="none" stroke="#eef3e6" stroke-opacity=".28" stroke-dasharray="5 4"/>
+  <path d="M14 44h22v6H16a2 2 0 0 1-2-2z" fill="#d9583b"/>
+  <rect x="16" y="42" width="20" height="8" rx="3" fill="#2f6fd0"/>
+  <rect x="18" y="36" width="20" height="7" rx="3" fill="#e23b3b"/>
+  <rect x="18" y="24" width="21" height="14" rx="7" fill="url(#fist)"/>
+  <path d="M23 25v8M28 24v9M33 25v8" stroke="#d79a70" stroke-width="2" stroke-linecap="round"/>
+  <path d="M47 16l2.2 5.2 5.6.5-4.2 3.8 1.2 5.5-4.8-2.9-4.8 2.9 1.2-5.5-4.2-3.8 5.6-.5z" fill="#ffd25e"/>
+  <circle cx="50" cy="46" r="6" fill="#e8622c"/>
+  <path d="M44 46h12M50 40v12M46 41.8c3 2.4 5 6 5 8.2M54 41.8c-3 2.4-5 6-5 8.2" stroke="#5a2410" stroke-width="1.4" fill="none"/>
+</svg>

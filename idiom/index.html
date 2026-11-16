@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-D67E3XTNSS"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-D67E3XTNSS');
+  </script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>成语纵横榜 · 典故图鉴 | DOIN</title>
+  <meta name="description" content="在摊开的线装典故书里补全纵横成语，点字库零打字门槛；填对即解锁典故卡，八榜八十关、双语题库与三分钟一局的静心填字。">
+  <meta name="theme-color" content="#1d1510">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="css/style.css?v=09be75298108">
+</head>
+<body>
+  <div id="game-app">
+    <header id="top-bar">
+      <a href="/" id="back-home" class="bar-btn" data-i18n="backHome" data-i18n-aria="backHomeAria">← 门户</a>
+      <h1 id="brand"><span id="brand-main" data-i18n="appTitle">成语纵横榜</span><span id="brand-sub" data-i18n="appSub">典故图鉴</span></h1>
+      <div id="top-actions">
+        <button id="btn-boards" class="bar-btn bar-btn-seal" type="button" data-i18n="boards">榜单</button>
+        <button id="btn-atlas" class="bar-btn" type="button" data-i18n="atlas">图鉴</button>
+        <button id="btn-sound" class="bar-btn icon-btn" type="button" data-i18n-aria="soundOn" aria-label="音效">♪</button>
+        <button id="btn-lang" class="bar-btn" type="button" data-i18n-aria="langToggle" aria-label="切换语言">EN</button>
+        <button id="btn-help" class="bar-btn icon-btn" type="button" data-i18n-aria="helpAria" aria-label="玩法">?</button>
+      </div>
+    </header>
+
+    <section id="hud-strip">
+      <div class="hud-board">
+        <span class="hud-numeral" id="hud-numeral">I</span>
+        <div class="hud-board-text">
+          <strong id="hud-board">历史典故</strong>
+          <span id="hud-level">第 1 关</span>
+        </div>
+      </div>
+      <div class="hud-stars" id="hud-stars" aria-hidden="true"></div>
+      <div class="hud-time">
+        <span data-i18n="timeLabel">用时</span>
+        <strong id="hud-time">0:00</strong>
+      </div>
+    </section>
+
+    <main id="book-stage">
+      <div id="book">
+        <section class="page page-left" aria-labelledby="grid-title">
+          <div class="page-head">
+            <span id="grid-title">纵横格</span>
+            <span id="grid-progress">0/0</span>
+          </div>
+          <div id="grid-wrap">
+            <div id="grid" role="grid" data-i18n-aria="gridAria"></div>
+          </div>
+          <p id="clue-current"></p>
+        </section>
+        <section class="page page-right" aria-labelledby="clue-title">
+          <div class="page-head">
+            <span id="clue-title" data-i18n="clueTitle">释义小注</span>
+            <button id="btn-hint" class="ink-btn" type="button" data-i18n="hint" data-i18n-aria="hintAria">提示</button>
+          </div>
+          <div id="clue-list" data-i18n-aria="clueAria"></div>
+        </section>
+        <div class="spine" aria-hidden="true"></div>
+      </div>
+
+      <div id="rack-shell">
+        <span class="rack-label" data-i18n="rackHint">字库</span>
+        <div id="rack" data-i18n-aria="rackAria"></div>
+        <button id="btn-erase" class="ink-btn rack-erase" type="button" data-i18n="erase" data-i18n-aria="eraseAria">擦除</button>
+      </div>
+      <p id="key-hint" data-i18n="keyHint">点格选词 · 点字库填字 · Backspace 擦除</p>
+    </main>
+
+    <div id="toast" role="status" aria-live="polite"></div>
+
+    <section id="panel-boards" class="panel" hidden aria-labelledby="boards-title">
+      <div class="sheet">
+        <div class="panel-head">
+          <h2 id="boards-title" data-i18n="boardSelectTitle">八榜主题</h2>
+          <button class="close-btn" type="button" data-close data-i18n-aria="closeAria">✕</button>
+        </div>
+        <p class="panel-desc" data-i18n="boardSelectDesc">每榜十关，随点随进；集齐典故可翻成册。</p>
+        <div id="board-cards"></div>
+      </div>
+    </section>
+
+    <section id="panel-atlas" class="panel" hidden aria-labelledby="atlas-title">
+      <div class="sheet">
+        <div class="panel-head">
+          <h2 id="atlas-title" data-i18n="atlasTitle">典故图鉴</h2>
+          <button class="close-btn" type="button" data-close data-i18n-aria="closeAria">✕</button>
+        </div>
+        <p class="panel-desc" data-i18n="atlasDesc">填对一条成语就收进一张典故卡，按榜归档。</p>
+        <div id="atlas-tabs" role="tablist"></div>
+        <p id="atlas-progress"></p>
+        <div id="atlas-grid"></div>
+      </div>
+    </section>
+
+    <section id="panel-help" class="panel" hidden aria-labelledby="help-title">
+      <div class="sheet">
+        <div class="panel-head">
+          <h2 id="help-title" data-i18n="helpTitle">怎么玩</h2>
+          <button class="close-btn" type="button" data-close data-i18n-aria="closeAria">✕</button>
+        </div>
+        <ol id="help-list">
+          <li data-i18n="help1">点格子选中一条成语，再点一次可在横竖之间切换。</li>
+          <li data-i18n="help2">点下方字库把字填进空格；桌面端也可直接用键盘输入。</li>
+          <li data-i18n="help3">填错的字会轻晃，用 Backspace 或擦除随时改掉。</li>
+          <li data-i18n="help4">整条成语填对会泛出金光，全部填对即过关。</li>
+          <li data-i18n="help5">每关 3 次提示，用一次提示会少一颗星。</li>
+          <li data-i18n="help6">填对的成语会收进「图鉴」，随时可以翻看典故。</li>
+        </ol>
+      </div>
+    </section>
+
+    <section id="panel-card" class="panel panel-card" hidden aria-labelledby="card-word">
+      <div class="sheet sheet-card">
+        <div class="panel-head">
+          <h2 id="card-word">典故卡</h2>
+          <button class="close-btn" type="button" data-close data-i18n-aria="closeAria">✕</button>
+        </div>
+        <div id="card-body"></div>
+        <div class="panel-actions">
+          <button id="btn-copy" class="ink-btn" type="button" data-i18n="copyCard">复制此卡</button>
+        </div>
+      </div>
+    </section>
+
+    <section id="panel-result" class="panel" hidden aria-labelledby="result-title">
+      <div class="sheet sheet-result">
+        <div class="panel-head">
+          <h2 id="result-title" data-i18n="resultTitle">一关又添新典故</h2>
+        </div>
+        <div id="result-stars" aria-hidden="true"></div>
+        <div id="result-rows"></div>
+        <div class="panel-actions">
+          <button id="btn-next" class="ink-btn ink-btn-primary" type="button" data-i18n="resultNext">下一关</button>
+          <button id="btn-replay" class="ink-btn" type="button" data-i18n="resultReplay">重玩本关</button>
+          <button id="btn-result-boards" class="ink-btn" type="button" data-i18n="resultBoards">返回榜单</button>
+        </div>
+      </div>
+    </section>
+
+    <canvas id="fx" aria-hidden="true"></canvas>
+  </div>
+  <noscript><p>需要启用 JavaScript 才能翻开这本典故书。</p></noscript>
+  <script type="module" src="js/main.mjs?v=09be75298108"></script>
+</body>
+</html>
