@@ -17,6 +17,26 @@ DOIN（`doin.win`）是静态集合型独立网页小游戏门户。
 
 ## 2 · 最近里程碑与核心治理记录
 
+### 3D 上下文保全与点选交互修复：巧解鲁班锁 (`luban`) 消除点击频闪、3D塌缩扁平与拾取阻断（2026-11-16）
+
+针对用户截图反馈「luban 点击闪烁变现，无法选中，操作不流畅！」深入排查 CSS 3D 图层规范、Chromium 复合渲染上下文与层叠拾取机制，完成全链路修复：
+1. **根因定位：CSS 3D 渲染上下文（`preserve-3d`）破坏**：
+   - 旧代码在 `.block-3d-wrap.is-free:hover` 中设置了 `filter: brightness(1.22)`，在 `.block-3d-wrap.is-key-block` 中设置了包含 `filter: drop-shadow(...) brightness(...)` 的 `keyPulse` 脉冲动画；
+   - 依据 W3C CSS Transforms 规范，对声明 `transform-style: preserve-3d` 的容器元素施加 `filter` 或 `opacity < 1` 会破坏 3D 渲染上下文，强制浏览器将 3D 子节点压平（Flatten）为单一 2D 离屏贴图。悬停或动画时导致 3D 棱柱与 2D 贴图高速交替，产生剧烈视觉频闪，且关键木块被持续压平成 2D 薄片（即截图中的“变现/变片”）；
+   - 同样在 `animateSlideOut` 滑出抽离动效中，原先直接修改容器 `opacity: 0` 亦会在滑出瞬间导致 3D 上下文坍缩。
+2. **纯净 3D 架构与叶子节点光效重构**：
+   - 彻底移除 `.block-3d-wrap` 容器层的所有 `filter`、`opacity` 与 `transition: filter`，确保 `preserve-3d` 三维空间渲染树 100% 连贯不间断；
+   - 将悬停高亮与钥匙脉冲光晕下沉至 `.prism-face` 纯叶子节点（Leaf Elements），利用 `box-shadow` 与 `border-color` 呈现金黄微光呼吸律动，零破坏 3D 深度；
+   - `animateSlideOut` 滑出动画改为向内部各 `.prism-face` 渐变 `opacity: 0`，保持 3D 棱柱实心体积平滑滑出。
+3. **背面遮挡阻断消除与 3D 视线拾取加固**：
+   - 依据 CSS 规范，`backface-visibility: hidden` 仅使背面不可见，但并不会禁用鼠标点击检测（Pointer Events）。DOM 顺序靠后的不可见背面会遮挡前方木条正面，导致点击无法穿透至目标木条，触发「无法选中/误判碰壁」；
+   - 依据相机四视角（0°/90°/180°/270°）投影向量数学推演，为 `#lock-stage-3d` 添加 `data-angle` 属性，并精准在 CSS 中为背面（背向摄像机面）设置 `pointer-events: none`（如 0° 视角下 `.face-back`, `.face-right`, `.face-top` 不接收点击，仅暴露正面 `.face-front`, `.face-left`, `.face-bottom`），彻底扫清点击遮挡；
+   - 为各面与包围盒双重挂载点击事件监听，无论点在木纹、边缘还是黄铜印章均 100% 瞬时命中。
+4. **门禁与测试验证**：
+   - `npm run test:luban` 20/20 全部通过；
+   - `node scripts/check-game.mjs luban` 21 pass / 0 fail / 0 warn；
+   - 全局 `npm run test:home` 及 `npm run build` 预渲染构建无误。
+
 ### 视觉与动势重构：千层瓦片 (`tilestack`) 点选闪烁消除与飞行入槽动效全量升级（2026-11-16）
 
 针对用户反馈「tilestack 点选闪烁 效果不流畅」进行全链路 3D 悬停图层、DOM 增量协调与入槽动效重构：

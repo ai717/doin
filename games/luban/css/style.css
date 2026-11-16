@@ -271,24 +271,30 @@ html, body {
   height: 0;
   transform-style: preserve-3d;
   cursor: pointer;
-  transition: filter 0.2s ease, box-shadow 0.2s ease;
 }
 
-.block-3d-wrap.is-free:hover {
-  filter: brightness(1.22);
+.block-3d-wrap.is-free:hover .prism-face {
+  border-color: rgba(255, 235, 160, 0.9);
+  box-shadow: inset 2px 2px 4px rgba(255, 255, 255, 0.4), 0 0 12px rgba(255, 215, 0, 0.65);
 }
 
 .block-3d-wrap.is-blocked {
   cursor: not-allowed;
 }
 
-.block-3d-wrap.is-key-block {
-  animation: keyPulse 2.8s infinite ease-in-out;
+.block-3d-wrap.is-key-block .prism-face {
+  animation: keyFaceGlow 2.8s infinite ease-in-out;
 }
 
-@keyframes keyPulse {
-  0%, 100% { filter: drop-shadow(0 0 4px rgba(255, 215, 0, 0.4)); }
-  50% { filter: drop-shadow(0 0 14px rgba(255, 215, 0, 0.95)) brightness(1.15); }
+@keyframes keyFaceGlow {
+  0%, 100% {
+    box-shadow: inset 1px 1px 2px rgba(255, 255, 255, 0.25), 0 0 4px rgba(255, 215, 0, 0.4);
+    border-color: rgba(255, 215, 0, 0.6);
+  }
+  50% {
+    box-shadow: inset 2px 2px 6px rgba(255, 255, 255, 0.5), 0 0 16px rgba(255, 215, 0, 0.95);
+    border-color: #ffe66d;
+  }
 }
 
 .prism-face {
@@ -301,6 +307,34 @@ html, body {
   justify-content: center;
   backface-visibility: hidden;
   pointer-events: auto;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+/* Disable pointer events on faces pointing away from the camera to prevent occlusion */
+.prism-face.face-back {
+  pointer-events: none;
+}
+
+#lock-stage-3d[data-angle="0"] .face-right,
+#lock-stage-3d[data-angle="0"] .face-top,
+#lock-stage-3d:not([data-angle]) .face-right,
+#lock-stage-3d:not([data-angle]) .face-top {
+  pointer-events: none;
+}
+
+#lock-stage-3d[data-angle="90"] .face-left,
+#lock-stage-3d[data-angle="90"] .face-top {
+  pointer-events: none;
+}
+
+#lock-stage-3d[data-angle="180"] .face-left,
+#lock-stage-3d[data-angle="180"] .face-bottom {
+  pointer-events: none;
+}
+
+#lock-stage-3d[data-angle="270"] .face-right,
+#lock-stage-3d[data-angle="270"] .face-bottom {
+  pointer-events: none;
 }
 
 .face-top {

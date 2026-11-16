@@ -52,6 +52,10 @@ export class LubanUI {
     this.hintedBlockIds = new Set();
     this.flashingBlockerIds = new Set();
 
+    if (this.dom.stage3d) {
+      this.dom.stage3d.dataset.angle = '0';
+    }
+
     this.initCanvasResize();
   }
 
@@ -74,6 +78,7 @@ export class LubanUI {
    */
   setViewAngle(angle) {
     if (this.dom.stage3d) {
+      this.dom.stage3d.dataset.angle = `${angle}`;
       this.dom.stage3d.style.transform = `rotateX(58deg) rotateZ(${-45 + angle}deg)`;
     }
     if (this.dom.hudAngleIndicator) {
@@ -144,13 +149,20 @@ export class LubanUI {
         <div class="prism-face face-top" style="width: ${w}px; height: ${d}px; left: ${-w / 2}px; top: ${-d / 2}px; transform: rotateX(90deg) translateZ(${h / 2}px); background: ${stain.colorTop};">
           ${labelHtml}
         </div>
-        <div class="prism-face face-bottom" style="width: ${w}px; height: ${d}px; left: ${-w / 2}px; top: ${-d / 2}px; transform: rotateX(-90deg) translateZ(${h / 2}px); background: ${stain.colorRight};">
+        <div class="prism-face face-bottom" style="width: ${w}px; height: ${d}px; left: ${-w / 2}px; top: ${-d / 2}px; transform: rotateX(-90deg) translateZ(${h / 2}px); background: ${stain.colorTop};">
+          ${labelHtml}
         </div>
       `;
 
-      blockWrap.addEventListener('click', (e) => {
+      // Attach clicks to both the faces and the block wrap for robust hit-testing
+      const handleClick = (e) => {
         e.stopPropagation();
         onBlockClick(block.id, blockWrap);
+      };
+
+      blockWrap.addEventListener('click', handleClick);
+      blockWrap.querySelectorAll('.prism-face').forEach(face => {
+        face.addEventListener('click', handleClick);
       });
 
       this.dom.assembly.appendChild(blockWrap);
@@ -217,9 +229,12 @@ export class LubanUI {
     else if (block.axis === 'y') dy = dist;
     else dz = dist;
 
-    el.style.transition = 'transform 0.28s cubic-bezier(0.2, 0.9, 0.3, 1), opacity 0.28s ease';
+    el.style.transition = 'transform 0.28s cubic-bezier(0.2, 0.9, 0.3, 1)';
     el.style.transform = `translate3d(${block.pos.x + dx}px, ${block.pos.y + dy}px, ${block.pos.z + dz}px)`;
-    el.style.opacity = '0';
+    el.querySelectorAll('.prism-face').forEach(face => {
+      face.style.transition = 'opacity 0.28s ease';
+      face.style.opacity = '0';
+    });
 
     setTimeout(onComplete, 290);
   }
