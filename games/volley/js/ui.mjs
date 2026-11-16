@@ -35,6 +35,12 @@ export function createUi({ game, onIntent } = {}) {
     el.banner = $("#banner");
     el.bannerText = $("#banner-text");
     el.toast = $("#toast");
+    el.turnGuide = $("#turn-guide");
+    el.turnGuideText = $("#turn-guide-text");
+    el.floatsLayer = $("#floats-layer");
+    el.barrels = [$("#barrel-0"), $("#barrel-1")];
+    el.powerBoxes = [$("#power-box-0"), $("#power-box-1")];
+    el.weaponDescs = [$("#weapon-desc-0"), $("#weapon-desc-1")];
     el.windMark = $("#wind-flag-mark");
     el.windValue = $("#wind-value");
     el.chipRound = $("#chip-round");
@@ -234,6 +240,20 @@ export function createUi({ game, onIntent } = {}) {
       dot.parentElement.classList.toggle("active", on);
     });
     document.body.dataset.turn = String(view.turn);
+
+    if (el.turnGuideText) {
+      if (view.phase === "flight") {
+        el.turnGuideText.textContent = t("turnGuideFlying", lang);
+      } else if (view.phase === "aim") {
+        if (view.mode === "ai") {
+          el.turnGuideText.textContent = view.turn === 0 ? t("turnGuideWaitingAi", lang) : t("turnGuideYourTurn", lang);
+        } else {
+          el.turnGuideText.textContent = view.turn === 0 ? t("turnGuideP1Turn", lang) : t("turnGuideP2Turn", lang);
+        }
+      } else {
+        el.turnGuideText.textContent = "";
+      }
+    }
   }
 
   function renderConsoles(view) {
@@ -257,6 +277,13 @@ export function createUi({ game, onIntent } = {}) {
         chip.setAttribute("aria-pressed", mine ? "true" : "false");
         chip.hidden = !raw.weapons.includes(chip.dataset.weapon);
       });
+      if (el.weaponDescs && el.weaponDescs[i]) {
+        el.weaponDescs[i].textContent = t(`weapon${cap(p.weapon)}Desc`, lang);
+      }
+      if (el.barrels && el.barrels[i]) {
+        const deg = i === 0 ? -p.angle : p.angle;
+        el.barrels[i].style.transform = `rotate(${deg}deg)`;
+      }
       el.fireBtns[i].disabled = locked || view.phase !== "aim" || view.turn !== i;
     });
   }
@@ -313,6 +340,53 @@ export function createUi({ game, onIntent } = {}) {
   function drawFx() {
     if (!ctx) return;
     ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    // Aiming trajectory preview
+    const raw = game.raw;
+    if (raw && raw.phase === "aim") {
+      const activeSide = raw.turn;
+      const isAi = mode.mode === "ai" && activeSide === 0;
+      if (!isAi) {
+        const pts = E.previewPath(raw, activeSide);
+        if (pts && pts.length > 1) {
+          ctx.save();
+          const isWest = activeSide === 0;
+          if (ctx.setLineDash) {
+            ctx.setLineDash([5, 5]);
+            ctx.lineDashOffset = -performance.now() * 0.015;
+          }
+          ctx.lineWidth = 2.2;
+          ctx.strokeStyle = isWest ? "rgba(235, 120, 60, 0.75)" : "rgba(80, 170, 240, 0.75)";
+          ctx.shadowColor = isWest ? "rgba(235, 100, 40, 0.5)" : "rgba(60, 150, 240, 0.5)";
+          ctx.shadowBlur = 6;
+          ctx.beginPath();
+          pts.forEach((p, i) => {
+            const x = (p.x / WORLD.w) * canvas.width;
+            const y = (1 - p.y / WORLD.h) * canvas.height;
+            if (i === 0) ctx.moveTo(x, y);
+            else ctx.lineTo(x, y);
+          });
+          ctx.stroke();
+
+          // Reticle at landing endpoint
+          const end = pts[pts.length - 1];
+          const endX = (end.x / WORLD.w) * canvas.width;
+          const endY = (1 - end.y / WORLD.h) * canvas.height;
+          if (ctx.setLineDash) ctx.setLineDash([]);
+          ctx.lineWidth = 1.8;
+          ctx.strokeStyle = isWest ? "rgba(255, 180, 60, 0.9)" : "rgba(100, 200, 255, 0.9)";
+          ctx.beginPath();
+          ctx.arc(endX, endY, 6, 0, Math.PI * 2);
+          ctx.moveTo(endX - 9, endY);
+          ctx.lineTo(endX + 9, endY);
+          ctx.moveTo(endX, endY - 9);
+          ctx.lineTo(endX, endY + 9);
+          ctx.stroke();
+          ctx.restore();
+        }
+      }
+    }
+
     // trail
     ctx.lineWidth = 2;
     ctx.strokeStyle = "rgba(255, 244, 214, 0.55)";
@@ -336,6 +410,17 @@ export function createUi({ game, onIntent } = {}) {
       const y = (1 - p.y / WORLD.h) * canvas.height;
       ctx.fillRect(x - p.s / 2, y - p.s / 2, p.s, p.s);
     });
+  }
+
+  function spawnDamageFloat(x, y, text, isCrit = false) {
+    if (!el.floatsLayer) return;
+    const item = document.createElement("div");
+    item.className = isCrit ? "damage-float crit" : "damage-float";
+    item.textContent = text;
+    item.style.left = pctX(x);
+    item.style.bottom = pctY(y);
+    el.floatsLayer.appendChild(item);
+    setTimeout(() => item.remove(), 880);
   }
 
   function burst(x, y, opts = {}) {
@@ -367,11 +452,22 @@ export function createUi({ game, onIntent } = {}) {
           Audio.play("boom");
           break;
         }
+        case "fire":
+          if (el.barrels && el.barrels[ev.side]) {
+            el.barrels[ev.side].classList.add("recoil");
+            setTimeout(() => el.barrels[ev.side].classList.remove("recoil"), 240);
+          }
+          break;
         case "blockDamage":
           if (ev.hp <= 0) Audio.play("thud");
+          spawnDamageFloat(ev.x ?? 500, ev.y ?? 100, `-${ev.dmg || 15}`);
           break;
         case "blockDestroy":
           flashBlock(ev.id);
+          spawnDamageFloat(ev.x ?? 500, ev.y ?? 100, `-${ev.dmg || 20}`, true);
+          break;
+        case "flagDamage":
+          spawnDamageFloat(ev.x ?? 500, ev.y ?? 120, `-${ev.dmg || 20}`, true);
           break;
         case "collapse":
           Audio.play("collapse");

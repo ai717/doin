@@ -81,9 +81,29 @@
           <div class="windflag" id="windflag"><i class="pole"></i><i class="cloth"></i></div>
         </div>
         <div id="stage" class="stage">
+          <div id="cannons-layer" class="cannons-layer">
+            <div id="cannon-0" class="cannon west">
+              <div class="cannon-base">
+                <div class="cannon-wheel"></div>
+              </div>
+              <div class="cannon-barrel" id="barrel-0">
+                <span class="barrel-muzzle"></span>
+              </div>
+            </div>
+            <div id="cannon-1" class="cannon east">
+              <div class="cannon-base">
+                <div class="cannon-wheel"></div>
+              </div>
+              <div class="cannon-barrel" id="barrel-1">
+                <span class="barrel-muzzle"></span>
+              </div>
+            </div>
+          </div>
           <div id="blocks-layer" class="blocks-layer"></div>
           <div id="shells-layer" class="shells-layer"></div>
+          <div id="floats-layer" class="floats-layer"></div>
           <canvas id="fx-canvas" width="1000" height="460" aria-hidden="true"></canvas>
+          <div id="turn-guide" class="turn-guide" aria-live="polite"><span id="turn-guide-text"></span></div>
         </div>
         <div id="banner" class="banner" aria-live="assertive"><span id="banner-text"></span></div>
       </div>
@@ -101,11 +121,16 @@
               <button type="button" id="btn-angle-inc-0" class="pad-key" data-i18n-attr="aria-label:angleUp">▴</button>
             </div>
             <div class="console-row">
-              <div class="power-meter"><i id="power-fill-0"></i></div>
-              <strong id="power-0">60</strong>
-              <span class="power-label" data-i18n="power">蓄力</span>
+              <button type="button" id="btn-power-dec-0" class="pad-key" data-i18n-attr="aria-label:powerDown">▾</button>
+              <div class="power-meter-box" id="power-box-0" title="可点击或滑动调节蓄力">
+                <div class="power-meter"><i id="power-fill-0"></i></div>
+                <strong id="power-0">90</strong>
+                <span class="power-label" data-i18n="power">蓄力</span>
+              </div>
+              <button type="button" id="btn-power-inc-0" class="pad-key" data-i18n-attr="aria-label:powerUp">▴</button>
             </div>
             <div class="weapon-row" id="weapons-0" role="radiogroup" data-i18n-attr="aria-label:ariaWeapons"></div>
+            <div class="weapon-desc-hint" id="weapon-desc-0"></div>
             <button type="button" id="btn-fire-0" class="btn-fire" data-i18n="fire">开炮</button>
           </div>
         </div>
@@ -125,11 +150,16 @@
               <button type="button" id="btn-angle-inc-1" class="pad-key" data-i18n-attr="aria-label:angleUp">▴</button>
             </div>
             <div class="console-row">
-              <div class="power-meter"><i id="power-fill-1"></i></div>
-              <strong id="power-1">60</strong>
-              <span class="power-label" data-i18n="power">蓄力</span>
+              <button type="button" id="btn-power-dec-1" class="pad-key" data-i18n-attr="aria-label:powerDown">▾</button>
+              <div class="power-meter-box" id="power-box-1" title="可点击或滑动调节蓄力">
+                <div class="power-meter"><i id="power-fill-1"></i></div>
+                <strong id="power-1">90</strong>
+                <span class="power-label" data-i18n="power">蓄力</span>
+              </div>
+              <button type="button" id="btn-power-inc-1" class="pad-key" data-i18n-attr="aria-label:powerUp">▴</button>
             </div>
             <div class="weapon-row" id="weapons-1" role="radiogroup" data-i18n-attr="aria-label:ariaWeapons"></div>
+            <div class="weapon-desc-hint" id="weapon-desc-1"></div>
             <button type="button" id="btn-fire-1" class="btn-fire" data-i18n="fire">开炮</button>
           </div>
         </div>

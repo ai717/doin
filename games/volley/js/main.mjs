@@ -317,9 +317,40 @@ function bindUi() {
 
   // console pads
   for (let side = 0; side < 2; side++) {
-    $(`#btn-angle-inc-${side}`).addEventListener("click", () => nudgeAngle(side, +1));
-    $(`#btn-angle-dec-${side}`).addEventListener("click", () => nudgeAngle(side, -1));
-    $(`#btn-fire-${side}`).addEventListener("click", () => handleIntent("fire", { side }));
+    const btnInc = $(`#btn-angle-inc-${side}`);
+    const btnDec = $(`#btn-angle-dec-${side}`);
+    const btnPInc = $(`#btn-power-inc-${side}`);
+    const btnPDec = $(`#btn-power-dec-${side}`);
+    const btnF = $(`#btn-fire-${side}`);
+    const box = $(`#power-box-${side}`);
+
+    if (btnInc) btnInc.addEventListener("click", () => nudgeAngle(side, +1));
+    if (btnDec) btnDec.addEventListener("click", () => nudgeAngle(side, -1));
+    if (btnPInc) btnPInc.addEventListener("click", () => nudgePower(side, +5));
+    if (btnPDec) btnPDec.addEventListener("click", () => nudgePower(side, -5));
+    if (btnF) btnF.addEventListener("click", () => handleIntent("fire", { side }));
+
+    if (box) {
+      const setPowerFromEvent = (e) => {
+        const meter = box.querySelector(".power-meter");
+        if (!meter) return;
+        const rect = meter.getBoundingClientRect();
+        if (rect.width > 0) {
+          const ratio = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
+          handleIntent("power", { side, power: Math.round(ratio * 100) });
+        }
+      };
+      box.addEventListener("pointerdown", (e) => {
+        setPowerFromEvent(e);
+        const onMove = (ev) => setPowerFromEvent(ev);
+        const onUp = () => {
+          window.removeEventListener("pointermove", onMove);
+          window.removeEventListener("pointerup", onUp);
+        };
+        window.addEventListener("pointermove", onMove);
+        window.addEventListener("pointerup", onUp);
+      });
+    }
   }
 
   // keyboard
@@ -375,6 +406,10 @@ function nudgeAngle(side, dir) {
   handleIntent("angle", { side, delta: dir * 2 });
 }
 
+function nudgePower(side, dir) {
+  handleIntent("power", { side, delta: dir });
+}
+
 function clamp(v, lo, hi) {
   return Math.max(lo, Math.min(hi, v));
 }
@@ -408,6 +443,12 @@ function onKeydown(e) {
   if (ui.overlayOpen()) return;
   const side = game.raw().turn;
   if (game.meta.mode === "ai" && side === 0) return;
+  if (key >= "1" && key <= "6") {
+    const idx = Number(key) - 1;
+    if (idx < E.WEAPON_IDS.length) {
+      handleIntent("weapon", { side, weapon: E.WEAPON_IDS[idx] });
+    }
+  }
   if (side === 0) {
     if (key === "a" || key === "A") nudgeAngle(0, -1);
     else if (key === "d" || key === "D") nudgeAngle(0, +1);

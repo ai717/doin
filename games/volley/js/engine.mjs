@@ -231,9 +231,9 @@ function damageBlock(state, block, dmg, cause) {
   block.hp -= applied;
   if (block.hp <= 0) {
     block.alive = false;
-    pushEvent(state, { type: "blockDestroy", id: block.id, side: block.side, x: block.x + block.w / 2, y: block.y + block.h / 2, cause });
+    pushEvent(state, { type: "blockDestroy", id: block.id, side: block.side, x: block.x + block.w / 2, y: block.y + block.h / 2, cause, dmg: applied });
   } else {
-    pushEvent(state, { type: "blockDamage", id: block.id, side: block.side, hp: block.hp });
+    pushEvent(state, { type: "blockDamage", id: block.id, side: block.side, hp: block.hp, x: block.x + block.w / 2, y: block.y + block.h / 2, dmg: applied });
   }
   return applied;
 }
@@ -242,7 +242,7 @@ function damageFlag(state, flag, dmg, cause) {
   if (flag.down || dmg <= 0) return 0;
   const applied = Math.min(flag.hp, Math.round(dmg));
   flag.hp -= applied;
-  pushEvent(state, { type: "flagDamage", side: flag.side, hp: flag.hp, cause });
+  pushEvent(state, { type: "flagDamage", side: flag.side, hp: flag.hp, x: flag.x + flag.w / 2, y: flag.y + flag.h / 2, dmg: applied, cause });
   if (flag.hp <= 0) {
     flag.down = true;
     pushEvent(state, { type: "flagDown", side: flag.side, cause });
@@ -508,7 +508,7 @@ export function fire(state) {
   spawnShell(state, side, player.weapon, m.x, m.y, vx, vy);
   state.shotCtx = { owner: side, enemyDamage: 0, selfDamage: 0, singleDamage: 0 };
   state.phase = "flight";
-  pushEvent(state, { type: "fire", owner: side, weapon: player.weapon, x: m.x, y: m.y, vx, vy });
+  pushEvent(state, { type: "fire", side, owner: side, weapon: player.weapon, x: m.x, y: m.y, vx, vy });
   return true;
 }
 

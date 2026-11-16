@@ -293,7 +293,133 @@ body {
 
 .stage { position: absolute; inset: 0; }
 
-.blocks-layer, .shells-layer { position: absolute; inset: 0; pointer-events: none; }
+.blocks-layer, .shells-layer, .floats-layer, .cannons-layer { position: absolute; inset: 0; pointer-events: none; }
+
+/* ---------- cannons layer ---------- */
+
+.cannon {
+  position: absolute;
+  width: 44px;
+  height: 28px;
+  pointer-events: none;
+  z-index: 8;
+}
+.cannon.west { left: 18.2%; bottom: 9.8%; }
+.cannon.east { left: 78.4%; bottom: 9.8%; }
+
+.cannon-base {
+  position: absolute;
+  bottom: 0;
+  width: 32px;
+  height: 14px;
+  background: linear-gradient(180deg, #6b4423, #422912);
+  border-radius: 4px;
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.15);
+}
+.cannon.west .cannon-base { left: 0; }
+.cannon.east .cannon-base { right: 0; }
+
+.cannon-wheel {
+  position: absolute;
+  bottom: -3px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at center, #8a5a2e 3px, #422912 4px, #a87948 7px, #2b1809 9px);
+  border: 1px solid rgba(0, 0, 0, 0.6);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
+}
+.cannon.west .cannon-wheel { left: 6px; }
+.cannon.east .cannon-wheel { right: 6px; }
+
+.cannon-barrel {
+  position: absolute;
+  width: 28px;
+  height: 10px;
+  background: linear-gradient(180deg, #dfb76c 0%, #a87b32 45%, #634516 100%);
+  border-radius: 2px 5px 5px 2px;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.4), 0 2px 4px rgba(0, 0, 0, 0.5);
+  transition: transform 0.08s ease-out;
+  z-index: 2;
+}
+.cannon.west .cannon-barrel {
+  left: 10px;
+  bottom: 8px;
+  transform-origin: 4px 5px;
+  transform: rotate(-45deg);
+}
+.cannon.east .cannon-barrel {
+  right: 10px;
+  bottom: 8px;
+  transform-origin: 24px 5px;
+  transform: rotate(45deg);
+  border-radius: 5px 2px 2px 5px;
+}
+
+.barrel-muzzle {
+  position: absolute;
+  top: -1px;
+  width: 4px;
+  height: 12px;
+  background: #eed898;
+  border-radius: 2px;
+}
+.cannon.west .barrel-muzzle { right: 0; }
+.cannon.east .barrel-muzzle { left: 0; }
+
+.cannon-barrel.recoil {
+  animation: cannonRecoil 0.22s ease-out;
+}
+@keyframes cannonRecoil {
+  0% { transform: scaleX(0.82) translateX(-4px); }
+  100% { transform: scaleX(1) translateX(0); }
+}
+
+/* Turn guide banner */
+.turn-guide {
+  position: absolute;
+  top: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 5px 18px;
+  border-radius: 999px;
+  background: rgba(28, 20, 12, 0.88);
+  border: 1px solid rgba(232, 200, 122, 0.4);
+  color: var(--gold);
+  font-size: 0.82rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.6);
+  pointer-events: none;
+  z-index: 25;
+  white-space: nowrap;
+  backdrop-filter: blur(4px);
+  transition: all 0.25s ease;
+}
+
+/* Floating combat text */
+.damage-float {
+  position: absolute;
+  font-size: 1.15rem;
+  font-weight: 900;
+  color: #ffda6a;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.9), 0 0 10px rgba(255, 120, 40, 0.8);
+  pointer-events: none;
+  z-index: 40;
+  animation: floatUpFade 0.85s cubic-bezier(0.2, 0.8, 0.3, 1) forwards;
+  white-space: nowrap;
+}
+.damage-float.crit {
+  color: #ff5238;
+  font-size: 1.35rem;
+  text-shadow: 0 2px 6px rgba(0, 0, 0, 0.9), 0 0 14px rgba(255, 60, 40, 1);
+}
+@keyframes floatUpFade {
+  0% { transform: translate(-50%, 0) scale(0.7); opacity: 0; }
+  25% { transform: translate(-50%, -12px) scale(1.15); opacity: 1; }
+  100% { transform: translate(-50%, -36px) scale(1); opacity: 0; }
+}
 
 #fx-canvas { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
 
@@ -453,6 +579,23 @@ body {
 .aim-dial strong { font-size: 1.05rem; font-variant-numeric: tabular-nums; }
 .aim-dial span { font-size: 0.64rem; color: var(--ink-faint); letter-spacing: 0.1em; }
 
+.power-meter-box {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: ew-resize;
+  padding: 3px 6px;
+  border-radius: 6px;
+  border: 1px solid transparent;
+  transition: border-color 0.15s ease, background 0.15s ease;
+  user-select: none;
+}
+.power-meter-box:hover {
+  border-color: rgba(232, 200, 122, 0.3);
+  background: rgba(255, 255, 255, 0.03);
+}
+
 .power-meter {
   flex: 1;
   height: 12px;
@@ -460,6 +603,7 @@ body {
   background: var(--panel);
   box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.6);
   overflow: hidden;
+  pointer-events: none;
 }
 .power-meter i {
   display: block;
@@ -467,13 +611,21 @@ body {
   width: 60%;
   border-radius: inherit;
   background: linear-gradient(90deg, var(--gold), #d6763e);
-  transition: width 0.12s linear;
+  transition: width 0.08s linear;
 }
 .console-side.east .power-meter i { background: linear-gradient(90deg, var(--blue), #7ec3ea); }
 #power-0, #power-1 { min-width: 2.2em; text-align: right; font-variant-numeric: tabular-nums; font-size: 0.95rem; }
 .power-label { font-size: 0.64rem; color: var(--ink-faint); letter-spacing: 0.1em; }
 
 .weapon-row { display: flex; gap: 6px; flex-wrap: wrap; }
+
+.weapon-desc-hint {
+  font-size: 0.68rem;
+  color: var(--gold);
+  letter-spacing: 0.04em;
+  min-height: 1.2em;
+  line-height: 1.2;
+}
 
 .weapon-chip {
   appearance: none;
