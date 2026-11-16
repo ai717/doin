@@ -8,9 +8,9 @@ import { aiDecide } from "./ai.mjs";
 const DEFAULT_TIMING = {
   thinkBaseMs: 620,
   thinkJitterMs: 240,
-  walkStartDelayMs: 0,
-  hopMs: 130,
-  hopSettleMs: 300,
+  walkStartDelayMs: 680,
+  hopMs: 260,
+  hopSettleMs: 340,
   resolveDelayMs: 480,
   endTurnDelayMs: 620,
 };

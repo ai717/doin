@@ -43,10 +43,10 @@ export const strings = {
     dockPaused: "已暂停",
     dockYourTurn: "轮到你了",
 
-    buyBtn: "买地 $n",
+    buyBtn: "买地 {n}",
     skipBtn: "放弃",
-    upgradeBtn: "盖屋 $n",
-    redeemBtn: "赎回 $n",
+    upgradeBtn: "盖屋 {n}",
+    redeemBtn: "赎回 {n}",
     shopTitle: "道具店",
     shopHint: "踩中道具店可购一件（手牌上限 3）",
     shopBuy: "购入",
@@ -289,10 +289,10 @@ export const strings = {
     dockPaused: "Paused",
     dockYourTurn: "Your turn",
 
-    buyBtn: "Buy $n",
+    buyBtn: "Buy {n}",
     skipBtn: "Pass",
-    upgradeBtn: "Build $n",
-    redeemBtn: "Redeem $n",
+    upgradeBtn: "Build {n}",
+    redeemBtn: "Redeem {n}",
     shopTitle: "Item Shop",
     shopHint: "Land here to buy one item (hand limit 3)",
     shopBuy: "Buy",
@@ -502,6 +502,10 @@ export function translate(locale, key, params = {}) {
   let text = table[key] ?? strings.zh[key] ?? key;
   for (const [name, value] of Object.entries(params)) {
     text = text.split(`{${name}}`).join(String(value));
+    if (name === "n") {
+      const s = String(value);
+      text = text.split("$n").join(s.startsWith("$") ? s : `$${s}`);
+    }
   }
   return text;
 }

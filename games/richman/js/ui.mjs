@@ -193,7 +193,7 @@ export function createUI({ game, actions, locale: initialLocale }) {
     for (const player of state.players) {
       const token = document.createElement("div");
       token.className = `token tk-${player.id}`;
-      token.innerHTML = `<span class="token-body"></span><span class="token-rim"></span>`;
+      token.innerHTML = `<span class="token-figure"><span class="token-head"></span><span class="token-collar"></span><span class="token-body"></span><span class="token-pedestal"></span></span><span class="token-shadow"></span>`;
       layer.appendChild(token);
       tokenEls.set(player.id, token);
       visualPos.set(player.id, player.pos);
@@ -219,7 +219,7 @@ export function createUI({ game, actions, locale: initialLocale }) {
     const spread = dwellers.length > 1 ? (index - (dwellers.length - 1) / 2) * 16 : 0;
     visualPos.set(playerId, tile);
     if (instant) token.classList.add("no-anim");
-    token.style.transform = `translate(${x - 14 + spread}px, ${y - 20}px)`;
+    token.style.transform = `translate(${x - 16 + spread}px, ${y - 36}px)`;
     token.style.zIndex = String(20 + index);
     if (instant) {
       void token.offsetWidth;
@@ -583,11 +583,12 @@ export function createUI({ game, actions, locale: initialLocale }) {
   function rollDiceVisual(value) {
     const die = $("die");
     if (!die) return;
-    die.style.setProperty("--rx", "0deg");
-    die.style.setProperty("--ry", "0deg");
+    const [rx, ry] = DICE_TRANSFORM[value] ?? [0, 0];
+    die.style.setProperty("--rx", `${rx}deg`);
+    die.style.setProperty("--ry", `${ry}deg`);
     void die.offsetWidth;
     showDice(value, true);
-    diceTimer = setTimeout(() => showDice(value, false), 560);
+    diceTimer = setTimeout(() => showDice(value, false), 650);
   }
 
   // ------------------------------------------------------------ 日志与回合
