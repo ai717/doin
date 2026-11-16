@@ -5,12 +5,15 @@
 import { mulberry32, applyAction, createMatch, currentPlayer, housesOf, netWorth, propsOf, setCount } from "./engine.mjs";
 import { aiDecide } from "./ai.mjs";
 
-const THINK_BASE_MS = 620;
-const THINK_JITTER_MS = 240;
-const HOP_MS = 130;
-const HOP_SETTLE_MS = 300;
-const RESOLVE_DELAY_MS = 480;
-const END_TURN_DELAY_MS = 620;
+const DEFAULT_TIMING = {
+  thinkBaseMs: 620,
+  thinkJitterMs: 240,
+  walkStartDelayMs: 0,
+  hopMs: 130,
+  hopSettleMs: 300,
+  resolveDelayMs: 480,
+  endTurnDelayMs: 620,
+};
 
 export function buildPlayers(mode, aiLevel) {
   if (mode === "2p") {
@@ -33,7 +36,13 @@ export function buildPlayers(mode, aiLevel) {
 }
 
 export function createGame(options = {}) {
-  const { onEvent = () => {}, onOver = () => {}, onChange = () => {} } = options;
+  const {
+    onEvent = () => {},
+    onOver = () => {},
+    onChange = () => {},
+    timing: customTiming = {},
+  } = options;
+  const timing = { ...DEFAULT_TIMING, ...customTiming };
 
   let state = null;
   let config = null;
@@ -87,30 +96,30 @@ export function createGame(options = {}) {
       case "moving": {
         const path = state.move?.path ?? [];
         path.forEach((tile, index) => {
-          schedule(HOP_MS * index + 80, () => onEvent({ type: "hop", player: player.id, tile }, state));
+          schedule(timing.walkStartDelayMs + timing.hopMs * index, () => onEvent({ type: "hop", player: player.id, tile }, state));
         });
-        schedule(HOP_MS * path.length + HOP_SETTLE_MS, () => dispatch({ type: "arrive" }));
+        schedule(timing.walkStartDelayMs + timing.hopMs * path.length + timing.hopSettleMs, () => dispatch({ type: "arrive" }));
         break;
       }
       case "act": {
         if (state.pending) {
           if (player.human) onEvent({ type: "prompt" }, state);
-          else schedule(THINK_BASE_MS + Math.floor(aiRng() * THINK_JITTER_MS), aiStep);
+          else schedule(timing.thinkBaseMs + Math.floor(aiRng() * timing.thinkJitterMs), aiStep);
         } else {
-          schedule(END_TURN_DELAY_MS, () => dispatch({ type: "endTurn" }));
+          schedule(timing.endTurnDelayMs, () => dispatch({ type: "endTurn" }));
         }
         break;
       }
       case "pre": {
         if (player.human) onEvent({ type: "prompt" }, state);
-        else schedule(THINK_BASE_MS + Math.floor(aiRng() * THINK_JITTER_MS), aiStep);
+        else schedule(timing.thinkBaseMs + Math.floor(aiRng() * timing.thinkJitterMs), aiStep);
         break;
       }
       case "blockPick":
       case "swapMine":
       case "swapTheirs": {
         if (player.human) onEvent({ type: "prompt" }, state);
-        else schedule(THINK_BASE_MS + 160, aiStep);
+        else schedule(timing.thinkBaseMs + 160, aiStep);
         break;
       }
       default:

@@ -25,6 +25,14 @@ function play(fn, ...args) {
 }
 
 const game = createGame({
+  timing: {
+    thinkBaseMs: 900,
+    thinkJitterMs: 280,
+    walkStartDelayMs: 460, // Wait for 3D dice to finish spinning & settle before pawn hops!
+    hopMs: 220,            // Rhythmic 220ms per step (clear, audible, deliberate)
+    hopSettleMs: 450,      // Pause on arrival for landed spotlight
+    endTurnDelayMs: 1600,  // 1.6s so player can read rent / chance / bonus events!
+  },
   onEvent: (event) => {
     playEventAudio(event);
     ui?.onGameEvent(event);

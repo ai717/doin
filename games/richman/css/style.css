@@ -710,7 +710,7 @@ body {
   left: 0;
   width: 28px;
   height: 28px;
-  transition: transform 0.2s cubic-bezier(0.25, 1, 0.5, 1);
+  transition: transform 0.22s cubic-bezier(0.25, 0.8, 0.25, 1);
   filter: drop-shadow(0 4px 5px rgba(0, 0, 0, 0.55));
 }
 
@@ -719,11 +719,11 @@ body {
 }
 
 .token.is-hopping .token-body {
-  animation: tokenJumpHop 0.2s cubic-bezier(0.25, 1, 0.5, 1);
+  animation: tokenJumpHop 0.22s cubic-bezier(0.25, 1, 0.5, 1);
 }
 
 .token.is-hopping .token-rim {
-  animation: tokenShadowHop 0.2s cubic-bezier(0.25, 1, 0.5, 1);
+  animation: tokenShadowHop 0.22s cubic-bezier(0.25, 1, 0.5, 1);
 }
 
 @keyframes tokenJumpHop {
