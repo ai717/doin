@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>拆毛线解压 · DOIN 在线小游戏</title>
+  <meta name="description" content="在暖光毛线工坊里点线盘收毛线：上层线压住下层线，凑满三色自动合成毛线球，40 关四章与解压自由拆模式，零广告即开即玩。">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="css/style.css?v=dev">
+</head>
+<body>
+  <div id="game-app">
+    <header id="stage-bar">
+      <a href="/" id="back-home" class="bar-btn" data-i18n="backHome">← 门户</a>
+      <h1 id="stage-title" data-i18n="appTitle">拆毛线解压</h1>
+      <span id="hud-mode" class="hud-chip" data-i18n="modeLevel">闯关模式</span>
+      <div class="stage-actions">
+        <button id="btn-levels" class="bar-btn" type="button" data-i18n="btnLevels">选关</button>
+        <button id="btn-mode" class="bar-btn" type="button" data-i18n="btnRelax">自由拆</button>
+        <button id="btn-sound" class="bar-btn icon-only" type="button" aria-label="音效" data-i18n-aria="btnSoundOn">🔊</button>
+        <button id="btn-lang" class="bar-btn" type="button">EN</button>
+        <button id="btn-help" class="bar-btn icon-only" type="button" aria-label="玩法说明" data-i18n-aria="btnHelp">?</button>
+      </div>
+    </header>
+
+    <main id="stage-core">
+      <section id="workbench" aria-label="yarn workbench">
+        <div id="hud-strip">
+          <span id="hud-level" class="hud-item">第 1 关</span>
+          <span id="hud-time" class="hud-item">用时 0:00</span>
+          <span id="hud-undos" class="hud-item">撤销 0</span>
+          <span id="hud-slots" class="hud-item">槽位 0/6</span>
+        </div>
+        <div id="loom-frame">
+          <svg id="yarn-stage" viewBox="0 0 100 62" role="img" aria-label="yarn object"></svg>
+          <div id="float-layer" aria-hidden="true"></div>
+        </div>
+        <div id="spool-arc" aria-label="yarn spools"></div>
+        <div id="slot-dock">
+          <span id="slot-label" data-i18n="slotLabel">收线槽</span>
+          <div id="slot-rack"></div>
+        </div>
+        <div id="action-base">
+          <button id="btn-undo" class="bench-btn" type="button" data-i18n="btnUndo">撤销</button>
+          <button id="btn-hint" class="bench-btn" type="button" data-i18n="btnHint">提示</button>
+          <button id="btn-restart" class="bench-btn" type="button" data-i18n="btnRestart">重开</button>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <div id="end-overlay" class="overlay" role="dialog" aria-modal="true">
+    <div id="end-panel" class="panel">
+      <h2 id="end-title" data-i18n="winTitle">解开啦！</h2>
+      <div id="end-stars" class="end-stars"></div>
+      <div id="end-stats"></div>
+      <div id="end-actions" class="end-actions"></div>
+    </div>
+  </div>
+
+  <div id="levels-drawer" class="overlay" role="dialog" aria-modal="true">
+    <div class="panel drawer-panel">
+      <div class="drawer-head">
+        <h2 id="drawer-title" data-i18n="levelsTitle">选择关卡</h2>
+        <button id="drawer-close" class="bench-btn" type="button" data-i18n="btnClose">关闭</button>
+      </div>
+      <div id="levels-body"></div>
+    </div>
+  </div>
+
+  <div id="help-modal" class="overlay" role="dialog" aria-modal="true">
+    <div class="panel help-panel">
+      <h2 data-i18n="helpTitle">玩法说明</h2>
+      <p data-i18n="helpRule1">规则一</p>
+      <p data-i18n="helpRule2">规则二</p>
+      <p data-i18n="helpRule3">规则三</p>
+      <p data-i18n="helpRule4">规则四</p>
+      <button id="help-close" class="bench-btn primary" type="button" data-i18n="btnClose">关闭</button>
+    </div>
+  </div>
+
+  <div id="toast" aria-live="polite"></div>
+
+  <noscript><p>需要启用 JavaScript 才能游玩。 JavaScript is required to play.</p></noscript>
+  <script type="module" src="js/main.mjs?v=dev"></script>
+</body>
+</html>

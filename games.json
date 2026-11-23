@@ -1,6 +1,19 @@
 {
   "games": [
     {
+      "title": "拆毛线解压",
+      "slug": "unravel",
+      "desc": "在暖光毛线工坊里点线盘收毛线：上层线压住下层线，凑满三个同色自动合成毛线球，槽位全满则败。40 关四章、结扣线与双色线机制、逆向生成 100% 可解，另设无失败判定的解压自由拆，零广告即开即玩。",
+      "icon": "🧶",
+      "cover": "/assets/covers/unravel.webp",
+      "tags": ["益智", "解压", "消除", "解谜", "休闲"],
+      "url": "/unravel/",
+      "en": {
+        "title": "Unravel Yarn",
+        "desc": "Pull yarn off a tangled ball on a warm workshop bench: upper strands press the lower ones, three of a color merge into a ball, a full rack ends the run. 40 tiers with knots and two-tone strands, reverse-generated 100% solvable, plus a fail-free Relax mode. Instant ad-free play."
+      }
+    },
+    {
       "title": "成语纵横榜 · 典故图鉴",
       "slug": "idiom",
       "desc": "在摊开的线装典故书里补全纵横成语：点字库零打字门槛，填对即解锁典故卡，八榜八十关、三档提示与星级评断。英文模式整套切换为 Word Crossword，中英各八十关与独立图鉴，零广告即开即玩。",
