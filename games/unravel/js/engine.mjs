@@ -46,9 +46,9 @@ function makeRng(next) {
 
 export const STAGE = { w: 100, h: 62, hubX: 50, hubY: 30, hubR: 23 };
 
-function sampleChord(rng) {
+function sampleChord(rng, spanMin, spanMax) {
   const theta = rng.next() * Math.PI * 2;
-  const span = ((60 + rng.next() * 90) / 2) * (Math.PI / 180);
+  const span = ((spanMin + rng.next() * (spanMax - spanMin)) / 2) * (Math.PI / 180);
   const radius = STAGE.hubR * (0.78 + rng.next() * 0.34);
   const jitterX = (rng.next() - 0.5) * 3;
   const jitterY = (rng.next() - 0.5) * 3;
@@ -138,7 +138,7 @@ export function resolveMerges(slots) {
   return { slots: out, merges };
 }
 
-function simulateOrder(order, cap) {
+function simulateOrder(order, cap, tightCap) {
   let slots = [];
   for (const strand of order) {
     const chips = strandChips(strand);
@@ -146,15 +146,43 @@ function simulateOrder(order, cap) {
     slots = slots.concat(chips);
     const res = resolveMerges(slots);
     slots = res.slots;
-    if (slots.length >= cap) return false;
+    if (slots.length > tightCap) return false;
   }
   return true;
 }
 
-function pickFeasibleOrder(strands, cap, rng, attempts) {
+// Greedy constructive order: repeatedly collect the strand that keeps the
+// slot rack lowest. Finds low-peak reference orders that random shuffles miss
+// when several dual strands must fit under a tight cadence bound.
+function constructiveOrder(strands, cap) {
+  const remaining = strands.slice();
+  const order = [];
+  let slots = [];
+  while (remaining.length) {
+    let choice = -1;
+    let bestScore = -Infinity;
+    for (let i = 0; i < remaining.length; i++) {
+      const chips = strandChips(remaining[i]);
+      if (slots.length + chips.length > cap) continue;
+      const next = resolveMerges(slots.concat(chips)).slots;
+      const score = (slots.length - next.length) * 10 - next.length;
+      if (score > bestScore) {
+        bestScore = score;
+        choice = i;
+      }
+    }
+    if (choice < 0) return null;
+    const strand = remaining.splice(choice, 1)[0];
+    order.push(strand);
+    slots = resolveMerges(slots.concat(strandChips(strand))).slots;
+  }
+  return order;
+}
+
+function pickFeasibleOrder(strands, cap, tightCap, rng, attempts) {
   for (let t = 0; t < attempts; t++) {
     const order = rng.shuffle(strands);
-    if (simulateOrder(order, cap)) return order;
+    if (simulateOrder(order, cap, tightCap)) return order;
   }
   const dualList = strands.filter((s) => s.dual);
   const singleList = strands.filter((s) => !s.dual);
@@ -169,18 +197,19 @@ function pickFeasibleOrder(strands, cap, rng, attempts) {
     grouped.concat(dualList),
     dualList.concat(grouped),
     rng.shuffle(strands),
+    constructiveOrder(strands, cap),
   ];
   for (const order of arrangements) {
-    if (simulateOrder(order, cap)) return order;
+    if (order && simulateOrder(order, cap, tightCap)) return order;
   }
   return null;
 }
 
-function pickChord(rng, placed, needClean) {
+function pickChord(rng, placed, needClean, spanMin, spanMax) {
   let fallback = null;
   let fallbackCrossings = Infinity;
   for (let attempt = 0; attempt < 60; attempt++) {
-    const chord = sampleChord(rng);
+    const chord = sampleChord(rng, spanMin, spanMax);
     let crossings = 0;
     for (const other of placed) {
       if (chordsCross(chord, other)) crossings++;
@@ -197,10 +226,15 @@ function pickChord(rng, placed, needClean) {
 
 function tryGenerate(params, seed, duals, mode, cap, shuffleAttempts) {
   const rng = makeRng(mulberry32(seed));
+  const spanMin = params.spanMin ?? 60;
+  const spanMax = params.spanMax ?? 150;
   const chips = [];
-  for (const color of params.colors) {
-    for (let i = 0; i < params.triplets * 3; i++) chips.push({ color });
-  }
+  const tripletList = Array.isArray(params.triplets)
+    ? params.triplets
+    : params.colors.map(() => params.triplets);
+  params.colors.forEach((color, i) => {
+    for (let k = 0; k < tripletList[i] * 3; k++) chips.push({ color });
+  });
   const dualStrands = [];
   for (let d = 0; d < duals; d++) {
     let a = -1;
@@ -228,7 +262,7 @@ function tryGenerate(params, seed, duals, mode, cap, shuffleAttempts) {
   const n = strands.length;
   if (n < 3) return null;
 
-  const order = pickFeasibleOrder(strands, cap, rng, shuffleAttempts ?? 240);
+  const order = pickFeasibleOrder(strands, cap, params.tightCap ?? cap, rng, shuffleAttempts ?? 240);
   if (!order) return null;
 
   const knotCount = Math.min(params.knots ?? 0, Math.floor(n / 3));
@@ -239,7 +273,7 @@ function tryGenerate(params, seed, duals, mode, cap, shuffleAttempts) {
   const minFree = Math.min(params.minFree ?? 2, n - 1);
   const paths = [];
   for (let j = 0; j < n; j++) {
-    paths.push(pickChord(rng, paths, j < minFree));
+    paths.push(pickChord(rng, paths, j < minFree, spanMin, spanMax));
   }
 
   // coverage: every earlier strand whose path crosses becomes a blocker, so the
@@ -274,6 +308,7 @@ function tryGenerate(params, seed, duals, mode, cap, shuffleAttempts) {
     id: params.id,
     mode,
     cap,
+    tightCap: Math.min(params.tightCap ?? cap, cap),
     object: params.object,
     colors: params.colors.slice(),
     parMs: params.parMs,
@@ -399,9 +434,19 @@ export function freeStrands(board, state) {
     .sort((a, b) => a.layer - b.layer);
 }
 
-// One-step hint: prefer a strand that completes or extends a slot color.
+// One-step hint. Solver-backed from the current position, so following hints
+// always stays on a winning route; falls back to a slot-color heuristic when
+// the search budget runs out.
 export function hint(board, state) {
   if (!state || state.status !== "playing") return null;
+  const idx = new Map(board.strands.map((s, i) => [s.id, i]));
+  const mask = state.collected.reduce((m, id) => m | (1 << idx.get(id)), 0);
+  const solved = solveFrom(board, mask, state.slots, 150000);
+  if (solved && solved.next) {
+    const strand = findStrand(board, solved.next);
+    if (strand.knot && !state.untied[strand.id]) return { kind: "untie", id: strand.id };
+    return { kind: "collect", id: strand.id };
+  }
   let best = null;
   let untieCandidate = null;
   for (const strand of freeStrands(board, state)) {
@@ -423,6 +468,12 @@ export function hint(board, state) {
 // set because merges always reduce each color count modulo three) ----
 
 export function solveBoard(board, nodeBudget = 120000) {
+  return solveFrom(board, 0, [], nodeBudget).path;
+}
+
+// Solver core, usable from any mid-game position. Returns the full remaining
+// move list (strand ids, knots ignored because untying is free) or null.
+export function solveFrom(board, startMask, startSlots, nodeBudget = 120000) {
   const n = board.strands.length;
   const idx = new Map(board.strands.map((s, i) => [s.id, i]));
   const rank = new Map(board.solution.map((id, i) => [id, i]));
@@ -462,6 +513,6 @@ export function solveBoard(board, nodeBudget = 120000) {
   }
 
   const out = [];
-  if (!dfs(0, [], out)) return null;
-  return out.map((i) => board.strands[i].id);
+  if (!dfs(startMask, startSlots.slice(), out)) return null;
+  return { path: out.map((i) => board.strands[i].id), next: out.length ? board.strands[out[0]].id : null };
 }
