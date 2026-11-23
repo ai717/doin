@@ -2,7 +2,7 @@
 // a single warm wooden bench with the tangled object on a loom, spool heads in
 // an arc below it, and a recessed slot rack at the bottom.
 
-import { freeStrands, pathD, STAGE } from "./engine.mjs";
+import { freeStrands, isColorDone, pathD, STAGE } from "./engine.mjs";
 import { getLang, htmlLang, setLang, translate } from "./i18n.mjs";
 
 const COLOR_HEX = {
@@ -50,27 +50,29 @@ export function displaySortedStrands(board) {
 
 function silhouetteSvg(object) {
   const shadow = '<ellipse class="sil-shadow" cx="50" cy="55.5" rx="27" ry="3.6"></ellipse>';
+  const patches = '<g class="sil-patches"></g>';
+  const wrap = (inner) => `${shadow}${inner}${patches}`;
   if (object === "sweater") {
-    return `${shadow}
+    return wrap(`
       <g class="sil">
         <path d="M38 15 L62 15 Q70 15 74 21 L83 34 Q85 38 81 41 L74 44 L70 38 L70 50 Q70 55 65 55 L35 55 Q30 55 30 50 L30 38 L26 44 L19 41 Q15 38 17 34 L26 21 Q30 15 38 15 Z"></path>
         <path class="sil-line" d="M43 15 Q50 21 57 15"></path>
         <path class="sil-line" d="M35 49 L65 49"></path>
         <path class="sil-line" d="M35 52 L65 52"></path>
-      </g>`;
+      </g>`);
   }
   if (object === "doll") {
-    return `${shadow}
+    return wrap(`
       <g class="sil">
         <circle cx="50" cy="20" r="9"></circle>
         <path d="M50 29 Q64 31 64 43 L64 52 Q64 56 60 56 L40 56 Q36 56 36 52 L36 43 Q36 31 50 29 Z"></path>
         <circle class="sil-line-fill" cx="30" cy="42" r="5"></circle>
         <circle class="sil-line-fill" cx="70" cy="42" r="5"></circle>
         <path class="sil-line" d="M44 52 L56 52"></path>
-      </g>`;
+      </g>`);
   }
   if (object === "garden") {
-    return `${shadow}
+    return wrap(`
       <g class="sil">
         <path class="sil-stem" d="M38 55 Q36 44 40 36"></path>
         <path class="sil-stem" d="M55 55 Q56 42 52 30"></path>
@@ -79,16 +81,25 @@ function silhouetteSvg(object) {
         <g class="sil-flower"><circle cx="52" cy="22" r="4"></circle><circle cx="47.5" cy="18.5" r="3.4"></circle><circle cx="56.5" cy="18.5" r="3.4"></circle><circle cx="49.2" cy="15.5" r="3.4"></circle><circle cx="54.8" cy="15.5" r="3.4"></circle></g>
         <g class="sil-flower"><circle cx="66" cy="35" r="4"></circle><circle cx="61.5" cy="31.5" r="3.4"></circle><circle cx="70.5" cy="31.5" r="3.4"></circle><circle cx="63.2" cy="28.5" r="3.4"></circle><circle cx="68.8" cy="28.5" r="3.4"></circle></g>
         <path class="sil-line" d="M60 52 Q64 49 68 52"></path>
-      </g>`;
+      </g>`);
   }
-  return `${shadow}
+  return wrap(`
     <g class="sil">
       <circle cx="50" cy="30" r="23"></circle>
       <path class="sil-line" d="M30 24 Q50 12 68 26"></path>
       <path class="sil-line" d="M27 34 Q50 44 73 30"></path>
       <path class="sil-line" d="M36 47 Q52 55 66 44"></path>
-    </g>`;
+    </g>`);
 }
+
+// Completed colors knit colored patches onto the object, genre-style meta
+// feedback: the tangle gives way to the finished piece underneath.
+const PATCH_ANCHORS = {
+  yarnball: [[50, 10], [67, 16], [76, 31], [64, 47], [42, 51], [29, 42], [25, 25]],
+  sweater: [[40, 22], [55, 20], [68, 28], [74, 40], [64, 50], [44, 51], [33, 40]],
+  doll: [[50, 12], [60, 20], [58, 34], [48, 42], [38, 36], [40, 22]],
+  garden: [[40, 24], [52, 15], [66, 31], [33, 33], [57, 26], [74, 38]],
+};
 
 function strandSvg(strand) {
   const d = pathD(strand.path);
@@ -143,6 +154,7 @@ export function createUi(hooks) {
   let undoCountVal = 0;
   let timerText = "";
   let toastTimer = null;
+  let patchCount = 0;
 
   function cache() {
     refs.title = $("stage-title");
@@ -190,6 +202,8 @@ export function createUi(hooks) {
     if (!board || !refs.stage) return;
     const strands = board.strands.slice().sort((a, b) => b.layer - a.layer);
     refs.stage.innerHTML = `${silhouetteSvg(board.object)}${strands.map(strandSvg).join("")}`;
+    refs.silPatches = refs.stage.querySelector(".sil-patches");
+    patchCount = 0;
     refs.stage.querySelectorAll(".strand").forEach((node) => {
       node.addEventListener("click", () => onStrandClick(node.dataset.id, node));
       node.addEventListener("mouseenter", () => glowPartner(node.dataset.id, true));
@@ -324,9 +338,28 @@ export function createUi(hooks) {
         node.classList.toggle("clickable", freeIds.has(strand.id));
       }
     }
+    renderPatches();
     renderSpools();
     renderSlots();
     renderHud();
+  }
+
+  function renderPatches() {
+    if (!refs.silPatches || !board || !state) return;
+    const anchors = PATCH_ANCHORS[board.object] || PATCH_ANCHORS.yarnball;
+    const done = board.colors.filter((color) => isColorDone(board, state, color));
+    refs.silPatches.innerHTML = done
+      .map((color, i) => {
+        const anchor = anchors[i % anchors.length];
+        const seen = i < patchCount ? " seen" : "";
+        return `<g class="sil-patch${seen}" style="--yarn:${colorHexOf(color)}">
+          <circle cx="${anchor[0]}" cy="${anchor[1]}" r="5.2"></circle>
+          <path class="patch-knit" d="M ${anchor[0] - 3.4} ${anchor[1] - 1.6} Q ${anchor[0]} ${anchor[1] - 3.4} ${anchor[0] + 3.4} ${anchor[1] - 1.6}"></path>
+          <path class="patch-knit" d="M ${anchor[0] - 3.4} ${anchor[1] + 1.6} Q ${anchor[0]} ${anchor[1] - 0.2} ${anchor[0] + 3.4} ${anchor[1] + 1.6}"></path>
+        </g>`;
+      })
+      .join("");
+    patchCount = done.length;
   }
 
   function chipFly(id, chips) {
@@ -376,15 +409,11 @@ export function createUi(hooks) {
       if (event.completed && event.completed.length) {
         rollBall(event.completed[event.completed.length - 1], true);
       }
-      renderState();
       if (event.status === "won") {
         refs.stage.classList.add("unraveled");
       }
-    } else if (event.type === "untie") {
-      renderState();
     } else if (event.type === "undo") {
       refs.stage.classList.remove("unraveled");
-      renderState();
     }
   }
 
