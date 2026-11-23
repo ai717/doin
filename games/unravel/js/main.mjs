@@ -2,14 +2,14 @@
 // portal bridge. Instant play: a ready board is on screen the moment the module
 // loads; the levels drawer is a lightweight overlay, never a blocking mask.
 
-import { freeStrands } from "./engine.mjs";
+import { freeStrands, isFree } from "./engine.mjs";
 import { createController } from "./game.mjs";
 import { LEVEL_COUNT } from "./levels.mjs";
 import { translate } from "./i18n.mjs";
 import * as audio from "./audio.mjs";
 import { formatTime, computeStars } from "./score.mjs";
 import { loadProgress, patchProgress } from "./storage.mjs";
-import { createUi } from "./ui.mjs";
+import { createUi, displaySortedStrands } from "./ui.mjs";
 
 let progress = loadProgress();
 const ctrl = createController();
@@ -137,10 +137,12 @@ function refreshLevelsDrawer() {
 function selectFreeTarget(index) {
   const state = ctrl.ctrl.state;
   if (!state || state.status !== "playing") return;
-  const free = freeStrands(ctrl.ctrl.board, state).filter(
-    (s) => !s.knot || state.untied[s.id],
-  );
-  const target = free[index];
+  const targets = displaySortedStrands(ctrl.ctrl.board).filter((s) => {
+    if (state.collected.includes(s.id)) return false;
+    if (!isFree(ctrl.ctrl.board, state, s.id)) return false;
+    return !s.knot || state.untied[s.id];
+  });
+  const target = targets[index];
   if (!target) return;
   handleEvent(ctrl.collect(target.id));
 }

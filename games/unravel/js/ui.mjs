@@ -36,6 +36,18 @@ function starsDots(n) {
   return html;
 }
 
+// Spool arc order follows the strand's on-stage position (path midpoint x),
+// never the solution order: the shelf must not leak the answer sequence.
+function displayKey(strand) {
+  return (strand.path.x1 + strand.path.x2) / 2;
+}
+
+export function displaySortedStrands(board) {
+  return board.strands
+    .slice()
+    .sort((a, b) => displayKey(a) - displayKey(b) || (a.id < b.id ? -1 : 1));
+}
+
 function silhouetteSvg(object) {
   const shadow = '<ellipse class="sil-shadow" cx="50" cy="55.5" rx="27" ry="3.6"></ellipse>';
   if (object === "sweater") {
@@ -178,12 +190,44 @@ export function createUi(hooks) {
     if (!board || !refs.stage) return;
     const strands = board.strands.slice().sort((a, b) => b.layer - a.layer);
     refs.stage.innerHTML = `${silhouetteSvg(board.object)}${strands.map(strandSvg).join("")}`;
+    refs.stage.querySelectorAll(".strand").forEach((node) => {
+      node.addEventListener("click", () => onStrandClick(node.dataset.id, node));
+      node.addEventListener("mouseenter", () => glowPartner(node.dataset.id, true));
+      node.addEventListener("mouseleave", () => glowPartner(node.dataset.id, false));
+    });
     renderState();
+  }
+
+  // Find-the-thread-end interaction: the drawn strand itself is clickable,
+  // matching the genre's on-object pulling.
+  function onStrandClick(id, node) {
+    const strand = board.strands.find((s) => s.id === id);
+    if (!strand || state.collected.includes(id)) return;
+    const free = freeStrands(board, state).some((s) => s.id === id);
+    if (!free) {
+      hooks.reject();
+      return;
+    }
+    if (strand.knot && !state.untied[id]) {
+      hooks.untie(id);
+      return;
+    }
+    hooks.collect(id);
+  }
+
+  // Hover a spool -> glow its strand on the tangle and vice versa.
+  function glowPartner(id, on) {
+    if (!refs.stage || !refs.spoolArc) return;
+    const strand = refs.stage.querySelector(`.strand[data-id="${id}"]`);
+    const spool = refs.spoolArc.querySelector(`.spool[data-id="${id}"]`);
+    for (const node of [strand, spool]) {
+      if (node) node.classList.toggle("hover-glow", on);
+    }
   }
 
   function renderSpools() {
     if (!board || !state) return;
-    const ordered = board.strands.slice().sort((a, b) => a.layer - b.layer);
+    const ordered = displaySortedStrands(board);
     const freeIds = new Set(freeStrands(board, state).map((s) => s.id));
     let freeIndex = 0;
     const n = ordered.length;
@@ -211,6 +255,8 @@ export function createUi(hooks) {
     refs.spoolArc.querySelectorAll(".spool").forEach((node) => {
       node.style.setProperty("--arc-y", `${node.dataset.arc}px`);
       node.addEventListener("click", () => onSpoolClick(node.dataset.id, node));
+      node.addEventListener("mouseenter", () => glowPartner(node.dataset.id, true));
+      node.addEventListener("mouseleave", () => glowPartner(node.dataset.id, false));
     });
   }
 
@@ -267,9 +313,16 @@ export function createUi(hooks) {
   function renderState() {
     if (!board || !state || !refs.stage || !refs.spoolArc || !refs.slotRack) return;
     const strands = board.strands.slice().sort((a, b) => b.layer - a.layer);
+    const freeIds = new Set(freeStrands(board, state).map((s) => s.id));
     for (const strand of strands) {
       const node = refs.stage.querySelector(`.strand[data-id="${strand.id}"]`);
-      if (node && state.collected.includes(strand.id)) node.classList.add("is-pulled");
+      if (!node) continue;
+      if (state.collected.includes(strand.id)) {
+        node.classList.add("is-pulled");
+        node.classList.remove("clickable");
+      } else {
+        node.classList.toggle("clickable", freeIds.has(strand.id));
+      }
     }
     renderSpools();
     renderSlots();

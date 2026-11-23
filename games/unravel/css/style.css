@@ -230,6 +230,27 @@ body {
 .strand {
   opacity: 1;
   transition: opacity 0.45s ease 0.12s;
+  cursor: default;
+}
+
+.strand.clickable {
+  cursor: pointer;
+}
+
+.strand.is-pulled {
+  pointer-events: none;
+}
+
+.strand.hover-glow {
+  filter: drop-shadow(0 0 2.4px rgba(255, 216, 140, 0.9));
+}
+
+.spool.hover-glow {
+  filter: brightness(1.2);
+}
+
+.spool.hover-glow::after {
+  opacity: 1;
 }
 
 .strand .s-under,

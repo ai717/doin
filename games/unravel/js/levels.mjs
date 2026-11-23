@@ -32,8 +32,8 @@ function tripletsFor(deep, count) {
 const TABLE = [
   ["yarnball", 3, 0, 0, 0, 3, 60, 150, 4],
   ["yarnball", 3, 0, 0, 0, 3, 65, 150, 4],
-  ["yarnball", 3, 0, 0, 0, 2, 70, 155, 4],
-  ["yarnball", 4, 0, 0, 0, 3, 70, 155, 4],
+  ["yarnball", 3, 1, 0, 0, 2, 70, 155, 4],
+  ["yarnball", 4, 1, 0, 0, 2, 70, 155, 4],
   ["yarnball", 4, 0, 0, 0, 2, 70, 155, 4],
   ["yarnball", 4, 1, 0, 0, 2, 75, 155, 4],
   ["yarnball", 4, 1, 0, 0, 2, 75, 160, 4],
