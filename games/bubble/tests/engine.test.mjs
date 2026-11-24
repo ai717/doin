@@ -120,6 +120,21 @@ describe("engine.mjs bubble arena rules and determinism", () => {
     assert.equal(state.players[0].needles, 0);
   });
 
+  it("dropping a bubble allows walking multiple tiles away smoothly at 60fps", () => {
+    let state = createInitialState({ seed: 12345 });
+    // P1 starts at (1.5, 1.5)
+    state = dropBubble(state, 0);
+    assert.equal(state.bubbles.length, 1);
+
+    // Simulate 60fps movement (dt = 0.016) walking right for 40 frames (~2 tiles)
+    for (let f = 0; f < 40; f++) {
+      state = stepFrame(state, 0.016, { p1: { right: true } });
+    }
+
+    // P1 must have walked past cell 2 and into cell 3 (> 3.0), never blocked at 2.3
+    assert.ok(state.players[0].x > 3.0, `Expected player x > 3.0, got ${state.players[0].x}`);
+  });
+
   it("1000+ step random walk invariant check", () => {
     let state = createInitialState({ seed: 777 });
 

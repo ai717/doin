@@ -91,17 +91,26 @@ window.addEventListener("DOMContentLoaded", () => {
   });
 
   function updateKeyInputs() {
-    // P1 方向 (WASD)
-    controller.setPlayerInput(0, "up", activeKeys.has("w"));
-    controller.setPlayerInput(0, "down", activeKeys.has("s"));
-    controller.setPlayerInput(0, "left", activeKeys.has("a"));
-    controller.setPlayerInput(0, "right", activeKeys.has("d"));
+    const isSolo = controller.getState().mode === "solo";
 
-    // P2 方向 (Arrows)
-    controller.setPlayerInput(1, "up", activeKeys.has("arrowup"));
-    controller.setPlayerInput(1, "down", activeKeys.has("arrowdown"));
-    controller.setPlayerInput(1, "left", activeKeys.has("arrowleft"));
-    controller.setPlayerInput(1, "right", activeKeys.has("arrowright"));
+    // P1 方向 (WASD，单人模式下同时支持上下左右方向键)
+    const p1Up = activeKeys.has("w") || (isSolo && activeKeys.has("arrowup"));
+    const p1Down = activeKeys.has("s") || (isSolo && activeKeys.has("arrowdown"));
+    const p1Left = activeKeys.has("a") || (isSolo && activeKeys.has("arrowleft"));
+    const p1Right = activeKeys.has("d") || (isSolo && activeKeys.has("arrowright"));
+
+    controller.setPlayerInput(0, "up", p1Up);
+    controller.setPlayerInput(0, "down", p1Down);
+    controller.setPlayerInput(0, "left", p1Left);
+    controller.setPlayerInput(0, "right", p1Right);
+
+    // P2 方向 (仅在双人模式下响应方向键)
+    if (!isSolo) {
+      controller.setPlayerInput(1, "up", activeKeys.has("arrowup"));
+      controller.setPlayerInput(1, "down", activeKeys.has("arrowdown"));
+      controller.setPlayerInput(1, "left", activeKeys.has("arrowleft"));
+      controller.setPlayerInput(1, "right", activeKeys.has("arrowright"));
+    }
   }
 
   // 7. 失焦与切后台自动暂停 (Visibility Auto-Pause)

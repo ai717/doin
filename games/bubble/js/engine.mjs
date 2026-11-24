@@ -193,6 +193,19 @@ export function dropBubble(state, playerId) {
   // 检查水泡上限
   if (player.activeBubbles >= player.maxBubbles) return state;
 
+  // 记录当前在水泡格子内的存活角色，允许其走离（走离后变为完全阻挡）
+  const pRadius = 0.38;
+  const playersInside = state.players
+    .filter((p) => {
+      if (!p.alive) return false;
+      const pLeft = p.x - pRadius;
+      const pRight = p.x + pRadius;
+      const pTop = p.y - pRadius;
+      const pBottom = p.y + pRadius;
+      return pRight > col && pLeft < col + 1 && pBottom > row && pTop < row + 1;
+    })
+    .map((p) => p.id);
+
   const newBubble = {
     id: state.nextBubbleId,
     col,
@@ -203,6 +216,7 @@ export function dropBubble(state, playerId) {
     sliding: false,
     slideDx: 0,
     slideDy: 0,
+    playersInside,
   };
 
   const updatedPlayers = state.players.map((p) =>
@@ -311,6 +325,22 @@ export function stepFrame(state, dt, inputs = {}) {
       } else {
         b.sliding = false;
       }
+    }
+
+    // 更新水泡的 playersInside (当角色完全脱离该格子时移出白名单，之后不可再走回)
+    let playersInside = Array.isArray(b.playersInside) ? [...b.playersInside] : [];
+    if (playersInside.length > 0) {
+      playersInside = playersInside.filter((pid) => {
+        const player = players.find((p) => p.id === pid && p.alive);
+        if (!player) return false;
+        const pRadius = 0.38;
+        const pLeft = player.x - pRadius;
+        const pRight = player.x + pRadius;
+        const pTop = player.y - pRadius;
+        const pBottom = player.y + pRadius;
+        return pRight > b.col && pLeft < b.col + 1 && pBottom > b.row && pTop < b.row + 1;
+      });
+      b.playersInside = playersInside;
     }
 
     b.fuse -= dt;
@@ -447,7 +477,7 @@ export function stepFrame(state, dt, inputs = {}) {
       const targetX = p.x + moveInput.dx * step;
       const targetY = p.y + moveInput.dy * step;
 
-      // 四向走位与拐角自适应吸附 (Corner sliding)
+      // 四向走位与拐角自适应吸附 (Corner sliding & alignment)
       if (canMoveTo(targetX, targetY, grid, remainingBubbles, p.id)) {
         p.x = targetX;
         p.y = targetY;
@@ -455,6 +485,33 @@ export function stepFrame(state, dt, inputs = {}) {
         p.x = targetX;
       } else if (moveInput.dy !== 0 && canMoveTo(p.x, targetY, grid, remainingBubbles, p.id)) {
         p.y = targetY;
+      } else {
+        // 拐角自适应平滑吸附：若按单一方向前进时卡在拐角边缘，自动对齐到格子中心走廊
+        if (moveInput.dx !== 0 && moveInput.dy === 0) {
+          const centerY = Math.floor(p.y) + 0.5;
+          const diff = centerY - p.y;
+          if (Math.abs(diff) > 0.01) {
+            const nudge = Math.sign(diff) * Math.min(Math.abs(diff), step * 0.85);
+            if (canMoveTo(p.x, p.y + nudge, grid, remainingBubbles, p.id)) {
+              p.y += nudge;
+              if (canMoveTo(targetX, p.y, grid, remainingBubbles, p.id)) {
+                p.x = targetX;
+              }
+            }
+          }
+        } else if (moveInput.dy !== 0 && moveInput.dx === 0) {
+          const centerX = Math.floor(p.x) + 0.5;
+          const diff = centerX - p.x;
+          if (Math.abs(diff) > 0.01) {
+            const nudge = Math.sign(diff) * Math.min(Math.abs(diff), step * 0.85);
+            if (canMoveTo(p.x + nudge, p.y, grid, remainingBubbles, p.id)) {
+              p.x += nudge;
+              if (canMoveTo(p.x, targetY, grid, remainingBubbles, p.id)) {
+                p.y = targetY;
+              }
+            }
+          }
+        }
       }
 
       // 更新朝向
@@ -560,13 +617,13 @@ function canMoveTo(x, y, grid, bubbles, playerId) {
       if (grid[r][c] === TILE.HARD || grid[r][c] === TILE.SOFT) {
         return false;
       }
-      // 水泡碰撞：如果自身就在水泡中心格，允许走开；完全在外部则阻挡
+      // 水泡碰撞：如果自身仍在水泡白名单内（放置水泡时处于其中且尚未完全离开），允许走离；完全在外部则阻挡
       const bubble = bubbles.find((b) => b.col === c && b.row === r);
       if (bubble) {
-        const centerDist = Math.hypot(x - (c + 0.5), y - (r + 0.5));
-        if (centerDist > 0.85) {
-          return false;
+        if (Array.isArray(bubble.playersInside) && bubble.playersInside.includes(playerId)) {
+          continue; // 允许走离，不阻挡
         }
+        return false; // 已在外部，完全阻挡无法进入
       }
     }
   }
