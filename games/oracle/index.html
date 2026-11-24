@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>甲骨文溯源连线 · DOIN 在线小游戏</title>
+  <meta name="description" content="看三千年前的甲骨刻痕像什么，猜出今天的本字：点甲骨、连本字，配对成功即播放甲骨到楷书的字形演变。四章二十四关字族题卷，误配只提示不惩罚，零广告即开即玩。">
+  <meta name="theme-color" content="#160d09">
+  <link rel="icon" href="favicon.svg?v=dev" type="image/svg+xml">
+  <link rel="stylesheet" href="css/style.css?v=dev">
+</head>
+<body>
+  <div id="app">
+    <div id="scroll-cabinet">
+      <div class="scroll-glint" aria-hidden="true"></div>
+      <header id="top-bar">
+        <a href="/" id="back-home" class="bar-btn" data-i18n="backHome" data-i18n-aria="backHomeAria">← 门户</a>
+        <h1 id="brand">
+          <span id="brand-main" data-i18n="appTitle">甲骨文溯源连线</span>
+          <span id="brand-sub" data-i18n="appSub">认甲骨 · 猜本字</span>
+        </h1>
+        <nav id="top-actions">
+          <button id="btn-levels" class="bar-btn" type="button" data-i18n="levels" data-i18n-aria="levelsAria">选关</button>
+          <button id="btn-sound" class="bar-btn icon-btn" type="button" data-i18n-aria="soundOn" aria-label="音效">♪</button>
+          <button id="btn-lang" class="bar-btn" type="button" data-i18n-aria="langToggle" aria-label="切换语言">EN</button>
+          <button id="btn-help" class="bar-btn icon-btn" type="button" data-i18n-aria="helpAria" aria-label="玩法">?</button>
+        </nav>
+      </header>
+
+      <div id="hud">
+        <div class="hud-cell hud-chapter-cell">
+          <span class="hud-kicker" data-i18n="hudChapter">章节</span>
+          <strong id="hud-chapter"></strong>
+        </div>
+        <div class="hud-cell">
+          <span class="hud-kicker" data-i18n="hudLevel">关卡</span>
+          <strong id="hud-level"></strong>
+        </div>
+        <div class="hud-cell">
+          <span class="hud-kicker" data-i18n="hudPairs">配对</span>
+          <strong id="hud-pairs"></strong>
+        </div>
+        <div class="hud-cell">
+          <span class="hud-kicker" data-i18n="hudErrors">误配</span>
+          <strong id="hud-errors">0</strong>
+        </div>
+        <div class="hud-cell">
+          <span class="hud-kicker" data-i18n="hudTime">用时</span>
+          <strong id="hud-time">00:00</strong>
+        </div>
+        <div class="hud-cell hud-stars-cell">
+          <span class="hud-kicker" data-i18n="hudStars">总星</span>
+          <strong id="hud-stars"></strong>
+        </div>
+      </div>
+
+      <main id="scroll-stage">
+        <div class="roller roller-left" aria-hidden="true"><i></i></div>
+        <div id="scroll-paper" role="group" data-i18n-aria="boardAria">
+          <span class="paper-grain" aria-hidden="true"></span>
+          <span class="paper-corner corner-tl" aria-hidden="true"></span>
+          <span class="paper-corner corner-br" aria-hidden="true"></span>
+          <div id="board" class="board">
+            <svg id="link-layer" class="link-layer" aria-hidden="true"></svg>
+            <section class="board-column oracle-column">
+              <h2 class="column-head" data-i18n="oracleSide">甲骨字形</h2>
+              <div id="oracle-grid" class="card-grid"></div>
+            </section>
+            <div class="board-seal" aria-hidden="true"><span data-i18n="tracingMark">溯源</span></div>
+            <section class="board-column char-column">
+              <h2 class="column-head" data-i18n="charSide">本字与释义</h2>
+              <div id="char-grid" class="card-grid"></div>
+            </section>
+          </div>
+          <div id="toast" class="toast" role="status" aria-live="polite"></div>
+        </div>
+        <div class="roller roller-right" aria-hidden="true"><i></i></div>
+      </main>
+
+      <footer id="deck">
+        <p id="key-hint" data-i18n="keyHint">点甲骨卡再点本字卡 · 方向键移动 · Enter 选择 · Esc 取消 · R 重开</p>
+      </footer>
+    </div>
+
+    <section id="panel-levels" class="panel" hidden aria-labelledby="levels-title">
+      <div class="sheet sheet-wide">
+        <div class="panel-head">
+          <h2 id="levels-title" data-i18n="selectTitle">字族章节</h2>
+          <button class="close-btn" type="button" data-close data-i18n-aria="closeAria">✕</button>
+        </div>
+        <p class="panel-desc" data-i18n="selectDesc">四章二十四关，每关一组甲骨与本字。点任意一关即刻开始。</p>
+        <p id="select-total" class="select-total"></p>
+        <div id="level-groups" class="level-groups"></div>
+        <p class="panel-hint" data-i18n="selectHint">进度、星级与最佳用时都会自动保存。</p>
+      </div>
+    </section>
+
+    <section id="panel-help" class="panel" hidden aria-labelledby="help-title">
+      <div class="sheet">
+        <div class="panel-head">
+          <h2 id="help-title" data-i18n="helpTitle">怎么玩</h2>
+          <button class="close-btn" type="button" data-close data-i18n-aria="closeAria">✕</button>
+        </div>
+        <ol class="help-list">
+          <li data-i18n="help1">看甲骨字形像什么，猜出它对应的今天汉字。</li>
+          <li data-i18n="help2">先点一张甲骨卡，再点一张本字卡；顺序反过来也可以。</li>
+          <li data-i18n="help3">配对正确会拉出朱砂溯源线，并播放这个字三千年的字形演变。</li>
+          <li data-i18n="help4">配错只会轻轻抖一下，不扣分、不重来，可以继续尝试。</li>
+          <li data-i18n="help5">整关全部配对即通关；误配 0 次三星，1 至 2 次二星，其余一星。</li>
+          <li data-i18n="help6">用时只作记录，没有倒计时；呼出选关或切到后台时会自动冻结计时。</li>
+          <li data-i18n="help7">方向键在卡片间移动焦点，Enter 选择，Esc 取消，R 重开本关。</li>
+        </ol>
+        <h3 class="help-sub" data-i18n="controlsTitle">操作</h3>
+        <p class="help-controls" data-i18n="controlsKeyboard">点选两张卡片连线 · 方向键移动 · Enter 选择 · Esc 取消 · R 重开</p>
+        <p class="help-controls" data-i18n="controlsTouch">点甲骨卡，再点本字卡；再点同一张可取消</p>
+      </div>
+    </section>
+
+    <section id="panel-result" class="panel" hidden aria-labelledby="result-title">
+      <div class="sheet sheet-result">
+        <div class="panel-head">
+          <h2 id="result-title" data-i18n="resultTitle">本关溯源完成</h2>
+        </div>
+        <div id="result-stars" class="result-stars" aria-hidden="true"></div>
+        <div id="result-rows" class="result-rows"></div>
+        <p id="result-note" class="result-note" hidden></p>
+        <div class="recommend">
+          <p class="recommend-title" data-i18n="nextUp">接下来玩</p>
+          <div class="recommend-links">
+            <a href="../hanzi/" class="recommend-link" data-i18n="gameHanzi">字灵拆拆乐</a>
+            <a href="../idiom/" class="recommend-link" data-i18n="gameIdiom">成语纵横榜</a>
+            <a href="../wordle/" class="recommend-link" data-i18n="gameWordle">每日猜词</a>
+          </div>
+        </div>
+        <div class="panel-actions">
+          <button id="btn-result-next" class="primary-btn" type="button" data-i18n="resultNext">下一关</button>
+          <button id="btn-result-replay" class="ghost-btn" type="button" data-i18n="resultReplay">重玩本关</button>
+          <button id="btn-result-select" class="ghost-btn" type="button" data-i18n="resultSelect">返回字族章节</button>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <div id="evolution" class="evolution" hidden aria-live="polite">
+    <p id="evolution-title" class="evolution-title" data-i18n="evolutionTitle">字形演变</p>
+    <div id="evolution-track" class="evolution-track"></div>
+  </div>
+
+  <noscript><p>需要启用 JavaScript 才能认字。</p></noscript>
+  <script type="module" src="js/main.mjs?v=dev"></script>
+</body>
+</html>

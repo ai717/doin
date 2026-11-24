@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>古代九连环 · DOIN 在线小游戏</title>
+  <meta name="description" content="按口诀上下环解开九连环，3/5/7/9 环四章递进，解环与装环双模式。步数评级、撤销与可动环提示，即开即玩无需注册。">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="css/style.css?v=dev">
+</head>
+<body>
+  <div id="game-app">
+    <header id="stage-bar" data-i18n-aria="stageBar">
+      <a href="/" id="back-home" class="bar-btn" data-i18n="backHome">← 返回门户</a>
+      <div id="stage-brand">
+        <h1 id="stage-title" data-i18n="title">古代九连环</h1>
+        <p id="stage-lede" data-i18n="lede">一环一扣 · 解开千年递归</p>
+      </div>
+      <div class="stage-actions">
+        <button id="btn-levels" class="bar-btn accent" type="button" data-i18n="levels">选关</button>
+        <button id="btn-mode" class="bar-btn" type="button" data-i18n="modes">模式</button>
+        <button id="btn-hint" class="bar-btn" type="button" data-i18n="hint">提示</button>
+        <button id="btn-undo" class="bar-btn" type="button" data-i18n="undo">撤销</button>
+        <button id="btn-reset" class="bar-btn" type="button" data-i18n="reset">重置</button>
+        <button id="btn-pause" class="bar-btn" type="button" data-i18n="pause">暂停</button>
+        <button id="btn-sound" class="bar-btn icon" type="button" data-i18n="mute" data-i18n-aria="sound">音效开</button>
+        <button id="btn-lang" class="bar-btn icon" type="button">EN</button>
+      </div>
+    </header>
+
+    <main id="stage-core">
+      <section id="desk" data-i18n-aria="ariaRings">
+        <div id="desk-grain" aria-hidden="true"></div>
+        <div id="handle-wrap">
+          <div id="handle" aria-hidden="true">
+            <div id="handle-blade"></div>
+            <div id="handle-guard"></div>
+            <div id="handle-grip"></div>
+          </div>
+          <div id="rings" role="group" data-i18n-aria="ariaRings"></div>
+        </div>
+        <div id="level-plaque">
+          <div class="plaque-row">
+            <span class="plaque-key" data-i18n="moves">步数</span>
+            <strong id="stat-moves">0</strong>
+            <span class="plaque-slash">/</span>
+            <span class="plaque-key" data-i18n="optimal">最优</span>
+            <strong id="stat-optimal">0</strong>
+          </div>
+          <div class="plaque-row small">
+            <span><span class="plaque-key" data-i18n="time">用时</span> <span id="stat-time">00:00</span></span>
+            <span><span class="plaque-key" data-i18n="best">最佳</span> <span id="stat-best">—</span></span>
+            <span><span class="plaque-key" data-i18n="rings">环</span> <span id="stat-rings">0</span></span>
+          </div>
+        </div>
+        <div id="level-name" data-i18n="chapter3">三环入门</div>
+      </section>
+
+      <section id="scroll" data-i18n-aria="ariaPaper">
+        <div id="scroll-inner">
+          <h2 id="rule-title" data-i18n="ruleTitle">解环口诀</h2>
+          <ol id="rule-list">
+            <li data-i18n="rule1">第一环随时可上下</li>
+            <li data-i18n="rule2">第二环要看第一环在上</li>
+            <li data-i18n="ruleN">其余环：前一环在上、前面其余全在下</li>
+          </ol>
+          <p id="rule-aim" data-i18n="ruleAim">目标：把环全部下环（解环）或全部上环（装环）</p>
+          <div id="status-line" role="status" aria-live="polite" data-i18n-aria="ariaStatus">
+            <span id="status-text" data-i18n="statusReady">点亮的环可操作 · 试着动第一环</span>
+          </div>
+          <p id="key-help" data-i18n="keyHelp">数字 1-9 操作对应环 · Z 撤销 · R 重置 · H 提示</p>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <div id="level-drawer" class="drawer" role="dialog" data-i18n-aria="ariaLevelDrawer" hidden>
+    <div class="drawer-card">
+      <div class="drawer-head">
+        <h2 data-i18n="levels">选关</h2>
+        <button id="btn-levels-close" class="drawer-close" type="button" aria-label="close">×</button>
+      </div>
+      <div id="chapter-list"></div>
+    </div>
+  </div>
+
+  <div id="pause-layer" class="overlay" role="dialog" hidden>
+    <div class="overlay-card">
+      <h2 data-i18n="pauseTitle">已暂停</h2>
+      <p data-i18n="pauseHint">计时与声音已冻结</p>
+      <button id="btn-resume" class="primary" type="button" data-i18n="resume">继续</button>
+    </div>
+  </div>
+
+  <div id="result-layer" class="overlay" role="dialog" hidden>
+    <div class="overlay-card result-card">
+      <h2 data-i18n="resultTitle">解开了</h2>
+      <div id="result-stars" aria-hidden="true">★★★</div>
+      <p id="result-sub" data-i18n="resultSub">用了 0 步 · 最优 0 步</p>
+      <div id="result-badge" hidden data-i18n="newRecord">新纪录</div>
+      <div id="result-rating" data-i18n="resultStars">步数评级</div>
+      <div class="result-actions">
+        <button id="btn-next" class="primary" type="button" data-i18n="nextLevel">下一关</button>
+        <button id="btn-replay" type="button" data-i18n="replay">再玩一次</button>
+        <button id="btn-result-levels" type="button" data-i18n="levels">选关</button>
+        <button id="btn-result-close" type="button" data-i18n="close">继续解环</button>
+      </div>
+    </div>
+  </div>
+
+  <noscript><p data-i18n="noscript">需要启用 JavaScript 才能解九连环。</p></noscript>
+  <script type="module" src="js/main.mjs?v=dev"></script>
+</body>
+</html>

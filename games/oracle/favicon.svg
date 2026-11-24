@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#2a1a11"/>
+      <stop offset="1" stop-color="#120b07"/>
+    </linearGradient>
+    <linearGradient id="bone" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#f0dfbd"/>
+      <stop offset="1" stop-color="#c7a878"/>
+    </linearGradient>
+    <linearGradient id="seal" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#cf5b45"/>
+      <stop offset="1" stop-color="#9c2f24"/>
+    </linearGradient>
+  </defs>
+  <rect width="64" height="64" rx="14" fill="url(#bg)"/>
+  <rect x="1" y="1" width="62" height="62" rx="13" fill="none" stroke="#d3a45b" stroke-opacity=".45"/>
+  <path d="M18 16 C24 10 42 10 48 16 L52 44 C46 52 20 52 14 44 Z" fill="url(#bone)" stroke="#6a4526" stroke-width="1.4"/>
+  <g fill="none" stroke="#3b2a1a" stroke-width="3.2" stroke-linecap="round">
+    <path d="M27 22 H39 V42 H27 Z"/>
+    <path d="M27 32 H39"/>
+  </g>
+  <path d="M42 18 L52 26" stroke="url(#seal)" stroke-width="3" stroke-linecap="round"/>
+  <circle cx="52" cy="26" r="4.2" fill="url(#seal)"/>
+  <circle cx="52" cy="26" r="1.4" fill="#ffe9d4"/>
+</svg>
