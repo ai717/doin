@@ -1,0 +1,546 @@
+/**
+ * 中华客栈 · 跑堂点菜 (Inn Master)
+ * 沉浸江南客栈暗色系桌面与实体微浮雕质感样式
+ */
+
+:root {
+  --bg-deep: #121618;
+  --bg-wood-dark: #221812;
+  --bg-wood-mid: #38281d;
+  --border-gold: #c29958;
+  --border-subtle: rgba(194, 153, 88, 0.28);
+  --text-primary: #f2e9dc;
+  --text-secondary: #c2b39e;
+  --accent-gold: #ffc857;
+  --accent-red: #d1493b;
+  --accent-green: #48a868;
+  --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+}
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+html, body {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background-color: var(--bg-deep);
+  color: var(--text-primary);
+  font-family: var(--font-family);
+  font-size: 14px;
+}
+
+.game-container {
+  display: flex;
+  flex-direction: column;
+  width: 100vw;
+  height: 100vh;
+  background: radial-gradient(circle at 50% 25%, #1d252a 0%, #101416 100%);
+  padding-bottom: max(16px, env(safe-area-inset-bottom));
+}
+
+/* 顶部导航与状态栏 */
+.top-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 16px;
+  background: linear-gradient(180deg, #2b1f17 0%, #1e150f 100%);
+  border-bottom: 1.5px solid var(--border-gold);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.45);
+  z-index: 10;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.nav-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.brand-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--accent-gold);
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.6);
+  letter-spacing: 0.5px;
+}
+
+.nav-hud {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.hud-capsule {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 10px;
+  background: rgba(14, 18, 20, 0.75);
+  border: 1px solid var(--border-subtle);
+  border-radius: 14px;
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+.hud-capsule strong {
+  color: var(--text-primary);
+  font-size: 13px;
+}
+
+.silver-text {
+  color: var(--accent-gold) !important;
+  font-weight: bold;
+}
+
+.lost-text {
+  color: #ff7766;
+  font-weight: bold;
+}
+
+.hud-sep {
+  opacity: 0.35;
+}
+
+.nav-controls {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* 按钮通用质感 */
+button, .btn-icon, .btn-ctrl, .btn-primary, .btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: none;
+  transition: transform 0.08s ease, filter 0.12s ease;
+  white-space: nowrap;
+}
+
+button:active, .btn-ctrl:active, .btn-primary:active, .btn-secondary:active {
+  transform: translateY(2px);
+}
+
+.btn-ctrl {
+  background: linear-gradient(180deg, #3a2a1f 0%, #261a12 100%);
+  color: var(--text-primary);
+  border: 1px solid var(--border-gold);
+  padding: 5px 10px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.btn-ctrl:hover {
+  filter: brightness(1.15);
+}
+
+.btn-icon {
+  background: transparent;
+  color: var(--text-secondary);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  padding: 4px 8px;
+}
+
+.btn-icon:hover {
+  color: var(--text-primary);
+  border-color: var(--border-gold);
+}
+
+.btn-accent {
+  background: linear-gradient(180deg, #9b2e21 0%, #6e1c12 100%) !important;
+  border-color: #e56554 !important;
+  color: #fff !important;
+}
+
+.btn-primary {
+  background: linear-gradient(180deg, #d49c3b 0%, #9e6c1e 100%);
+  border: 1px solid #ffdb7d;
+  color: #1a0f05;
+  padding: 8px 16px;
+  font-size: 13px;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.4);
+}
+
+.btn-primary:hover:not(:disabled) {
+  filter: brightness(1.12);
+}
+
+.btn-primary:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.btn-secondary {
+  background: linear-gradient(180deg, #3d2f25 0%, #241b14 100%);
+  border: 1px solid var(--border-gold);
+  color: var(--text-primary);
+  padding: 8px 14px;
+}
+
+/* 主舞台视窗 */
+.tavern-viewport {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+  touch-action: none;
+  overscroll-behavior: none;
+  padding: 6px;
+}
+
+#tavern-canvas {
+  width: 100%;
+  height: 100%;
+  max-width: 960px;
+  max-height: 648px;
+  aspect-ratio: 800 / 540;
+  object-fit: contain;
+  background-color: #1b2124;
+  border-radius: 8px;
+  border: 2px solid #3d2d22;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
+  cursor: pointer;
+}
+
+/* 底部行动队列条 */
+.bottom-dock {
+  background: linear-gradient(180deg, #1e1610 0%, #150e09 100%);
+  border-top: 1.5px solid var(--border-subtle);
+  padding: 8px 16px;
+  box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.35);
+  padding-bottom: max(12px, calc(6px + env(safe-area-inset-bottom)));
+}
+
+.queue-container {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  max-width: 960px;
+  margin: 0 auto;
+}
+
+.queue-title {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--accent-gold);
+  white-space: nowrap;
+}
+
+.queue-chips-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  overflow-x: auto;
+  flex: 1;
+  padding: 2px 0;
+  scrollbar-width: thin;
+}
+
+.queue-empty-text {
+  color: rgba(255, 255, 255, 0.3);
+  font-size: 12px;
+}
+
+.queue-chip {
+  display: inline-flex;
+  align-items: center;
+  background: #2b3940;
+  border: 1px solid #4a626d;
+  color: #e2f1f8;
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 11px;
+  cursor: pointer;
+}
+
+.queue-chip:hover {
+  background: #c62828;
+  border-color: #ef5350;
+  color: #fff;
+}
+
+/* 弹窗通用样式 */
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.72);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  backdrop-filter: blur(4px);
+  padding: 16px;
+}
+
+.hidden {
+  display: none !important;
+}
+
+.modal-card {
+  background: linear-gradient(180deg, #2b1f17 0%, #1a120c 100%);
+  border: 2px solid var(--border-gold);
+  border-radius: 12px;
+  padding: 20px;
+  max-width: 480px;
+  width: 100%;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.75);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.modal-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--accent-gold);
+  text-align: center;
+}
+
+.modal-desc {
+  font-size: 13px;
+  color: var(--text-secondary);
+  text-align: center;
+  line-height: 1.5;
+}
+
+.modal-actions {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 8px;
+  flex-wrap: wrap;
+}
+
+/* 算盘弹窗专项样式 */
+.abacus-card {
+  max-width: 440px;
+}
+
+.abacus-bill-banner {
+  display: flex;
+  justify-content: space-around;
+  background: rgba(15, 20, 22, 0.85);
+  border: 1px solid var(--border-subtle);
+  border-radius: 8px;
+  padding: 10px;
+}
+
+.bill-row {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.banner-lbl {
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+.due-amount {
+  font-size: 20px;
+  color: var(--accent-gold);
+}
+
+.counted-amount {
+  font-size: 20px;
+  color: #8bc34a;
+}
+
+/* 实体木框算盘 */
+.abacus-frame {
+  display: flex;
+  justify-content: center;
+  gap: 36px;
+  background: #3b2719;
+  border: 6px solid #5a3821;
+  border-radius: 10px;
+  padding: 16px 24px;
+  box-shadow: inset 0 2px 10px rgba(0, 0, 0, 0.6);
+  position: relative;
+}
+
+.abacus-rod {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  position: relative;
+}
+
+.rod-title {
+  font-size: 12px;
+  font-weight: bold;
+  color: #ffea9f;
+}
+
+.beam-divider {
+  width: 52px;
+  height: 6px;
+  background: #a3733c;
+  border-radius: 2px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.5);
+  margin: 4px 0;
+}
+
+.deck-upper, .deck-lower {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  position: relative;
+}
+
+/* 算盘算珠 */
+.bead {
+  width: 46px;
+  height: 20px;
+  background: radial-gradient(ellipse at 50% 30%, #ffd480 0%, #aa7722 80%, #553300 100%);
+  border: 1px solid #ffe899;
+  border-radius: 10px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+  cursor: pointer;
+  transition: transform 0.12s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+/* 上珠按下时靠梁 */
+.bead-upper.active {
+  transform: translateY(8px);
+  filter: brightness(1.2);
+  border-color: #ffffff;
+}
+
+/* 下珠推上时靠梁 */
+.bead-lower.active {
+  transform: translateY(-8px);
+  filter: brightness(1.2);
+  border-color: #ffffff;
+}
+
+.abacus-error {
+  color: #ff5252;
+  font-size: 12px;
+  text-align: center;
+  min-height: 18px;
+}
+
+/* 场次与升级抽屉网格 */
+.drawer-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-height: 60vh;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.shift-card, .upgrade-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--border-subtle);
+  border-radius: 8px;
+  padding: 12px;
+  gap: 12px;
+}
+
+.shift-card h4, .upgrade-card h4 {
+  color: var(--accent-gold);
+  font-size: 14px;
+  margin-bottom: 4px;
+}
+
+.shift-card p, .upgrade-card p {
+  color: var(--text-secondary);
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.shift-card.locked {
+  opacity: 0.5;
+}
+
+/* 结算面板数据 */
+.results-card {
+  max-width: 400px;
+}
+
+.result-title.won {
+  color: #4caf50;
+}
+
+.result-title.lost {
+  color: #f44336;
+}
+
+.results-stats {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  background: rgba(14, 18, 20, 0.7);
+  border: 1px solid var(--border-subtle);
+  border-radius: 8px;
+  padding: 12px;
+}
+
+.res-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.res-row strong {
+  font-size: 15px;
+  color: var(--text-primary);
+}
+
+/* 指南面板 */
+.guide-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  list-style: none;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--text-secondary);
+}
+
+.guide-list li {
+  padding-left: 8px;
+  border-left: 3px solid var(--accent-gold);
+}
+
+/* 无障碍与降级 */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+.noscript-banner {
+  padding: 20px;
+  background: #b71c1c;
+  color: #fff;
+  text-align: center;
+  font-weight: bold;
+}

@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title data-i18n="gameTitle">中华客栈 · 跑堂点菜</title>
+  <meta name="description" content="中华客栈·跑堂点菜 (Inn Master) - 沉浸式江南客栈动线时间管理网页小游戏，添茶送菜、拨算盘对账。">
+  <link rel="icon" href="../../assets/icons/favicon.svg?v=dev" type="image/svg+xml">
+  <link rel="stylesheet" href="css/style.css?v=dev">
+</head>
+<body>
+  <noscript>
+    <div class="noscript-banner">
+      <p>中华客栈需要浏览器启用 JavaScript 方可开张营业。</p>
+    </div>
+  </noscript>
+
+  <div id="app" class="game-container">
+    <!-- 顶栏招牌与状态仪表盘 -->
+    <header class="top-nav">
+      <div class="nav-left">
+        <a href="/" id="back-home" class="btn-icon" data-i18n="backHome" aria-label="返回主站">← 返回主站</a>
+        <h1 class="brand-title" data-i18n="gameTitle">中华客栈 · 跑堂点菜</h1>
+      </div>
+
+      <div class="nav-hud">
+        <div class="hud-capsule shift-badge">
+          <span class="hud-label" data-i18n="shift">当前场次</span>
+          <strong id="hud-shift-name">-</strong>
+        </div>
+        <div class="hud-capsule time-badge">
+          <span class="hud-label" data-i18n="timeLeft">营业剩余</span>
+          <strong id="hud-time">100</strong>s
+        </div>
+        <div class="hud-capsule silver-badge">
+          <span class="hud-label" data-i18n="silver">客栈银两</span>
+          <strong id="hud-silver" class="silver-text">0</strong>
+        </div>
+        <div class="hud-capsule combo-badge">
+          <span class="hud-label" data-i18n="combo">连击</span>
+          <strong id="hud-combo">-</strong>
+        </div>
+        <div class="hud-capsule stats-badge">
+          <span class="hud-label" data-i18n="served">接待客人</span>
+          <span id="hud-served">0</span>
+          <span class="hud-sep">/</span>
+          <span class="hud-label" data-i18n="lostGuests">离店客官</span>
+          <span id="hud-lost" class="lost-text">0/4</span>
+        </div>
+      </div>
+
+      <div class="nav-controls">
+        <button type="button" id="btn-shift-drawer" class="btn-ctrl" data-i18n="switchShift">切换场次</button>
+        <button type="button" id="btn-upgrades-drawer" class="btn-ctrl" data-i18n="upgrades">营运升级</button>
+        <button type="button" id="btn-guide" class="btn-ctrl" data-i18n="howToPlay">客栈指南</button>
+        <button type="button" id="btn-sound" class="btn-ctrl" data-i18n="soundOn">音效: 开</button>
+        <button type="button" id="btn-lang" class="btn-ctrl" data-i18n="langToggle">EN</button>
+        <button type="button" id="btn-pause" class="btn-ctrl btn-accent" data-i18n="pause">暂停</button>
+      </div>
+    </header>
+
+    <!-- 客栈大堂主舞台视窗 -->
+    <main class="tavern-viewport">
+      <canvas id="tavern-canvas" width="800" height="540"></canvas>
+    </main>
+
+    <!-- 底部行动队列与托盘托底 Dock -->
+    <footer class="bottom-dock">
+      <div class="queue-container">
+        <span class="queue-title" data-i18n="queue">行动队列</span>
+        <div id="queue-items" class="queue-chips-bar"></div>
+      </div>
+    </footer>
+
+    <!-- 弹窗 1：算盘结账对账面板 -->
+    <div id="modal-abacus" class="modal-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="abacus-heading">
+      <div class="modal-card abacus-card">
+        <h3 id="abacus-heading" class="modal-title" data-i18n="abacus_title">柜台算盘对账收银</h3>
+        
+        <div class="abacus-bill-banner">
+          <div class="bill-row">
+            <span class="banner-lbl" data-i18n="abacus_bill_label">应付银两</span>
+            <strong id="abacus-due" class="due-amount">$0</strong>
+          </div>
+          <div class="bill-row">
+            <span class="banner-lbl" data-i18n="abacus_current_label">当前所拨</span>
+            <strong id="abacus-counted" class="counted-amount">$0</strong>
+          </div>
+        </div>
+
+        <!-- 拟真中国传统双珠算盘 (十位 / 个位) -->
+        <div class="abacus-frame">
+          <div class="abacus-beam"></div>
+
+          <!-- 十位档杆 -->
+          <div class="abacus-rod" data-rod="tens">
+            <div class="rod-title" data-i18n="abacus_tens">十位</div>
+            <div class="deck-upper">
+              <button type="button" class="bead bead-upper" aria-label="十位上珠50"></button>
+            </div>
+            <div class="beam-divider"></div>
+            <div class="deck-lower">
+              <button type="button" class="bead bead-lower" data-val="1" aria-label="十位下珠10"></button>
+              <button type="button" class="bead bead-lower" data-val="2" aria-label="十位下珠20"></button>
+              <button type="button" class="bead bead-lower" data-val="3" aria-label="十位下珠30"></button>
+              <button type="button" class="bead bead-lower" data-val="4" aria-label="十位下珠40"></button>
+            </div>
+          </div>
+
+          <!-- 个位档杆 -->
+          <div class="abacus-rod" data-rod="ones">
+            <div class="rod-title" data-i18n="abacus_ones">个位</div>
+            <div class="deck-upper">
+              <button type="button" class="bead bead-upper" aria-label="个位上珠5"></button>
+            </div>
+            <div class="beam-divider"></div>
+            <div class="deck-lower">
+              <button type="button" class="bead bead-lower" data-val="1" aria-label="个位下珠1"></button>
+              <button type="button" class="bead bead-lower" data-val="2" aria-label="个位下珠2"></button>
+              <button type="button" class="bead bead-lower" data-val="3" aria-label="个位下珠3"></button>
+              <button type="button" class="bead bead-lower" data-val="4" aria-label="个位下珠4"></button>
+            </div>
+          </div>
+        </div>
+
+        <p id="abacus-error-msg" class="abacus-error" aria-live="polite"></p>
+
+        <div class="modal-actions">
+          <button type="button" id="abacus-btn-submit" class="btn-primary" data-i18n="abacus_submit">拨珠确认</button>
+          <button type="button" id="abacus-btn-quick" class="btn-secondary" data-i18n="abacus_quick_pay">快速结账</button>
+          <button type="button" id="abacus-btn-reset" class="btn-ctrl" data-i18n="abacus_reset">清盘重拨</button>
+          <button type="button" id="abacus-btn-close" class="btn-ctrl" data-i18n="abacus_close">暂缓结账</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 弹窗 2：场次关卡抽屉 -->
+    <div id="modal-shifts" class="modal-backdrop hidden" role="dialog" aria-modal="true">
+      <div class="modal-card">
+        <h3 class="modal-title" data-i18n="switchShift">切换场次</h3>
+        <div id="shifts-list" class="drawer-grid"></div>
+        <div class="modal-actions">
+          <button type="button" id="btn-shifts-close" class="btn-secondary" data-i18n="btn_continue">继续跑堂</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 弹窗 3：营运升级抽屉 -->
+    <div id="modal-upgrades" class="modal-backdrop hidden" role="dialog" aria-modal="true">
+      <div class="modal-card">
+        <h3 class="modal-title" data-i18n="upgrade_title">客栈营运升级</h3>
+        <div id="upgrades-list" class="drawer-grid"></div>
+        <div class="modal-actions">
+          <button type="button" id="btn-upgrades-close" class="btn-secondary" data-i18n="btn_continue">继续跑堂</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 弹窗 4：打烊结算面板 -->
+    <div id="modal-results" class="modal-backdrop hidden" role="dialog" aria-modal="true">
+      <div class="modal-card results-card">
+        <h3 id="results-title" class="result-title won" data-i18n="result_won_title">今日打烊 · 大获全胜！</h3>
+        <div class="results-stats">
+          <div class="res-row">
+            <span data-i18n="result_silver_earned">今日营业额</span>
+            <strong id="results-silver" class="silver-text">0</strong>
+          </div>
+          <div class="res-row">
+            <span data-i18n="result_guests_served">服务满意客官</span>
+            <strong id="results-served">0</strong>
+          </div>
+          <div class="res-row">
+            <span data-i18n="result_lost_count">急躁离店客官</span>
+            <strong id="results-lost">0</strong>
+          </div>
+          <div class="res-row">
+            <span data-i18n="result_max_combo">最高行云流水连击</span>
+            <strong id="results-combo">0</strong>
+          </div>
+        </div>
+        <div class="modal-actions">
+          <button type="button" id="btn-results-next" class="btn-primary" data-i18n="next_shift">下一场次</button>
+          <button type="button" id="btn-results-retry" class="btn-secondary" data-i18n="retry_shift">重新开市</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 弹窗 5：暂停面板 -->
+    <div id="modal-paused" class="modal-backdrop hidden" role="dialog" aria-modal="true">
+      <div class="modal-card">
+        <h3 class="modal-title" data-i18n="paused_title">已暂停</h3>
+        <p class="modal-desc" data-i18n="paused_desc">客人耐心、跑堂行动与营业时间已全线冻结。</p>
+        <div class="modal-actions">
+          <button type="button" id="btn-continue-paused" class="btn-primary" data-i18n="btn_continue">继续跑堂</button>
+          <button type="button" id="btn-restart-paused" class="btn-secondary" data-i18n="btn_restart_game">重开本场</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 弹窗 6：玩法指南 -->
+    <div id="modal-guide" class="modal-backdrop hidden" role="dialog" aria-modal="true">
+      <div class="modal-card guide-card">
+        <h3 class="modal-title" data-i18n="guide_title">客栈跑堂速成指南</h3>
+        <ul class="guide-list">
+          <li data-i18n="guide_tip_1">【动线规划】点击茶台、后厨或桌子即可排队，小二将沿最优动线自动执行。</li>
+          <li data-i18n="guide_tip_2">【耐心回升】客人等待时送上一壶热茶，可直接回升 35% 耐心值并防拂袖离店！</li>
+          <li data-i18n="guide_tip_3">【连击小费】客人耐心高于 50% 时结账可得丰厚小费，连续服务触发连击倍率。</li>
+          <li data-i18n="guide_tip_4">【快捷操作】键盘 1~8 选中餐桌，Q/W/E 对应茶台/后厨/柜台，P 或 Esc 随时暂停。</li>
+        </ul>
+        <div class="modal-actions">
+          <button type="button" id="btn-guide-close" class="btn-primary" data-i18n="guide_close">知道咯，去跑堂</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="js/main.mjs?v=dev"></script>
+</body>
+</html>

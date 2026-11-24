@@ -1,6 +1,97 @@
 {
   "games": [
     {
+      "title": "中华客栈·跑堂点菜",
+      "slug": "innkeeper",
+      "desc": "江南客栈多桌动线时间管理：茶台添茶、后厨取菜、餐桌送茶上菜、柜台算盘结账收银。客人耐心与连击小费机制，四个营业场次与跑堂营运升级，即开即玩。",
+      "icon": "🏮",
+      "cover": "/assets/covers/innkeeper.webp",
+      "tags": ["模拟经营", "时间管理", "国风", "益智", "休闲"],
+      "url": "/innkeeper/",
+      "en": {
+        "title": "Inn Master",
+        "desc": "A Jiangnan tavern time-management experience: brew fresh tea, fetch kitchen dishes, serve multi-table orders, and settle bills on the abacus. Guest patience and combo tips, four shifts, and tavern upgrades. Instant play."
+      }
+    },
+    {
+      "title": "高压洗车屋·解压清洁",
+      "slug": "jetwash",
+      "desc": "高压水枪冲掉污渍，把脏车脏家具洗回全新。浮灰、油渍、顽渍三层分层剥落，水枪泡沫刷子刮水器分工协作，宽扇面细水柱随心切换，无失败无压力，即开即玩的解压清洁小游戏。",
+      "icon": "🚿",
+      "cover": "/assets/covers/jetwash.webp",
+      "tags": ["解压", "清洁", "治愈", "模拟", "休闲"],
+      "url": "/jetwash/",
+      "en": {
+        "title": "Jet Wash House",
+        "desc": "Blast grime away with a pressure washer and restore dirty cars and furniture. Peel three layers of dust, grease and stubborn stains with a jet, foam, brush and squeegee. Wide fan or fine jet, no failure and no pressure. Instant play."
+      }
+    },
+    {
+      "title": "双人点球大战",
+      "slug": "penalty",
+      "desc": "五轮点球攻防：射手选九宫格落点与轻推/抽射/爆射三档力度，门将预判扑救方向，双方保密选择后同时揭晓。单人对 AI 三档难度或同屏双人心理战，平局进突然死亡，即开即玩。",
+      "icon": "⚽",
+      "cover": "/assets/covers/penalty.webp",
+      "tags": ["双人", "对战", "体育", "心理博弈", "休闲"],
+      "url": "/penalty/",
+      "en": {
+        "title": "Penalty Shootout",
+        "desc": "A five-round penalty duel: pick one of nine target zones and tap, drive or blast, while the keeper guesses the dive. Secret simultaneous choices, solo against three AI levels or a same-screen two-player mind game, sudden death on a tie. Instant play."
+      }
+    },
+    {
+      "title": "雷电 · 极简纵向弹幕",
+      "slug": "raiden",
+      "desc": "竖版极简弹幕：战机自动开火，方向键走位、Shift 低速、按住 X 蓄力穿透一列的激光，擦弹积攒保险能量清屏。六面航线各带新敌机与新弹幕，面末首领镇守；另有六十秒弹幕训练。零广告即开即玩。",
+      "icon": "🚀",
+      "cover": "/assets/covers/raiden.webp",
+      "tags": ["射击", "弹幕", "街机", "竖版", "硬核"],
+      "url": "/raiden/",
+      "en": {
+        "title": "Raiden Lite",
+        "desc": "A vertical minimal bullet hell: your ship fires automatically, arrows move, Shift slows, hold X to charge a laser that pierces a whole column, and grazing builds bomb energy. Six stages bring new foes and patterns, each guarded by a boss, plus a sixty-second bullet training drill. Instant ad-free play."
+      }
+    },
+    {
+      "title": "古代九连环·连环相扣",
+      "slug": "rings",
+      "desc": "按口诀上下环解开九连环：第一环随意、第二环看第一环、其余环前一环在上且前面全下。3/5/7/9 环四章十二关，解环装环双模式，步数三星评级与可动环提示。纯逻辑无时间压力，即开即玩。",
+      "icon": "🔗",
+      "cover": "/assets/covers/rings.webp",
+      "tags": ["解谜", "国风", "逻辑", "益智", "休闲"],
+      "url": "/rings/",
+      "en": {
+        "title": "Nine Rings Puzzle",
+        "desc": "Learn the chime rules and solve the Nine Rings: ring one is free, ring two needs it on, and every other ring needs its predecessor on with all earlier rings off. Four chapters from 3 to 9 rings, twelve levels, unlink and link modes, three-star move ratings and legal-ring hints. Pure logic with no timer pressure, instant play."
+      }
+    },
+    {
+      "title": "雪人兄弟 · 滚雪球",
+      "slug": "snowball",
+      "desc": "把雪地小怪喷成雪球，贴着它走就能推出去越滚越大；碾过敌群、撞碎冰砖、撞墙反弹，三连撞触发雪崩连锁。三十关三章、章末首领只能被滚球撞伤，另有九十秒雪崩冲刺。零广告即开即玩。",
+      "icon": "⛄",
+      "cover": "/assets/covers/snowball.webp",
+      "tags": ["动作", "街机", "清场", "平台", "休闲"],
+      "url": "/snowball/",
+      "en": {
+        "title": "Snowball Bros",
+        "desc": "Pack snowfield foes into snowballs, then walk into them to shove them rolling. They grow as they crush packs, smash ice bricks and rebound off walls; three topples trigger a chain avalanche. Thirty levels across three chapters, bosses only a rolling giant can hurt, plus a ninety-second Avalanche Rush. Instant ad-free play."
+      }
+    },
+    {
+      "title": "切肥皂解压",
+      "slug": "soap",
+      "desc": "拖动小刀切削粉彩肥皂，听清脆刮擦 ASMR。硬皂、软皂、果冻皂三套材质音色随速度与刀刃厚度实时变调，造型皂内藏星星花朵爱心。无失败无压力，12 块图鉴即开即玩。",
+      "icon": "🧼",
+      "cover": "/assets/covers/soap.webp",
+      "tags": ["休闲", "解压", "ASMR", "治愈", "模拟"],
+      "url": "/soap/",
+      "en": {
+        "title": "Soap Cutting ASMR",
+        "desc": "Drag a blade through pastel soap and hear crisp ASMR scrapes. Three material voices - hard, soft and jelly - shift with speed and curl thickness, while shape soaps hide stars, flowers and hearts. No fail, no pressure, 12 bars of instant tactile calm."
+      }
+    },
+    {
       "title": "拆毛线解压",
       "slug": "unravel",
       "desc": "在暖光毛线工坊里点线盘收毛线：上层线压住下层线，凑满三个同色自动合成毛线球，槽位全满则败。40 关四章、结扣线与双色线机制、逆向生成 100% 可解，另设无失败判定的解压自由拆，零广告即开即玩。",
@@ -1795,6 +1886,19 @@
       "en": {
         "title": "Volley Bombard",
         "desc": "Two-player parabolic bombardment: set the angle, read the hilltop wind flag, charge and fire over the ridge to topple the rival block fortress. Six shells with distinct tempers - stone, blast, split, sticky, drill and wind-riding balloon. Unresolved after ten rounds, the most standing blocks wins. Three terrains, three AI tiers, same-screen or solo."
+      }
+    },
+    {
+      "title": "甲骨文溯源连线",
+      "slug": "oracle",
+      "desc": "看三千年前的甲骨刻痕像什么，猜出今天的本字：点甲骨、连本字，配对成功即播放甲骨到楷书的字形演变。四章二十四关字族题卷，误配只提示不惩罚，按误配次数评星，零广告即开即玩。",
+      "icon": "🦴",
+      "cover": "/assets/covers/oracle.webp",
+      "tags": ["益智", "文化", "汉字", "配对", "单机"],
+      "url": "/oracle/",
+      "en": {
+        "title": "Oracle Glyph Match",
+        "desc": "Read a three-thousand-year-old oracle-bone carving, guess the modern character it became, then link glyph to meaning: every correct pair replays the evolution from oracle bone to regular script. Four chapters and twenty-four levels of character families, wrong links only give a gentle shake, stars rated on misses. Instant ad-free play."
       }
     }
   ]
