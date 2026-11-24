@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title data-i18n="gameTitle">极简泡泡堂 · 水泡大作战</title>
+  <meta name="description" content="极简泡泡堂·水泡大作战 (Bubble Arena Lite) - 经典网格水泡对战网页小游戏，放水泡困住对手再戳破淘汰！">
+  <link rel="icon" href="../../assets/icons/favicon.svg?v=dev" type="image/svg+xml">
+  <link rel="stylesheet" href="css/style.css?v=dev">
+</head>
+<body>
+  <noscript>
+    <div class="noscript-banner">
+      <p>水泡大作战需要浏览器启用 JavaScript 方可进行对决。</p>
+    </div>
+  </noscript>
+
+  <div id="app" class="game-container">
+    <!-- 顶栏计分牌与控制 -->
+    <header class="top-nav">
+      <div class="nav-left">
+        <a href="/" id="back-home" class="btn-icon" data-i18n="backHome" aria-label="返回主站">← 返回主站</a>
+        <h1 class="brand-title" data-i18n="gameTitle">极简泡泡堂 · 水泡大作战</h1>
+      </div>
+
+      <div class="nav-hud">
+        <div class="hud-capsule map-badge">
+          <span class="hud-label" data-i18n="currentMap">当前地图</span>
+          <strong id="hud-map-name">-</strong>
+        </div>
+        <div class="hud-capsule time-badge">
+          <span class="hud-label" data-i18n="roundTime">对局倒计时</span>
+          <strong id="hud-round-time">100</strong>s
+        </div>
+        <div class="hud-capsule p1-badge">
+          <span class="p1-dot">●</span>
+          <span class="hud-label" data-i18n="p1Label">玩家 1 (蓝)</span>
+          <span id="hud-p1-status" class="player-tag active">-</span>
+          <span id="hud-p1-stats" class="player-stats"></span>
+        </div>
+        <div class="hud-capsule p2-badge">
+          <span class="p2-dot">●</span>
+          <span class="hud-label" data-i18n="p2Label">玩家 2 / 电脑 (红)</span>
+          <span id="hud-p2-status" class="player-tag active">-</span>
+          <span id="hud-p2-stats" class="player-stats"></span>
+        </div>
+      </div>
+
+      <div class="nav-controls">
+        <button type="button" id="btn-map-drawer" class="btn-ctrl" data-i18n="switchMap">选择地图</button>
+        <button type="button" id="btn-guide" class="btn-ctrl" data-i18n="howToPlay">作战指南</button>
+        <button type="button" id="btn-sound" class="btn-ctrl" data-i18n="soundOn">音效: 开</button>
+        <button type="button" id="btn-lang" class="btn-ctrl" data-i18n="langToggle">EN</button>
+        <button type="button" id="btn-pause" class="btn-ctrl btn-accent" data-i18n="pause">暂停</button>
+      </div>
+    </header>
+
+    <!-- 泳池竞技场对决主视窗 -->
+    <main class="arena-viewport">
+      <canvas id="arena-canvas" width="624" height="528"></canvas>
+
+      <!-- 移动端虚拟触控底座 -->
+      <div class="touch-controls">
+        <div class="dpad">
+          <button type="button" id="touch-up" class="touch-btn dpad-up" aria-label="上">▲</button>
+          <div class="dpad-middle">
+            <button type="button" id="touch-left" class="touch-btn dpad-left" aria-label="左">◀</button>
+            <div class="dpad-center"></div>
+            <button type="button" id="touch-right" class="touch-btn dpad-right" aria-label="右">▶</button>
+          </div>
+          <button type="button" id="touch-down" class="touch-btn dpad-down" aria-label="下">▼</button>
+        </div>
+
+        <div class="action-pad">
+          <button type="button" id="touch-needle" class="touch-btn btn-needle" data-i18n="item_needle_sym" aria-label="飞针">针</button>
+          <button type="button" id="touch-drop" class="touch-btn btn-drop" data-i18n="item_bubble_sym" aria-label="放泡">泡</button>
+        </div>
+      </div>
+    </main>
+
+    <!-- 弹窗 1：地图选择抽屉 -->
+    <div id="modal-maps" class="modal-backdrop hidden" role="dialog" aria-modal="true">
+      <div class="modal-card">
+        <h3 class="modal-title" data-i18n="switchMap">选择地图</h3>
+        <div id="maps-list" class="drawer-grid"></div>
+        <div class="modal-actions">
+          <button type="button" id="btn-maps-close" class="btn-secondary" data-i18n="btn_continue">继续对决</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 弹窗 2：对战结算面板 -->
+    <div id="modal-results" class="modal-backdrop hidden" role="dialog" aria-modal="true">
+      <div class="modal-card results-card">
+        <h3 id="results-title" class="result-title won" data-i18n="result_p1_won">蓝方获胜 · 完美破泡！</h3>
+        <div class="results-stats">
+          <div class="res-row">
+            <span data-i18n="result_time_spent">对局耗时</span>
+            <strong id="results-time">0s</strong>
+          </div>
+        </div>
+        <div class="modal-actions">
+          <button type="button" id="btn-results-next" class="btn-primary" data-i18n="btn_next_level">下一地图</button>
+          <button type="button" id="btn-results-retry" class="btn-secondary" data-i18n="btn_retry">再来一局</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 弹窗 3：暂停面板 -->
+    <div id="modal-paused" class="modal-backdrop hidden" role="dialog" aria-modal="true">
+      <div class="modal-card">
+        <h3 class="modal-title" data-i18n="paused_title">已暂停</h3>
+        <p class="modal-desc" data-i18n="paused_desc">水泡引线、水柱扩散与角色行动已全部冻结。</p>
+        <div class="modal-actions">
+          <button type="button" id="btn-continue-paused" class="btn-primary" data-i18n="btn_continue">继续对决</button>
+          <button type="button" id="btn-restart-paused" class="btn-secondary" data-i18n="btn_restart_game">重新开战</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 弹窗 4：作战指南 -->
+    <div id="modal-guide" class="modal-backdrop hidden" role="dialog" aria-modal="true">
+      <div class="modal-card guide-card">
+        <h3 class="modal-title" data-i18n="guide_title">泡泡作战速成秘籍</h3>
+        <ul class="guide-list">
+          <li data-i18n="guide_tip_1">【两段式击杀】水柱只将角色困进透明水泡，必须冲过去戳破才算淘汰！</li>
+          <li data-i18n="guide_tip_2">【挣扎自救】被困时狂按方向键可缩短困泡时间，有飞针可直接扎破脱困。</li>
+          <li data-i18n="guide_tip_3">【踢泡博弈】获得踢泡护腕后，走向水泡可将其直线踢出滑向敌人或解围。</li>
+          <li data-i18n="guide_tip_4">【双人键位】玩家1: WASD移动 / 空格放泡 / J飞针；玩家2: 方向键 / 小键盘0放泡。</li>
+        </ul>
+        <div class="modal-actions">
+          <button type="button" id="btn-guide-close" class="btn-primary" data-i18n="guide_close">明白，出战！</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="js/main.mjs?v=dev"></script>
+</body>
+</html>

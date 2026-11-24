@@ -1,6 +1,32 @@
 {
   "games": [
     {
+      "title": "极简泡泡堂·水泡大作战",
+      "slug": "bubble",
+      "desc": "经典网格放水泡对战：十字水柱把对手困进透明大水泡，冲过去戳破淘汰！踢泡滑行、飞针解围、泡数水柱移速三维成长，单人对决三档 AI 或同屏双人，即开即玩。",
+      "icon": "🫧",
+      "cover": "/assets/covers/bubble.webp",
+      "tags": ["街机", "对战", "双人", "怀旧", "休闲"],
+      "url": "/bubble/",
+      "en": {
+        "title": "Bubble Arena Lite",
+        "desc": "Classic grid bubble combat: trap opponents in translucent water bubbles with cross splashes, then rush in to pop them for the KO! Bubble kicking, emergency needles, stat upgrades, solo against 3 AI tiers or local 2P. Instant play."
+      }
+    },
+    {
+      "title": "双人指弹飞棋",
+      "slug": "flick",
+      "desc": "实木桌面指弹对决：按住棋子向后拉弓蓄力，松手弹射穿过中线铜环孔门，把本方半场清空即获胜。单人对 AI 三档或同屏双人，单孔/双孔/三孔盘，撞子借力与回合上限判胜，即开即玩。",
+      "icon": "🎯",
+      "cover": "/assets/covers/flick.webp",
+      "tags": ["双人", "对战", "物理", "弹射", "休闲"],
+      "url": "/flick/",
+      "en": {
+        "title": "Flick Duel",
+        "desc": "A solid-wood flick duel: pull a puck back to charge, release to slide it through a copper ring gate on the center seam, and empty your own half to win. Solo against three AI levels or two players on one screen, one to three gates, knock-away collisions and a shot-limit tiebreak. Instant play."
+      }
+    },
+    {
       "title": "中华客栈·跑堂点菜",
       "slug": "innkeeper",
       "desc": "江南客栈多桌动线时间管理：茶台添茶、后厨取菜、餐桌送茶上菜、柜台算盘结账收银。客人耐心与连击小费机制，四个营业场次与跑堂营运升级，即开即玩。",
