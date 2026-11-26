@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-D67E3XTNSS"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-D67E3XTNSS');
+  </script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>雪人兄弟·滚雪球 · DOIN 在线小游戏</title>
+  <meta name="description" content="雪地街机柜里的滚雪球清场动作：喷雪把小怪冻成雪球，推着越滚越大，沿途撞飞一片；三十关三章、章末首领与九十秒雪崩冲刺，零广告即开即玩。">
+  <meta name="theme-color" content="#0a1226">
+  <link rel="icon" href="favicon.svg?v=a2742806a726" type="image/svg+xml">
+  <link rel="stylesheet" href="css/style.css?v=a2742806a726">
+</head>
+<body>
+  <div id="app">
+    <div id="cabinet">
+      <header id="cabinet-top">
+        <div class="snow-eave" aria-hidden="true"></div>
+        <div id="top-bar">
+          <a href="/" id="back-home" class="bar-btn" data-i18n="backHome" data-i18n-aria="backHomeAria">← 门户</a>
+          <div id="brand">
+            <span id="brand-main" data-i18n="appTitle">雪人兄弟</span>
+            <span id="brand-sub" data-i18n="appSub">滚雪球</span>
+          </div>
+          <nav id="top-actions">
+            <button id="btn-mode" class="bar-btn" type="button" data-i18n="modeShortLevel" data-i18n-aria="modeAria">闯关</button>
+            <button id="btn-levels" class="bar-btn" type="button" data-i18n="levels" data-i18n-aria="levelsAria">选关</button>
+            <button id="btn-pause" class="bar-btn bar-btn-pause" type="button" data-i18n="pause" data-i18n-aria="pauseAria">暂停</button>
+            <button id="btn-sound" class="bar-btn icon-btn" type="button" data-i18n-aria="soundOn" aria-label="音效">♪</button>
+            <button id="btn-lang" class="bar-btn" type="button" data-i18n-aria="langToggle" aria-label="切换语言">EN</button>
+            <button id="btn-help" class="bar-btn icon-btn" type="button" data-i18n-aria="helpAria" aria-label="玩法">?</button>
+          </nav>
+        </div>
+        <div id="hud">
+          <div class="hud-cell hud-stage">
+            <span id="hud-chapter" class="hud-kicker" data-i18n="chapterVillage">雪原村庄</span>
+            <strong id="hud-level"></strong>
+          </div>
+          <div class="hud-cell hud-lives">
+            <span class="hud-kicker" data-i18n="lives">生命</span>
+            <span id="hud-hearts" class="hearts" aria-hidden="true"></span>
+          </div>
+          <div class="hud-cell">
+            <span class="hud-kicker" data-i18n="score">得分</span>
+            <strong id="hud-score">0</strong>
+          </div>
+          <div class="hud-cell hud-chain-cell">
+            <span class="hud-kicker" data-i18n="chain">连锁</span>
+            <strong id="hud-chain" class="hud-chain"></strong>
+          </div>
+          <div class="hud-cell">
+            <span class="hud-kicker" data-i18n="time">用时</span>
+            <strong id="hud-time">0:00</strong>
+          </div>
+          <div id="hud-boss" class="hud-boss" hidden></div>
+        </div>
+      </header>
+
+      <main id="stage-shell">
+        <div id="stage-frame">
+          <canvas id="stage" width="960" height="540" role="img" data-i18n-aria="stageAria"></canvas>
+          <div id="level-banner" aria-live="polite"></div>
+          <div id="toast" role="status" aria-live="polite"></div>
+        </div>
+      </main>
+
+      <footer id="deck">
+        <p id="key-hint" data-i18n="keyHint">A / D 移动 · Z 喷雪 · X 跳跃 · P 暂停</p>
+        <div id="touch-deck">
+          <div id="stick" role="group" data-i18n-aria="stickAria">
+            <span class="stick-arrow" data-i18n-aria="moveLeft">‹</span>
+            <div id="stick-knob" aria-hidden="true"></div>
+            <span class="stick-arrow" data-i18n-aria="moveRight">›</span>
+          </div>
+          <div class="touch-actions">
+            <button id="btn-spray" class="touch-btn touch-spray" type="button" data-i18n="spray">喷雪</button>
+            <button id="btn-jump" class="touch-btn touch-jump" type="button" data-i18n="jump">跳跃</button>
+          </div>
+        </div>
+      </footer>
+    </div>
+
+    <section id="panel-levels" class="panel" hidden aria-labelledby="levels-title">
+      <div class="sheet">
+        <div class="panel-head">
+          <h2 id="levels-title" data-i18n="levelSelectTitle">雪原关卡册</h2>
+          <button class="close-btn" type="button" data-close data-i18n-aria="closeAria">✕</button>
+        </div>
+        <p class="panel-desc" data-i18n="levelSelectDesc">三章三十关，随点随进；章末有首领镇守。</p>
+        <p id="level-total" class="level-total"></p>
+        <div id="level-groups"></div>
+      </div>
+    </section>
+
+    <section id="panel-help" class="panel" hidden aria-labelledby="help-title">
+      <div class="sheet">
+        <div class="panel-head">
+          <h2 id="help-title" data-i18n="helpTitle">怎么玩</h2>
+          <button class="close-btn" type="button" data-close data-i18n-aria="closeAria">✕</button>
+        </div>
+        <ol class="help-list">
+          <li data-i18n="help1">左右移动、跳跃，靠近小怪按住喷雪，把它冻成雪球。</li>
+          <li data-i18n="help2">贴着雪球朝它走，就能把雪球推出去滚动。</li>
+          <li data-i18n="help3">雪球会越滚越大，碾过小怪、撞碎冰砖，撞墙还会反弹。</li>
+          <li data-i18n="help4">连续撞倒三个以上触发连锁雪崩，额外加分并震屏。</li>
+          <li data-i18n="help5">被小怪或投掷物碰到会损失一条命；清空全部敌人即可过关。</li>
+          <li data-i18n="help6">章末首领只能被滚动的大雪球撞伤，撞满三次就能击败它。</li>
+        </ol>
+        <h3 class="help-sub" data-i18n="controlsTitle">操作</h3>
+        <p class="help-controls" data-i18n="controlsKeyboard">A / D 或 ← → 移动 · Z 喷雪 · X 跳跃 · P / Esc 暂停</p>
+        <p class="help-controls" data-i18n="controlsTouch">左侧摇杆移动 · 右侧喷雪与跳跃键</p>
+      </div>
+    </section>
+
+    <section id="panel-mode" class="panel" hidden aria-labelledby="mode-title">
+      <div class="sheet">
+        <div class="panel-head">
+          <h2 id="mode-title" data-i18n="modeTitle">选择模式</h2>
+          <button class="close-btn" type="button" data-close data-i18n-aria="closeAria">✕</button>
+        </div>
+        <p class="panel-desc" data-i18n="modeDesc">随时切换，当前局面不会丢失。</p>
+        <div class="mode-cards">
+          <button id="btn-mode-level" class="mode-card" type="button">
+            <span class="mode-icon" aria-hidden="true">⛄</span>
+            <strong data-i18n="modeLevel">闯关模式</strong>
+            <span data-i18n="modeLevelDesc">三十关三章，冻结小怪、推大雪球，一路撞到章末首领。</span>
+          </button>
+          <button id="btn-mode-rush" class="mode-card" type="button">
+            <span class="mode-icon" aria-hidden="true">❄</span>
+            <strong data-i18n="modeRush">雪崩冲刺</strong>
+            <span data-i18n="modeRushDesc">九十秒限时清场，滚动雪球撞出最高的连锁雪崩。</span>
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <section id="panel-pause" class="panel" hidden aria-labelledby="pause-title">
+      <div class="sheet sheet-narrow">
+        <div class="panel-head">
+          <h2 id="pause-title" data-i18n="pauseTitle">雪停了</h2>
+          <button class="close-btn" type="button" data-close data-i18n-aria="closeAria">✕</button>
+        </div>
+        <p class="panel-desc" data-i18n="pauseDesc">局面已冻结，随时可以继续。</p>
+        <div class="panel-actions vertical">
+          <button id="btn-pause-resume" class="primary-btn" type="button" data-i18n="pauseResume">继续游戏</button>
+          <button id="btn-pause-restart" class="ghost-btn" type="button" data-i18n="pauseRestart">重开本关</button>
+          <button id="btn-pause-levels" class="ghost-btn" type="button" data-i18n="pauseLevels">打开关卡册</button>
+        </div>
+      </div>
+    </section>
+
+    <section id="panel-result" class="panel" hidden aria-labelledby="result-title">
+      <div class="sheet sheet-result">
+        <div class="panel-head">
+          <h2 id="result-title" data-i18n="resultTitle">清场成功</h2>
+        </div>
+        <div id="result-stars" class="result-stars" aria-hidden="true"></div>
+        <div id="result-rows" class="result-rows"></div>
+        <div class="recommend">
+          <p class="recommend-title" data-i18n="nextUp">接下来玩</p>
+          <div class="recommend-links">
+            <a href="../bomber/" class="recommend-link" data-i18n="gameBomber">炸弹人</a>
+            <a href="../brawler/" class="recommend-link" data-i18n="gameBrawler">操场大乱斗</a>
+            <a href="../shaft/" class="recommend-link" data-i18n="gameShaft">深渊百层</a>
+          </div>
+        </div>
+        <div class="panel-actions">
+          <button id="btn-result-next" class="primary-btn" type="button" data-i18n="resultNext">下一关</button>
+          <button id="btn-result-replay" class="ghost-btn" type="button" data-i18n="resultReplay">重玩本关</button>
+          <button id="btn-result-levels" class="ghost-btn" type="button" data-i18n="resultLevels">返回关卡册</button>
+        </div>
+      </div>
+    </section>
+  </div>
+  <noscript><p>需要启用 JavaScript 才能滚起这个雪球。</p></noscript>
+  <script type="module" src="js/main.mjs?v=a2742806a726"></script>
+</body>
+</html>

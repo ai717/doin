@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-D67E3XTNSS"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-D67E3XTNSS');
+  </script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>双人点球大战 · DOIN 在线小游戏</title>
+  <meta name="description" content="五轮点球对决，射手选九宫格落点与力度，门将预判扑救。单人对 AI 三档难度或同屏双人保密对决，突然死亡定胜负，即开即玩。">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="css/style.css?v=a2742806a726">
+</head>
+<body>
+  <div id="game-app">
+    <header id="stage-bar">
+      <a href="/" id="back-home" class="bar-btn" data-i18n="backHome">返回门户</a>
+      <div id="stage-title-wrap">
+        <h1 id="stage-title" data-i18n="title">双人点球大战</h1>
+        <p id="stage-lede" data-i18n="lede">九宫格落点 · 五轮定胜负</p>
+      </div>
+      <div class="stage-actions">
+        <button id="btn-modes" class="bar-btn accent" type="button" data-i18n="modes">模式</button>
+        <button id="btn-pause" class="bar-btn" type="button" data-i18n="pause">暂停</button>
+        <button id="btn-sound" class="bar-btn" type="button" aria-label="音效" data-i18n-aria="sound">🔊</button>
+        <button id="btn-lang" class="bar-btn" type="button">EN</button>
+      </div>
+    </header>
+
+    <main id="stage-core">
+      <section id="score-tray" aria-label="计分托盘" data-i18n-aria="ariaBoard">
+        <div class="tray-side" id="tray-a">
+          <span class="tray-name" id="name-a" data-i18n="you">你</span>
+          <strong class="tray-score" id="score-a">0</strong>
+          <div class="shot-dots" id="dots-a"></div>
+        </div>
+        <div class="tray-center">
+          <span id="round-label" data-i18n="round">第 1 轮</span>
+          <span id="phase-label" data-i18n="shooterTurn">轮到射手 · 选落点与力度</span>
+        </div>
+        <div class="tray-side" id="tray-b">
+          <span class="tray-name" id="name-b" data-i18n="cpu">电脑</span>
+          <strong class="tray-score" id="score-b">0</strong>
+          <div class="shot-dots" id="dots-b"></div>
+        </div>
+      </section>
+
+      <section id="pitch" aria-label="球门九宫格" data-i18n-aria="ariaGoal">
+        <div id="floodlights"></div>
+        <div id="goal-frame">
+          <div id="net">
+            <div class="net-h"></div><div class="net-h"></div><div class="net-h"></div>
+            <div class="net-v"></div><div class="net-v"></div><div class="net-v"></div><div class="net-v"></div>
+          </div>
+          <div id="goal-mouth">
+            <div id="keeper" aria-hidden="true">
+              <div class="keeper-head"></div>
+              <div class="keeper-body"></div>
+              <div class="keeper-arm left"></div>
+              <div class="keeper-arm right"></div>
+            </div>
+            <div id="zones">
+              <button class="zone" type="button" data-zone="0" aria-label="第 1 号落点区" data-i18n-aria="ariaZone"><span data-i18n="zoneTL">左上</span></button>
+              <button class="zone" type="button" data-zone="1" aria-label="第 2 号落点区" data-i18n-aria="ariaZone"><span data-i18n="zoneTC">中上</span></button>
+              <button class="zone" type="button" data-zone="2" aria-label="第 3 号落点区" data-i18n-aria="ariaZone"><span data-i18n="zoneTR">右上</span></button>
+              <button class="zone" type="button" data-zone="3" aria-label="第 4 号落点区" data-i18n-aria="ariaZone"><span data-i18n="zoneML">左中</span></button>
+              <button class="zone" type="button" data-zone="4" aria-label="第 5 号落点区" data-i18n-aria="ariaZone"><span data-i18n="zoneMC">中中</span></button>
+              <button class="zone" type="button" data-zone="5" aria-label="第 6 号落点区" data-i18n-aria="ariaZone"><span data-i18n="zoneMR">右中</span></button>
+              <button class="zone" type="button" data-zone="6" aria-label="第 7 号落点区" data-i18n-aria="ariaZone"><span data-i18n="zoneBL">左下</span></button>
+              <button class="zone" type="button" data-zone="7" aria-label="第 8 号落点区" data-i18n-aria="ariaZone"><span data-i18n="zoneBC">中下</span></button>
+              <button class="zone" type="button" data-zone="8" aria-label="第 9 号落点区" data-i18n-aria="ariaZone"><span data-i18n="zoneBR">右下</span></button>
+            </div>
+            <div id="ball" aria-hidden="true"></div>
+          </div>
+        </div>
+        <div id="penalty-spot" aria-hidden="true"></div>
+      </section>
+
+      <section id="control-deck">
+        <div class="deck-row">
+          <span class="deck-label" data-i18n="power">力度</span>
+          <div id="power-buttons" role="group" aria-label="力度选择" data-i18n-aria="ariaPower">
+            <button class="power-btn" type="button" data-power="tap" data-i18n="tap">轻推</button>
+            <button class="power-btn" type="button" data-power="drive" data-i18n="drive">抽射</button>
+            <button class="power-btn" type="button" data-power="blast" data-i18n="blast">爆射</button>
+          </div>
+          <button id="btn-shoot" class="primary-btn" type="button" data-i18n="shooterTurn">轮到射手 · 选落点与力度</button>
+        </div>
+        <div class="deck-row sub">
+          <span id="status-line" role="status" data-i18n="statusReady">选一个落点区，再定力度</span>
+          <button id="btn-undo" class="text-btn" type="button" data-i18n="handoffBack" hidden>改选落点</button>
+        </div>
+        <details id="odds-card">
+          <summary data-i18n="odds">力度规则</summary>
+          <p data-i18n="oddsTap">轻推：扑对必被扑出 · 不会打偏</p>
+          <p data-i18n="oddsDrive">抽射：扑对五成扑出 · 不会打偏</p>
+          <p data-i18n="oddsBlast">爆射：扑对两成扑出 · 两成五打偏</p>
+        </details>
+        <p class="key-help" data-i18n="keyHelp">数字 1-9 选落点 · Q/W/E 选力度 · 方向键选扑救 · P/Esc 暂停</p>
+      </section>
+    </main>
+
+    <div id="handoff-layer" class="overlay" hidden>
+      <div class="overlay-card">
+        <h2 data-i18n="handoffTitle">交给门将</h2>
+        <p data-i18n="handoffHint">射手选择已遮蔽 · 请把设备交给守门员</p>
+        <button id="btn-handoff" class="primary-btn" type="button" data-i18n="handoffBtn">我是门将</button>
+      </div>
+    </div>
+
+    <div id="pause-layer" class="overlay" hidden>
+      <div class="overlay-card">
+        <h2 data-i18n="pauseTitle">已暂停</h2>
+        <p data-i18n="pauseHint">射门动画已定格 · 回来后从当前帧继续</p>
+        <button id="btn-resume" class="primary-btn" type="button" data-i18n="resume">继续</button>
+        <button id="btn-restart-pause" class="text-btn" type="button" data-i18n="restart">重新开局</button>
+      </div>
+    </div>
+
+    <div id="result-layer" class="overlay" hidden>
+      <div class="overlay-card wide">
+        <h2 id="result-title" data-i18n="resultTitle">终场哨响</h2>
+        <p id="result-line" class="result-line">0 : 0</p>
+        <p id="result-sub" data-i18n="resultSub">五轮点球 · 0 粒进球 · 0 次扑救</p>
+        <p id="result-stars" class="stars-line"></p>
+        <div class="result-actions">
+          <button id="btn-replay" class="primary-btn" type="button" data-i18n="replay">再来一局</button>
+          <a id="btn-next" class="text-btn" href="/pong/" data-i18n="nextPong">去玩街机乒乓</a>
+          <button id="btn-close-result" class="text-btn" type="button" data-i18n="close">关闭</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="mode-drawer" class="drawer" hidden>
+      <div class="drawer-card">
+        <div class="drawer-head">
+          <h2 data-i18n="modes">模式</h2>
+          <button id="btn-close-drawer" class="text-btn" type="button" data-i18n="close">关闭</button>
+        </div>
+        <div class="mode-grid">
+          <button class="mode-opt" type="button" data-mode="mode_solo" data-i18n="modeSolo">单人对 AI</button>
+          <button class="mode-opt" type="button" data-mode="mode_duo" data-i18n="modeDuo">同屏双人</button>
+        </div>
+        <h3 data-i18n="difficulty">难度</h3>
+        <div class="mode-grid">
+          <button class="diff-opt" type="button" data-diff="ai_novice" data-i18n="aiNovice">新手</button>
+          <button class="diff-opt" type="button" data-diff="ai_skilled" data-i18n="aiSkilled">进阶</button>
+          <button class="diff-opt" type="button" data-diff="ai_master" data-i18n="aiMaster">大师</button>
+        </div>
+        <h3 data-i18n="first">先手</h3>
+        <div class="mode-grid">
+          <button class="first-opt" type="button" data-first="side_a" data-i18n="goFirst">我先射</button>
+          <button class="first-opt" type="button" data-first="side_b" data-i18n="goSecond">我先守</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <noscript><p data-i18n="noscript">需要启用 JavaScript 才能玩点球大战。</p></noscript>
+  <script type="module" src="js/main.mjs?v=a2742806a726"></script>
+</body>
+</html>

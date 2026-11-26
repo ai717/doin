@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-D67E3XTNSS"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-D67E3XTNSS');
+  </script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>双人指弹飞棋 · DOIN 在线小游戏</title>
+  <meta name="description" content="实木桌面指弹对决：按住棋子向后拉弓蓄力，松手弹射穿过中线铜环孔门，把本方半场清空即获胜。单人对 AI 三档或同屏双人，单孔/双孔/三孔盘，即开即玩。">
+  <meta name="theme-color" content="#1a0f08">
+  <link rel="icon" href="favicon.svg?v=a2742806a726" type="image/svg+xml">
+  <link rel="stylesheet" href="css/style.css?v=a2742806a726">
+</head>
+<body>
+  <div id="app">
+    <div id="table-cabinet">
+      <header id="top-bar">
+        <a href="/" id="back-home" class="bar-btn" data-i18n="backHome" data-i18n-aria="backHomeAria">← 门户</a>
+        <h1 id="brand">
+          <span id="brand-main" data-i18n="appTitle">双人指弹飞棋</span>
+          <span id="brand-sub" data-i18n="appSub">拉弓弹子 · 穿孔过线</span>
+        </h1>
+        <nav id="top-actions">
+          <button id="btn-mode" class="bar-btn mode-btn" type="button" data-i18n="modeBtn" data-i18n-aria="modeAria">模式</button>
+          <button id="btn-pause" class="bar-btn" type="button" data-i18n="pause" data-i18n-aria="pauseAria">暂停</button>
+          <button id="btn-sound" class="bar-btn icon-btn" type="button" data-i18n-aria="soundOn" aria-label="开启音效">♪</button>
+          <button id="btn-lang" class="bar-btn" type="button" data-i18n-aria="langToggle" aria-label="切换语言">EN</button>
+          <button id="btn-help" class="bar-btn icon-btn" type="button" data-i18n-aria="helpAria" aria-label="玩法">?</button>
+        </nav>
+      </header>
+
+      <div id="hud">
+        <div class="hud-cell hud-turn-cell">
+          <span class="hud-kicker" data-i18n="hudTurn">回合</span>
+          <strong id="hud-turn"></strong>
+        </div>
+        <div class="hud-cell">
+          <span class="hud-kicker" id="hud-south-kicker" data-i18n="seatSouth">下方</span>
+          <strong id="hud-south">5</strong>
+        </div>
+        <div class="hud-cell">
+          <span class="hud-kicker" id="hud-north-kicker" data-i18n="seatNorth">上方</span>
+          <strong id="hud-north">5</strong>
+        </div>
+        <div class="hud-cell">
+          <span class="hud-kicker" data-i18n="hudRound">已弹</span>
+          <strong id="hud-round">0 / 60</strong>
+        </div>
+        <div class="hud-cell">
+          <span class="hud-kicker" data-i18n="hudTime">用时</span>
+          <strong id="hud-time">00:00</strong>
+        </div>
+      </div>
+
+      <main id="flick-stage">
+        <div id="table-frame">
+          <canvas id="table-canvas" data-i18n-aria="boardAria" aria-label="实木指弹桌面"></canvas>
+          <div id="pause-veil" class="pause-veil" hidden>
+            <div class="pause-card">
+              <h2 id="pause-title" data-i18n="pausedTitle">已暂停</h2>
+              <p data-i18n="pausedHint">棋子已定格，切回来后可以继续。</p>
+              <div class="pause-actions">
+                <button id="btn-resume" class="primary-btn" type="button" data-i18n="resumeBtn">继续对局</button>
+                <button id="btn-restart-pause" class="ghost-btn" type="button" data-i18n="restartBtn">重新开局</button>
+              </div>
+              <p class="pause-note" data-i18n="pausedNote">暂停期间物理与计时全部冻结。</p>
+            </div>
+          </div>
+          <div id="toast" class="toast" role="status" aria-live="polite"></div>
+        </div>
+      </main>
+
+      <footer id="deck">
+        <p id="key-hint" data-i18n="keyHint">按住棋子拖拽蓄力，松手弹射 · 方向键瞄准 · 空格蓄力 · Tab 换子 · P/Esc 暂停</p>
+      </footer>
+    </div>
+
+    <section id="panel-mode" class="panel" hidden aria-labelledby="mode-title">
+      <div class="sheet sheet-mode">
+        <div class="panel-head">
+          <h2 id="mode-title" data-i18n="selectTitle">对局设置</h2>
+          <button class="close-btn" type="button" data-close data-i18n-aria="closeAria">✕</button>
+        </div>
+        <p class="panel-desc" data-i18n="selectDesc">单人对 AI 或同屏双人共用同一张桌面。调整后点开始对局即刻生效。</p>
+
+        <div class="opt-block">
+          <h3 class="opt-label" data-i18n="modeLabel">模式</h3>
+          <div id="mode-group" class="opt-row">
+            <button class="opt-btn" type="button" data-value="solo" data-i18n="modeSolo">单人对 AI</button>
+            <button class="opt-btn" type="button" data-value="duel" data-i18n="modeDuel">同屏双人</button>
+          </div>
+        </div>
+
+        <div id="diff-row" class="opt-block">
+          <h3 class="opt-label" data-i18n="diffLabel">AI 难度</h3>
+          <div id="diff-group" class="opt-row">
+            <button class="opt-btn" type="button" data-value="ai_novice" data-i18n="diffNovice">新手</button>
+            <button class="opt-btn" type="button" data-value="ai_skilled" data-i18n="diffSkilled">进阶</button>
+            <button class="opt-btn" type="button" data-value="ai_master" data-i18n="diffMaster">大师</button>
+          </div>
+        </div>
+
+        <div class="opt-block">
+          <h3 class="opt-label" data-i18n="boardLabel">盘面</h3>
+          <div id="board-group" class="opt-row board-row">
+            <button class="opt-btn board-btn" type="button" data-value="board_1gate">
+              <span class="board-name" data-i18n="board1">单孔盘</span>
+              <small class="board-desc" data-i18n="board1Desc">中线一枚铜环孔门，瞄准最纯粹。</small>
+            </button>
+            <button class="opt-btn board-btn" type="button" data-value="board_2gate">
+              <span class="board-name" data-i18n="board2">双孔盘</span>
+              <small class="board-desc" data-i18n="board2Desc">两枚孔门分列左右，斜线更从容。</small>
+            </button>
+            <button class="opt-btn board-btn" type="button" data-value="board_3gate">
+              <span class="board-name" data-i18n="board3">三孔盘</span>
+              <small class="board-desc" data-i18n="board3Desc">三枚孔门齐开，节奏最快、火力最密。</small>
+            </button>
+          </div>
+        </div>
+
+        <div class="opt-block">
+          <h3 class="opt-label" data-i18n="sideLabel">开球方</h3>
+          <div id="side-group" class="opt-row">
+            <button class="opt-btn" type="button" data-value="south" data-i18n="sideBottom">下方先手</button>
+            <button class="opt-btn" type="button" data-value="north" data-i18n="sideTop">上方先手</button>
+          </div>
+        </div>
+
+        <div class="panel-actions">
+          <button id="btn-start-match" class="primary-btn" type="button" data-i18n="startMatch">开始对局</button>
+        </div>
+        <p class="panel-hint" data-i18n="selectHint">设置会自动记住；对局中可随时呼出本面板。</p>
+      </div>
+    </section>
+
+    <section id="panel-help" class="panel" hidden aria-labelledby="help-title">
+      <div class="sheet">
+        <div class="panel-head">
+          <h2 id="help-title" data-i18n="helpTitle">怎么玩</h2>
+          <button class="close-btn" type="button" data-close data-i18n-aria="closeAria">✕</button>
+        </div>
+        <ol class="help-list">
+          <li data-i18n="help1">轮到你时，按住本方半场的棋子向反方向拉，松手把它弹出去。</li>
+          <li data-i18n="help2">拖得越远力度越大；力度条满格时棋子会轻微抖动。</li>
+          <li data-i18n="help3">中线是一道桌缝，只有铜环孔门能穿过，精准瞄孔才能过线。</li>
+          <li data-i18n="help4">棋子过线后留在对方半场，成为对方要清走的负担。</li>
+          <li data-i18n="help5">先把本方半场的棋子全部清空的一方获胜。</li>
+          <li data-i18n="help6">撞开对方棋子、借力打力都可能改变局势，但别把对方的子撞回自己半场。</li>
+          <li data-i18n="help7">六十回合仍未分出胜负时，本方半场剩余棋子更少的一方获胜，相同则平局。</li>
+          <li data-i18n="help8">P 或 Esc 随时暂停；切到后台会自动冻结，回来继续。</li>
+        </ol>
+        <h3 class="help-sub" data-i18n="controlsTitle">操作</h3>
+        <p class="help-controls" data-i18n="controlsKeyboard">方向键瞄准 · 空格蓄力松开发射 · Tab 换子 · P/Esc 暂停 · R 重开</p>
+        <p class="help-controls" data-i18n="controlsTouch">按住棋子向后拉蓄力，松手弹射；拖回原点取消</p>
+      </div>
+    </section>
+
+    <section id="panel-result" class="panel" hidden aria-labelledby="result-title">
+      <div class="sheet sheet-result">
+        <div class="panel-head">
+          <h2 id="result-title" data-i18n="resultTitle">对局结束</h2>
+        </div>
+        <p id="result-note" class="result-note" hidden></p>
+        <div id="result-rows" class="result-rows"></div>
+        <p class="result-stats-line">
+          <span class="result-label" data-i18n="resultStats">单人战绩</span>
+          <strong id="result-stats"></strong>
+        </p>
+        <div class="recommend">
+          <p class="recommend-title" data-i18n="nextUp">接下来玩</p>
+          <div class="recommend-links">
+            <a href="../airpuck/" class="recommend-link" data-i18n="gameAirpuck">双人霓虹气垫球</a>
+            <a href="../bumper/" class="recommend-link" data-i18n="gameBumper">微型回旋撞车</a>
+            <a href="../billiards/" class="recommend-link" data-i18n="gameBilliards">绿呢桌球</a>
+          </div>
+        </div>
+        <div class="panel-actions">
+          <button id="btn-result-replay" class="primary-btn" type="button" data-i18n="resultReplay">再来一局</button>
+          <button id="btn-result-mode" class="ghost-btn" type="button" data-i18n="resultMode">换模式再战</button>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <noscript><p>需要启用 JavaScript 才能游玩。</p></noscript>
+  <script type="module" src="js/main.mjs?v=a2742806a726"></script>
+</body>
+</html>

@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Peg Fall">
+  <defs>
+    <linearGradient id="velvet" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#3c0f18"/>
+      <stop offset="1" stop-color="#140406"/>
+    </linearGradient>
+    <linearGradient id="brass" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#fff0c4"/>
+      <stop offset="0.5" stop-color="#d4af37"/>
+      <stop offset="1" stop-color="#7a5a13"/>
+    </linearGradient>
+    <radialGradient id="ball" cx="35%" cy="30%" r="75%">
+      <stop offset="0" stop-color="#ffffff"/>
+      <stop offset="0.5" stop-color="#d7e4f0"/>
+      <stop offset="1" stop-color="#7c8b9c"/>
+    </radialGradient>
+  </defs>
+  <rect x="2" y="2" width="60" height="60" rx="13" fill="url(#velvet)" stroke="url(#brass)" stroke-width="2.5"/>
+  <g fill="none" stroke="url(#brass)" stroke-width="2">
+    <path d="M26 12l6 10 6-10"/>
+  </g>
+  <circle cx="32" cy="26" r="5.5" fill="url(#ball)"/>
+  <g>
+    <circle cx="18" cy="42" r="4" fill="#ff7a45"/>
+    <circle cx="30" cy="48" r="4" fill="#37e6e6"/>
+    <circle cx="42" cy="40" r="4" fill="#55efc4"/>
+    <circle cx="47" cy="50" r="4" fill="#a29bfe"/>
+    <circle cx="23" cy="53" r="4" fill="#ff7a45"/>
+  </g>
+  <path d="M32 31v10" stroke="#ffe8a8" stroke-width="2" stroke-linecap="round" opacity="0.8"/>
+</svg>

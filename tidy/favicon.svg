@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <defs>
+    <linearGradient id="bgGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#dfcfb9"/>
+      <stop offset="100%" stop-color="#beab94"/>
+    </linearGradient>
+    <linearGradient id="woodGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#c9976e"/>
+      <stop offset="100%" stop-color="#a4724b"/>
+    </linearGradient>
+    <filter id="softShadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="2" stdDeviation="2" flood-color="#4a3520" flood-opacity="0.25"/>
+    </filter>
+  </defs>
+  <rect width="64" height="64" rx="14" fill="url(#bgGrad)"/>
+  <!-- Organizer Box -->
+  <rect x="8" y="8" width="48" height="48" rx="8" fill="url(#woodGrad)" filter="url(#softShadow)"/>
+  <rect x="11" y="11" width="42" height="42" rx="6" fill="#885b37"/>
+  <!-- Slots -->
+  <rect x="14" y="14" width="10" height="36" rx="3" fill="#6d4626"/>
+  <rect x="27" y="14" width="10" height="16" rx="3" fill="#6d4626"/>
+  <rect x="27" y="34" width="10" height="16" rx="3" fill="#6d4626"/>
+  <rect x="40" y="14" width="10" height="36" rx="3" fill="#6d4626"/>
+  <!-- Stored Items -->
+  <rect x="15" y="16" width="8" height="32" rx="2" fill="#e89838"/>
+  <rect x="28" y="16" width="8" height="12" rx="2" fill="#d9536f"/>
+  <circle cx="45" cy="24" r="4" fill="#68b0ab"/>
+  <rect x="42" y="32" width="6" height="16" rx="2" fill="#f7d070"/>
+  <!-- Snap Sparkle -->
+  <path d="M32 31 L33.5 34 L36.5 35.5 L33.5 37 L32 40 L30.5 37 L27.5 35.5 L30.5 34 Z" fill="#fff7b0"/>
+</svg>

@@ -1,0 +1,528 @@
+/* ==========================================================================
+   games/tidy/css/style.css
+   沉浸收纳达人：温暖燕麦与实木质感收纳台，实体微浮雕与柔和环境光晕
+   ========================================================================== */
+
+:root {
+  --bg-desk: #dfceb8;
+  --bg-desk-dark: #bba78f;
+  --panel-bg: #eddcc8;
+  --panel-border: #c4ae94;
+  --wood-rim: #9c7247;
+  --wood-fill: #b5895c;
+  --text-main: #3d2b1f;
+  --text-muted: #7d6550;
+  --text-highlight: #b9770e;
+  --accent-gold: #f39c12;
+  --accent-green: #27ae60;
+  --accent-red: #c0392b;
+
+  --btn-bg: #ecd7c0;
+  --btn-border: #bfa58a;
+  --btn-shadow: #8f745a;
+
+  --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html, body {
+  width: 100%;
+  height: 100%;
+  overflow-x: hidden;
+  background-color: var(--bg-desk);
+  background: radial-gradient(circle at 50% 30%, #f4e9db 0%, var(--bg-desk) 50%, #baa68e 100%);
+  color: var(--text-main);
+  font-family: var(--font-family);
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+}
+
+#game-app {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  width: 100%;
+  max-width: 1320px;
+  margin: 0 auto;
+  padding: 12px 16px;
+  padding-bottom: max(68px, calc(16px + env(safe-area-inset-bottom)));
+}
+
+/* 顶部操作条 */
+#game-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 18px;
+  background: #ecdcc8;
+  border: 1.5px solid var(--panel-border);
+  border-radius: 16px;
+  box-shadow: 0 4px 14px rgba(78, 56, 38, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.6);
+  margin-bottom: 12px;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+#game-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--text-main);
+  letter-spacing: 0.5px;
+}
+
+.header-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+/* 实体触感按键 (Tactile Button) */
+.tactile-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px 14px;
+  background: linear-gradient(to bottom, #fcf6ee, var(--btn-bg));
+  border: 1px solid var(--btn-border);
+  border-radius: 10px;
+  color: var(--text-main);
+  font-size: 0.88rem;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 3px 0 var(--btn-shadow), 0 4px 6px rgba(0, 0, 0, 0.08);
+  transition: transform 0.08s ease, box-shadow 0.08s ease, background 0.15s ease;
+  text-decoration: none;
+}
+
+.tactile-btn:hover {
+  background: linear-gradient(to bottom, #ffffff, #f2dec8);
+}
+
+.tactile-btn:active {
+  transform: translateY(2px);
+  box-shadow: 0 1px 0 var(--btn-shadow), 0 2px 4px rgba(0, 0, 0, 0.06);
+}
+
+.tactile-btn.primary-btn {
+  background: linear-gradient(to bottom, #f9e79f, #f39c12);
+  border-color: #d68910;
+  box-shadow: 0 3px 0 #b9770e;
+  color: #5b3d0e;
+}
+
+.tactile-btn.primary-btn:hover {
+  background: linear-gradient(to bottom, #fcf3cf, #f5b041);
+}
+
+.tactile-btn.icon-btn {
+  padding: 6px 10px;
+  min-width: 36px;
+}
+
+/* 核心收纳台工作区 */
+#game-workspace {
+  display: flex;
+  align-items: stretch;
+  justify-content: center;
+  gap: 16px;
+  flex: 1;
+  width: 100%;
+}
+
+/* 双侧翼栏 (HUD Wings) */
+.workspace-wing {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 190px;
+  flex-shrink: 0;
+}
+
+.wing-card {
+  background: rgba(237, 220, 200, 0.85);
+  border: 1.5px solid var(--panel-border);
+  border-radius: 14px;
+  padding: 12px 14px;
+  box-shadow: 0 4px 10px rgba(78, 56, 38, 0.08);
+}
+
+.wing-label {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  margin-bottom: 4px;
+  font-weight: 600;
+}
+
+.wing-value {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--text-main);
+}
+
+.wing-value.highlight {
+  color: var(--accent-gold);
+}
+
+.tips-card {
+  font-size: 0.8rem;
+  line-height: 1.45;
+  color: var(--text-muted);
+}
+
+.tip-line {
+  margin-bottom: 6px;
+}
+
+/* Canvas 视窗容器 */
+#canvas-container {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #d8be9f;
+  border: 3px solid #b89c7d;
+  border-radius: 20px;
+  box-shadow: inset 0 3px 12px rgba(60, 40, 20, 0.25), 0 8px 24px rgba(78, 56, 38, 0.18);
+  overflow: hidden;
+  max-width: 860px;
+  min-height: 510px;
+}
+
+#game-canvas {
+  width: 100%;
+  height: auto;
+  max-width: 840px;
+  max-height: 500px;
+  display: block;
+  touch-action: none;
+  overscroll-behavior: none;
+}
+
+/* 模态弹窗系统 (Dialogs) */
+.game-dialog {
+  border: none;
+  border-radius: 20px;
+  padding: 0;
+  background: transparent;
+  margin: auto;
+  max-width: 90vw;
+  box-shadow: 0 16px 40px rgba(45, 30, 20, 0.45);
+}
+
+.game-dialog::backdrop {
+  background: rgba(35, 22, 14, 0.65);
+  backdrop-filter: blur(4px);
+}
+
+.dialog-content {
+  background: #f7ede2;
+  border: 2px solid #c9b096;
+  border-radius: 20px;
+  padding: 24px 28px;
+  color: var(--text-main);
+  max-width: 480px;
+}
+
+.wide-dialog .dialog-content {
+  max-width: 680px;
+}
+
+.dialog-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.dialog-header h2 {
+  font-size: 1.3rem;
+  color: var(--text-main);
+}
+
+.dialog-sub {
+  font-size: 0.9rem;
+  color: var(--text-muted);
+  font-weight: 600;
+}
+
+.close-x {
+  background: none;
+  border: none;
+  font-size: 1.25rem;
+  cursor: pointer;
+  color: var(--text-muted);
+  padding: 4px;
+}
+
+.dialog-actions {
+  display: flex;
+  justify-content: center;
+  margin-top: 20px;
+}
+
+/* 关卡滚动网格 */
+.levels-scroll-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(75px, 1fr));
+  gap: 12px;
+  max-height: 55vh;
+  overflow-y: auto;
+  padding: 6px;
+}
+
+.level-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 6px;
+  background: #eddcc8;
+  border: 1.5px solid #c9b096;
+  border-radius: 12px;
+  cursor: pointer;
+  box-shadow: 0 3px 0 #b3977c;
+  transition: transform 0.08s ease, background 0.15s ease;
+}
+
+.level-card:hover:not(:disabled) {
+  background: #fdf3e7;
+}
+
+.level-card:active:not(:disabled) {
+  transform: translateY(2px);
+  box-shadow: 0 1px 0 #b3977c;
+}
+
+.level-card.active {
+  border-color: var(--accent-gold);
+  background: #fff8e8;
+}
+
+.level-card:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.level-num {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--text-main);
+}
+
+.level-stars {
+  font-size: 0.75rem;
+  color: var(--accent-gold);
+  margin-top: 4px;
+}
+
+/* 拍立得治愈相册网格 */
+.album-scroll-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+  gap: 14px;
+  max-height: 55vh;
+  overflow-y: auto;
+  padding: 8px;
+}
+
+.album-card {
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.12);
+  padding: 8px;
+  cursor: pointer;
+  transition: transform 0.15s ease;
+}
+
+.album-card:hover {
+  transform: rotate(-1deg) scale(1.03);
+}
+
+.album-card.locked {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.polaroid-photo {
+  height: 90px;
+  background: #e8d8c3;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.album-icon {
+  font-size: 2rem;
+}
+
+.album-stamp {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  font-size: 0.6rem;
+  font-weight: 800;
+  color: var(--accent-gold);
+}
+
+.polaroid-caption {
+  padding-top: 8px;
+  text-align: center;
+}
+
+.album-level-title {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text-main);
+}
+
+.album-stars {
+  font-size: 0.75rem;
+  color: var(--accent-gold);
+}
+
+/* 通关拍立得定格卡片 (Polaroid Showcase) */
+.polaroid-dialog .polaroid-wrapper {
+  background: #fdfdfd;
+  padding: 20px 24px 28px 24px;
+  border-radius: 12px;
+  box-shadow: 0 16px 40px rgba(45, 30, 20, 0.45), 0 2px 6px rgba(0, 0, 0, 0.08);
+  width: 380px;
+  max-width: 90vw;
+  text-align: center;
+  position: relative;
+}
+
+.polaroid-photo-frame {
+  background: #edd8bf;
+  height: 220px;
+  border-radius: 8px;
+  border: 1px solid #d8c0a2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+  margin-bottom: 18px;
+}
+
+.polaroid-stamp {
+  position: absolute;
+  top: 14px;
+  border: 2px solid var(--accent-gold);
+  color: var(--accent-gold);
+  padding: 4px 10px;
+  font-size: 0.9rem;
+  font-weight: 800;
+  border-radius: 6px;
+  transform: rotate(-6deg);
+  letter-spacing: 1px;
+}
+
+.polaroid-icon {
+  font-size: 4rem;
+}
+
+.polaroid-stars-row {
+  margin-top: 8px;
+  font-size: 1.5rem;
+  color: var(--accent-gold);
+  letter-spacing: 4px;
+}
+
+.polaroid-caption-area h3 {
+  font-size: 1.2rem;
+  color: var(--text-main);
+  margin-bottom: 12px;
+}
+
+.polaroid-stats-row {
+  display: flex;
+  justify-content: space-around;
+  font-size: 0.95rem;
+  color: var(--text-muted);
+  margin-bottom: 20px;
+}
+
+.polaroid-actions {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+}
+
+/* 响应式适配 */
+@media (max-width: 900px) {
+  #game-workspace {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .workspace-wing {
+    width: 100%;
+    max-width: 840px;
+    flex-direction: row;
+    justify-content: space-between;
+  }
+
+  .wing-card {
+    flex: 1;
+  }
+
+  .tips-card {
+    display: none;
+  }
+}
+
+@media (max-width: 600px) {
+  #game-header {
+    padding: 8px 12px;
+  }
+
+  #game-title {
+    font-size: 1.05rem;
+  }
+
+  .tactile-btn {
+    padding: 5px 10px;
+    font-size: 0.8rem;
+  }
+
+  .workspace-wing {
+    flex-wrap: wrap;
+  }
+
+  .wing-card {
+    min-width: 90px;
+    padding: 8px 10px;
+  }
+
+  .wing-value {
+    font-size: 0.95rem;
+  }
+}
+
+/* prefers-reduced-motion 降级 */
+@media (prefers-reduced-motion: reduce) {
+  .tactile-btn,
+  .album-card,
+  .level-card {
+    transition: none !important;
+  }
+}

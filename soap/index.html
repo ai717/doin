@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-D67E3XTNSS"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-D67E3XTNSS');
+  </script>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <title>切肥皂解压 · DOIN 在线小游戏</title>
+    <meta name="description" content="拖动小刀切削粉彩肥皂，听清脆刮擦 ASMR。硬皂、软皂、果冻皂三套材质音色，造型皂内藏星星花朵，无失败无压力，即开即玩。">
+    <link rel="canonical" href="https://doin.win/soap/">
+    <meta name="theme-color" content="#1c1714">
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="DOIN">
+    <meta property="og:title" content="切肥皂解压 · DOIN 在线小游戏">
+    <meta property="og:description" content="拖动小刀切削粉彩肥皂，听清脆刮擦 ASMR，造型皂内藏惊喜，即开即玩。">
+    <meta property="og:url" content="https://doin.win/soap/">
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <link rel="stylesheet" href="css/style.css?v=a2742806a726">
+  </head>
+  <body>
+    <main class="booth" id="booth">
+      <header class="topbar" data-i18n-aria="ariaBar" aria-label="游戏控制栏">
+        <a href="/" id="back-home" class="bar-btn" data-i18n="backHome">返回门户</a>
+        <div class="brand">
+          <h1 class="brand-title" data-i18n="title">切肥皂解压</h1>
+          <p class="brand-lede" data-i18n="lede">一刀一片 · 听见舒服的声音</p>
+        </div>
+        <nav class="bar-actions" aria-label="controls">
+          <button type="button" class="bar-btn" id="btn-soaps" data-i18n="soapPicker">选皂</button>
+          <button type="button" class="bar-btn" id="btn-pause" data-i18n="pause">暂停</button>
+          <button type="button" class="bar-btn" id="btn-sound" data-i18n="mute">音效开</button>
+          <button type="button" class="bar-btn" id="btn-lang" aria-label="Switch to English">EN</button>
+        </nav>
+      </header>
+
+      <section class="stage" id="stage" data-i18n-aria="ariaStage" aria-label="切皂台面">
+        <div class="hud">
+          <div class="hud-card">
+            <span class="hud-tag" data-i18n="progress">已切</span>
+            <b class="hud-value" id="hud-progress">0%</b>
+          </div>
+          <div class="hud-card hud-core" id="hud-core-card" hidden>
+            <span class="hud-tag" data-i18n="coreProgress">内芯</span>
+            <b class="hud-value" id="hud-core">0%</b>
+          </div>
+          <div class="hud-card">
+            <span class="hud-tag" data-i18n="tools">当前工具</span>
+            <b class="hud-value" id="hud-tool">小刀</b>
+          </div>
+        </div>
+
+        <div class="board-wrap">
+          <canvas id="board" data-i18n-aria="ariaSoapCanvas" aria-label="肥皂切削区"></canvas>
+          <div class="board-sheen" aria-hidden="true"></div>
+          <p class="board-status" id="status" role="status" aria-live="polite" data-i18n="statusReady">按住拖动小刀 · 切出薄片</p>
+        </div>
+
+        <div class="tray" data-i18n-aria="ariaTools" aria-label="切削工具">
+          <div class="tool-group" id="tool-group" role="group" aria-label="tools">
+            <button type="button" class="tool" data-tool="tool_knife" aria-pressed="true">
+              <span class="tool-glyph" aria-hidden="true">🔪</span>
+              <span class="tool-name" data-i18n="toolKnife">小刀</span>
+            </button>
+            <button type="button" class="tool" data-tool="tool_scraper" aria-pressed="false">
+              <span class="tool-glyph" aria-hidden="true">🧽</span>
+              <span class="tool-name" data-i18n="toolScraper">刮刀</span>
+            </button>
+            <button type="button" class="tool" data-tool="tool_peeler" aria-pressed="false">
+              <span class="tool-glyph" aria-hidden="true">🥄</span>
+              <span class="tool-name" data-i18n="toolPeeler">刨子</span>
+            </button>
+          </div>
+          <div class="tray-actions">
+            <button type="button" class="tray-btn" id="btn-finish" data-i18n="finish" hidden>收尾刮净</button>
+            <button type="button" class="tray-btn" id="btn-restart" data-i18n="restart">换一块</button>
+          </div>
+        </div>
+        <p class="hint" data-i18n="hintDrag">按住拖动切削 · 1/2/3 换工具 · R 换皂 · P 暂停</p>
+      </section>
+    </main>
+
+    <aside class="drawer" id="soap-drawer" aria-hidden="true">
+      <div class="drawer-head">
+        <h2 data-i18n="soapPicker">选皂</h2>
+        <button type="button" class="drawer-close" id="drawer-close" aria-label="close">×</button>
+      </div>
+      <div class="drawer-list" id="soap-list"></div>
+    </aside>
+    <div class="scrim" id="scrim" hidden></div>
+
+    <div class="veil" id="pause-veil" hidden>
+      <div class="veil-card">
+        <h2 data-i18n="pauseTitle">已暂停</h2>
+        <p data-i18n="pauseHint">碎屑与声音已冻结</p>
+        <button type="button" class="big-btn" id="btn-resume" data-i18n="resume">继续</button>
+      </div>
+    </div>
+
+    <div class="veil" id="result-veil" hidden>
+      <div class="veil-card result-card">
+        <h2 data-i18n="resultTitle">切好了</h2>
+        <p class="result-stars" id="result-stars" aria-label="stars"></p>
+        <p class="result-sub" id="result-sub"></p>
+        <div class="result-actions">
+          <button type="button" class="big-btn" id="btn-next" data-i18n="next">下一块</button>
+          <button type="button" class="big-btn ghost" id="btn-result-close" data-i18n="close">继续切</button>
+        </div>
+      </div>
+    </div>
+
+    <noscript><p class="noscript">需要启用 JavaScript 才能切肥皂。</p></noscript>
+    <script type="module" src="js/main.mjs?v=a2742806a726"></script>
+  </body>
+</html>

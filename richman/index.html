@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-D67E3XTNSS"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-D67E3XTNSS');
+  </script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>迷你大富翁 · DOIN 在线小游戏</title>
+  <meta name="description" content="桌面上的微缩城市沙盘：掷骰走格、买地收租、集齐同色盖屋翻倍，用路障与遥控骰子精准坑对手，先让对手破产就赢。快速对战、1v2 车轮战与同屏双人，5~8 分钟一局，零广告即开即玩。">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="css/style.css?v=a2742806a726">
+</head>
+<body>
+  <div id="cityscape">
+    <header id="skyline-bar">
+      <a href="/" id="back-home" class="brass-btn" data-i18n="backHome">门户</a>
+      <div id="brand">
+        <h1 id="app-title" data-i18n="appTitle">迷你大富翁</h1>
+        <span id="brand-tag" data-i18n="tagline">掷骰夺城 · 买地收租</span>
+      </div>
+      <div class="bar-cluster">
+        <button id="btn-mode" class="brass-btn wide" type="button" data-i18n="modeBtn">模式</button>
+        <button id="btn-pause" class="brass-btn icon" type="button" data-i18n-aria="pauseBtn" aria-label="暂停">❙❙</button>
+        <button id="btn-sound" class="brass-btn icon" type="button" data-i18n-aria="soundBtn" aria-label="音效">♪</button>
+        <button id="btn-lang" class="brass-btn" type="button">EN</button>
+        <button id="btn-help" class="brass-btn icon" type="button" data-i18n-aria="helpBtn" aria-label="玩法">?</button>
+      </div>
+    </header>
+
+    <main id="stage-core">
+      <section id="hud" aria-live="off"></section>
+
+      <div id="table-felt">
+        <div id="board"></div>
+        <div id="center-park">
+          <div id="callout-pill" class="callout-pill"></div>
+          <div id="die-wrap"><div id="die" aria-hidden="true"><canvas id="die-canvas" width="160" height="160" class="die-canvas"></canvas></div></div>
+          <div id="event-banner" class="event-banner" role="status"></div>
+          <p id="round-label"></p>
+          <div id="log-ticker" role="status" aria-live="polite"></div>
+        </div>
+        <div id="token-layer" aria-hidden="true"></div>
+        <div id="floater-layer" class="floater-layer" aria-hidden="true"></div>
+        <canvas id="fx" aria-hidden="true"></canvas>
+      </div>
+
+      <footer id="dock">
+        <div id="hand-cards" aria-label="hand"></div>
+        <div id="action-zone"></div>
+      </footer>
+    </main>
+  </div>
+
+  <div id="mode-drawer" class="overlay side" role="dialog" aria-modal="false" hidden>
+    <div class="sheet drawer-sheet">
+      <div class="overlay-head">
+        <h2 data-i18n="modeTitle">对战模式</h2>
+        <button id="mode-close" class="brass-btn" type="button" data-i18n="cancelBtn">取消</button>
+      </div>
+      <p class="overlay-hint" id="mode-hint" data-i18n="modeHint">切换会开一局新对局</p>
+      <div id="mode-list"></div>
+      <div id="ai-levels"></div>
+      <p id="record-line" class="overlay-hint"></p>
+      <button id="start-match" class="rm-btn primary wide" type="button" data-i18n="startMatch">开新对局</button>
+    </div>
+  </div>
+
+  <div id="help" class="overlay" role="dialog" aria-modal="true" hidden>
+    <div class="sheet">
+      <div class="overlay-head">
+        <h2 data-i18n="helpTitle">玩法说明</h2>
+        <button id="help-close" class="brass-btn" type="button" data-i18n="cancelBtn">取消</button>
+      </div>
+      <p data-i18n="help1"></p>
+      <p data-i18n="help2"></p>
+      <p data-i18n="help3"></p>
+      <p data-i18n="help4"></p>
+      <p data-i18n="help5"></p>
+      <p data-i18n="help6"></p>
+      <p class="keys" data-i18n="helpKeys"></p>
+    </div>
+  </div>
+
+  <div id="pause-layer" class="overlay" role="dialog" aria-modal="true" hidden>
+    <div class="sheet">
+      <h2 data-i18n="pausedTitle">已暂停</h2>
+      <p class="overlay-hint" data-i18n="pauseBody"></p>
+      <button id="pause-resume" class="rm-btn primary wide" type="button" data-i18n="pauseResume">继续对局</button>
+      <button id="pause-restart" class="rm-btn wide" type="button" data-i18n="pauseRestart">重开本局</button>
+      <button id="pause-mode" class="rm-btn wide" type="button" data-i18n="pauseMode">换模式</button>
+    </div>
+  </div>
+
+  <div id="result" class="overlay" role="dialog" aria-modal="true" hidden>
+    <div class="sheet result-sheet">
+      <h2 id="result-title" data-i18n="resultWinTitle">胜利</h2>
+      <p id="result-sub" class="sub"></p>
+      <div id="result-table"></div>
+      <div id="result-extras"></div>
+      <p id="result-flip" class="flip-note"></p>
+      <div id="result-recs"></div>
+      <div class="sheet-actions">
+        <button id="result-again" class="rm-btn primary wide" type="button" data-i18n="againBtn">再来一局</button>
+        <button id="result-mode" class="rm-btn wide" type="button" data-i18n="resultModeBtn">换模式</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="confirm-modal" class="overlay" role="dialog" aria-modal="false" hidden>
+    <div class="sheet slim">
+      <h2 id="confirm-title"></h2>
+      <p id="confirm-body" class="overlay-hint"></p>
+      <div id="confirm-actions" class="sheet-actions"></div>
+    </div>
+  </div>
+
+  <div id="picker-modal" class="overlay" role="dialog" aria-modal="false" hidden>
+    <div class="sheet slim">
+      <h2 id="picker-title"></h2>
+      <div id="picker-list"></div>
+      <button id="picker-cancel" class="rm-btn wide" type="button" data-i18n="pickCancel">取消用卡</button>
+    </div>
+  </div>
+
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+  <noscript><p>需要启用 JavaScript 才能开始这场沙盘对决。</p></noscript>
+  <script type="module" src="js/main.mjs?v=a2742806a726"></script>
+</body>
+</html>

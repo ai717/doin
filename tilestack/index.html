@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-D67E3XTNSS"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-D67E3XTNSS');
+  </script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title data-i18n="gameTitle">千层瓦片 · 叠叠消</title>
+  <meta name="description" content="千层瓦片 · 叠叠消 (TileStack) - 3D茶桌叠瓦三消休闲小游戏。逆向生成保证100%可解，层层剥离解密千层瓷塔。">
+  <link rel="icon" type="image/svg+xml" href="favicon.svg?v=a2742806a726">
+  <link rel="stylesheet" href="css/style.css?v=a2742806a726">
+</head>
+<body>
+  <noscript>
+    <div class="noscript-banner">
+      <p>请开启 JavaScript 以畅玩《千层瓦片 · 叠叠消》。/ Please enable JavaScript to play TileStack.</p>
+    </div>
+  </noscript>
+
+  <div id="app" data-theme="porcelain">
+    <!-- Background Canvas for Particles -->
+    <canvas id="effects-canvas"></canvas>
+
+    <!-- Tea-Table Wooden Header / Nav -->
+    <header class="table-header">
+      <div class="header-left">
+        <a href="/" id="back-home" class="tea-btn home-btn" data-i18n="backHome">首页</a>
+        <h1 class="game-heading" data-i18n="gameTitle">千层瓦片 · 叠叠消</h1>
+      </div>
+
+      <div class="header-actions">
+        <button id="btn-levels" class="tea-btn" data-i18n="levelsBtn">关卡</button>
+        <button id="btn-hint" class="tea-btn" data-i18n="hintBtn">提示</button>
+        <button id="btn-undo" class="tea-btn" data-i18n="undoBtn">悔棋</button>
+        <button id="btn-restart" class="tea-btn" data-i18n="restartBtn">重开</button>
+        <button id="btn-pause" class="tea-btn" data-i18n="pauseBtn">暂停</button>
+        <button id="btn-sound" class="tea-btn">音效: 开</button>
+        <button id="btn-lang" class="tea-btn">English</button>
+        <button id="btn-rules" class="tea-btn" data-i18n="howToPlay">玩法</button>
+      </div>
+    </header>
+
+    <!-- Tea-Table HUD -->
+    <div class="hud-panel">
+      <div class="hud-item hud-level">
+        <span id="hud-level-name">关卡 1 · 青花初现</span>
+      </div>
+      <div class="hud-stats">
+        <div class="hud-stat-box">
+          <span class="stat-label" data-i18n="scoreLabel">得分</span>
+          <span id="hud-score" class="stat-value">0</span>
+        </div>
+        <div class="hud-stat-box">
+          <span class="stat-label" data-i18n="stepsLabel">步数</span>
+          <span id="hud-steps" class="stat-value">0</span>
+        </div>
+        <div class="hud-stat-box">
+          <span class="stat-label" data-i18n="remainingTiles">剩余瓦片</span>
+          <span id="hud-tiles-left" class="stat-value">24</span>
+        </div>
+        <div class="hud-stat-box">
+          <span class="stat-label" data-i18n="remainingLayers">塔高层级</span>
+          <span id="hud-layers-left" class="stat-value">3</span>
+        </div>
+        <div id="hud-timer-wrap" class="hud-stat-box timer-box" style="display: none;">
+          <span class="stat-label" data-i18n="timeLabel">倒计时</span>
+          <span id="hud-timer" class="stat-value">90</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Center Stage: 3D Tile Pagoda Tower -->
+    <main class="table-stage">
+      <div class="tower-viewport">
+        <div id="tower-board" class="tower-board">
+          <!-- 3D tiles rendered here -->
+        </div>
+      </div>
+    </main>
+
+    <!-- Bottom Tray: 7-Slot Recessed Wooden Tray -->
+    <footer class="tray-footer">
+      <div id="tray-container" class="tray-container">
+        <div class="tray-wood-rim">
+          <span class="tray-label" data-i18n="trayTitle">七格木托槽</span>
+          <div id="tray-slots" class="tray-slots">
+            <!-- 7 slots rendered here -->
+          </div>
+        </div>
+      </div>
+    </footer>
+
+    <!-- Modals -->
+    <!-- Levels Drawer / Modal -->
+    <div id="modal-levels" class="tea-modal">
+      <div class="tea-modal-box">
+        <div class="tea-modal-header">
+          <h2 data-i18n="levelSelectTitle">千层关卡谱</h2>
+          <button class="modal-close-btn" data-i18n="closeBtn">关闭</button>
+        </div>
+        <div id="levels-grid" class="modal-body levels-scroll-body">
+          <!-- Chapter sections rendered dynamically -->
+        </div>
+      </div>
+    </div>
+
+    <!-- Rules Modal -->
+    <div id="modal-rules" class="tea-modal">
+      <div class="tea-modal-box rules-box">
+        <div class="tea-modal-header">
+          <h2 data-i18n="howToTitle">茶桌叠瓦法则</h2>
+          <button class="modal-close-btn" data-i18n="closeBtn">关闭</button>
+        </div>
+        <div class="modal-body rules-content">
+          <p data-i18n="rule1">1. 点击上方无任何压盖的自由瓦片，瓦片将飞入下方七格木托。</p>
+          <p data-i18n="rule2">2. 木托中凑齐 3 张相同瓦片立即“叮”声消除，腾出宝贵槽位。</p>
+          <p data-i18n="rule3">3. 槽满 7 张且无法达成三消则本局失败；合理规划取牌顺序是破局关键。</p>
+          <p class="rule-highlight" data-i18n="ruleSpecial">特殊瓦片：玉匙解锁秘宝，冰晶瓦需双击破冰，七彩灵瓦可替代任意牌凑三。</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Settlement Modal (Win / Lose) -->
+    <div id="modal-settlement" class="tea-modal">
+      <div class="tea-modal-box settlement-box">
+        <div class="tea-modal-header">
+          <h2 id="settlement-title">扫尽千层 · 雀鸣瓦落！</h2>
+        </div>
+        <div class="modal-body settlement-content">
+          <p id="settlement-desc">整座瓦片塔已被悉数巧解。</p>
+          <div id="settlement-stars" class="settle-stars-wrap"></div>
+          <div class="settle-stats-card">
+            <div id="settlement-score" class="settle-line">最终总分: 0</div>
+            <div id="settlement-steps" class="settle-line">步数: 0</div>
+          </div>
+          <div class="settle-actions">
+            <button id="btn-next-level" class="tea-btn btn-primary" data-i18n="nextLevel">下一关</button>
+            <button id="btn-try-again" class="tea-btn" data-i18n="tryAgain">重新挑战</button>
+            <button id="btn-undo-last" class="tea-btn btn-primary" data-i18n="undoLast" style="display: none;">悔棋一步</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Pause Modal -->
+    <div id="modal-pause" class="tea-modal">
+      <div class="tea-modal-box pause-box">
+        <div class="tea-modal-header">
+          <h2 data-i18n="pausedTitle">已暂停</h2>
+          <button class="modal-close-btn" data-i18n="closeBtn">关闭</button>
+        </div>
+        <div class="modal-body pause-content">
+          <p data-i18n="pausedDesc">随时点击继续或按 P / Esc 恢复游戏。</p>
+          <div class="pause-actions">
+            <button id="btn-modal-resume" class="tea-btn btn-primary" data-i18n="resumeBtn">继续</button>
+            <button id="btn-modal-restart" class="tea-btn" data-i18n="restartBtn">重开</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="js/main.mjs?v=a2742806a726"></script>
+</body>
+</html>

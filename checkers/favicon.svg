@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <defs>
+    <radialGradient id="wood" cx="40%" cy="30%" r="80%">
+      <stop offset="0%" stop-color="#6b3f2d"/>
+      <stop offset="100%" stop-color="#341e17"/>
+    </radialGradient>
+    <radialGradient id="red" cx="32%" cy="25%" r="78%">
+      <stop offset="0%" stop-color="#ffd9b8"/>
+      <stop offset="40%" stop-color="#ff7b4e"/>
+      <stop offset="100%" stop-color="#8f1f0b"/>
+    </radialGradient>
+    <radialGradient id="blue" cx="32%" cy="25%" r="78%">
+      <stop offset="0%" stop-color="#d9f6ff"/>
+      <stop offset="40%" stop-color="#6ed4ff"/>
+      <stop offset="100%" stop-color="#064a86"/>
+    </radialGradient>
+  </defs>
+  <rect width="64" height="64" rx="14" fill="#101a1c"/>
+  <polygon points="32,5 39,19 55,13 49,28 61,32 49,36 55,51 39,45 32,59 25,45 9,51 15,36 3,32 15,28 9,13 25,19" fill="url(#wood)" stroke="#c9a46a" stroke-width="1.2" stroke-linejoin="round"/>
+  <circle cx="24" cy="40" r="8" fill="url(#red)"/>
+  <circle cx="41" cy="24" r="8" fill="url(#blue)"/>
+  <path d="M24 40 Q32 14 41 24" fill="none" stroke="#ffd98a" stroke-width="2" stroke-linecap="round" opacity="0.85"/>
+  <circle cx="21" cy="37" r="2" fill="#fff" opacity="0.7"/>
+  <circle cx="38" cy="21" r="2" fill="#fff" opacity="0.7"/>
+</svg>

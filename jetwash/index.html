@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-D67E3XTNSS"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-D67E3XTNSS');
+  </script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="description" content="高压水枪冲掉污渍，把脏车脏家具洗回全新。三层污渍分层剥落，即开即玩的解压清洁小游戏。">
+<link rel="icon" href="favicon.svg?v=a2742806a726" type="image/svg+xml">
+<link rel="stylesheet" href="css/style.css?v=a2742806a726">
+<title>高压洗车屋·解压清洁 · DOIN 在线小游戏</title>
+</head>
+<body>
+<div id="app">
+  <header class="topbar" role="banner">
+    <div class="brand">
+      <span class="brand-mark" aria-hidden="true">◈</span>
+      <div class="brand-text">
+        <h1 data-i18n="title">高压洗车屋</h1>
+        <p data-i18n="lede">冲掉污垢 · 洗回亮色</p>
+      </div>
+    </div>
+    <div class="hud" role="status" aria-label="status">
+      <div class="hud-cell">
+        <span class="hud-key" data-i18n="levelLabel">工位</span>
+        <span class="hud-val" id="hud-level">—</span>
+      </div>
+      <div class="hud-cell clean-cell">
+        <span class="hud-key" data-i18n="cleanLabel">清洁度</span>
+        <span class="hud-val" id="hud-clean">0%</span>
+        <div class="clean-track" aria-hidden="true"><div class="clean-fill" id="clean-fill"></div></div>
+      </div>
+      <div class="hud-cell">
+        <span class="hud-key" data-i18n="timeLabel">用时</span>
+        <span class="hud-val" id="hud-time">00:00</span>
+      </div>
+    </div>
+    <nav class="controls" aria-label="controls" data-i18n-aria="controls">
+      <button id="btn-tip" class="ctl" data-i18n="tipTitle" data-i18n-aria="tipTitle">怎么玩</button>
+      <button id="btn-levels" class="ctl" data-i18n="levels" data-i18n-aria="levels">选关</button>
+      <button id="btn-pause" class="ctl" data-i18n="pause" data-i18n-aria="pause">暂停</button>
+      <button id="btn-restart" class="ctl" data-i18n="restart" data-i18n-aria="restart">重洗本关</button>
+      <button id="btn-sound" class="ctl" data-i18n="mute" data-i18n-aria="sound">音效开</button>
+      <button id="btn-lang" class="ctl" data-i18n="langShort" data-i18n-aria="langLabel">EN</button>
+      <a href="/" id="back-home" class="ctl" data-i18n="backHome" data-i18n-aria="backHome">返回门户</a>
+    </nav>
+  </header>
+
+  <main class="bay" aria-label="wash bay" data-i18n-aria="controls">
+    <div class="bay-stage">
+      <canvas id="stage" aria-label="wash station" data-i18n-aria="controls"></canvas>
+      <div id="pause-layer" class="overlay" hidden>
+        <div class="overlay-card">
+          <div class="overlay-icon" aria-hidden="true">⏸</div>
+          <h2 data-i18n="paused">已暂停</h2>
+          <p data-i18n="pausedHint">水已停，歇口气</p>
+          <button id="btn-resume" class="primary" data-i18n="resume" data-i18n-aria="resume">继续</button>
+        </div>
+      </div>
+      <div id="result-layer" class="overlay" hidden>
+        <div class="overlay-card result-card">
+          <div class="result-spark" aria-hidden="true">✦</div>
+          <h2 data-i18n="resultTitle">焕然一新！</h2>
+          <div class="stars" id="result-stars" aria-label="stars"></div>
+          <div class="result-row"><span data-i18n="resultTime">本次用时</span><b id="result-time">00:00</b></div>
+          <div class="result-row"><span data-i18n="resultStars">清洁星级</span><b id="result-grade">3 ★</b></div>
+          <div class="result-actions">
+            <button id="btn-next" class="primary" data-i18n="nextLevel" data-i18n-aria="nextLevel">下一件</button>
+            <button id="btn-replay" class="ctl" data-i18n="replay" data-i18n-aria="replay">再洗一遍</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="tool-deck" aria-label="tools" data-i18n-aria="toolLabel">
+      <div class="tool-tray" role="group" aria-label="tools">
+        <button class="tool" data-tool="tool_jet" aria-pressed="true">
+          <span class="tool-glyph" aria-hidden="true">▮</span>
+          <span class="tool-name" data-i18n="toolJet">高压水枪</span>
+          <span class="tool-hint" data-i18n="hintJet">水枪冲浮灰最快</span>
+        </button>
+        <button class="tool" data-tool="tool_foam" aria-pressed="false">
+          <span class="tool-glyph" aria-hidden="true">◌</span>
+          <span class="tool-name" data-i18n="toolFoam">泡沫喷壶</span>
+          <span class="tool-hint" data-i18n="hintFoam">泡沫软化油渍顽渍</span>
+        </button>
+        <button class="tool" data-tool="tool_brush" aria-pressed="false">
+          <span class="tool-glyph" aria-hidden="true">╱</span>
+          <span class="tool-name" data-i18n="toolBrush">刷子</span>
+          <span class="tool-hint" data-i18n="hintBrush">刷子刮顽渍最给力</span>
+        </button>
+        <button class="tool" data-tool="tool_squeegee" aria-pressed="false">
+          <span class="tool-glyph" aria-hidden="true">▬</span>
+          <span class="tool-name" data-i18n="toolSqueegee">刮水器</span>
+          <span class="tool-hint" data-i18n="hintSqueegee">刮水器带走泡沫污水</span>
+        </button>
+      </div>
+      <div class="nozzle-row">
+        <span class="nozzle-label" data-i18n="nozzle">喷头</span>
+        <button id="btn-nozzle" class="nozzle-btn" data-i18n="nozzleWide" data-i18n-aria="nozzle">宽扇面</button>
+        <span class="nozzle-key" aria-hidden="true">N</span>
+      </div>
+    </div>
+  </main>
+
+  <div id="drawer" class="drawer" hidden>
+    <div class="drawer-panel" role="dialog" aria-label="levels" data-i18n-aria="levels">
+      <div class="drawer-head">
+        <h2 data-i18n="levels">选关</h2>
+        <button id="btn-close-drawer" class="ctl" data-i18n="close" data-i18n-aria="close">关闭</button>
+      </div>
+      <div id="drawer-groups"></div>
+    </div>
+  </div>
+
+  <div id="tip-layer" class="overlay" hidden>
+    <div class="overlay-card tip-card">
+      <h2 data-i18n="tipTitle">怎么玩</h2>
+      <ol>
+        <li data-i18n="tip1">按住并拖动，对准脏面持续冲刷——停在哪就净在哪，挥得越快不会越快。</li>
+        <li data-i18n="tip2">三层污渍依次是浮灰、油渍、顽渍；用错工具只是慢，绝不扣分。</li>
+        <li data-i18n="tip3">先喷泡沫软化，再冲再刷，顽渍去得更快。数字键 1–4 换工具，N 切喷头，R 重洗。</li>
+      </ol>
+      <button id="btn-got-it" class="primary" data-i18n="gotIt" data-i18n-aria="gotIt">开始清洗</button>
+    </div>
+  </div>
+</div>
+<noscript>请启用 JavaScript 以运行《高压洗车屋》。Please enable JavaScript to play.</noscript>
+<script type="module" src="js/main.mjs?v=a2742806a726"></script>
+</body>
+</html>

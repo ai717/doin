@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Ultimate Tic-Tac-Toe">
+  <defs>
+    <linearGradient id="iron" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#1b2431"/>
+      <stop offset="1" stop-color="#0a0d13"/>
+    </linearGradient>
+    <linearGradient id="brass" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#f0d9a4"/>
+      <stop offset="0.55" stop-color="#b78b43"/>
+      <stop offset="1" stop-color="#6d552f"/>
+    </linearGradient>
+  </defs>
+  <rect x="2" y="2" width="60" height="60" rx="13" fill="url(#iron)" stroke="url(#brass)" stroke-width="2.5"/>
+  <g stroke="url(#brass)" stroke-width="1.6" opacity="0.85">
+    <path d="M22.5 8v48M41.5 8v48M8 22.5h48M8 41.5h48"/>
+  </g>
+  <g stroke="#ff4757" stroke-width="3.4" stroke-linecap="round">
+    <path d="M12.5 12.5l6 6M18.5 12.5l-6 6"/>
+  </g>
+  <circle cx="32" cy="32" r="4.4" fill="none" stroke="#00d2d3" stroke-width="3.2"/>
+  <g stroke="#ff4757" stroke-width="3.4" stroke-linecap="round">
+    <path d="M45.5 45.5l6 6M51.5 45.5l-6 6"/>
+  </g>
+  <rect x="26" y="8" width="12" height="12" rx="2.5" fill="none" stroke="#ffa502" stroke-width="1.6" opacity="0.9"/>
+</svg>

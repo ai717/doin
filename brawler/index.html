@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-D67E3XTNSS"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-D67E3XTNSS');
+  </script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>操场大乱斗 · DOIN 在线小游戏</title>
+  <meta name="description" content="放学后的操场横版清版动作：轻拳三连、重拳击飞、跳踢与背摔，把一波波对手打飞出屏幕。12 关四章、同屏双人与三分钟街机模式，零广告即开即玩。">
+  <link rel="canonical" href="https://doin.win/brawler/">
+  <meta property="og:title" content="操场大乱斗 · 放学别走">
+  <meta property="og:description" content="横版清版动作：轻拳三连、重拳击飞、背摔与投掷书包篮球，12 关四章与同屏双人。">
+  <meta property="og:type" content="website">
+  <meta name="twitter:card" content="summary_large_image">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="css/style.css?v=a2742806a726">
+</head>
+<body>
+  <div id="game-app">
+    <header id="top-bar">
+      <a href="/" id="back-home" class="bar-btn">
+        <span class="bar-glyph">←</span><span data-i18n="portal">返回门户</span>
+      </a>
+      <h1 id="brand">
+        <span id="brand-main" data-i18n="appTitle">操场大乱斗</span>
+        <span id="brand-sub" data-i18n="appSub">放学别走</span>
+      </h1>
+      <div id="bar-actions">
+        <button id="btn-levels" class="bar-btn bar-btn-accent" type="button">
+          <span class="bar-glyph">▦</span><span data-i18n="levels">选关</span>
+        </button>
+        <button id="btn-pause" class="bar-btn" type="button" data-i18n-aria="pause" aria-label="暂停">
+          <span class="bar-glyph">❚❚</span>
+        </button>
+        <button id="btn-sound" class="bar-btn" type="button" data-i18n-aria="soundToggle" aria-label="音效">
+          <span id="sound-glyph">🔊</span>
+        </button>
+        <button id="btn-lang" class="bar-btn" type="button" data-i18n-aria="langToggle" aria-label="切换语言">EN</button>
+        <button id="btn-help" class="bar-btn" type="button" data-i18n-aria="help" aria-label="玩法说明">
+          <span class="bar-glyph">?</span>
+        </button>
+      </div>
+    </header>
+
+    <nav id="mode-strip" role="tablist" data-i18n-aria="ariaModes" aria-label="选择玩法模式">
+      <button id="mode-story" class="mode-chip is-active" type="button" role="tab" aria-selected="true" data-mode="story">
+        <span class="mode-name" data-i18n="modeStory">章节</span>
+        <em class="mode-sub" data-i18n="modeStoryHint">单人闯关</em>
+      </button>
+      <button id="mode-coop" class="mode-chip" type="button" role="tab" aria-selected="false" data-mode="coop">
+        <span class="mode-name" data-i18n="modeCoop">双人</span>
+        <em class="mode-sub" data-i18n="modeCoopHint">同屏双打</em>
+      </button>
+      <button id="mode-arcade" class="mode-chip" type="button" role="tab" aria-selected="false" data-mode="arcade">
+        <span class="mode-name" data-i18n="modeArcade">街机</span>
+        <em class="mode-sub" data-i18n="modeArcadeHint">三分钟连打</em>
+      </button>
+    </nav>
+
+    <section id="chalk-hud" data-i18n-aria="ariaBoard" aria-label="粉笔记分黑板">
+      <div class="hud-place">
+        <span class="hud-kicker" id="hud-chapter">第一章 · 操场跑道</span>
+        <strong class="hud-title" id="hud-level-name">跑道热身</strong>
+        <span class="hud-levelnum" id="hud-level-num">第 1 关</span>
+      </div>
+      <div class="hud-bars">
+        <div class="hp-row" id="hp-row-p1">
+          <span class="hp-tag" data-i18n="p1">P1</span>
+          <div class="hp-chalk"><i id="hp-fill-p1"></i></div>
+          <span class="hp-num" id="hp-num-p1">100</span>
+        </div>
+        <div class="hp-row" id="hp-row-p2" hidden>
+          <span class="hp-tag" data-i18n="p2">P2</span>
+          <div class="hp-chalk"><i id="hp-fill-p2"></i></div>
+          <span class="hp-num" id="hp-num-p2">100</span>
+        </div>
+      </div>
+      <div class="hud-stats">
+        <div class="hud-stat hud-ko">
+          <span class="hud-label" data-i18n="koLabel">击飞</span>
+          <strong id="hud-ko">0</strong>
+        </div>
+        <div class="hud-stat">
+          <span class="hud-label" data-i18n="waveLabel">波次</span>
+          <strong id="hud-wave">1 / 3</strong>
+        </div>
+        <div class="hud-stat">
+          <span class="hud-label" data-i18n="timeLabel">用时</span>
+          <strong id="hud-time">0:00</strong>
+        </div>
+      </div>
+    </section>
+
+    <main id="stage-area">
+      <div id="stage-frame">
+        <div id="stage" role="img" data-i18n-aria="ariaStage" aria-label="放学后的操场清版动作舞台">
+          <div id="scaler">
+            <div id="sky"></div>
+            <div id="skyline"></div>
+            <div id="camera">
+              <div id="ground"></div>
+              <div id="props"></div>
+              <div id="items"></div>
+              <div id="actors"></div>
+            </div>
+            <canvas id="fx" width="960" height="540" aria-hidden="true"></canvas>
+            <div id="flash" aria-hidden="true"></div>
+            <div id="banner" role="status" aria-live="polite"><span id="banner-text"></span></div>
+          </div>
+        </div>
+      </div>
+      <p id="key-hint" data-i18n="keyHintP1">WASD 移动 · J 轻拳 · K 重拳 · 空格跳 · L 捡扔 · U 必杀 · P 暂停</p>
+    </main>
+
+    <div id="control-deck">
+      <div id="stick-pad" data-i18n-aria="ariaStick" aria-label="虚拟摇杆">
+        <div id="stick-ring"></div>
+        <div id="stick-knob"></div>
+      </div>
+      <div id="action-pad">
+        <button class="act-btn act-light" id="act-light" type="button">
+          <span data-i18n="controlsLight">轻拳</span><kbd>J</kbd>
+        </button>
+        <button class="act-btn act-heavy" id="act-heavy" type="button">
+          <span data-i18n="controlsHeavy">重拳</span><kbd>K</kbd>
+        </button>
+        <button class="act-btn act-jump" id="act-jump" type="button">
+          <span data-i18n="controlsJump">跳</span><kbd>␣</kbd>
+        </button>
+        <button class="act-btn act-use" id="act-use" type="button">
+          <span data-i18n="controlsUse">捡 / 扔</span><kbd>L</kbd>
+        </button>
+        <button class="act-btn act-special" id="act-special" type="button">
+          <span data-i18n="controlsSpecial">必杀</span><kbd>U</kbd>
+        </button>
+        <button class="act-btn act-pause" id="act-pause" type="button">
+          <span data-i18n="controlsPause">暂停</span><kbd>P</kbd>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div id="panel-levels" class="overlay" hidden>
+    <div class="panel panel-levels" role="dialog" aria-modal="true" aria-labelledby="levels-title">
+      <div class="panel-head">
+        <h2 id="levels-title" data-i18n="levelsTitle">放学路选关</h2>
+        <button id="levels-close" class="close-btn" type="button" data-i18n-aria="close" aria-label="关闭">✕</button>
+      </div>
+      <p class="panel-desc" data-i18n="levelsDesc">12 关四章，随点随进；击飞数与评级会记录在本机。</p>
+      <div id="levels-body"></div>
+      <p id="levels-total" class="levels-total"></p>
+    </div>
+  </div>
+
+  <div id="panel-pause" class="overlay" hidden>
+    <div class="panel panel-pause" role="dialog" aria-modal="true" aria-labelledby="pause-title">
+      <h2 id="pause-title" data-i18n="pauseTitle">已暂停</h2>
+      <p class="panel-desc" data-i18n="pauseDesc">黑板上的粉笔还没擦，随时回来接着打。</p>
+      <div class="panel-actions">
+        <button id="btn-resume" class="btn btn-primary" type="button" data-i18n="pauseResume">继续游戏</button>
+        <button id="btn-restart" class="btn" type="button" data-i18n="pauseRestart">重新开始</button>
+        <button id="btn-pause-levels" class="btn" type="button" data-i18n="pauseLevels">返回选关</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="panel-result" class="overlay" hidden>
+    <div class="panel panel-result" role="dialog" aria-modal="true" aria-labelledby="result-title">
+      <p class="result-kicker" id="result-kicker"></p>
+      <h2 id="result-title"></h2>
+      <div id="result-stars" class="result-stars" aria-hidden="true">
+        <span class="star">★</span><span class="star">★</span><span class="star">★</span>
+      </div>
+      <div class="result-grid">
+        <div class="result-row"><span data-i18n="resultKo">击飞</span><strong id="res-ko">0</strong></div>
+        <div class="result-row"><span data-i18n="resultTime">用时</span><strong id="res-time">0:00</strong></div>
+        <div class="result-row"><span data-i18n="resultHp">剩余体力</span><strong id="res-hp">0%</strong></div>
+        <div class="result-row"><span data-i18n="resultScore">得分</span><strong id="res-score">0</strong></div>
+        <div class="result-row" id="row-boss"><span data-i18n="resultBoss">击飞首领</span><strong id="res-boss">0</strong></div>
+        <div class="result-row" id="row-continue"><span data-i18n="resultContinue">续关次数</span><strong id="res-continue">0</strong></div>
+      </div>
+      <p class="result-sub" id="result-sub"></p>
+      <div class="panel-actions">
+        <button id="btn-next" class="btn btn-primary" type="button" data-i18n="resultNext">下一关</button>
+        <button id="btn-retry" class="btn" type="button" data-i18n="resultRetry">重打本关</button>
+        <button id="btn-result-levels" class="btn" type="button" data-i18n="resultLevels">选关</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="panel-continue" class="overlay" hidden>
+    <div class="panel panel-continue" role="dialog" aria-modal="true" aria-labelledby="continue-title">
+      <h2 id="continue-title" data-i18n="continueTitle">还能续关</h2>
+      <p class="panel-desc" id="continue-desc"></p>
+      <div class="panel-actions">
+        <button id="btn-continue" class="btn btn-primary" type="button" data-i18n="continueBtn">续关再打</button>
+        <button id="btn-give-up" class="btn" type="button" data-i18n="continueGiveUp">算了，回选关</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="panel-help" class="overlay" hidden>
+    <div class="panel panel-help" role="dialog" aria-modal="true" aria-labelledby="help-title">
+      <h2 id="help-title" data-i18n="helpTitle">放学别走 · 玩法</h2>
+      <ol class="help-list">
+        <li data-i18n="help1"></li>
+        <li data-i18n="help2"></li>
+        <li data-i18n="help3"></li>
+        <li data-i18n="help4"></li>
+        <li data-i18n="help5"></li>
+        <li data-i18n="help6"></li>
+        <li data-i18n="help7"></li>
+      </ol>
+      <div class="panel-actions">
+        <button id="btn-help-close" class="btn btn-primary" type="button" data-i18n="helpClose">知道了</button>
+      </div>
+    </div>
+  </div>
+
+  <noscript><p>需要启用 JavaScript 才能游玩操场大乱斗。</p></noscript>
+  <script type="module" src="js/main.mjs?v=a2742806a726"></script>
+</body>
+</html>

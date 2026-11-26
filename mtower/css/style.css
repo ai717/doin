@@ -1,0 +1,642 @@
+/* ==========================================================================
+   games/mtower/css/style.css
+   魔塔 50 层：黑曜石复古地牢机台、羊皮纸属性轴、临界值算盘与触感按键
+   ========================================================================== */
+
+:root {
+  --bg-dark: #0a0d14;
+  --bg-panel: #111722;
+  --border-obsidian: #222d3e;
+  --gold-primary: #ffd54f;
+  --gold-glow: rgba(255, 213, 79, 0.35);
+  --ruby-red: #ff4757;
+  --sapphire-blue: #1e90ff;
+  --emerald-green: #2ed573;
+  --text-main: #f0f4f8;
+  --text-muted: #8292a4;
+
+  --btn-bg: #161e2c;
+  --btn-border: #2c3a50;
+  --btn-shadow: #05080e;
+
+  --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html, body {
+  width: 100%;
+  height: 100%;
+  overflow-x: hidden;
+  background-color: var(--bg-dark);
+  background: radial-gradient(circle at 50% 25%, #141c2c 0%, var(--bg-dark) 65%, #040609 100%);
+  color: var(--text-main);
+  font-family: var(--font-family);
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+}
+
+#game-app {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-height: 100vh;
+  width: 100%;
+  max-width: 680px; /* 一体化地牢机台黄金紧凑视窗 */
+  margin: 0 auto;
+  padding: 8px 12px;
+  padding-bottom: max(68px, calc(16px + env(safe-area-inset-bottom)));
+}
+
+/* 顶部操作条 */
+#game-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 8px 12px;
+  background: var(--bg-panel);
+  border: 1.5px solid var(--border-obsidian);
+  border-radius: 14px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  margin-bottom: 8px;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+#game-title {
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: var(--gold-primary);
+  letter-spacing: 0.5px;
+  text-shadow: 0 0 12px var(--gold-glow);
+}
+
+.header-controls {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+/* 实体触感按键 (Tactile Buttons) */
+.tactile-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 5px 11px;
+  background: linear-gradient(to bottom, #1d283a, var(--btn-bg));
+  border: 1px solid var(--btn-border);
+  border-radius: 8px;
+  color: var(--text-main);
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 3px 0 var(--btn-shadow), 0 3px 6px rgba(0, 0, 0, 0.35);
+  transition: transform 0.08s ease, box-shadow 0.08s ease, background 0.15s ease;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.tactile-btn:hover:not(:disabled) {
+  background: linear-gradient(to bottom, #26354c, #192334);
+  border-color: var(--gold-primary);
+}
+
+.tactile-btn:active:not(:disabled) {
+  transform: translateY(2px);
+  box-shadow: 0 1px 0 var(--btn-shadow), 0 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+.tactile-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.tactile-btn.primary-btn {
+  background: linear-gradient(to bottom, #ffd54f, #d4af37);
+  border-color: #ffd54f;
+  color: #0d121c;
+  box-shadow: 0 3px 0 #8c6e23;
+}
+
+.tactile-btn.primary-btn:hover {
+  background: linear-gradient(to bottom, #ffdf79, #dfba42);
+}
+
+.tactile-btn.undo-btn {
+  color: #2ed573;
+}
+
+.tactile-btn.mode-btn {
+  color: var(--gold-primary);
+}
+
+/* 主工作台容器 */
+#game-workspace {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  gap: 8px;
+  flex: 1;
+}
+
+/* 羊皮纸/黑曜石属性状态栏 (HUD Status Bar) */
+#hud-status-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  max-width: 530px;
+  background: rgba(17, 23, 34, 0.95);
+  border: 1.5px solid var(--border-obsidian);
+  border-radius: 12px;
+  padding: 6px 10px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4);
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.status-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.8rem;
+}
+
+.chip-icon {
+  font-size: 0.95rem;
+}
+
+.chip-lbl {
+  font-size: 0.68rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+}
+
+.chip-val {
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+
+.floor-chip .chip-val {
+  color: var(--gold-primary);
+  font-size: 0.95rem;
+}
+
+.hp-val {
+  color: var(--ruby-red);
+}
+
+.atk-val {
+  color: #ffa502;
+}
+
+.def-val {
+  color: var(--sapphire-blue);
+}
+
+.gold-val {
+  color: var(--gold-primary);
+}
+
+.keys-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(8, 12, 19, 0.6);
+  padding: 2px 6px;
+  border-radius: 6px;
+}
+
+.key-pill {
+  font-size: 0.76rem;
+  font-weight: 700;
+}
+
+.relics-container {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: auto;
+}
+
+.relic-badge {
+  display: inline-flex;
+  align-items: center;
+  position: relative;
+  font-size: 1rem;
+}
+
+.relic-num {
+  position: absolute;
+  top: -4px;
+  right: -6px;
+  background: #e74c3c;
+  color: #ffffff;
+  font-size: 0.62rem;
+  font-weight: 800;
+  padding: 1px 4px;
+  border-radius: 8px;
+}
+
+/* Canvas 地牢视窗容器 */
+#canvas-container {
+  position: relative;
+  width: 100%;
+  max-width: 530px;
+  aspect-ratio: 1 / 1;
+  margin: 0 auto;
+  border: 3px solid #253347;
+  border-radius: 12px;
+  background: #080c14;
+  box-shadow: 
+    0 8px 24px rgba(0, 0, 0, 0.7),
+    inset 0 0 16px rgba(0, 0, 0, 0.9);
+  overflow: hidden;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+#game-canvas {
+  width: 100%;
+  height: 100%;
+  display: block;
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+}
+
+/* 临界值悬停算盘悬浮卡片 (Threshold Tooltip) */
+.threshold-card {
+  position: fixed;
+  z-index: 100;
+  background: rgba(14, 20, 31, 0.96);
+  border: 1.5px solid var(--gold-primary);
+  border-radius: 10px;
+  padding: 8px 12px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.8), 0 0 14px var(--gold-glow);
+  pointer-events: none;
+  min-width: 180px;
+  max-width: 250px;
+}
+
+.tip-header {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-bottom: 6px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  padding-bottom: 4px;
+}
+
+.tip-stats {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+}
+
+.tip-battle {
+  font-size: 0.82rem;
+  margin-bottom: 4px;
+}
+
+.tip-loss.win {
+  color: var(--emerald-green);
+  font-weight: 800;
+}
+
+.tip-loss.warning {
+  color: #ffa502;
+}
+
+.tip-loss.danger {
+  color: var(--ruby-red);
+  font-weight: 800;
+}
+
+.tip-thresholds {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  margin-top: 4px;
+  padding-top: 4px;
+  border-top: 1px dashed rgba(255, 255, 255, 0.1);
+}
+
+.tip-hint {
+  font-size: 0.72rem;
+  line-height: 1.35;
+}
+
+.tip-hint.atk {
+  color: #ffd54f;
+}
+
+.tip-hint.def {
+  color: #70a1ff;
+}
+
+/* 移动端虚拟十字操控底座 */
+#virtual-dpad {
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  margin-top: 6px;
+}
+
+@media (max-width: 768px) {
+  #virtual-dpad {
+    display: flex;
+  }
+}
+
+.dpad-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.dpad-btn {
+  width: 52px;
+  height: 48px;
+  background: linear-gradient(180deg, #24334a 0%, #151e2c 100%);
+  border: 1.5px solid var(--border-obsidian);
+  border-radius: 12px;
+  color: var(--text-main);
+  font-size: 1.1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 0 #070b12;
+  cursor: pointer;
+  user-select: none;
+}
+
+.dpad-btn:active {
+  transform: translateY(2px);
+  box-shadow: 0 2px 0 #070b12;
+}
+
+.dpad-btn.center-undo {
+  color: #2ed573;
+  font-size: 1.25rem;
+}
+
+/* 模态弹窗系统 */
+.game-dialog {
+  border: none;
+  border-radius: 18px;
+  padding: 0;
+  background: transparent;
+  margin: auto;
+  max-width: 94vw;
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.85);
+}
+
+.game-dialog::backdrop {
+  background: rgba(3, 5, 8, 0.82);
+}
+
+.dialog-content {
+  background: #0f1522;
+  border: 2px solid var(--border-obsidian);
+  border-radius: 18px;
+  padding: 22px 24px;
+  color: var(--text-main);
+  max-width: 440px;
+  box-sizing: border-box;
+}
+
+.game-dialog.wide-dialog {
+  width: min(600px, 94vw);
+}
+
+.wide-dialog .dialog-content {
+  width: 100%;
+  max-width: 100%;
+}
+
+.dialog-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
+
+.dialog-header h2 {
+  font-size: 1.2rem;
+  color: var(--gold-primary);
+  font-weight: 800;
+}
+
+.close-x {
+  background: none;
+  border: none;
+  font-size: 1.25rem;
+  cursor: pointer;
+  color: var(--text-muted);
+  padding: 4px;
+}
+
+.dialog-actions {
+  display: flex;
+  justify-content: center;
+  margin-top: 16px;
+}
+
+.dialog-tip {
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  margin-bottom: 10px;
+}
+
+/* 玩法说明弹窗 */
+.rules-body {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-height: 55vh;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.rule-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  background: rgba(18, 25, 38, 0.8);
+  border: 1px solid rgba(255, 213, 79, 0.2);
+  border-radius: 10px;
+  padding: 10px 12px;
+}
+
+.rule-icon {
+  font-size: 1.5rem;
+  flex-shrink: 0;
+}
+
+.rule-info h3 {
+  font-size: 0.9rem;
+  color: var(--gold-primary);
+  margin-bottom: 4px;
+}
+
+.rule-info p {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  line-height: 1.45;
+}
+
+/* 楼层飞行传送网格 */
+.fly-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(64px, 1fr));
+  gap: 8px;
+  max-height: 48vh;
+  overflow-y: auto;
+  padding: 6px 2px;
+}
+
+/* 怪物图鉴列表 */
+.manual-scroll-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 52vh;
+  overflow-y: auto;
+  padding: 4px;
+}
+
+.manual-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #141c2b;
+  border: 1px solid var(--border-obsidian);
+  border-radius: 8px;
+  padding: 8px 12px;
+}
+
+.manual-left {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.manual-name {
+  font-weight: 700;
+  font-size: 0.88rem;
+}
+
+.manual-props {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+}
+
+.badge {
+  font-size: 0.74rem;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 4px;
+}
+
+.badge.win { background: rgba(46, 213, 115, 0.2); color: #2ed573; border: 1px solid rgba(46, 213, 115, 0.4); }
+.badge.warning { background: rgba(255, 165, 2, 0.2); color: #ffa502; border: 1px solid rgba(255, 165, 2, 0.4); }
+.badge.danger { background: rgba(255, 71, 87, 0.2); color: #ff4757; border: 1px solid rgba(255, 71, 87, 0.4); }
+
+/* 通关结算卡 */
+.won-card {
+  text-align: center;
+}
+
+.won-badge {
+  font-size: 3rem;
+  margin-bottom: 8px;
+}
+
+.won-stars-row {
+  color: var(--gold-primary);
+  font-size: 1.6rem;
+  margin: 10px 0;
+  letter-spacing: 4px;
+}
+
+.won-stats-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin: 14px 0;
+  background: rgba(16, 23, 35, 0.7);
+  padding: 10px;
+  border-radius: 10px;
+}
+
+.stat-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.stat-lbl {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+}
+
+.stat-num {
+  font-size: 1.25rem;
+  color: var(--text-main);
+  font-weight: 800;
+}
+
+.stat-num.highlight {
+  color: var(--gold-primary);
+}
+
+/* 滚动条定制 */
+.rules-body::-webkit-scrollbar,
+.fly-grid::-webkit-scrollbar,
+.manual-scroll-list::-webkit-scrollbar {
+  width: 6px;
+}
+
+.rules-body::-webkit-scrollbar-track,
+.fly-grid::-webkit-scrollbar-track,
+.manual-scroll-list::-webkit-scrollbar-track {
+  background: #090e18;
+  border-radius: 3px;
+}
+
+.rules-body::-webkit-scrollbar-thumb,
+.fly-grid::-webkit-scrollbar-thumb,
+.manual-scroll-list::-webkit-scrollbar-thumb {
+  background: #1f3048;
+  border-radius: 3px;
+}
+
+.rules-body::-webkit-scrollbar-thumb:hover,
+.fly-grid::-webkit-scrollbar-thumb:hover,
+.manual-scroll-list::-webkit-scrollbar-thumb:hover {
+  background: var(--gold-primary);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+

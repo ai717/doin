@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <defs>
+    <linearGradient id="towerGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#4a5568"/>
+      <stop offset="50%" stop-color="#2d3748"/>
+      <stop offset="100%" stop-color="#1a202c"/>
+    </linearGradient>
+    <linearGradient id="purpleFlame" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#e9d8fd"/>
+      <stop offset="40%" stop-color="#9f7aea"/>
+      <stop offset="100%" stop-color="#6b46c1"/>
+    </linearGradient>
+    <linearGradient id="goldSword" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#fefcbf"/>
+      <stop offset="50%" stop-color="#ecc94b"/>
+      <stop offset="100%" stop-color="#b7791f"/>
+    </linearGradient>
+  </defs>
+  <!-- 背景圆盘 -->
+  <circle cx="32" cy="32" r="30" fill="#0c1017" stroke="#2d3748" stroke-width="2"/>
+  
+  <!-- 塔身底座与三层塔檐 -->
+  <path d="M18 52 L46 52 L42 40 L22 40 Z" fill="url(#towerGrad)" stroke="#718096" stroke-width="1.5"/>
+  <path d="M21 40 L43 40 L40 28 L24 28 Z" fill="url(#towerGrad)" stroke="#718096" stroke-width="1.5"/>
+  <path d="M23 28 L41 28 L38 18 L26 18 Z" fill="url(#towerGrad)" stroke="#718096" stroke-width="1.5"/>
+  
+  <!-- 塔顶紫焰水晶 -->
+  <polygon points="32,7 37,18 27,18" fill="url(#purpleFlame)"/>
+  <circle cx="32" cy="14" r="2.5" fill="#ffffff" opacity="0.8"/>
+  
+  <!-- 金色圣剑贯穿徽标 -->
+  <g transform="translate(14, 18) rotate(35 18 18)">
+    <rect x="16.5" y="4" width="3" height="24" rx="1.5" fill="url(#goldSword)"/>
+    <rect x="12" y="24" width="12" height="3" rx="1.5" fill="#d69e2e"/>
+    <rect x="16.5" y="27" width="3" height="6" rx="1.5" fill="#975a16"/>
+    <circle cx="18" cy="34" r="2" fill="#ecc94b"/>
+  </g>
+
+  <!-- 红蓝宝石点缀 -->
+  <circle cx="21" cy="46" r="3" fill="#e53e3e"/>
+  <circle cx="43" cy="46" r="3" fill="#3182ce"/>
+</svg>

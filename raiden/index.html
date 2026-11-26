@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-D67E3XTNSS"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-D67E3XTNSS');
+  </script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>雷电·极简纵向弹幕 · DOIN 在线小游戏</title>
+  <meta name="description" content="竖版极简纵向弹幕：战机自动开火，蓄力激光穿透一列，擦弹积攒保险清屏。六面航线、面末首领与六十秒弹幕训练，零广告即开即玩。">
+  <meta name="theme-color" content="#050c18">
+  <link rel="icon" href="favicon.svg?v=a2742806a726" type="image/svg+xml">
+  <link rel="stylesheet" href="css/style.css?v=a2742806a726">
+</head>
+<body>
+  <div id="app">
+    <div id="cabinet">
+      <div class="cabinet-crown" aria-hidden="true"></div>
+      <header id="top-bar">
+        <a href="/" id="back-home" class="bar-btn" data-i18n="backHome" data-i18n-aria="backHomeAria">← 门户</a>
+        <div id="brand">
+          <span id="brand-main" data-i18n="appTitle">雷电</span>
+          <span id="brand-sub" data-i18n="appSub">极简纵向弹幕</span>
+        </div>
+        <nav id="top-actions">
+          <button id="btn-stages" class="bar-btn" type="button" data-i18n="stages" data-i18n-aria="stagesAria">选关</button>
+          <button id="btn-pause" class="bar-btn bar-btn-pause" type="button" data-i18n="pause" data-i18n-aria="pauseAria">暂停</button>
+          <button id="btn-sound" class="bar-btn icon-btn" type="button" data-i18n-aria="soundOn" aria-label="音效">♪</button>
+          <button id="btn-lang" class="bar-btn" type="button" data-i18n-aria="langToggle" aria-label="切换语言">EN</button>
+          <button id="btn-help" class="bar-btn icon-btn" type="button" data-i18n-aria="helpAria" aria-label="玩法">?</button>
+        </nav>
+      </header>
+
+      <div id="hud">
+        <div class="hud-cell hud-stage">
+          <span class="hud-kicker" data-i18n="hudStage">面数</span>
+          <strong id="hud-stage"></strong>
+          <span id="hud-name" class="hud-name"></span>
+        </div>
+        <div class="hud-cell">
+          <span class="hud-kicker" data-i18n="lives">命数</span>
+          <span id="hud-lives" class="pips"></span>
+        </div>
+        <div class="hud-cell hud-bomb-cell">
+          <span class="hud-kicker" data-i18n="bombs">保险</span>
+          <span id="hud-bombs" class="pips"></span>
+          <span class="bomb-energy"><i id="hud-bomb-energy"></i></span>
+        </div>
+        <div class="hud-cell">
+          <span class="hud-kicker" data-i18n="score">得分</span>
+          <strong id="hud-score">0</strong>
+        </div>
+        <div class="hud-cell">
+          <span class="hud-kicker" data-i18n="graze">擦弹</span>
+          <strong id="hud-graze">0</strong>
+        </div>
+        <div class="hud-cell hud-weapon">
+          <span class="hud-kicker" data-i18n="weapon">火力</span>
+          <strong id="hud-weapon"></strong>
+        </div>
+        <div class="hud-cell hud-charge-cell">
+          <span class="hud-kicker" data-i18n="charge">蓄力</span>
+          <span class="charge-track"><i id="hud-charge"></i></span>
+        </div>
+        <div id="hud-boss" class="hud-boss" hidden>
+          <span class="boss-name" data-i18n="bossLabel">首领</span>
+          <span class="boss-track"><i id="hud-boss-fill"></i></span>
+        </div>
+      </div>
+
+      <main id="stage-shell">
+        <div id="screen-bezel">
+          <canvas id="stage" width="540" height="900" role="img" data-i18n-aria="stageAria"></canvas>
+          <div id="level-banner" aria-live="polite"></div>
+          <div id="toast" role="status" aria-live="polite"></div>
+        </div>
+      </main>
+
+      <footer id="deck">
+        <p id="key-hint" data-i18n="keyHint">方向键移动 · Shift 低速 · X 蓄力 · C 保险 · P 暂停</p>
+        <div id="touch-deck">
+          <span class="pad-hint" data-i18n="padHint">在舞台内拖动移动</span>
+          <div class="touch-actions">
+            <button id="btn-charge" class="touch-btn touch-charge" type="button" data-i18n="chargeBtn" data-i18n-aria="chargeAria">蓄力</button>
+            <button id="btn-bomb" class="touch-btn touch-bomb" type="button" data-i18n="bombBtn" data-i18n-aria="bombAria">保险</button>
+          </div>
+        </div>
+      </footer>
+    </div>
+
+    <section id="panel-stages" class="panel" hidden aria-labelledby="stages-title">
+      <div class="sheet">
+        <div class="panel-head">
+          <h2 id="stages-title" data-i18n="stageSelectTitle">航线选择</h2>
+          <button class="close-btn" type="button" data-close data-i18n-aria="closeAria">✕</button>
+        </div>
+        <p class="panel-desc" data-i18n="stageSelectDesc">六面航线随点随进；面末首领击破即通关。</p>
+        <p id="stage-total" class="stage-total"></p>
+        <div id="stage-grid" class="stage-grid"></div>
+        <button id="training-card" class="training-card" type="button">
+          <span class="training-icon" aria-hidden="true">◎</span>
+          <span class="training-body">
+            <strong data-i18n="trainingCardTitle">弹幕训练</strong>
+            <span data-i18n="trainingCardDesc">六十秒弹幕轮转，不损命，只练擦弹与蓄力。</span>
+            <span id="training-best" class="training-best"></span>
+          </span>
+          <span id="training-stars" class="stage-stars" aria-hidden="true"></span>
+        </button>
+      </div>
+    </section>
+
+    <section id="panel-help" class="panel" hidden aria-labelledby="help-title">
+      <div class="sheet">
+        <div class="panel-head">
+          <h2 id="help-title" data-i18n="helpTitle">怎么玩</h2>
+          <button class="close-btn" type="button" data-close data-i18n-aria="closeAria">✕</button>
+        </div>
+        <ol class="help-list">
+          <li data-i18n="help1">战机自动开火。方向键或 WASD 移动，按住 Shift 低速精确走位。</li>
+          <li data-i18n="help2">按住 X 蓄力，战机会减速；松开释放穿透一列的激光，蓄满伤害最高。</li>
+          <li data-i18n="help3">按 C 或双击舞台释放保险：清空全屏敌弹，并重创所有敌人。</li>
+          <li data-i18n="help4">让敌弹贴着机身判定点擦过即可擦弹，擦弹会积攒保险能量。</li>
+          <li data-i18n="help5">被击中损失一条命，并短暂无敌；命数耗尽则本局结束。</li>
+          <li data-i18n="help6">击破面末首领即可通关本面；六面全通即通关。</li>
+          <li data-i18n="help7">训练模式不损命，专练擦弹与蓄力；随时按 P 或 Esc 暂停。</li>
+        </ol>
+        <h3 class="help-sub" data-i18n="controlsTitle">操作</h3>
+        <p class="help-controls" data-i18n="controlsKeyboard">方向键 / WASD 移动 · Shift 低速 · X 蓄力 · C 保险 · P / Esc / 空格 暂停</p>
+        <p class="help-controls" data-i18n="controlsTouch">在舞台内拖动移动 · 按住蓄力键 · 点保险键</p>
+      </div>
+    </section>
+
+    <section id="panel-pause" class="panel" hidden aria-labelledby="pause-title">
+      <div class="sheet sheet-narrow">
+        <div class="panel-head">
+          <h2 id="pause-title" data-i18n="pauseTitle">航路暂停</h2>
+          <button class="close-btn" type="button" data-close data-i18n-aria="closeAria">✕</button>
+        </div>
+        <p class="panel-desc" data-i18n="pauseDesc">弹幕已冻结，随时可以继续。</p>
+        <div class="panel-actions vertical">
+          <button id="btn-pause-resume" class="primary-btn" type="button" data-i18n="pauseResume">继续游戏</button>
+          <button id="btn-pause-restart" class="ghost-btn" type="button" data-i18n="pauseRestart">重开本面</button>
+          <button id="btn-pause-stages" class="ghost-btn" type="button" data-i18n="pauseStages">打开航线图</button>
+        </div>
+      </div>
+    </section>
+
+    <section id="panel-result" class="panel" hidden aria-labelledby="result-title">
+      <div class="sheet sheet-result">
+        <div class="panel-head">
+          <h2 id="result-title" data-i18n="resultTitle">本面突破</h2>
+        </div>
+        <div id="result-stars" class="result-stars" aria-hidden="true"></div>
+        <div id="result-rows" class="result-rows"></div>
+        <div class="recommend">
+          <p class="recommend-title" data-i18n="nextUp">接下来玩</p>
+          <div class="recommend-links">
+            <a href="../space-defender/" class="recommend-link" data-i18n="gameSpaceDefender">太空防御者</a>
+            <a href="../invaders/" class="recommend-link" data-i18n="gameInvaders">舷窗防线</a>
+            <a href="../tank/" class="recommend-link" data-i18n="gameTank">坦克巷战</a>
+          </div>
+        </div>
+        <div class="panel-actions">
+          <button id="btn-result-next" class="primary-btn" type="button" data-i18n="resultNext">下一面</button>
+          <button id="btn-result-replay" class="ghost-btn" type="button" data-i18n="resultReplay">重玩本面</button>
+          <button id="btn-result-stages" class="ghost-btn" type="button" data-i18n="resultStages">返回航线图</button>
+        </div>
+      </div>
+    </section>
+  </div>
+  <noscript><p>需要启用 JavaScript 才能起飞。</p></noscript>
+  <script type="module" src="js/main.mjs?v=a2742806a726"></script>
+</body>
+</html>

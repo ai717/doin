@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-D67E3XTNSS"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-D67E3XTNSS');
+  </script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title data-i18n="gameTitle">雀神听牌王 · 听牌速判</title>
+  <meta name="description" content="雀神听牌王 · 听牌速判 (Tenpai King) - 绿呢麻将桌听牌速判与最高番训练小游戏。限时揪出全部可胡听牌，冲击雀神段位！">
+  <link rel="icon" type="image/svg+xml" href="favicon.svg?v=a2742806a726">
+  <link rel="stylesheet" href="css/style.css?v=a2742806a726">
+</head>
+<body>
+  <noscript>
+    <div class="noscript-banner">
+      <p>请开启 JavaScript 以畅玩《雀神听牌王 · 听牌速判》。/ Please enable JavaScript to play Tenpai King.</p>
+    </div>
+  </noscript>
+
+  <div id="app">
+    <!-- Victory Fireworks Canvas -->
+    <canvas id="fireworks-canvas"></canvas>
+
+    <!-- Green Felt Mahjong Table Header -->
+    <header class="table-header">
+      <div class="header-left">
+        <a href="/" id="back-home" class="table-btn home-btn" data-i18n="backHome">首页</a>
+        <h1 class="game-heading" data-i18n="gameTitle">雀神听牌王 · 听牌速判</h1>
+      </div>
+
+      <div class="header-actions">
+        <button id="btn-levels" class="table-btn" data-i18n="levelsBtn">题库</button>
+        <button id="btn-restart" class="table-btn" data-i18n="restartBtn">重开</button>
+        <button id="btn-pause" class="table-btn" data-i18n="pauseBtn">暂停</button>
+        <button id="btn-sound" class="table-btn">音效: 开</button>
+        <button id="btn-lang" class="table-btn">English</button>
+        <button id="btn-rules" class="table-btn" data-i18n="howToPlay">法则</button>
+      </div>
+    </header>
+
+    <!-- HUD Stats Bar -->
+    <div class="hud-panel">
+      <div class="hud-item hud-level">
+        <span id="hud-level-title">题库 1 · 单钓将牌</span>
+      </div>
+      <div class="hud-stats">
+        <div class="hud-stat-box">
+          <span class="stat-label" data-i18n="danLabel">段位</span>
+          <span id="hud-dan-badge" class="dan-badge">雀士</span>
+        </div>
+        <div class="hud-stat-box">
+          <span class="stat-label" data-i18n="scoreLabel">本题得分</span>
+          <span id="hud-score" class="stat-value">0</span>
+        </div>
+        <div class="hud-stat-box">
+          <span class="stat-label" data-i18n="streakLabel">连胜</span>
+          <span id="hud-streak" class="stat-value">0</span>
+        </div>
+        <div class="hud-stat-box timer-box">
+          <span class="stat-label" data-i18n="timeLabel">倒计时</span>
+          <span id="hud-timer" class="stat-value">30s</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Green Felt Mahjong Center Stage -->
+    <main class="table-felt-stage">
+      <!-- 13 Standing Hand Tiles -->
+      <section class="hand-section">
+        <div class="section-label" data-i18n="handTitle">当前手牌 (13张 · 已听牌)</div>
+        <div id="hand-tiles" class="hand-tiles-row">
+          <!-- 13 standing 3D mahjong tiles rendered dynamically -->
+        </div>
+      </section>
+
+      <!-- Candidate Selection Picker -->
+      <section class="picker-section">
+        <div class="section-label picker-label" data-i18n="pickerTitle">点选全部可胡听牌 (点击选中，再次点击设为主攻最高番)</div>
+        <div id="tile-picker" class="picker-container">
+          <!-- 34 tiles by suit rendered dynamically -->
+        </div>
+
+        <div class="action-submit-bar">
+          <button id="btn-clear" class="table-btn" data-i18n="clearBtn">重选</button>
+          <button id="btn-submit" class="table-btn btn-primary" data-i18n="submitBtn">提交听牌</button>
+        </div>
+      </section>
+
+      <!-- Result & Meld Decomposition Bottom Drawer -->
+      <div id="result-panel" class="result-drawer">
+        <div class="result-header">
+          <div id="result-title" class="result-status">全中！雀神洞悉</div>
+          <div id="result-score-badge" class="score-badge">+100 PTS</div>
+        </div>
+
+        <div class="result-body">
+          <div class="result-row">
+            <span class="result-row-title" data-i18n="allWaitsTitle">实际听牌与形状解析</span>
+            <div id="result-waits-list" class="reveal-tiles-wrap"></div>
+          </div>
+
+          <div class="result-row">
+            <span class="result-row-title" data-i18n="explanationTitle">胡牌拆解</span>
+            <div id="result-melds-list" class="melds-wrap"></div>
+          </div>
+
+          <div class="result-row">
+            <div id="result-fan-list" class="fan-chips-wrap"></div>
+          </div>
+        </div>
+
+        <div class="result-actions">
+          <button id="btn-retry" class="table-btn" data-i18n="tryAgain">重练此题</button>
+          <button id="btn-next" class="table-btn btn-primary" data-i18n="nextQuestion">下一题</button>
+        </div>
+      </div>
+    </main>
+
+    <!-- Modals -->
+    <!-- Levels Modal -->
+    <div id="modal-levels" class="table-modal">
+      <div class="table-modal-box">
+        <div class="table-modal-header">
+          <h2 data-i18n="levelSelectTitle">雀神试炼题谱</h2>
+          <button class="modal-close-btn" data-i18n="closeBtn">关闭</button>
+        </div>
+        <div id="levels-grid" class="modal-body levels-scroll-body">
+          <!-- Chapters rendered dynamically -->
+        </div>
+      </div>
+    </div>
+
+    <!-- Rules Modal -->
+    <div id="modal-rules" class="table-modal">
+      <div class="table-modal-box rules-box">
+        <div class="table-modal-header">
+          <h2 data-i18n="rulesTitle">雀神听牌法则</h2>
+          <button class="modal-close-btn" data-i18n="closeBtn">关闭</button>
+        </div>
+        <div class="modal-body rules-content">
+          <p data-i18n="rule1">1. 面对一手 13 张已听牌手牌，在 30 秒内点击下方候选牌，找出全部能胡的听牌。</p>
+          <p data-i18n="rule2">2. 若有多种听牌，可指定一张为“主攻听牌”；选番数最高的路线可获满分！</p>
+          <p data-i18n="rule3">3. 找全得 60 分，最高番得 40 分；漏点错点扣分，连续答对享连胜加成。</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Pause Modal -->
+    <div id="modal-pause" class="table-modal">
+      <div class="table-modal-box pause-box">
+        <div class="table-modal-header">
+          <h2 data-i18n="pausedTitle">对局已暂停</h2>
+          <button class="modal-close-btn" data-i18n="closeBtn">关闭</button>
+        </div>
+        <div class="modal-body pause-content">
+          <p data-i18n="pausedDesc">随时点击继续或按 P / Esc / 空格恢复倒计时。</p>
+          <div class="pause-actions">
+            <button id="btn-modal-resume" class="table-btn btn-primary" data-i18n="resumeBtn">继续</button>
+            <button id="btn-modal-restart" class="table-btn" data-i18n="restartBtn">重开</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="js/main.mjs?v=a2742806a726"></script>
+</body>
+</html>
